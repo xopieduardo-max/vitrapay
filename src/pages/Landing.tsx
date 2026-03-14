@@ -43,20 +43,16 @@ const methodConfig = {
 };
 
 function FloatingNotifications() {
-  const [visibleNotifs, setVisibleNotifs] = useState<number[]>([]);
-  const indexRef = useRef(0);
+  const [visibleNotifs, setVisibleNotifs] = useState<ReturnType<typeof generateNotification>[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const idx = indexRef.current % saleNotifications.length;
       setVisibleNotifs((prev) => {
-        const next = [...prev, idx];
-        return next.length > 5 ? next.slice(1) : next;
+        const next = [...prev, generateNotification()];
+        return next.length > 4 ? next.slice(1) : next;
       });
-      indexRef.current++;
-    }, 2200);
-    setVisibleNotifs([0]);
-    indexRef.current = 1;
+    }, 3500);
+    setVisibleNotifs([generateNotification()]);
     return () => clearInterval(interval);
   }, []);
 
