@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, Zap, ArrowLeft,
+  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, Zap, ArrowLeft, ShoppingBag,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -10,6 +10,7 @@ import {
 
 const navItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Gerar Vendas", url: "/admin/fake-sales", icon: ShoppingBag },
   { title: "Usuários", url: "/admin/users", icon: Users },
   { title: "Saques", url: "/admin/withdrawals", icon: ArrowDownToLine },
   { title: "Banners", url: "/admin/banners", icon: Image },

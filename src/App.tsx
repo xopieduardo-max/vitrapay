@@ -31,6 +31,7 @@ import AdminSettings from "./pages/AdminSettings";
 import AdminWithdrawals from "./pages/AdminWithdrawals";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminPopups from "./pages/admin/AdminPopups";
+import AdminFakeSales from "./pages/admin/AdminFakeSales";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
               <Route path="/admin/banners" element={<AdminBanners />} />
               <Route path="/admin/popups" element={<AdminPopups />} />
+              <Route path="/admin/fake-sales" element={<AdminFakeSales />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
 
