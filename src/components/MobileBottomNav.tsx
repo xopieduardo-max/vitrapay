@@ -7,7 +7,7 @@ const tabs = [
   { label: "Vendas", icon: TrendingUp, path: "/sales" },
   { label: "", icon: Zap, path: "/products", center: true },
   { label: "Saque", icon: ArrowDownToLine, path: "/finance" },
-  { label: "Ajustes", icon: Settings, path: "/admin/settings" },
+  { label: "Ajustes", icon: Settings, path: "/settings" },
 ];
 
 export function MobileBottomNav() {

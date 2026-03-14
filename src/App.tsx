@@ -69,6 +69,7 @@ const App = () => (
               <Route path="/purchases" element={<Purchases />} />
               <Route path="/finance" element={<Finance />} />
               <Route path="/community" element={<Community />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
 
             {/* Admin panel */}
