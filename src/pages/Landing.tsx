@@ -43,37 +43,35 @@ function FloatingNotifications() {
   }, []);
 
   return (
-    <div className="absolute left-0 top-0 bottom-0 w-full max-w-[340px] overflow-hidden pointer-events-none hidden lg:block">
-      <div className="relative h-full flex flex-col justify-center gap-3 pl-4">
-        <AnimatePresence mode="popLayout">
-          {visibleNotifs.map((idx, i) => {
-            const notif = saleNotifications[idx];
-            return (
-              <motion.div
-                key={`${idx}-${i}-${indexRef.current}`}
-                initial={{ opacity: 0, x: -60, scale: 0.8 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -40, scale: 0.9 }}
-                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                className="flex items-center gap-3 rounded-xl border border-primary/20 bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 shrink-0">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">
-                    Venda aprovada via Pix!
-                  </p>
-                  <p className="text-[0.65rem] text-muted-foreground truncate">
-                    {notif.name} • {notif.product}
-                  </p>
-                  <p className="text-xs font-bold text-primary mt-0.5">{notif.amount}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+    <div className="flex flex-col gap-3 w-full">
+      <AnimatePresence mode="popLayout">
+        {visibleNotifs.map((idx, i) => {
+          const notif = saleNotifications[idx];
+          return (
+            <motion.div
+              key={`${idx}-${i}-${indexRef.current}`}
+              initial={{ opacity: 0, x: -60, scale: 0.8 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -40, scale: 0.9 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="flex items-center gap-3 rounded-xl border border-primary/20 bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 shrink-0">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-foreground truncate">
+                  Venda aprovada via Pix!
+                </p>
+                <p className="text-[0.65rem] text-muted-foreground truncate">
+                  {notif.name} • {notif.product}
+                </p>
+                <p className="text-xs font-bold text-primary mt-0.5">{notif.amount}</p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }
