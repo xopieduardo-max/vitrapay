@@ -500,20 +500,11 @@ function BlockConfigurator({
 
       {block.block_type === "image" && (
         <div className="space-y-3">
-          <div>
-            <Label className="text-xs">URL da imagem</Label>
-            <Input
-              value={block.config.url || ""}
-              onChange={(e) => onUpdate("url", e.target.value)}
-              placeholder="https://..."
-              className="mt-1"
-            />
-          </div>
-          {block.config.url && (
-            <div className="rounded-lg overflow-hidden border border-border">
-              <img src={block.config.url} alt="Preview" className="w-full h-auto max-h-40 object-cover" />
-            </div>
-          )}
+          <ImageUploadField
+            label="Imagem"
+            value={block.config.url || ""}
+            onUpdate={(url) => onUpdate("url", url)}
+          />
           <div>
             <Label className="text-xs">Texto alternativo</Label>
             <Input
