@@ -27,6 +27,7 @@ export function DashboardLayout() {
           </main>
         </div>
         <MobileBottomNav />
+        <PlatformPopup />
       </div>
     </SidebarProvider>
   );
