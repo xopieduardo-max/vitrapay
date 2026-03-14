@@ -12,7 +12,7 @@ import { motion, AnimatePresence, Reorder } from "framer-motion";
 import {
   ArrowLeft, Save, Loader2, Eye, Plus, Trash2, GripVertical,
   Type, Image, ListChecks, Award, Clock, Star, Video, MessageSquareQuote,
-  ChevronUp, ChevronDown, Settings2, Palette, MonitorSmartphone, Smartphone,
+  ChevronUp, ChevronDown, Settings2, Palette, MonitorSmartphone, Smartphone, Upload,
 } from "lucide-react";
 
 const BLOCK_TYPES = [
