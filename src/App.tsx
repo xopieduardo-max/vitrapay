@@ -13,6 +13,7 @@ import ProductDetail from "./pages/ProductDetail";
 import MyProducts from "./pages/MyProducts";
 import CreateProduct from "./pages/CreateProduct";
 import EditProduct from "./pages/EditProduct";
+import CheckoutBuilder from "./pages/CheckoutBuilder";
 import Sales from "./pages/Sales";
 import Affiliates from "./pages/Affiliates";
 import BuyerLibrary from "./pages/BuyerLibrary";

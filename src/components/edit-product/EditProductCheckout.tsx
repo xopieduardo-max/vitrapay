@@ -20,7 +20,6 @@ export default function EditProductCheckout({ productId, form, updateField, chec
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const queryClient = useQueryClient();
   const [copiedLink, setCopiedLink] = useState(false);
   const [newTestimonial, setNewTestimonial] = useState({ author_name: "", content: "", rating: 5 });
   const [addingTestimonial, setAddingTestimonial] = useState(false);
