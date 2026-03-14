@@ -293,14 +293,32 @@ export default function Checkout() {
   };
 
   const handlePurchase = async () => {
-    if (!user) { navigate("/auth"); return; }
     if (!form.name || !form.email) {
       toast({ title: "Preencha seus dados", variant: "destructive" });
       return;
     }
     setProcessing(true);
-    toast({ title: "Processando pagamento...", description: "Integração de pagamento em breve." });
-    setTimeout(() => setProcessing(false), 2000);
+    try {
+      const affiliateRef = searchParams.get("ref") || null;
+      const total = calculateTotal();
+      const { data, error } = await supabase.functions.invoke("process-purchase", {
+        body: {
+          product_id: id,
+          buyer_email: form.email,
+          buyer_name: form.name,
+          amount: total,
+          payment_method: paymentMethod,
+          affiliate_ref: affiliateRef,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setPurchaseResult(data);
+    } catch (err: any) {
+      toast({ title: "Erro no pagamento", description: err.message, variant: "destructive" });
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (loading) {
