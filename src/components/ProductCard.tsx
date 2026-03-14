@@ -63,7 +63,7 @@ export function ProductCard({
             {/* Temperature badge */}
             {salesCount > 0 && (
               <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1">
-                <Flame className="h-3 w-3 text-orange-400" strokeWidth={2} />
+                <Flame className="h-3 w-3 text-destructive" strokeWidth={2} />
                 <span className="text-[0.6rem] font-bold">{temp}°</span>
                 {tempLabel && <span className="text-xs">{tempLabel}</span>}
               </div>
