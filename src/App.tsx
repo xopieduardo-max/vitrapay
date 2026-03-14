@@ -31,6 +31,7 @@ import AdminSettings from "./pages/AdminSettings";
 import AdminWithdrawals from "./pages/AdminWithdrawals";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminPopups from "./pages/admin/AdminPopups";
+import AdminFakeSales from "./pages/admin/AdminFakeSales";
 
 const queryClient = new QueryClient();
 
