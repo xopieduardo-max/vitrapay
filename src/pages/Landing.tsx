@@ -12,16 +12,18 @@ import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 
 /* ─── Floating Sale Notifications ─── */
-const saleNotifications = [
-  { name: "Lucas A.", product: "Copy que Vende", amount: "R$ 197,00", method: "pix" as const },
-  { name: "Maria S.", product: "Método Digital Pro", amount: "R$ 347,00", method: "card" as const },
-  { name: "João P.", product: "IA Academy", amount: "R$ 497,00", method: "pix" as const },
-  { name: "Ana L.", product: "Social Media Mastery", amount: "R$ 147,00", method: "card" as const },
-  { name: "Pedro R.", product: "Renda Extra Online", amount: "R$ 97,00", method: "pix" as const },
-  { name: "Camila F.", product: "Corpo & Forma 360", amount: "R$ 247,00", method: "card" as const },
-  { name: "Rafael M.", product: "Copy que Vende", amount: "R$ 197,00", method: "pix" as const },
-  { name: "Juliana B.", product: "Método Digital Pro", amount: "R$ 347,00", method: "card" as const },
-];
+const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
+const products = ["Copy que Vende", "Método Digital Pro", "IA Academy", "Social Media Mastery", "Renda Extra Online", "Corpo & Forma 360", "Funil Expert", "Tráfego Pago Pro"];
+const amounts = [10, 14.90, 19.90, 27, 37, 39.90, 47, 57, 67, 79.90, 87, 97, 127, 147, 197, 247, 297, 347, 497];
+
+function generateNotification() {
+  return {
+    name: names[Math.floor(Math.random() * names.length)],
+    product: products[Math.floor(Math.random() * products.length)],
+    amount: `R$ ${amounts[Math.floor(Math.random() * amounts.length)].toFixed(2).replace(".", ",")}`,
+    method: (Math.random() > 0.4 ? "pix" : "card") as "pix" | "card",
+  };
+}
 
 const methodConfig = {
   pix: {
