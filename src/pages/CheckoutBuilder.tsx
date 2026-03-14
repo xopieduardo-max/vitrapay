@@ -642,15 +642,12 @@ function BlockConfigurator({
               ))}
             </div>
           </div>
-          <div>
-            <Label className="text-xs">URL do avatar (opcional)</Label>
-            <Input
-              value={block.config.avatar_url || ""}
-              onChange={(e) => onUpdate("avatar_url", e.target.value)}
-              placeholder="https://..."
-              className="mt-1"
-            />
-          </div>
+          <ImageUploadField
+            label="Avatar (opcional)"
+            value={block.config.avatar_url || ""}
+            onUpdate={(url) => onUpdate("avatar_url", url)}
+            placeholder="https://..."
+          />
         </div>
       )}
 
