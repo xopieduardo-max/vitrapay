@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCheckoutPixels, firePixelEvent } from "@/components/checkout/CheckoutPixels";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -158,6 +159,7 @@ export default function Checkout() {
   });
 
   const [checkoutBlocks, setCheckoutBlocks] = useState<any[]>([]);
+  const [productPixels, setProductPixels] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -199,10 +201,21 @@ export default function Checkout() {
         .order("position", { ascending: true });
       if (blocks) setCheckoutBlocks(blocks);
 
+      // Load pixels
+      const { data: pxs } = await supabase
+        .from("product_pixels")
+        .select("*")
+        .eq("product_id", id)
+        .eq("is_active", true);
+      if (pxs) setProductPixels(pxs);
+
       setLoading(false);
     };
     loadCheckout();
   }, [id]);
+
+  // Inject pixel scripts
+  useCheckoutPixels(productPixels);
 
   useEffect(() => {
     if (user?.email) setForm((f) => ({ ...f, email: user.email || "" }));
@@ -315,6 +328,7 @@ export default function Checkout() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setPurchaseResult(data);
+      firePixelEvent(productPixels, "Purchase", total);
     } catch (err: any) {
       toast({ title: "Erro no pagamento", description: err.message, variant: "destructive" });
     } finally {

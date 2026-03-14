@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Save, Loader2, Copy, Check, ExternalLink,
   Settings, Tag, Link2, Eye, Plus, Trash2, Star,
-  ShoppingCart, MessageSquareQuote,
+  ShoppingCart, MessageSquareQuote, BarChart3,
 } from "lucide-react";
 
 // ── Sub-components ──
@@ -24,6 +24,7 @@ import EditProductSettings from "@/components/edit-product/EditProductSettings";
 import EditProductCoupons from "@/components/edit-product/EditProductCoupons";
 import EditProductLinks from "@/components/edit-product/EditProductLinks";
 import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
+import EditProductPixels from "@/components/edit-product/EditProductPixels";
 
 export default function EditProduct() {
   const { id } = useParams<{ id: string }>();
@@ -153,6 +154,7 @@ export default function EditProduct() {
           {[
             { value: "settings", icon: Settings, label: "Geral" },
             { value: "checkout", icon: ShoppingCart, label: "Checkout" },
+            { value: "pixels", icon: BarChart3, label: "Pixels" },
             { value: "coupons", icon: Tag, label: "Cupons" },
             { value: "links", icon: Link2, label: "Afiliados" },
           ].map((tab) => (
@@ -177,6 +179,10 @@ export default function EditProduct() {
             updateField={updateField}
             checkoutUrl={checkoutUrl}
           />
+        </TabsContent>
+
+        <TabsContent value="pixels" className="mt-6">
+          <EditProductPixels productId={id!} />
         </TabsContent>
 
         <TabsContent value="coupons" className="mt-6">
