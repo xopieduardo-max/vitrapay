@@ -20,6 +20,7 @@ import BuyerLibrary from "./pages/BuyerLibrary";
 import Purchases from "./pages/Purchases";
 import AdminUsers from "./pages/AdminUsers";
 import AdminSettings from "./pages/AdminSettings";
+import AdminWithdrawals from "./pages/AdminWithdrawals";
 import Checkout from "./pages/Checkout";
 import MemberArea from "./pages/MemberArea";
 import Finance from "./pages/Finance";
