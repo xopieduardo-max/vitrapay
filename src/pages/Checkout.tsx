@@ -159,6 +159,7 @@ export default function Checkout() {
   });
 
   const [checkoutBlocks, setCheckoutBlocks] = useState<any[]>([]);
+  const [productPixels, setProductPixels] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
