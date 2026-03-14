@@ -87,7 +87,7 @@ export default function AdminFakeSales() {
             affiliate_id: null,
             amount: price,
             platform_fee: platformFee,
-            payment_provider: "simulated",
+            payment_provider: method,
             payment_id: `fake_${crypto.randomUUID().slice(0, 8)}`,
             status: "completed",
             created_at: saleDate.toISOString(),
