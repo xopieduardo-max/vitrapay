@@ -51,6 +51,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/checkout/:id" element={<Checkout />} />
             <Route path="/learn/:productId" element={<MemberArea />} />
+            <Route path="/terms" element={<TermsOfUse />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
             {/* Producer panel */}
             <Route element={<DashboardLayout />}>
