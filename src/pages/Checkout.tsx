@@ -328,6 +328,7 @@ export default function Checkout() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setPurchaseResult(data);
+      firePixelEvent(productPixels, "Purchase", total);
     } catch (err: any) {
       toast({ title: "Erro no pagamento", description: err.message, variant: "destructive" });
     } finally {
