@@ -321,6 +321,58 @@ export default function Checkout() {
     }
   };
 
+  // ── Success Screen ──
+  if (purchaseResult) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "hsl(240,10%,4%)", color: "hsl(0,0%,95%)" }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full rounded-2xl p-8 text-center space-y-5"
+          style={{ background: "hsl(240,10%,8%)", border: "1px solid hsl(240,5%,15%)" }}
+        >
+          <div className="flex justify-center">
+            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(158,94%,30%,0.15)" }}>
+              <CheckCircle2 className="h-8 w-8" style={{ color: "hsl(158,94%,40%)" }} />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold">Compra Confirmada!</h1>
+          <p className="text-sm" style={{ color: "hsl(240,5%,60%)" }}>
+            Seu acesso a <strong style={{ color: "hsl(0,0%,90%)" }}>{purchaseResult.product_title}</strong> está liberado.
+          </p>
+          <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240,10%,6%)", border: "1px solid hsl(240,5%,12%)" }}>
+            <div className="flex justify-between text-xs">
+              <span style={{ color: "hsl(240,5%,50%)" }}>Valor pago</span>
+              <span className="font-bold">R$ {(purchaseResult.amount / 100).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span style={{ color: "hsl(240,5%,50%)" }}>ID da venda</span>
+              <span className="font-mono text-[0.6rem]">{purchaseResult.sale_id?.slice(0, 8)}</span>
+            </div>
+          </div>
+          {purchaseResult.file_url && (
+            <Button
+              className="w-full h-12 text-sm font-bold gap-2 rounded-xl"
+              style={{ background: "hsl(158,94%,30%)", color: "white" }}
+              onClick={() => window.open(purchaseResult.file_url, "_blank")}
+            >
+              <ArrowDownToLine className="h-4 w-4" /> Baixar Produto
+            </Button>
+          )}
+          {purchaseResult.product_type === "lms" && (
+            <Button
+              className="w-full h-12 text-sm font-bold gap-2 rounded-xl"
+              style={{ background: "hsl(158,94%,30%)", color: "white" }}
+              onClick={() => toast({ title: "Acesse com seu email", description: "Faça login para acessar a área de membros." })}
+            >
+              Acessar Área de Membros
+            </Button>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[hsl(240,10%,4%)] flex items-center justify-center">
