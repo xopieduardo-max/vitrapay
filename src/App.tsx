@@ -12,6 +12,7 @@ import Marketplace from "./pages/Marketplace";
 import ProductDetail from "./pages/ProductDetail";
 import MyProducts from "./pages/MyProducts";
 import CreateProduct from "./pages/CreateProduct";
+import EditProduct from "./pages/EditProduct";
 import Sales from "./pages/Sales";
 import Affiliates from "./pages/Affiliates";
 import BuyerLibrary from "./pages/BuyerLibrary";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/products" element={<MyProducts />} />
               <Route path="/products/new" element={<CreateProduct />} />
+              <Route path="/products/:id/edit" element={<EditProduct />} />
               <Route path="/sales" element={<Sales />} />
               <Route path="/affiliates" element={<Affiliates />} />
               <Route path="/library" element={<BuyerLibrary />} />

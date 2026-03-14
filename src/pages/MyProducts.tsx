@@ -2,7 +2,7 @@ import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,7 @@ import {
 
 export default function MyProducts() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { data: myProducts = [], isLoading } = useQuery({
     queryKey: ["my-products", user?.id],
@@ -95,10 +96,10 @@ export default function MyProducts() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="gap-2 text-sm">
+                <DropdownMenuItem className="gap-2 text-sm" onClick={() => window.open(`/checkout/${product.id}`, "_blank")}>
                   <Eye className="h-4 w-4" strokeWidth={1.5} /> Visualizar
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 text-sm">
+                <DropdownMenuItem className="gap-2 text-sm" onClick={() => navigate(`/products/${product.id}/edit`)}>
                   <Edit className="h-4 w-4" strokeWidth={1.5} /> Editar
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2 text-sm text-destructive">
