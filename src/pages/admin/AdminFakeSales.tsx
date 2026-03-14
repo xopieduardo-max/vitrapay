@@ -47,7 +47,7 @@ export default function AdminFakeSales() {
       const { data } = await supabase
         .from("sales")
         .select("id, amount, payment_provider, status, created_at, product_id, products(title)")
-        .eq("payment_provider", "simulated")
+        .like("payment_id", "fake_%")
         .order("created_at", { ascending: false })
         .limit(20);
       return data || [];
@@ -87,7 +87,7 @@ export default function AdminFakeSales() {
             affiliate_id: null,
             amount: price,
             platform_fee: platformFee,
-            payment_provider: "simulated",
+            payment_provider: method,
             payment_id: `fake_${crypto.randomUUID().slice(0, 8)}`,
             status: "completed",
             created_at: saleDate.toISOString(),
