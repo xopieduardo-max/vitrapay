@@ -49,6 +49,50 @@ export type Database = {
           },
         ]
       }
+      checkout_testimonials: {
+        Row: {
+          author_avatar_url: string | null
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          position: number | null
+          product_id: string
+          rating: number | null
+        }
+        Insert: {
+          author_avatar_url?: string | null
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          product_id: string
+          rating?: number | null
+        }
+        Update: {
+          author_avatar_url?: string | null
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          product_id?: string
+          rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_testimonials_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commissions: {
         Row: {
           affiliate_id: string

@@ -5,23 +5,24 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
   Clock,
   Tag,
-  Plus,
   CreditCard,
   Loader2,
-  Zap,
   QrCode,
   Lock,
   CheckCircle2,
   Star,
+  User,
+  Mail,
+  Phone,
+  FileText,
 } from "lucide-react";
 
 type PaymentMethod = "card" | "pix";
@@ -37,6 +38,7 @@ export default function Checkout() {
   const [producer, setProducer] = useState<string>("");
   const [orderBumps, setOrderBumps] = useState<any[]>([]);
   const [selectedBumps, setSelectedBumps] = useState<Set<string>>(new Set());
+  const [testimonials, setTestimonials] = useState<any[]>([]);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,6 @@ export default function Checkout() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
-  // Form fields
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -60,18 +61,12 @@ export default function Checkout() {
   useEffect(() => {
     if (!id) return;
     const loadCheckout = async () => {
-      const { data: prod } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", id)
-        .single();
-
+      const { data: prod } = await supabase.from("products").select("*").eq("id", id).single();
       if (prod) {
         setProduct(prod);
         if (prod.checkout_timer_minutes && prod.checkout_timer_minutes > 0) {
           setTimeLeft(prod.checkout_timer_minutes * 60);
         }
-        // Get producer name
         const { data: profile } = await supabase
           .from("profiles")
           .select("display_name")
@@ -85,56 +80,56 @@ export default function Checkout() {
         .select("*, bump_product:bump_product_id(*)")
         .eq("product_id", id)
         .eq("is_active", true);
-
       if (bumps) setOrderBumps(bumps);
+
+      const { data: testis } = await supabase
+        .from("checkout_testimonials")
+        .select("*")
+        .eq("product_id", id)
+        .eq("is_active", true)
+        .order("position", { ascending: true });
+      if (testis) setTestimonials(testis);
+
       setLoading(false);
     };
     loadCheckout();
   }, [id]);
 
-  // Pre-fill form with user data
   useEffect(() => {
-    if (user?.email) {
-      setForm((f) => ({ ...f, email: user.email || "" }));
-    }
+    if (user?.email) setForm((f) => ({ ...f, email: user.email || "" }));
   }, [user]);
 
-  // Countdown timer
   useEffect(() => {
     if (timeLeft <= 0) return;
     const interval = setInterval(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000);
     return () => clearInterval(interval);
   }, [timeLeft]);
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return { min: m.toString().padStart(2, "0"), sec: sec.toString().padStart(2, "0") };
-  };
+  const formatTime = (s: number) => ({
+    min: Math.floor(s / 60).toString().padStart(2, "0"),
+    sec: (s % 60).toString().padStart(2, "0"),
+  });
 
-  const updateForm = (field: string, value: string) => {
-    setForm((f) => ({ ...f, [field]: value }));
-  };
+  const updateForm = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }));
 
   const formatCPF = (v: string) => {
-    const digits = v.replace(/\D/g, "").slice(0, 11);
-    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    const d = v.replace(/\D/g, "").slice(0, 14);
+    if (d.length <= 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
   };
 
   const formatPhone = (v: string) => {
-    const digits = v.replace(/\D/g, "").slice(0, 11);
-    if (digits.length <= 10) return digits.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
-    return digits.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+    return d.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
   };
 
-  const formatCardNumber = (v: string) => {
-    return v.replace(/\D/g, "").slice(0, 16).replace(/(\d{4})/g, "$1 ").trim();
-  };
+  const formatCardNumber = (v: string) =>
+    v.replace(/\D/g, "").slice(0, 16).replace(/(\d{4})/g, "$1 ").trim();
 
   const formatExpiry = (v: string) => {
-    const digits = v.replace(/\D/g, "").slice(0, 4);
-    if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return digits;
+    const d = v.replace(/\D/g, "").slice(0, 4);
+    return d.length >= 3 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
   };
 
   const applyCoupon = async () => {
@@ -146,9 +141,8 @@ export default function Checkout() {
       .eq("producer_id", product.producer_id)
       .eq("is_active", true)
       .single();
-
     if (data) {
-      if (data.max_uses && data.uses >= data.max_uses) {
+      if (data.max_uses && (data.uses ?? 0) >= data.max_uses) {
         toast({ title: "Cupom esgotado", variant: "destructive" });
         return;
       }
@@ -176,14 +170,13 @@ export default function Checkout() {
     let total = product.price;
     for (const bump of orderBumps) {
       if (selectedBumps.has(bump.id)) {
-        const bumpPrice = bump.bump_product?.price || 0;
-        const discount = bump.discount_percentage || 0;
-        total += bumpPrice * (1 - discount / 100);
+        const bp = bump.bump_product?.price || 0;
+        total += bp * (1 - (bump.discount_percentage || 0) / 100);
       }
     }
     if (appliedCoupon) {
       if (appliedCoupon.discount_type === "percentage") {
-        total = total * (1 - appliedCoupon.discount_value / 100);
+        total *= 1 - appliedCoupon.discount_value / 100;
       } else {
         total = Math.max(0, total - appliedCoupon.discount_value);
       }
@@ -192,10 +185,7 @@ export default function Checkout() {
   };
 
   const handlePurchase = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
+    if (!user) { navigate("/auth"); return; }
     if (!form.name || !form.email) {
       toast({ title: "Preencha seus dados", variant: "destructive" });
       return;
@@ -207,7 +197,7 @@ export default function Checkout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[hsl(240,10%,4%)] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -215,15 +205,14 @@ export default function Checkout() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Produto não encontrado.</p>
+      <div className="min-h-screen bg-[hsl(240,10%,4%)] flex items-center justify-center">
+        <p className="text-[hsl(240,5%,60%)]">Produto não encontrado.</p>
       </div>
     );
   }
 
   const total = calculateTotal();
   const time = formatTime(timeLeft);
-  const installmentPrice = (total / 100 / 12).toFixed(2);
 
   const installmentOptions = Array.from({ length: 12 }, (_, i) => {
     const n = i + 1;
@@ -232,252 +221,243 @@ export default function Checkout() {
   });
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Timer bar */}
+    <div className="min-h-screen" style={{ background: "hsl(240, 10%, 4%)", color: "hsl(0, 0%, 95%)" }}>
+      {/* ── Timer Bar ── */}
       {timeLeft > 0 && (
-        <div className="bg-destructive text-destructive-foreground py-3">
+        <div className="py-3.5" style={{ background: "hsl(38, 92%, 50%)", color: "hsl(0,0%,5%)" }}>
           <div className="container max-w-5xl flex items-center justify-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <div className="bg-background/20 rounded px-2 py-1 text-lg font-bold tabular-nums">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <span className="inline-flex items-center justify-center rounded px-2.5 py-1 text-xl font-black tabular-nums" style={{ background: "hsla(0,0%,0%,0.15)" }}>
                   {time.min}
-                </div>
-                <span className="text-lg font-bold">:</span>
-                <div className="bg-background/20 rounded px-2 py-1 text-lg font-bold tabular-nums">
+                </span>
+                <span className="text-xl font-black">:</span>
+                <span className="inline-flex items-center justify-center rounded px-2.5 py-1 text-xl font-black tabular-nums" style={{ background: "hsla(0,0%,0%,0.15)" }}>
                   {time.sec}
-                </div>
+                </span>
               </div>
               <Clock className="h-5 w-5" />
             </div>
-            <p className="text-sm font-medium hidden sm:block">
-              Você ainda tem tempo! Garanta sua oferta exclusiva agora
-            </p>
+            <p className="text-sm font-bold hidden sm:block">Tempo está acabando!</p>
           </div>
         </div>
       )}
 
-      {/* Headline bar */}
+      {/* ── Headline Banner ── */}
       {product.checkout_headline && (
-        <div className="bg-primary text-primary-foreground py-2 text-center text-sm font-bold">
+        <div className="py-2.5 text-center text-sm font-bold tracking-wide" style={{ background: "hsl(158, 94%, 30%)", color: "white" }}>
           {product.checkout_headline}
         </div>
       )}
 
-      {/* Banner */}
+      {/* ── Banner Images ── */}
       {product.checkout_banner_url && (
-        <div className="container max-w-5xl mt-4 px-4">
-          <div className="rounded-xl overflow-hidden max-h-52">
-            <img
-              src={product.checkout_banner_url}
-              alt="Banner"
-              className="w-full h-full object-cover"
-            />
-          </div>
+        <div className="w-full">
+          <img src={product.checkout_banner_url} alt="Banner" className="w-full max-h-[320px] object-cover" />
         </div>
       )}
 
-      <div className="container max-w-5xl py-6 px-4">
+      {/* ── Main Content ── */}
+      <div className="container max-w-5xl py-8 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* LEFT: Form */}
+
+          {/* LEFT COLUMN - Form */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.2, 0, 0, 1] }}
+            transition={{ duration: 0.5 }}
             className="lg:col-span-3 space-y-5"
           >
-            {/* Product info card */}
-            <div className="rounded-xl border border-border bg-card p-5">
+            {/* Product Info Card */}
+            <div className="rounded-xl p-5" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
               <div className="flex items-start gap-4">
                 {product.cover_url && (
-                  <img
-                    src={product.cover_url}
-                    alt={product.title}
-                    className="h-20 w-20 rounded-lg object-cover shrink-0"
-                  />
+                  <img src={product.cover_url} alt={product.title} className="h-16 w-16 rounded-lg object-cover shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <h2 className="font-bold text-base">{product.title}</h2>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {product.description}
+                  <h2 className="font-bold text-lg">{product.title}</h2>
+                  <p className="text-primary text-lg font-bold mt-1">
+                    R$ {(product.price / 100).toFixed(2)}
+                    <span className="text-xs font-normal ml-1" style={{ color: "hsl(240,5%,50%)" }}>cash</span>
                   </p>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-primary">
-                      12x de R$ {installmentPrice}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      ou R$ {(total / 100).toFixed(2)} à vista
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Seus dados */}
-            <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            {/* Contact Info */}
+            <div className="rounded-xl p-5 space-y-4" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
               <h3 className="text-sm font-bold flex items-center gap-2">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary">1</span>
-                </div>
-                Seus dados
+                <User className="h-4 w-4 text-primary" />
+                Informações de Contato
               </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <Label className="text-xs text-muted-foreground">Nome completo</Label>
-                  <Input
-                    placeholder="Preencha seu nome"
-                    value={form.name}
-                    onChange={(e) => updateForm("name", e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <Label className="text-xs text-muted-foreground">Email</Label>
-                  <Input
-                    type="email"
-                    placeholder="Preencha seu email"
-                    value={form.email}
-                    onChange={(e) => updateForm("email", e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
+              <div className="space-y-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">CPF/CNPJ</Label>
-                  <Input
-                    placeholder="000.000.000-00"
-                    value={form.cpf}
-                    onChange={(e) => updateForm("cpf", formatCPF(e.target.value))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Celular</Label>
-                  <div className="flex gap-1.5 mt-1">
-                    <div className="flex items-center gap-1 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground shrink-0">
-                      🇧🇷 +55
-                    </div>
+                  <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Nome completo</Label>
+                  <div className="relative mt-1">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
                     <Input
-                      placeholder="(00) 00000-0000"
-                      value={form.phone}
-                      onChange={(e) => updateForm("phone", formatPhone(e.target.value))}
+                      placeholder="Preencha seu nome completo"
+                      value={form.name}
+                      onChange={(e) => updateForm("name", e.target.value)}
+                      className="pl-10 border-0 h-11"
+                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
                     />
                   </div>
                 </div>
+                <div>
+                  <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Email</Label>
+                  <div className="relative mt-1">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
+                    <Input
+                      type="email"
+                      placeholder="name@email.com"
+                      value={form.email}
+                      onChange={(e) => updateForm("email", e.target.value)}
+                      className="pl-10 border-0 h-11"
+                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>CPF / CNPJ</Label>
+                    <div className="relative mt-1">
+                      <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
+                      <Input
+                        placeholder="000.000.000-00"
+                        value={form.cpf}
+                        onChange={(e) => updateForm("cpf", formatCPF(e.target.value))}
+                        className="pl-10 border-0 h-11"
+                        style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Celular</Label>
+                    <div className="flex gap-1.5 mt-1">
+                      <div className="flex items-center gap-1 rounded-md px-3 text-xs shrink-0 h-11" style={{ background: "hsl(240, 10%, 12%)", color: "hsl(240,5%,50%)" }}>
+                        🇧🇷 +55
+                      </div>
+                      <div className="relative flex-1">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
+                        <Input
+                          placeholder="(00) 00000-0000"
+                          value={form.phone}
+                          onChange={(e) => updateForm("phone", formatPhone(e.target.value))}
+                          className="pl-10 border-0 h-11"
+                          style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Pagamento */}
-            <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            {/* Payment Method */}
+            <div className="rounded-xl p-5 space-y-4" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
               <h3 className="text-sm font-bold flex items-center gap-2">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary">2</span>
-                </div>
-                Pagamento
+                <CreditCard className="h-4 w-4 text-primary" />
+                Método de Pagamento
               </h3>
 
-              {/* Payment method tabs */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setPaymentMethod("pix")}
-                  className={`flex items-center justify-center gap-2 rounded-lg border-2 py-3 px-4 transition-all ${
-                    paymentMethod === "pix"
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/30"
-                  }`}
-                >
-                  <QrCode className="h-5 w-5" strokeWidth={1.5} />
-                  <span className="text-sm font-medium">PIX</span>
-                </button>
-                <button
-                  onClick={() => setPaymentMethod("card")}
-                  className={`flex items-center justify-center gap-2 rounded-lg border-2 py-3 px-4 transition-all ${
-                    paymentMethod === "card"
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/30"
-                  }`}
-                >
-                  <CreditCard className="h-5 w-5" strokeWidth={1.5} />
-                  <span className="text-sm font-medium">Cartão de Crédito</span>
-                </button>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {(["pix", "card"] as PaymentMethod[]).map((method) => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className="flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-medium transition-all whitespace-nowrap"
+                    style={{
+                      background: paymentMethod === method ? "hsl(158, 94%, 30%)" : "hsl(240, 10%, 12%)",
+                      color: paymentMethod === method ? "white" : "hsl(240, 5%, 60%)",
+                      border: paymentMethod === method ? "1px solid hsl(158, 94%, 35%)" : "1px solid hsl(240, 5%, 18%)",
+                    }}
+                  >
+                    {method === "pix" ? <QrCode className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
+                    {method === "pix" ? "Pix" : "Cartão de Crédito"}
+                  </button>
+                ))}
               </div>
 
               {paymentMethod === "card" && (
-                <div className="space-y-3">
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="space-y-3"
+                >
                   <div>
-                    <Label className="text-xs text-muted-foreground">Número do cartão</Label>
+                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Número do cartão</Label>
                     <Input
                       placeholder="0000 0000 0000 0000"
                       value={form.cardNumber}
                       onChange={(e) => updateForm("cardNumber", formatCardNumber(e.target.value))}
-                      className="mt-1"
+                      className="mt-1 border-0 h-11"
+                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Vencimento</Label>
+                      <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Vencimento</Label>
                       <Input
                         placeholder="MM/AA"
                         value={form.cardExpiry}
                         onChange={(e) => updateForm("cardExpiry", formatExpiry(e.target.value))}
-                        className="mt-1"
+                        className="mt-1 border-0 h-11"
+                        style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">CVV</Label>
+                      <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>CVV</Label>
                       <Input
                         placeholder="000"
                         value={form.cardCvv}
                         onChange={(e) => updateForm("cardCvv", e.target.value.replace(/\D/g, "").slice(0, 4))}
-                        className="mt-1"
+                        className="mt-1 border-0 h-11"
+                        style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
                       />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Parcelas</Label>
-                      <select
-                        value={form.installments}
-                        onChange={(e) => updateForm("installments", e.target.value)}
-                        className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        {installmentOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Nome do titular</Label>
-                    <Input
-                      placeholder="Nome no cartão"
-                      value={form.cardHolder}
-                      onChange={(e) => updateForm("cardHolder", e.target.value)}
-                      className="mt-1"
-                    />
+                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Parcelas</Label>
+                    <select
+                      value={form.installments}
+                      onChange={(e) => updateForm("installments", e.target.value)}
+                      className="mt-1 flex h-11 w-full rounded-md px-3 py-2 text-sm border-0"
+                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                    >
+                      {installmentOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs" style={{ color: "hsl(240,5%,45%)" }}>
                     <Lock className="h-3 w-3" />
-                    Os seus dados de pagamento são criptografados e processados de forma segura.
+                    Seus dados de pagamento são criptografados e processados de forma segura.
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {paymentMethod === "pix" && (
-                <div className="rounded-lg bg-muted/30 p-4 text-center space-y-2">
-                  <QrCode className="h-10 w-10 mx-auto text-primary" />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="rounded-lg p-6 text-center space-y-2"
+                  style={{ background: "hsl(240, 10%, 12%)" }}
+                >
+                  <QrCode className="h-12 w-12 mx-auto text-primary" />
                   <p className="text-sm font-medium">Pagamento via PIX</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs" style={{ color: "hsl(240,5%,50%)" }}>
                     Ao clicar em "Pagar", um QR Code será gerado para pagamento instantâneo.
                   </p>
-                </div>
+                </motion.div>
               )}
             </div>
 
             {/* Order Bumps */}
             {orderBumps.length > 0 && (
-              <div className="rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-5 space-y-3">
-                <h3 className="text-sm font-bold text-center">
-                  ✅ Oferta limitada — Toque para adicionar ↓
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-center" style={{ color: "hsl(38, 92%, 50%)" }}>
+                  ⚡ Ofertas limitadas
                 </h3>
                 {orderBumps.map((bump) => {
                   const bumpPrice = bump.bump_product?.price || 0;
@@ -489,27 +469,42 @@ export default function Checkout() {
                       key={bump.id}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => toggleBump(bump.id)}
-                      className={`rounded-lg border-2 p-4 cursor-pointer transition-all ${
-                        isSelected
-                          ? "border-primary bg-card"
-                          : "border-border bg-card hover:border-primary/40"
-                      }`}
+                      className="rounded-xl p-4 cursor-pointer transition-all"
+                      style={{
+                        background: isSelected ? "hsl(158, 94%, 30%, 0.1)" : "hsl(240, 10%, 8%)",
+                        border: isSelected ? "2px solid hsl(158, 94%, 30%)" : "2px solid hsl(240, 5%, 15%)",
+                      }}
                     >
+                      {bump.title && (
+                        <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "hsl(38, 92%, 50%)" }}>
+                          {bump.title}
+                        </p>
+                      )}
                       <div className="flex items-start gap-3">
                         <Checkbox checked={isSelected} className="mt-0.5" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold">{bump.title}</p>
-                          {bump.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {bump.description}
-                            </p>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {bump.bump_product?.cover_url && (
+                              <img src={bump.bump_product.cover_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
+                            )}
+                            <div>
+                              <p className="text-sm font-semibold">{bump.bump_product?.title}</p>
+                              {bump.description && (
+                                <p className="text-xs mt-0.5" style={{ color: "hsl(240,5%,50%)" }}>{bump.description}</p>
+                              )}
+                            </div>
+                          </div>
                         </div>
                         <div className="text-right shrink-0">
                           {bump.discount_percentage > 0 && (
-                            <span className="text-xs text-muted-foreground line-through block">
-                              R$ {(bumpPrice / 100).toFixed(2)}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs line-through" style={{ color: "hsl(240,5%,40%)" }}>
+                                R$ {(bumpPrice / 100).toFixed(2)}
+                              </span>
+                              <span className="text-[0.6rem] font-bold px-1.5 py-0.5 rounded" style={{ background: "hsl(0, 84%, 60%)", color: "white" }}>
+                                {bump.discount_percentage}% OFF
+                              </span>
+                            </div>
                           )}
                           <span className="text-sm font-bold text-primary">
                             R$ {(discountedPrice / 100).toFixed(2)}
@@ -523,39 +518,31 @@ export default function Checkout() {
             )}
 
             {/* Coupon */}
-            <div className="rounded-xl border border-border bg-card p-5">
-              <Label className="text-xs text-muted-foreground flex items-center gap-1.5 mb-2">
-                <Tag className="h-3.5 w-3.5" /> Aplicar Cupom
+            <div className="rounded-xl p-5" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+              <Label className="text-xs flex items-center gap-1.5 mb-2" style={{ color: "hsl(240,5%,55%)" }}>
+                <Tag className="h-3.5 w-3.5" /> Cupom de desconto
               </Label>
               <div className="flex gap-2">
                 <Input
                   placeholder="CÓDIGO DO CUPOM"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="uppercase text-sm"
+                  className="uppercase text-sm border-0 h-11"
+                  style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
                   disabled={!!appliedCoupon}
                 />
                 {appliedCoupon ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setAppliedCoupon(null);
-                      setCouponCode("");
-                    }}
-                  >
+                  <Button variant="outline" size="sm" className="h-11" onClick={() => { setAppliedCoupon(null); setCouponCode(""); }}>
                     Remover
                   </Button>
                 ) : (
-                  <Button variant="secondary" size="sm" onClick={applyCoupon}>
-                    Aplicar
-                  </Button>
+                  <Button size="sm" className="h-11 px-5" onClick={applyCoupon}>Aplicar</Button>
                 )}
               </div>
               {appliedCoupon && (
                 <p className="text-xs text-primary mt-2 font-medium flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" />
-                  Cupom aplicado: {appliedCoupon.discount_type === "percentage"
+                  {appliedCoupon.discount_type === "percentage"
                     ? `${appliedCoupon.discount_value}% off`
                     : `R$ ${(appliedCoupon.discount_value / 100).toFixed(2)} off`}
                 </p>
@@ -563,97 +550,60 @@ export default function Checkout() {
             </div>
           </motion.div>
 
-          {/* RIGHT: Summary */}
+          {/* RIGHT COLUMN - Summary + Testimonials */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5, ease: [0.2, 0, 0, 1] }}
+            transition={{ delay: 0.1, duration: 0.5 }}
             className="lg:col-span-2"
           >
             <div className="sticky top-6 space-y-4">
-              {/* Compra segura header */}
-              <div className="rounded-xl bg-primary text-primary-foreground p-4 text-center">
-                <h3 className="font-bold text-base flex items-center justify-center gap-2">
-                  <ShieldCheck className="h-5 w-5" />
-                  Compra segura
-                </h3>
-              </div>
-
-              {/* Product mini card */}
-              <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-                <div className="flex items-start gap-3">
+              {/* Order Summary */}
+              <div className="rounded-xl p-5 space-y-4" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "hsl(240,5%,50%)" }}>
+                  Resumo do pedido
+                </p>
+                <div className="flex items-center gap-3">
                   {product.cover_url && (
-                    <img
-                      src={product.cover_url}
-                      alt={product.title}
-                      className="h-14 w-14 rounded-lg object-cover shrink-0"
-                    />
+                    <img src={product.cover_url} alt={product.title} className="h-12 w-12 rounded-lg object-cover shrink-0" />
                   )}
-                  <div>
-                    <h4 className="text-sm font-bold">{product.title}</h4>
-                    {producer && (
-                      <p className="text-[0.65rem] text-muted-foreground mt-0.5">
-                        Vendedor: @{producer.toLowerCase().replace(/\s+/g, "")}
-                      </p>
-                    )}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-bold truncate">{product.title}</h4>
                   </div>
+                  <span className="text-sm font-bold">R$ {(product.price / 100).toFixed(2)}</span>
                 </div>
 
-                <Separator />
-
-                {/* Resumo do pedido */}
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-                    Resumo do pedido
-                  </p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{product.title}</span>
-                    <span>R$ {(product.price / 100).toFixed(2)}</span>
-                  </div>
-                  {Array.from(selectedBumps).map((bId) => {
-                    const b = orderBumps.find((ob) => ob.id === bId);
-                    if (!b) return null;
-                    const bp = b.bump_product?.price || 0;
-                    const dp = bp * (1 - (b.discount_percentage || 0) / 100);
-                    return (
-                      <div key={bId} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{b.title}</span>
-                        <span>R$ {(dp / 100).toFixed(2)}</span>
-                      </div>
-                    );
-                  })}
-                  {appliedCoupon && (
-                    <div className="flex justify-between text-sm text-primary">
-                      <span>Desconto</span>
-                      <span>
-                        -{appliedCoupon.discount_type === "percentage"
-                          ? `${appliedCoupon.discount_value}%`
-                          : `R$ ${(appliedCoupon.discount_value / 100).toFixed(2)}`}
-                      </span>
+                {Array.from(selectedBumps).map((bId) => {
+                  const b = orderBumps.find((ob) => ob.id === bId);
+                  if (!b) return null;
+                  const bp = b.bump_product?.price || 0;
+                  const dp = bp * (1 - (b.discount_percentage || 0) / 100);
+                  return (
+                    <div key={bId} className="flex justify-between text-sm">
+                      <span style={{ color: "hsl(240,5%,55%)" }}>{b.bump_product?.title || b.title}</span>
+                      <span>R$ {(dp / 100).toFixed(2)}</span>
                     </div>
-                  )}
+                  );
+                })}
 
-                  <Separator />
-
-                  <div className="pt-1">
-                    <p className="text-xs text-muted-foreground">Total</p>
-                    <p className="text-xl font-bold">
-                      {paymentMethod === "card" && parseInt(form.installments) > 1
-                        ? `Em até ${form.installments}x de`
-                        : ""}
-                    </p>
-                    <p className="text-2xl font-bold text-primary">
-                      R${" "}
-                      {paymentMethod === "card" && parseInt(form.installments) > 1
-                        ? (total / 100 / parseInt(form.installments)).toFixed(2)
-                        : (total / 100).toFixed(2)}
-                    </p>
-                    {paymentMethod === "card" && parseInt(form.installments) > 1 && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        ou R$ {(total / 100).toFixed(2)} à vista
-                      </p>
-                    )}
+                {appliedCoupon && (
+                  <div className="flex justify-between text-sm text-primary">
+                    <span>Desconto</span>
+                    <span>
+                      -{appliedCoupon.discount_type === "percentage"
+                        ? `${appliedCoupon.discount_value}%`
+                        : `R$ ${(appliedCoupon.discount_value / 100).toFixed(2)}`}
+                    </span>
                   </div>
+                )}
+
+                <Separator style={{ background: "hsl(240, 5%, 15%)" }} />
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold">Total</span>
+                  <span className="text-xl font-black text-primary">
+                    R$ {(total / 100).toFixed(2)}
+                  </span>
                 </div>
               </div>
 
@@ -663,37 +613,75 @@ export default function Checkout() {
                 disabled={processing}
                 className="w-full h-14 text-base font-bold gap-2 rounded-xl"
                 size="lg"
+                style={{ background: "hsl(158, 94%, 30%)", color: "white" }}
               >
                 {processing ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : paymentMethod === "pix" ? (
                   <>
-                    <QrCode className="h-5 w-5" />
-                    Pagar com PIX
+                    <QrCode className="h-5 w-5" /> Pagar com PIX
                   </>
                 ) : (
                   <>
-                    <CreditCard className="h-5 w-5" />
-                    Pagar com Cartão de Crédito
+                    <CreditCard className="h-5 w-5" /> Pagar com Cartão de Crédito
                   </>
                 )}
               </Button>
 
-              {/* Trust info */}
+              {/* Trust badges */}
               <div className="text-center space-y-2">
-                <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                  <Lock className="h-3 w-3" />
-                  Ambiente seguro e criptografado
+                <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "hsl(240,5%,45%)" }}>
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  Compra 100% segura e criptografada
                 </div>
-                {producer && (
-                  <p className="text-[0.6rem] text-muted-foreground">
-                    Processando pagamento para o vendedor @{producer.toLowerCase().replace(/\s+/g, "")}
-                  </p>
-                )}
-                <p className="text-[0.6rem] text-muted-foreground">
-                  * Parcelamento com acréscimo
-                </p>
+                <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "hsl(240,5%,45%)" }}>
+                  <Lock className="h-3.5 w-3.5" />
+                  Dados protegidos com SSL
+                </div>
               </div>
+
+              {/* Testimonials */}
+              {testimonials.length > 0 && (
+                <div className="space-y-3 mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: "hsl(240,5%,50%)" }}>
+                    O que dizem nossos alunos
+                  </p>
+                  {testimonials.map((t) => (
+                    <div
+                      key={t.id}
+                      className="rounded-xl p-4 space-y-2"
+                      style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}
+                    >
+                      <div className="flex items-center gap-2">
+                        {t.author_avatar_url ? (
+                          <img src={t.author_avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(158, 94%, 40%)" }}>
+                            {t.author_name?.charAt(0)?.toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-semibold">{t.author_name}</p>
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: t.rating || 5 }).map((_, i) => (
+                              <Star key={i} className="h-3 w-3 fill-[hsl(38,92%,50%)]" style={{ color: "hsl(38, 92%, 50%)" }} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-xs leading-relaxed" style={{ color: "hsl(240,5%,60%)" }}>
+                        {t.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {producer && (
+                <p className="text-[0.6rem] text-center" style={{ color: "hsl(240,5%,35%)" }}>
+                  Vendido por @{producer.toLowerCase().replace(/\s+/g, "")}
+                </p>
+              )}
             </div>
           </motion.div>
         </div>
