@@ -59,12 +59,11 @@ function FloatingNotifications() {
   return (
     <div className="flex flex-col gap-3 w-full">
       <AnimatePresence mode="popLayout">
-        {visibleNotifs.map((idx, i) => {
-          const notif = saleNotifications[idx];
+        {visibleNotifs.map((notif, i) => {
           const config = methodConfig[notif.method];
           return (
             <motion.div
-              key={`${idx}-${i}-${indexRef.current}`}
+              key={`${notif.name}-${notif.amount}-${i}`}
               initial={{ opacity: 0, x: -60, scale: 0.8 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -40, scale: 0.9 }}
