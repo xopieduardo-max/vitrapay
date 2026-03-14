@@ -166,6 +166,100 @@ export type Database = {
           },
         ]
       }
+      community_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          suggestion_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          suggestion_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          suggestion_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "community_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_suggestions: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          reviewed_at: string | null
+          status: string
+          title: string
+          user_id: string
+          votes_count: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          title: string
+          user_id: string
+          votes_count?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          title?: string
+          user_id?: string
+          votes_count?: number
+        }
+        Relationships: []
+      }
+      community_votes: {
+        Row: {
+          created_at: string
+          id: string
+          suggestion_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          suggestion_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          suggestion_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_votes_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "community_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupons: {
         Row: {
           code: string
