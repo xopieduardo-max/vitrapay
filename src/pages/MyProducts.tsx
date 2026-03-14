@@ -40,17 +40,33 @@ export default function MyProducts() {
             Gerencie seus produtos digitais
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" strokeWidth={1.5} />
-          Novo Produto
+        <Button className="gap-2" asChild>
+          <Link to="/products/new">
+            <Plus className="h-4 w-4" strokeWidth={1.5} />
+            Novo Produto
+          </Link>
         </Button>
       </div>
 
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : myProducts.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-border bg-card p-12 text-center">
+          <p className="text-muted-foreground">Nenhum produto criado ainda.</p>
+          <Button className="mt-4 gap-2" asChild>
+            <Link to="/products/new">
+              <Plus className="h-4 w-4" strokeWidth={1.5} />
+              Criar primeiro produto
+            </Link>
+          </Button>
+        </div>
+      ) : (
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <div className="grid grid-cols-[1fr_120px_100px_100px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
+        <div className="grid grid-cols-[1fr_120px_100px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
           <span>Produto</span>
           <span>Preço</span>
-          <span>Vendas</span>
           <span>Status</span>
           <span></span>
         </div>
