@@ -26,6 +26,7 @@ import NotFound from "./pages/NotFound";
 import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Community from "./pages/Community";
+import Settings from "./pages/Settings";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/purchases" element={<Purchases />} />
               <Route path="/finance" element={<Finance />} />
               <Route path="/community" element={<Community />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
 
             {/* Admin panel */}

@@ -9,6 +9,7 @@ import {
   Zap,
   Shield,
   MessageCircle,
+  Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -40,6 +41,7 @@ const navItems = [
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
   { title: "Financeiro", url: "/finance", icon: Landmark },
   { title: "Comunidade", url: "/community", icon: MessageCircle },
+  { title: "Ajustes", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
