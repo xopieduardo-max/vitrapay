@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote } from "lucide-react";
+import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush } from "lucide-react";
 
 interface Props {
   productId: string;
@@ -17,6 +18,7 @@ interface Props {
 
 export default function EditProductCheckout({ productId, form, updateField, checkoutUrl }: Props) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [copiedLink, setCopiedLink] = useState(false);
   const [newTestimonial, setNewTestimonial] = useState({ author_name: "", content: "", rating: 5 });
@@ -72,9 +74,18 @@ export default function EditProductCheckout({ productId, form, updateField, chec
 
   return (
     <div className="space-y-6">
-      {/* Checkout Link */}
+      {/* Checkout Link + Builder Button */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-        <h3 className="text-sm font-bold">Link do Checkout</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold">Link do Checkout</h3>
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => navigate(`/products/${productId}/checkout-builder`)}
+          >
+            <Paintbrush className="h-3.5 w-3.5" /> Editar Checkout
+          </Button>
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 rounded-lg bg-muted/50 px-3 py-2">
             <p className="text-xs font-mono truncate">{checkoutUrl}</p>

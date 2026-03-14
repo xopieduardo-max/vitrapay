@@ -27,6 +27,101 @@ import {
 
 type PaymentMethod = "card" | "pix";
 
+function CheckoutBlockRenderer({ block }: { block: any }) {
+  const c = block.config || {};
+  switch (block.block_type) {
+    case "headline":
+      return (
+        <div style={{ textAlign: c.align || "center" }}>
+          <h2 className={`text-${c.size || "2xl"} ${c.bold ? "font-bold" : ""}`} style={{ color: "hsl(0,0%,95%)" }}>
+            {c.text || ""}
+          </h2>
+        </div>
+      );
+    case "text":
+      return (
+        <p className={`text-${c.size || "base"}`} style={{ textAlign: c.align || "left", color: "hsl(240,5%,70%)" }}>
+          {c.content || ""}
+        </p>
+      );
+    case "image":
+      return c.url ? (
+        <img src={c.url} alt={c.alt || ""} className={`rounded-xl ${c.fullWidth ? "w-full" : "max-w-md mx-auto"} object-cover`} />
+      ) : null;
+    case "benefits":
+      return (
+        <div className="rounded-xl p-5 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+          {(c.items || []).map((item: string, i: number) => (
+            <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "hsl(0,0%,90%)" }}>
+              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(158, 94%, 40%)" }} />
+              {item}
+            </div>
+          ))}
+        </div>
+      );
+    case "badge": {
+      const colors: Record<string, string> = {
+        green: "hsl(158, 94%, 30%)",
+        gold: "hsl(38, 92%, 50%)",
+        blue: "hsl(210, 100%, 50%)",
+      };
+      const bg = colors[c.style || "green"];
+      return (
+        <div className="flex items-center justify-center gap-2 rounded-xl py-3 px-5 text-sm font-semibold" style={{ background: `${bg}20`, color: bg, border: `1px solid ${bg}40` }}>
+          <ShieldCheck className="h-4 w-4" />
+          {c.text || "Selo"}
+        </div>
+      );
+    }
+    case "timer":
+      return (
+        <div className="py-3.5 rounded-xl flex items-center justify-center gap-4" style={{ background: "hsl(38, 92%, 50%)", color: "hsl(0,0%,5%)" }}>
+          <Clock className="h-5 w-5" />
+          <span className="text-sm font-bold">{c.text || "Oferta expira em:"}</span>
+          <span className="text-xl font-black tabular-nums">{String(c.minutes || 15).padStart(2, "0")}:00</span>
+        </div>
+      );
+    case "testimonial":
+      return (
+        <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(158, 94%, 40%)" }}>
+              {(c.author || "A").charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: "hsl(0,0%,90%)" }}>{c.author || "Autor"}</p>
+              <div className="flex gap-0.5">
+                {Array.from({ length: c.rating || 5 }).map((_, i) => (
+                  <Star key={i} className="h-3 w-3 fill-[hsl(38,92%,50%)]" style={{ color: "hsl(38, 92%, 50%)" }} />
+                ))}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs leading-relaxed" style={{ color: "hsl(240,5%,60%)" }}>{c.content || ""}</p>
+        </div>
+      );
+    case "video": {
+      let embedUrl = c.url || "";
+      try {
+        const u = new URL(embedUrl);
+        if (u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be")) {
+          const vid = u.hostname.includes("youtu.be") ? u.pathname.slice(1) : u.searchParams.get("v");
+          embedUrl = `https://www.youtube.com/embed/${vid}`;
+        } else if (u.hostname.includes("vimeo.com")) {
+          embedUrl = `https://player.vimeo.com/video/${u.pathname.split("/").pop()}`;
+        }
+      } catch {}
+      return embedUrl ? (
+        <div className="aspect-video rounded-xl overflow-hidden">
+          <iframe src={embedUrl} className="w-full h-full" allowFullScreen />
+        </div>
+      ) : null;
+    }
+    default:
+      return null;
+  }
+}
+
 export default function Checkout() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -57,6 +152,8 @@ export default function Checkout() {
     cardHolder: "",
     installments: "1",
   });
+
+  const [checkoutBlocks, setCheckoutBlocks] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -89,6 +186,14 @@ export default function Checkout() {
         .eq("is_active", true)
         .order("position", { ascending: true });
       if (testis) setTestimonials(testis);
+
+      const { data: blocks } = await supabase
+        .from("checkout_blocks")
+        .select("*")
+        .eq("product_id", id)
+        .eq("is_active", true)
+        .order("position", { ascending: true });
+      if (blocks) setCheckoutBlocks(blocks);
 
       setLoading(false);
     };
@@ -254,6 +359,15 @@ export default function Checkout() {
       {product.checkout_banner_url && (
         <div className="w-full">
           <img src={product.checkout_banner_url} alt="Banner" className="w-full max-h-[320px] object-cover" />
+        </div>
+      )}
+
+      {/* ── Dynamic Blocks ── */}
+      {checkoutBlocks.length > 0 && (
+        <div className="container max-w-5xl px-4 py-4 space-y-4">
+          {checkoutBlocks.map((block: any) => (
+            <CheckoutBlockRenderer key={block.id} block={block} />
+          ))}
         </div>
       )}
 
