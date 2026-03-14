@@ -29,6 +29,7 @@ export function DashboardLayout() {
         </div>
         <MobileBottomNav />
         <PlatformPopup />
+        <TermsAcceptanceModal />
       </div>
     </SidebarProvider>
   );
