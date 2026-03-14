@@ -280,7 +280,7 @@ export default function EditProductPixels({ productId }: Props) {
                   onCheckedChange={(v) =>
                     updatePixel.mutate({
                       id: platformPixels[0].id,
-                      updates: { config: { ...platformPixels[0].config, [opt.key]: v } },
+                      updates: { config: { ...(platformPixels[0].config as Record<string, any>), [opt.key]: v } },
                     })
                   }
                 />
