@@ -1,15 +1,61 @@
-import { RecentSalesTable } from "@/components/RecentSalesTable";
 import { StatCard } from "@/components/StatCard";
+import { RecentSalesTable } from "@/components/RecentSalesTable";
 import { DollarSign, ShoppingCart, Percent, TrendingUp } from "lucide-react";
-
-const salesStats = [
-  { title: "Receita Total", value: "R$ 124.580,00", change: "+15.2% vs mês anterior", changeType: "positive" as const, icon: DollarSign },
-  { title: "Total de Vendas", value: "3.842", change: "+11.8% vs mês anterior", changeType: "positive" as const, icon: ShoppingCart },
-  { title: "Taxa de Conversão", value: "4.2%", change: "+0.3% vs mês anterior", changeType: "positive" as const, icon: Percent },
-  { title: "Ticket Médio", value: "R$ 32,40", change: "+3.1% vs mês anterior", changeType: "positive" as const, icon: TrendingUp },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Sales() {
+  const { user } = useAuth();
+
+  const { data: sales = [] } = useQuery({
+    queryKey: ["sales-stats", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from("sales")
+        .select("amount, platform_fee, status, created_at")
+        .eq("producer_id", user.id);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const completed = sales.filter((s) => s.status === "completed");
+  const totalRevenue = completed.reduce((acc, s) => acc + s.amount, 0);
+  const avgTicket = completed.length > 0 ? totalRevenue / completed.length : 0;
+
+  const salesStats = [
+    {
+      title: "Receita Total",
+      value: `R$ ${(totalRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+      change: `${completed.length} vendas concluídas`,
+      changeType: "positive" as const,
+      icon: DollarSign,
+    },
+    {
+      title: "Total de Vendas",
+      value: sales.length.toString(),
+      change: "Todas as vendas",
+      changeType: "positive" as const,
+      icon: ShoppingCart,
+    },
+    {
+      title: "Taxa de Conversão",
+      value: sales.length > 0 ? `${((completed.length / sales.length) * 100).toFixed(1)}%` : "0%",
+      change: "Vendas concluídas / total",
+      changeType: "neutral" as const,
+      icon: Percent,
+    },
+    {
+      title: "Ticket Médio",
+      value: `R$ ${(avgTicket / 100).toFixed(2)}`,
+      change: "Valor médio por venda",
+      changeType: "neutral" as const,
+      icon: TrendingUp,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div>

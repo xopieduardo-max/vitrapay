@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Download, BookOpen, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 
@@ -9,9 +8,8 @@ interface ProductCardProps {
   title: string;
   producer: string;
   price: number;
-  coverColor: string;
+  coverUrl?: string | null;
   type: "download" | "lms";
-  sales: number;
   commission: number;
   index?: number;
 }
@@ -21,9 +19,8 @@ export function ProductCard({
   title,
   producer,
   price,
-  coverColor,
+  coverUrl,
   type,
-  sales,
   commission,
   index = 0,
 }: ProductCardProps) {
@@ -33,13 +30,12 @@ export function ProductCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
     >
-      <Link to={`/product/${id}`} className="group block">
+      <Link to={`/checkout/${id}`} className="group block">
         <div className="overflow-hidden rounded-lg border border-border bg-card transition-all hover:border-primary/30">
-          <div
-            className="aspect-[4/3] w-full flex items-center justify-center"
-            style={{ backgroundColor: coverColor }}
-          >
-            {type === "download" ? (
+          <div className="aspect-[4/3] w-full flex items-center justify-center bg-muted/30 overflow-hidden">
+            {coverUrl ? (
+              <img src={coverUrl} alt={title} className="w-full h-full object-cover" />
+            ) : type === "download" ? (
               <Download className="h-10 w-10 text-foreground/20" strokeWidth={1.5} />
             ) : (
               <BookOpen className="h-10 w-10 text-foreground/20" strokeWidth={1.5} />
@@ -56,15 +52,14 @@ export function ProductCard({
               <span className="text-lg font-bold tracking-title text-primary stat-value">
                 R$ {(price / 100).toFixed(2)}
               </span>
-              <Badge variant="secondary" className="text-[0.65rem] gap-1">
-                <Users className="h-3 w-3" strokeWidth={1.5} />
-                {commission}%
-              </Badge>
+              {commission > 0 && (
+                <Badge variant="secondary" className="text-[0.65rem] gap-1">
+                  <Users className="h-3 w-3" strokeWidth={1.5} />
+                  {commission}%
+                </Badge>
+              )}
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[0.65rem] text-muted-foreground">
-                {sales} vendas
-              </span>
+            <div className="flex items-center justify-end">
               <Badge variant="outline" className="text-[0.65rem]">
                 {type === "download" ? "Download" : "Área de Membros"}
               </Badge>

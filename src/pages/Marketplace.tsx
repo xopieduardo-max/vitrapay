@@ -1,13 +1,44 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
-import { mockProducts } from "@/lib/mockData";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Marketplace() {
   const [search, setSearch] = useState("");
-  const filtered = mockProducts.filter((p) =>
+
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["marketplace-products"],
+    queryFn: async () => {
+      const { data: prods } = await supabase
+        .from("products")
+        .select("id, title, description, price, cover_url, type, affiliate_commission, producer_id")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
+
+      if (!prods?.length) return [];
+
+      // Get unique producer IDs and fetch their profiles
+      const producerIds = [...new Set(prods.map((p) => p.producer_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", producerIds);
+
+      const profileMap = new Map(
+        (profiles || []).map((p) => [p.user_id, p.display_name])
+      );
+
+      return prods.map((p) => ({
+        ...p,
+        producerName: profileMap.get(p.producer_id) || "Produtor",
+      }));
+    },
+  });
+
+  const filtered = products.filter((p: any) =>
     p.title.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -35,13 +66,29 @@ export default function Marketplace() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((product, i) => (
-          <ProductCard key={product.id} {...product} index={i} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filtered.map((product: any, i: number) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              title={product.title}
+              producer={product.producerName}
+              price={product.price}
+              coverUrl={product.cover_url}
+              type={product.type as "download" | "lms"}
+              commission={product.affiliate_commission || 0}
+              index={i}
+            />
+          ))}
+        </div>
+      )}
 
-      {filtered.length === 0 && (
+      {!isLoading && filtered.length === 0 && (
         <div className="text-center py-20">
           <p className="text-muted-foreground">Nenhum produto encontrado</p>
         </div>
