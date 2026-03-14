@@ -214,6 +214,9 @@ export default function Checkout() {
     loadCheckout();
   }, [id]);
 
+  // Inject pixel scripts
+  useCheckoutPixels(productPixels);
+
   useEffect(() => {
     if (user?.email) setForm((f) => ({ ...f, email: user.email || "" }));
   }, [user]);
