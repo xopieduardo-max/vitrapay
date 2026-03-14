@@ -3,13 +3,11 @@ import {
   Package,
   Store,
   ShoppingBag,
-  DollarSign,
   FileText,
   Users,
   Landmark,
-  Settings,
   Zap,
-  ArrowDownToLine,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -40,8 +38,6 @@ const navItems = [
   { title: "Relatórios", url: "/purchases", icon: FileText },
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
   { title: "Financeiro", url: "/finance", icon: Landmark },
-  { title: "Configurações", url: "/admin/settings", icon: Settings },
-  { title: "Saques (Admin)", url: "/admin/withdrawals", icon: ArrowDownToLine },
 ];
 
 export function AppSidebar() {
@@ -61,6 +57,16 @@ export function AppSidebar() {
         .eq("producer_id", user.id)
         .eq("status", "completed");
       return (data || []).reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+    },
+    enabled: !!user,
+  });
+
+  const { data: isAdmin = false } = useQuery({
+    queryKey: ["is-admin-sidebar", user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      return !!data;
     },
     enabled: !!user,
   });
@@ -126,6 +132,22 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              {/* Admin link - only for admins */}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")}>
+                    <NavLink
+                      to="/admin"
+                      className="gap-3 text-sm transition-colors"
+                      activeClassName="bg-destructive/10 text-destructive font-medium"
+                    >
+                      <Shield className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      {!collapsed && <span>Painel Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
