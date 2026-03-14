@@ -24,6 +24,7 @@ import EditProductSettings from "@/components/edit-product/EditProductSettings";
 import EditProductCoupons from "@/components/edit-product/EditProductCoupons";
 import EditProductLinks from "@/components/edit-product/EditProductLinks";
 import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
+import EditProductPixels from "@/components/edit-product/EditProductPixels";
 
 export default function EditProduct() {
   const { id } = useParams<{ id: string }>();
