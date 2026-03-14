@@ -2,6 +2,7 @@ import { Search, SlidersHorizontal, Loader2, Flame, Rocket, TrendingUp, Sparkles
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductDrawer } from "@/components/ProductDrawer";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,7 @@ const anim = (delay: number) => ({
 export default function Marketplace() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<Tab>("all");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["marketplace-products"],
@@ -171,6 +173,7 @@ export default function Marketplace() {
                 salesCount={product.salesCount}
                 index={i}
                 featured
+                onClick={() => setSelectedProduct(product)}
               />
             ))}
           </div>
@@ -209,6 +212,7 @@ export default function Marketplace() {
                 commission={product.affiliate_commission || 0}
                 salesCount={product.salesCount}
                 index={i}
+                onClick={() => setSelectedProduct(product)}
               />
             ))}
           </div>
@@ -220,6 +224,12 @@ export default function Marketplace() {
           </div>
         )}
       </motion.div>
+      {/* Product Drawer */}
+      <ProductDrawer
+        product={selectedProduct}
+        open={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   );
 }
