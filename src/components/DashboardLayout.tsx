@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PlatformPopup } from "@/components/PlatformPopup";
+import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
 
 export function DashboardLayout() {
   return (
@@ -28,6 +29,7 @@ export function DashboardLayout() {
         </div>
         <MobileBottomNav />
         <PlatformPopup />
+        <TermsAcceptanceModal />
       </div>
     </SidebarProvider>
   );
