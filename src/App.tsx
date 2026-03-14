@@ -23,6 +23,9 @@ import Checkout from "./pages/Checkout";
 import MemberArea from "./pages/MemberArea";
 import Finance from "./pages/Finance";
 import NotFound from "./pages/NotFound";
+import TermsOfUse from "./pages/TermsOfUse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Community from "./pages/Community";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -32,6 +35,7 @@ import AdminWithdrawals from "./pages/AdminWithdrawals";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminPopups from "./pages/admin/AdminPopups";
 import AdminFakeSales from "./pages/admin/AdminFakeSales";
+import AdminCommunity from "./pages/admin/AdminCommunity";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +51,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/checkout/:id" element={<Checkout />} />
             <Route path="/learn/:productId" element={<MemberArea />} />
+            <Route path="/terms" element={<TermsOfUse />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
             {/* Producer panel */}
             <Route element={<DashboardLayout />}>
@@ -62,6 +68,7 @@ const App = () => (
               <Route path="/library" element={<BuyerLibrary />} />
               <Route path="/purchases" element={<Purchases />} />
               <Route path="/finance" element={<Finance />} />
+              <Route path="/community" element={<Community />} />
             </Route>
 
             {/* Admin panel */}
@@ -72,6 +79,7 @@ const App = () => (
               <Route path="/admin/banners" element={<AdminBanners />} />
               <Route path="/admin/popups" element={<AdminPopups />} />
               <Route path="/admin/fake-sales" element={<AdminFakeSales />} />
+              <Route path="/admin/community" element={<AdminCommunity />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
 
