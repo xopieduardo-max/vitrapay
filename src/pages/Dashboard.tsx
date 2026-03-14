@@ -42,9 +42,9 @@ const paymentMethods = [
 ];
 
 const anim = (delay: number) => ({
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0 },
-  transition: { delay, duration: 0.4, ease: [0.2, 0, 0, 1] as number[] },
+  initial: { opacity: 0, y: 10 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { delay, duration: 0.4, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
 });
 
 export default function Dashboard() {
