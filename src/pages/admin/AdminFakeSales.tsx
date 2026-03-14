@@ -47,7 +47,7 @@ export default function AdminFakeSales() {
       const { data } = await supabase
         .from("sales")
         .select("id, amount, payment_provider, status, created_at, product_id, products(title)")
-        .eq("payment_provider", "simulated")
+        .like("payment_id", "fake_%")
         .order("created_at", { ascending: false })
         .limit(20);
       return data || [];
