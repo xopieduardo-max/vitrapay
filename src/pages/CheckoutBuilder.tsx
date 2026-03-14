@@ -690,9 +690,11 @@ function BlockPreview({ block }: { block: Block }) {
 
     case "image":
       return c.url ? (
-        <img src={c.url} alt={c.alt || ""} className={`rounded-lg ${c.fullWidth ? "w-full" : "max-w-md mx-auto"} max-h-48 object-cover`} />
+        <div className={`${c.fullWidth ? "w-full" : "max-w-md mx-auto"} aspect-[21/9] rounded-lg overflow-hidden`}>
+          <img src={c.url} alt={c.alt || ""} className="w-full h-full object-cover" />
+        </div>
       ) : (
-        <div className="flex items-center justify-center h-32 rounded-lg bg-muted border border-dashed border-border">
+        <div className="flex items-center justify-center aspect-[21/9] rounded-lg bg-muted border border-dashed border-border">
           <Image className="h-8 w-8 text-muted-foreground" />
         </div>
       );
