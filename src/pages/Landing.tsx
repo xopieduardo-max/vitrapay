@@ -13,15 +13,32 @@ import appMockup from "@/assets/app-mockup.png";
 
 /* ─── Floating Sale Notifications ─── */
 const saleNotifications = [
-  { name: "Lucas A.", product: "Copy que Vende", amount: "R$ 197,00" },
-  { name: "Maria S.", product: "Método Digital Pro", amount: "R$ 347,00" },
-  { name: "João P.", product: "IA Academy", amount: "R$ 497,00" },
-  { name: "Ana L.", product: "Social Media Mastery", amount: "R$ 147,00" },
-  { name: "Pedro R.", product: "Renda Extra Online", amount: "R$ 97,00" },
-  { name: "Camila F.", product: "Corpo & Forma 360", amount: "R$ 247,00" },
-  { name: "Rafael M.", product: "Copy que Vende", amount: "R$ 197,00" },
-  { name: "Juliana B.", product: "Método Digital Pro", amount: "R$ 347,00" },
+  { name: "Lucas A.", product: "Copy que Vende", amount: "R$ 197,00", method: "pix" as const },
+  { name: "Maria S.", product: "Método Digital Pro", amount: "R$ 347,00", method: "card" as const },
+  { name: "João P.", product: "IA Academy", amount: "R$ 497,00", method: "pix" as const },
+  { name: "Ana L.", product: "Social Media Mastery", amount: "R$ 147,00", method: "card" as const },
+  { name: "Pedro R.", product: "Renda Extra Online", amount: "R$ 97,00", method: "pix" as const },
+  { name: "Camila F.", product: "Corpo & Forma 360", amount: "R$ 247,00", method: "card" as const },
+  { name: "Rafael M.", product: "Copy que Vende", amount: "R$ 197,00", method: "pix" as const },
+  { name: "Juliana B.", product: "Método Digital Pro", amount: "R$ 347,00", method: "card" as const },
 ];
+
+const methodConfig = {
+  pix: {
+    label: "Venda aprovada via Pix!",
+    iconBg: "bg-emerald-500/15",
+    iconColor: "text-emerald-500",
+    borderColor: "border-emerald-500/20",
+    amountColor: "text-emerald-500",
+  },
+  card: {
+    label: "Venda aprovada via Cartão!",
+    iconBg: "bg-blue-500/15",
+    iconColor: "text-blue-500",
+    borderColor: "border-blue-500/20",
+    amountColor: "text-blue-500",
+  },
+};
 
 function FloatingNotifications() {
   const [visibleNotifs, setVisibleNotifs] = useState<number[]>([]);
@@ -36,7 +53,6 @@ function FloatingNotifications() {
       });
       indexRef.current++;
     }, 2200);
-    // Show first one immediately
     setVisibleNotifs([0]);
     indexRef.current = 1;
     return () => clearInterval(interval);
@@ -47,6 +63,7 @@ function FloatingNotifications() {
       <AnimatePresence mode="popLayout">
         {visibleNotifs.map((idx, i) => {
           const notif = saleNotifications[idx];
+          const config = methodConfig[notif.method];
           return (
             <motion.div
               key={`${idx}-${i}-${indexRef.current}`}
@@ -54,19 +71,23 @@ function FloatingNotifications() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -40, scale: 0.9 }}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="flex items-center gap-3 rounded-xl border border-primary/20 bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg"
+              className={`flex items-center gap-3 rounded-xl border ${config.borderColor} bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg`}
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 shrink-0">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
+              <div className={`flex h-9 w-9 items-center justify-center rounded-full ${config.iconBg} shrink-0`}>
+                {notif.method === "pix" ? (
+                  <DollarSign className={`h-4 w-4 ${config.iconColor}`} />
+                ) : (
+                  <CreditCard className={`h-4 w-4 ${config.iconColor}`} />
+                )}
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-foreground truncate">
-                  Venda aprovada via Pix!
+                  {config.label}
                 </p>
                 <p className="text-[0.65rem] text-muted-foreground truncate">
                   {notif.name} • {notif.product}
                 </p>
-                <p className="text-xs font-bold text-primary mt-0.5">{notif.amount}</p>
+                <p className={`text-xs font-bold ${config.amountColor} mt-0.5`}>{notif.amount}</p>
               </div>
             </motion.div>
           );
