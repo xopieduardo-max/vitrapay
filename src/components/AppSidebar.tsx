@@ -1,24 +1,26 @@
 import {
   LayoutDashboard,
   Package,
-  ShoppingCart,
-  Users,
-  Link2,
-  Library,
-  Settings,
-  TrendingUp,
   Store,
+  ShoppingBag,
+  DollarSign,
+  FileText,
+  Users,
+  Landmark,
+  Settings,
   Zap,
-  Wallet,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -27,25 +29,16 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const mainItems = [
+const REVENUE_GOAL = 1000000;
+
+const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Marketplace", url: "/marketplace", icon: Store },
-];
-
-const producerItems = [
-  { title: "Meus Produtos", url: "/products", icon: Package },
-  { title: "Vendas", url: "/sales", icon: TrendingUp },
-  { title: "Financeiro", url: "/finance", icon: Wallet },
-  { title: "Afiliados", url: "/affiliates", icon: Link2 },
-];
-
-const buyerItems = [
-  { title: "Minha Biblioteca", url: "/library", icon: Library },
-  { title: "Compras", url: "/purchases", icon: ShoppingCart },
-];
-
-const adminItems = [
-  { title: "Usuários", url: "/admin/users", icon: Users },
+  { title: "Produtos", url: "/products", icon: Package },
+  { title: "Vitrine", url: "/marketplace", icon: Store },
+  { title: "Minhas Vendas", url: "/sales", icon: ShoppingBag },
+  { title: "Relatórios", url: "/purchases", icon: FileText },
+  { title: "Afiliados", url: "/affiliates", icon: Users },
+  { title: "Financeiro", url: "/finance", icon: Landmark },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
 ];
 
@@ -53,34 +46,26 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
 
-  const renderGroup = (label: string, items: typeof mainItems) => (
-    <SidebarGroup>
-      <SidebarGroupLabel className="text-[0.65rem] uppercase tracking-label text-muted-foreground/60 font-medium">
-        {label}
-      </SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                <NavLink
-                  to={item.url}
-                  end
-                  className="gap-3 text-sm tracking-interface transition-colors"
-                  activeClassName="bg-primary/10 text-primary font-medium"
-                >
-                  <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-                  {!collapsed && <span>{item.title}</span>}
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
+  const { data: totalRevenue = 0 } = useQuery({
+    queryKey: ["sidebar-revenue", user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      const { data } = await supabase
+        .from("sales")
+        .select("amount, platform_fee, status")
+        .eq("producer_id", user.id)
+        .eq("status", "completed");
+      return (data || []).reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+    },
+    enabled: !!user,
+  });
+
+  const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
+  const fmt = (v: number) =>
+    `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -90,30 +75,61 @@ export function AppSidebar() {
             <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
           </div>
           {!collapsed && (
-            <span className="text-lg font-bold tracking-title text-foreground">
+            <span className="text-lg font-bold tracking-tight text-foreground">
               Aether
             </span>
           )}
         </NavLink>
       </SidebarHeader>
-      <SidebarContent>
-        {renderGroup("Principal", mainItems)}
-        {renderGroup("Produtor", producerItems)}
-        {renderGroup("Comprador", buyerItems)}
-        {renderGroup("Admin", adminItems)}
-      </SidebarContent>
-      <SidebarFooter className="p-3">
-        {!collapsed && (
-          <div className="rounded-lg border border-border bg-card p-3">
-            <p className="text-xs text-muted-foreground">
-              Plano <span className="font-medium text-primary">Pro</span>
-            </p>
-            <p className="text-[0.65rem] text-muted-foreground/60 mt-0.5">
-              R$ 2.450 em vendas este mês
-            </p>
+
+      {/* Faturamento Widget */}
+      {!collapsed && (
+        <div className="px-3 mb-2">
+          <div className="rounded-lg border border-primary/30 bg-card p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+                <Zap className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
+              </div>
+              <div>
+                <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Faturamento</p>
+                <p className="text-sm font-bold">
+                  {fmt(totalRevenue)} <span className="text-xs font-normal text-muted-foreground">/ {fmt(REVENUE_GOAL)}</span>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Progress value={revenueProgress} className="h-1.5 flex-1" />
+              <span className="text-[0.6rem] text-muted-foreground">{revenueProgress.toFixed(0)}%</span>
+            </div>
           </div>
-        )}
-      </SidebarFooter>
+        </div>
+      )}
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className="gap-3 text-sm transition-colors"
+                      activeClassName="bg-primary/10 text-primary font-medium"
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="p-3" />
     </Sidebar>
   );
 }
