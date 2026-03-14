@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Save, Loader2, Copy, Check, ExternalLink,
   Settings, Tag, Link2, Eye, Plus, Trash2, Star,
-  ShoppingCart, MessageSquareQuote,
+  ShoppingCart, MessageSquareQuote, BarChart3,
 } from "lucide-react";
 
 // ── Sub-components ──
