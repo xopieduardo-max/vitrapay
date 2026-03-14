@@ -75,9 +75,18 @@ export default function EditProductCheckout({ productId, form, updateField, chec
 
   return (
     <div className="space-y-6">
-      {/* Checkout Link */}
+      {/* Checkout Link + Builder Button */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-        <h3 className="text-sm font-bold">Link do Checkout</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold">Link do Checkout</h3>
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => navigate(`/products/${productId}/checkout-builder`)}
+          >
+            <Paintbrush className="h-3.5 w-3.5" /> Editar Checkout
+          </Button>
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 rounded-lg bg-muted/50 px-3 py-2">
             <p className="text-xs font-mono truncate">{checkoutUrl}</p>
