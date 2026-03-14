@@ -12,7 +12,7 @@ import { motion, AnimatePresence, Reorder } from "framer-motion";
 import {
   ArrowLeft, Save, Loader2, Eye, Plus, Trash2, GripVertical,
   Type, Image, ListChecks, Award, Clock, Star, Video, MessageSquareQuote,
-  ChevronUp, ChevronDown, Settings2, Palette, MonitorSmartphone, Smartphone,
+  ChevronUp, ChevronDown, Settings2, Palette, MonitorSmartphone, Smartphone, Upload,
 } from "lucide-react";
 
 const BLOCK_TYPES = [
@@ -316,6 +316,72 @@ function ComponentPalette({ onAdd }: { onAdd: (type: BlockType) => void }) {
   );
 }
 
+/* ─── Image Upload Helper ─── */
+function ImageUploadField({
+  label,
+  value,
+  onUpdate,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onUpdate: (url: string) => void;
+  placeholder?: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Apenas imagens são permitidas", variant: "destructive" });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Imagem muito grande (máx 10MB)", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("checkout-images").upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from("checkout-images").getPublicUrl(path);
+      onUpdate(publicUrl);
+      toast({ title: "Imagem enviada!" });
+    } catch (err: any) {
+      toast({ title: "Erro ao enviar", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs">{label}</Label>
+      <div className="flex gap-1.5">
+        <Input
+          value={value || ""}
+          onChange={(e) => onUpdate(e.target.value)}
+          placeholder={placeholder || "https://..."}
+          className="flex-1"
+        />
+        <label className="inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 h-10 text-xs font-medium cursor-pointer hover:bg-muted transition-colors shrink-0">
+          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+          <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+        </label>
+      </div>
+      {value && (
+        <div className="rounded-lg overflow-hidden border border-border">
+          <img src={value} alt="Preview" className="w-full h-auto max-h-40 object-cover" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Block Configurator ─── */
 function BlockConfigurator({
   block,
@@ -327,7 +393,6 @@ function BlockConfigurator({
   onClose: () => void;
 }) {
   const typeDef = BLOCK_TYPES.find((t) => t.type === block.block_type);
-
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -435,20 +500,11 @@ function BlockConfigurator({
 
       {block.block_type === "image" && (
         <div className="space-y-3">
-          <div>
-            <Label className="text-xs">URL da imagem</Label>
-            <Input
-              value={block.config.url || ""}
-              onChange={(e) => onUpdate("url", e.target.value)}
-              placeholder="https://..."
-              className="mt-1"
-            />
-          </div>
-          {block.config.url && (
-            <div className="rounded-lg overflow-hidden border border-border">
-              <img src={block.config.url} alt="Preview" className="w-full h-auto max-h-40 object-cover" />
-            </div>
-          )}
+          <ImageUploadField
+            label="Imagem"
+            value={block.config.url || ""}
+            onUpdate={(url) => onUpdate("url", url)}
+          />
           <div>
             <Label className="text-xs">Texto alternativo</Label>
             <Input
@@ -586,15 +642,12 @@ function BlockConfigurator({
               ))}
             </div>
           </div>
-          <div>
-            <Label className="text-xs">URL do avatar (opcional)</Label>
-            <Input
-              value={block.config.avatar_url || ""}
-              onChange={(e) => onUpdate("avatar_url", e.target.value)}
-              placeholder="https://..."
-              className="mt-1"
-            />
-          </div>
+          <ImageUploadField
+            label="Avatar (opcional)"
+            value={block.config.avatar_url || ""}
+            onUpdate={(url) => onUpdate("avatar_url", url)}
+            placeholder="https://..."
+          />
         </div>
       )}
 
