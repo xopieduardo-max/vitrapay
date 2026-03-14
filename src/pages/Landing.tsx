@@ -635,16 +635,14 @@ export default function Landing() {
             <div className="space-y-3">
               <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">Empresa</h4>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                <a href="#" className="hover:text-foreground transition-colors">Sobre</a>
-                <a href="#" className="hover:text-foreground transition-colors">Blog</a>
-                <a href="#" className="hover:text-foreground transition-colors">Contato</a>
+                <Link to="/marketplace" className="hover:text-foreground transition-colors">Marketplace</Link>
               </div>
             </div>
             <div className="space-y-3">
               <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">Legal</h4>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                <a href="#" className="hover:text-foreground transition-colors">Termos de Uso</a>
-                <a href="#" className="hover:text-foreground transition-colors">Privacidade</a>
+                <Link to="/terms" className="hover:text-foreground transition-colors">Termos de Uso</Link>
+                <Link to="/privacy" className="hover:text-foreground transition-colors">Política de Privacidade</Link>
               </div>
             </div>
           </div>
