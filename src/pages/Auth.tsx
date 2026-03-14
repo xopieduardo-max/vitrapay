@@ -8,7 +8,7 @@ import { Zap, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import authBanner from "@/assets/auth-banner.jpg";
+import authBanner from "@/assets/auth-banner.png";
 
 type Step = "credentials" | "otp";
 
