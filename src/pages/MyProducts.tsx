@@ -15,6 +15,7 @@ import {
 
 export default function MyProducts() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { data: myProducts = [], isLoading } = useQuery({
     queryKey: ["my-products", user?.id],
