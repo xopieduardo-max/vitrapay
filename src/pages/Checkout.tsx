@@ -267,6 +267,15 @@ export default function Checkout() {
         </div>
       )}
 
+      {/* ── Dynamic Blocks ── */}
+      {checkoutBlocks.length > 0 && (
+        <div className="container max-w-5xl px-4 py-4 space-y-4">
+          {checkoutBlocks.map((block: any) => (
+            <CheckoutBlockRenderer key={block.id} block={block} />
+          ))}
+        </div>
+      )}
+
       {/* ── Main Content ── */}
       <div className="container max-w-5xl py-8 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
