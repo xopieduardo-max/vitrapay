@@ -43,37 +43,35 @@ function FloatingNotifications() {
   }, []);
 
   return (
-    <div className="absolute left-0 top-0 bottom-0 w-full max-w-[340px] overflow-hidden pointer-events-none hidden lg:block">
-      <div className="relative h-full flex flex-col justify-center gap-3 pl-4">
-        <AnimatePresence mode="popLayout">
-          {visibleNotifs.map((idx, i) => {
-            const notif = saleNotifications[idx];
-            return (
-              <motion.div
-                key={`${idx}-${i}-${indexRef.current}`}
-                initial={{ opacity: 0, x: -60, scale: 0.8 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -40, scale: 0.9 }}
-                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                className="flex items-center gap-3 rounded-xl border border-primary/20 bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 shrink-0">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">
-                    Venda aprovada via Pix!
-                  </p>
-                  <p className="text-[0.65rem] text-muted-foreground truncate">
-                    {notif.name} • {notif.product}
-                  </p>
-                  <p className="text-xs font-bold text-primary mt-0.5">{notif.amount}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+    <div className="flex flex-col gap-3 w-full">
+      <AnimatePresence mode="popLayout">
+        {visibleNotifs.map((idx, i) => {
+          const notif = saleNotifications[idx];
+          return (
+            <motion.div
+              key={`${idx}-${i}-${indexRef.current}`}
+              initial={{ opacity: 0, x: -60, scale: 0.8 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -40, scale: 0.9 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="flex items-center gap-3 rounded-xl border border-primary/20 bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 shrink-0">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-foreground truncate">
+                  Venda aprovada via Pix!
+                </p>
+                <p className="text-[0.65rem] text-muted-foreground truncate">
+                  {notif.name} • {notif.product}
+                </p>
+                <p className="text-xs font-bold text-primary mt-0.5">{notif.amount}</p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }
@@ -319,23 +317,29 @@ export default function Landing() {
           </motion.div>
 
           {/* Dashboard Preview + Floating Notifications */}
-          <div className="relative mt-16 md:mt-20 max-w-5xl mx-auto">
-            <FloatingNotifications />
+          <div className="mt-16 md:mt-20 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
+            {/* Notifications column */}
+            <div className="order-2 lg:order-1 max-h-[500px] overflow-hidden">
+              <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
+                <Bell className="h-3 w-3 text-primary" />
+                Notificações em tempo real
+              </p>
+              <FloatingNotifications />
+            </div>
+            {/* Dashboard screenshot */}
             <motion.div
               style={{ y: dashboardY, scale: dashboardScale }}
               initial={{ opacity: 0, y: 60 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative rounded-2xl border border-border/50 overflow-hidden shadow-2xl shadow-primary/5 group"
+              className="order-1 lg:order-2 relative rounded-2xl border border-border/50 overflow-hidden shadow-2xl shadow-primary/5 group"
             >
-              {/* Shimmer overlay on hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 translate-x-[-100%] group-hover:translate-x-[100%] pointer-events-none" style={{ transition: "transform 1.5s ease" }} />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
                 src={dashboardPreview}
                 alt="Dashboard Aether com métricas de vendas em tempo real"
                 className="w-full"
               />
-              {/* Gradient fade at bottom */}
               <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
             </motion.div>
           </div>
