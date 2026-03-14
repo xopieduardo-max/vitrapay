@@ -20,6 +20,7 @@ import BuyerLibrary from "./pages/BuyerLibrary";
 import Purchases from "./pages/Purchases";
 import AdminUsers from "./pages/AdminUsers";
 import AdminSettings from "./pages/AdminSettings";
+import AdminWithdrawals from "./pages/AdminWithdrawals";
 import Checkout from "./pages/Checkout";
 import MemberArea from "./pages/MemberArea";
 import Finance from "./pages/Finance";
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/finance" element={<Finance />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -9,6 +9,7 @@ import {
   Landmark,
   Settings,
   Zap,
+  ArrowDownToLine,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -40,6 +41,7 @@ const navItems = [
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
   { title: "Financeiro", url: "/finance", icon: Landmark },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
+  { title: "Saques (Admin)", url: "/admin/withdrawals", icon: ArrowDownToLine },
 ];
 
 export function AppSidebar() {
