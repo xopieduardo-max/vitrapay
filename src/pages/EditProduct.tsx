@@ -75,6 +75,8 @@ export default function EditProduct() {
           type: form.type,
           affiliate_commission: form.affiliate_commission,
           is_published: form.is_published,
+          cover_url: form.cover_url || null,
+          file_url: form.file_url || null,
           checkout_headline: form.checkout_headline,
           checkout_timer_minutes: form.checkout_timer_minutes,
           checkout_banner_url: form.checkout_banner_url,
