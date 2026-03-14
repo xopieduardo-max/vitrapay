@@ -46,7 +46,9 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       );
     case "image":
       return c.url ? (
-        <img src={c.url} alt={c.alt || ""} className={`rounded-xl ${c.fullWidth ? "w-full" : "max-w-md mx-auto"} object-cover`} />
+        <div className={`${c.fullWidth ? "w-full" : "max-w-md mx-auto"} aspect-[21/9] rounded-xl overflow-hidden`}>
+          <img src={c.url} alt={c.alt || ""} className="w-full h-full object-cover" />
+        </div>
       ) : null;
     case "benefits":
       return (

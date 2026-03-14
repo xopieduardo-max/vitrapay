@@ -218,62 +218,136 @@ export default function CheckoutBuilder() {
           <div
             className={`mx-auto transition-all duration-300 ${previewMode === "mobile" ? "max-w-[375px]" : "max-w-[900px]"}`}
           >
-            {/* Drop zone */}
-            {blocks.length === 0 && (
-              <div className="rounded-xl border-2 border-dashed border-border/60 py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground bg-card/50">
-                <Plus className="h-8 w-8" />
-                <p className="text-sm">Adicione componentes do painel à direita</p>
+            {/* ── Realistic Checkout Preview ── */}
+            <div className="rounded-2xl overflow-hidden shadow-xl" style={{ background: "hsl(240, 10%, 6%)", color: "hsl(0,0%,90%)" }}>
+
+              {/* Custom blocks drop zone (above form) */}
+              <div
+                className="relative min-h-[60px]"
+                onClick={() => setSelectedBlockId(null)}
+              >
+                {blocks.length === 0 && (
+                  <div className="border-2 border-dashed border-border/30 m-4 py-12 flex flex-col items-center justify-center gap-2 rounded-xl" style={{ color: "hsl(240,5%,45%)" }}>
+                    <Plus className="h-6 w-6" />
+                    <p className="text-xs">Arraste componentes aqui</p>
+                  </div>
+                )}
+
+                {/* Block list */}
+                <div className="space-y-0">
+                  {blocks.map((block, idx) => {
+                    const typeDef = BLOCK_TYPES.find((t) => t.type === block.block_type);
+                    const Icon = typeDef?.icon || Type;
+                    const isSelected = selectedBlockId === block.id;
+
+                    return (
+                      <motion.div
+                        key={block.id}
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: block.is_active ? 1 : 0.4, y: 0 }}
+                        className={`relative group cursor-pointer transition-all ${
+                          isSelected ? "ring-2 ring-primary ring-inset" : "hover:ring-1 hover:ring-primary/40 hover:ring-inset"
+                        }`}
+                        onClick={(e) => { e.stopPropagation(); setSelectedBlockId(block.id); }}
+                      >
+                        {/* Hover toolbar */}
+                        <div className={`absolute top-1 right-1 z-10 flex items-center gap-0.5 rounded-md px-1 py-0.5 ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"} transition-opacity`} style={{ background: "hsl(240,10%,15%)" }}>
+                          <span className="text-[0.6rem] font-medium px-1" style={{ color: "hsl(240,5%,50%)" }}>{typeDef?.label}</span>
+                          <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }} className="p-0.5 hover:bg-white/10 rounded" disabled={idx === 0}>
+                            <ChevronUp className="h-3 w-3" />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "down"); }} className="p-0.5 hover:bg-white/10 rounded" disabled={idx === blocks.length - 1}>
+                            <ChevronDown className="h-3 w-3" />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); toggleBlockActive(block.id); }} className="p-0.5 hover:bg-white/10 rounded">
+                            <Eye className={`h-3 w-3 ${block.is_active ? "text-primary" : ""}`} style={{ color: block.is_active ? undefined : "hsl(240,5%,40%)" }} />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} className="p-0.5 hover:bg-red-500/20 rounded" style={{ color: "hsl(0,84%,60%)" }}>
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+
+                        {/* Block content */}
+                        <div className="px-4 py-3">
+                          <BlockPreview block={block} />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
-            )}
 
-            {/* Block list */}
-            <div className="space-y-2">
-              {blocks.map((block, idx) => {
-                const typeDef = BLOCK_TYPES.find((t) => t.type === block.block_type);
-                const Icon = typeDef?.icon || Type;
-                const isSelected = selectedBlockId === block.id;
+              {/* ── Product Info (static preview) ── */}
+              <div className="px-5 py-4" style={{ borderTop: "1px solid hsl(240,5%,12%)" }}>
+                <div className="flex items-center gap-3">
+                  <div className="h-14 w-14 rounded-lg shrink-0" style={{ background: "hsl(240,10%,14%)" }} />
+                  <div className="flex-1">
+                    <div className="h-4 w-40 rounded" style={{ background: "hsl(240,10%,14%)" }} />
+                    <div className="h-3 w-24 rounded mt-2" style={{ background: "hsl(158,94%,30%,0.3)" }} />
+                  </div>
+                </div>
+              </div>
 
-                return (
-                  <motion.div
-                    key={block.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: block.is_active ? 1 : 0.4, y: 0 }}
-                    className={`group rounded-xl border-2 transition-all cursor-pointer ${
-                      isSelected
-                        ? "border-primary bg-card shadow-lg"
-                        : "border-border bg-card hover:border-primary/40"
-                    }`}
-                    onClick={() => setSelectedBlockId(block.id)}
-                  >
-                    {/* Block header */}
-                    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/50">
-                      <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <Icon className="h-4 w-4 text-primary shrink-0" />
-                      <span className="text-xs font-semibold flex-1">{typeDef?.label}</span>
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }} className="p-1 hover:bg-muted rounded" disabled={idx === 0}>
-                          <ChevronUp className="h-3.5 w-3.5" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "down"); }} className="p-1 hover:bg-muted rounded" disabled={idx === blocks.length - 1}>
-                          <ChevronDown className="h-3.5 w-3.5" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); toggleBlockActive(block.id); }} className="p-1 hover:bg-muted rounded">
-                          <Eye className={`h-3.5 w-3.5 ${block.is_active ? "text-primary" : "text-muted-foreground"}`} />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} className="p-1 hover:bg-destructive/10 rounded text-destructive">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+              {/* ── Form skeleton ── */}
+              <div className={`px-5 py-4 ${previewMode === "mobile" ? "" : "grid grid-cols-5 gap-5"}`}>
+                <div className={`space-y-3 ${previewMode === "mobile" ? "" : "col-span-3"}`}>
+                  {/* Contact fields */}
+                  <div className="space-y-2.5">
+                    <div className="h-3 w-32 rounded" style={{ background: "hsl(240,10%,14%)" }} />
+                    <div className="h-10 w-full rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                    <div className="h-10 w-full rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                    <div className="h-10 w-full rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="h-10 rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                      <div className="h-10 rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                    </div>
+                  </div>
+                  {/* Payment */}
+                  <div className="space-y-2.5 pt-2">
+                    <div className="h-3 w-40 rounded" style={{ background: "hsl(240,10%,14%)" }} />
+                    <div className="flex gap-2">
+                      <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(158,94%,30%,0.15)", border: "1px solid hsl(158,94%,30%,0.4)" }} />
+                      <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                    </div>
+                    <div className="h-10 w-full rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="h-10 rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                      <div className="h-10 rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
+                    </div>
+                  </div>
+                  {/* Buy button */}
+                  <div className="h-12 w-full rounded-xl" style={{ background: "hsl(158, 94%, 30%)" }} />
+                  {/* Trust badges */}
+                  <div className="flex items-center justify-center gap-2 py-2">
+                    <div className="h-3 w-48 rounded" style={{ background: "hsl(240,10%,12%)" }} />
+                  </div>
+                </div>
+
+                {/* Right column - testimonials preview (desktop only) */}
+                {previewMode === "desktop" && (
+                  <div className="col-span-2 space-y-3">
+                    <div className="h-3 w-28 mx-auto rounded" style={{ background: "hsl(240,10%,14%)" }} />
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(240,10%,8%)", border: "1px solid hsl(240,5%,12%)" }}>
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full" style={{ background: "hsl(240,10%,14%)" }} />
+                          <div>
+                            <div className="h-3 w-20 rounded" style={{ background: "hsl(240,10%,14%)" }} />
+                            <div className="flex gap-0.5 mt-1">
+                              {[1, 2, 3, 4].map((s) => (
+                                <Star key={s} className="h-2.5 w-2.5 fill-warning text-warning" />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="h-2.5 w-full rounded" style={{ background: "hsl(240,10%,12%)" }} />
+                        <div className="h-2.5 w-3/4 rounded" style={{ background: "hsl(240,10%,12%)" }} />
                       </div>
-                    </div>
-
-                    {/* Block preview */}
-                    <div className="p-4">
-                      <BlockPreview block={block} />
-                    </div>
-                  </motion.div>
-                );
-              })}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -690,9 +764,11 @@ function BlockPreview({ block }: { block: Block }) {
 
     case "image":
       return c.url ? (
-        <img src={c.url} alt={c.alt || ""} className={`rounded-lg ${c.fullWidth ? "w-full" : "max-w-md mx-auto"} max-h-48 object-cover`} />
+        <div className={`${c.fullWidth ? "w-full" : "max-w-md mx-auto"} aspect-[21/9] rounded-lg overflow-hidden`}>
+          <img src={c.url} alt={c.alt || ""} className="w-full h-full object-cover" />
+        </div>
       ) : (
-        <div className="flex items-center justify-center h-32 rounded-lg bg-muted border border-dashed border-border">
+        <div className="flex items-center justify-center aspect-[21/9] rounded-lg bg-muted border border-dashed border-border">
           <Image className="h-8 w-8 text-muted-foreground" />
         </div>
       );
