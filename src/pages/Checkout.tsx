@@ -201,6 +201,14 @@ export default function Checkout() {
         .order("position", { ascending: true });
       if (blocks) setCheckoutBlocks(blocks);
 
+      // Load pixels
+      const { data: pxs } = await supabase
+        .from("product_pixels")
+        .select("*")
+        .eq("product_id", id)
+        .eq("is_active", true);
+      if (pxs) setProductPixels(pxs);
+
       setLoading(false);
     };
     loadCheckout();
