@@ -19,6 +19,7 @@ import {
   Lock,
   CheckCircle2,
   Star,
+  ArrowDownToLine,
   User,
   Mail,
   Phone,
