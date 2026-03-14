@@ -217,6 +217,13 @@ export default function Checkout() {
   // Inject pixel scripts
   useCheckoutPixels(productPixels);
 
+  // Fire InitiateCheckout when pixels are loaded
+  useEffect(() => {
+    if (productPixels.length > 0) {
+      firePixelEvent(productPixels, "InitiateCheckout");
+    }
+  }, [productPixels]);
+
   useEffect(() => {
     if (user?.email) setForm((f) => ({ ...f, email: user.email || "" }));
   }, [user]);
