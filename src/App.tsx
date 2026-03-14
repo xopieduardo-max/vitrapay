@@ -71,6 +71,7 @@ const App = () => (
               <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
               <Route path="/admin/banners" element={<AdminBanners />} />
               <Route path="/admin/popups" element={<AdminPopups />} />
+              <Route path="/admin/fake-sales" element={<AdminFakeSales />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
 
