@@ -12,16 +12,18 @@ import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 
 /* ─── Floating Sale Notifications ─── */
-const saleNotifications = [
-  { name: "Lucas A.", product: "Copy que Vende", amount: "R$ 197,00", method: "pix" as const },
-  { name: "Maria S.", product: "Método Digital Pro", amount: "R$ 347,00", method: "card" as const },
-  { name: "João P.", product: "IA Academy", amount: "R$ 497,00", method: "pix" as const },
-  { name: "Ana L.", product: "Social Media Mastery", amount: "R$ 147,00", method: "card" as const },
-  { name: "Pedro R.", product: "Renda Extra Online", amount: "R$ 97,00", method: "pix" as const },
-  { name: "Camila F.", product: "Corpo & Forma 360", amount: "R$ 247,00", method: "card" as const },
-  { name: "Rafael M.", product: "Copy que Vende", amount: "R$ 197,00", method: "pix" as const },
-  { name: "Juliana B.", product: "Método Digital Pro", amount: "R$ 347,00", method: "card" as const },
-];
+const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
+const products = ["Copy que Vende", "Método Digital Pro", "IA Academy", "Social Media Mastery", "Renda Extra Online", "Corpo & Forma 360", "Funil Expert", "Tráfego Pago Pro"];
+const amounts = [10, 14.90, 19.90, 27, 37, 39.90, 47, 57, 67, 79.90, 87, 97, 127, 147, 197, 247, 297, 347, 497];
+
+function generateNotification() {
+  return {
+    name: names[Math.floor(Math.random() * names.length)],
+    product: products[Math.floor(Math.random() * products.length)],
+    amount: `R$ ${amounts[Math.floor(Math.random() * amounts.length)].toFixed(2).replace(".", ",")}`,
+    method: (Math.random() > 0.4 ? "pix" : "card") as "pix" | "card",
+  };
+}
 
 const methodConfig = {
   pix: {
@@ -41,32 +43,27 @@ const methodConfig = {
 };
 
 function FloatingNotifications() {
-  const [visibleNotifs, setVisibleNotifs] = useState<number[]>([]);
-  const indexRef = useRef(0);
+  const [visibleNotifs, setVisibleNotifs] = useState<ReturnType<typeof generateNotification>[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const idx = indexRef.current % saleNotifications.length;
       setVisibleNotifs((prev) => {
-        const next = [...prev, idx];
-        return next.length > 5 ? next.slice(1) : next;
+        const next = [...prev, generateNotification()];
+        return next.length > 4 ? next.slice(1) : next;
       });
-      indexRef.current++;
-    }, 2200);
-    setVisibleNotifs([0]);
-    indexRef.current = 1;
+    }, 3500);
+    setVisibleNotifs([generateNotification()]);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex flex-col gap-3 w-full">
       <AnimatePresence mode="popLayout">
-        {visibleNotifs.map((idx, i) => {
-          const notif = saleNotifications[idx];
+        {visibleNotifs.map((notif, i) => {
           const config = methodConfig[notif.method];
           return (
             <motion.div
-              key={`${idx}-${i}-${indexRef.current}`}
+              key={`${notif.name}-${notif.amount}-${i}`}
               initial={{ opacity: 0, x: -60, scale: 0.8 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -40, scale: 0.9 }}
