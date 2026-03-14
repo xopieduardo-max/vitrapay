@@ -49,6 +49,44 @@ export type Database = {
           },
         ]
       }
+      checkout_blocks: {
+        Row: {
+          block_type: string
+          config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          position: number
+          product_id: string
+        }
+        Insert: {
+          block_type: string
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          position?: number
+          product_id: string
+        }
+        Update: {
+          block_type?: string
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          position?: number
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_blocks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkout_testimonials: {
         Row: {
           author_avatar_url: string | null
