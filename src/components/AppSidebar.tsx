@@ -37,7 +37,7 @@ const navItems = [
   { title: "Oportunidades", url: "/marketplace", icon: Store },
   { title: "Minhas Vendas", url: "/sales", icon: ShoppingBag },
   { title: "Relatórios", url: "/purchases", icon: FileText },
-  { title: "Afiliados", url: "/affiliates", icon: Users },
+  { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
   { title: "Financeiro", url: "/finance", icon: Landmark },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
 ];
