@@ -140,6 +140,7 @@ export default function Checkout() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [purchaseResult, setPurchaseResult] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
