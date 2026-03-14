@@ -154,6 +154,7 @@ export default function EditProduct() {
           {[
             { value: "settings", icon: Settings, label: "Geral" },
             { value: "checkout", icon: ShoppingCart, label: "Checkout" },
+            { value: "pixels", icon: BarChart3, label: "Pixels" },
             { value: "coupons", icon: Tag, label: "Cupons" },
             { value: "links", icon: Link2, label: "Afiliados" },
           ].map((tab) => (
