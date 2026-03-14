@@ -181,6 +181,10 @@ export default function EditProduct() {
           />
         </TabsContent>
 
+        <TabsContent value="pixels" className="mt-6">
+          <EditProductPixels productId={id!} />
+        </TabsContent>
+
         <TabsContent value="coupons" className="mt-6">
           <EditProductCoupons userId={user?.id} />
         </TabsContent>
