@@ -12,12 +12,29 @@ export default function Marketplace() {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["marketplace-products"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: prods } = await supabase
         .from("products")
-        .select("id, title, description, price, cover_url, type, affiliate_commission, producer_id, profiles!inner(display_name)")
+        .select("id, title, description, price, cover_url, type, affiliate_commission, producer_id")
         .eq("is_published", true)
         .order("created_at", { ascending: false });
-      return data || [];
+
+      if (!prods?.length) return [];
+
+      // Get unique producer IDs and fetch their profiles
+      const producerIds = [...new Set(prods.map((p) => p.producer_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", producerIds);
+
+      const profileMap = new Map(
+        (profiles || []).map((p) => [p.user_id, p.display_name])
+      );
+
+      return prods.map((p) => ({
+        ...p,
+        producerName: profileMap.get(p.producer_id) || "Produtor",
+      }));
     },
   });
 
@@ -60,7 +77,7 @@ export default function Marketplace() {
               key={product.id}
               id={product.id}
               title={product.title}
-              producer={product.profiles?.display_name || "Produtor"}
+              producer={product.producerName}
               price={product.price}
               coverUrl={product.cover_url}
               type={product.type as "download" | "lms"}

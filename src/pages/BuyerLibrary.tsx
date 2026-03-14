@@ -14,12 +14,42 @@ export default function BuyerLibrary() {
     queryKey: ["buyer-library", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await supabase
+      const { data: access } = await supabase
         .from("product_access")
-        .select("id, product_id, granted_at, products(id, title, type, cover_url, file_url, producer_id, profiles!inner(display_name))")
+        .select("id, product_id, granted_at")
         .eq("user_id", user.id)
         .order("granted_at", { ascending: false });
-      return data || [];
+
+      if (!access?.length) return [];
+
+      const productIds = access.map((a) => a.product_id);
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, title, type, cover_url, file_url, producer_id")
+        .in("id", productIds);
+
+      if (!products?.length) return [];
+
+      const producerIds = [...new Set(products.map((p) => p.producer_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", producerIds);
+
+      const profileMap = new Map(
+        (profiles || []).map((p) => [p.user_id, p.display_name])
+      );
+      const productMap = new Map(products.map((p) => [p.id, p]));
+
+      return access.map((a) => {
+        const product = productMap.get(a.product_id);
+        return {
+          ...a,
+          product: product
+            ? { ...product, producerName: profileMap.get(product.producer_id) || "Produtor" }
+            : null,
+        };
+      }).filter((a) => a.product);
     },
     enabled: !!user,
   });
@@ -44,8 +74,7 @@ export default function BuyerLibrary() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {accessItems.map((item: any, i: number) => {
-            const product = item.products;
-            if (!product) return null;
+            const product = item.product;
             return (
               <motion.div
                 key={item.id}
@@ -66,9 +95,7 @@ export default function BuyerLibrary() {
                 <div className="p-4 space-y-3">
                   <div>
                     <h3 className="font-semibold text-sm tracking-title">{product.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {product.profiles?.display_name || "Produtor"}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{product.producerName}</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-[0.65rem]">
