@@ -68,6 +68,7 @@ const App = () => (
               <Route path="/library" element={<BuyerLibrary />} />
               <Route path="/purchases" element={<Purchases />} />
               <Route path="/finance" element={<Finance />} />
+              <Route path="/community" element={<Community />} />
             </Route>
 
             {/* Admin panel */}
