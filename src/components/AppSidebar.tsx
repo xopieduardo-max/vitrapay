@@ -35,6 +35,7 @@ const mainItems = [
 const producerItems = [
   { title: "Meus Produtos", url: "/products", icon: Package },
   { title: "Vendas", url: "/sales", icon: TrendingUp },
+  { title: "Financeiro", url: "/finance", icon: Wallet },
   { title: "Afiliados", url: "/affiliates", icon: Link2 },
 ];
 
