@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export function DashboardLayout() {
   return (
@@ -11,7 +12,7 @@ export function DashboardLayout() {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground hidden md:flex" />
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
               <Input
@@ -20,10 +21,11 @@ export function DashboardLayout() {
               />
             </div>
           </header>
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 md:p-6">
             <Outlet />
           </main>
         </div>
+        <MobileBottomNav />
       </div>
     </SidebarProvider>
   );
