@@ -76,18 +76,17 @@ export default function MyProducts() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="grid grid-cols-[1fr_120px_100px_100px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+            className="grid grid-cols-[1fr_120px_100px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
           >
             <div>
               <p className="text-sm font-medium">{product.title}</p>
-              <p className="text-xs text-muted-foreground">{product.producer}</p>
+              <p className="text-xs text-muted-foreground">{product.type === "lms" ? "Área de Membros" : "Download"}</p>
             </div>
             <span className="text-sm font-semibold stat-value">
               R$ {(product.price / 100).toFixed(2)}
             </span>
-            <span className="text-sm stat-value">{product.sales}</span>
-            <Badge variant="secondary" className="text-[0.65rem] bg-primary/10 text-primary border-primary/20 w-fit">
-              Ativo
+            <Badge variant="secondary" className={`text-[0.65rem] w-fit ${product.is_published ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground border-border"}`}>
+              {product.is_published ? "Ativo" : "Rascunho"}
             </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
