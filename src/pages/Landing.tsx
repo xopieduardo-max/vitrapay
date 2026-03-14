@@ -1,13 +1,159 @@
+import { useEffect, useRef, useState } from "react";
 import {
   Zap, ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
-  BarChart3, Rocket, Clock, Headphones, Award, ChevronRight, Star,
+  BarChart3, Rocket, Clock, Headphones, Award, Star,
   DollarSign, Wallet, Globe, Play, CheckCircle2, Sparkles, Smartphone,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
+import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 
+/* ─── Floating Sale Notifications ─── */
+const saleNotifications = [
+  { name: "Lucas A.", product: "Copy que Vende", amount: "R$ 197,00" },
+  { name: "Maria S.", product: "Método Digital Pro", amount: "R$ 347,00" },
+  { name: "João P.", product: "IA Academy", amount: "R$ 497,00" },
+  { name: "Ana L.", product: "Social Media Mastery", amount: "R$ 147,00" },
+  { name: "Pedro R.", product: "Renda Extra Online", amount: "R$ 97,00" },
+  { name: "Camila F.", product: "Corpo & Forma 360", amount: "R$ 247,00" },
+  { name: "Rafael M.", product: "Copy que Vende", amount: "R$ 197,00" },
+  { name: "Juliana B.", product: "Método Digital Pro", amount: "R$ 347,00" },
+];
+
+function FloatingNotifications() {
+  const [visibleNotifs, setVisibleNotifs] = useState<number[]>([]);
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const idx = indexRef.current % saleNotifications.length;
+      setVisibleNotifs((prev) => {
+        const next = [...prev, idx];
+        return next.length > 5 ? next.slice(1) : next;
+      });
+      indexRef.current++;
+    }, 2200);
+    // Show first one immediately
+    setVisibleNotifs([0]);
+    indexRef.current = 1;
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute left-0 top-0 bottom-0 w-full max-w-[340px] overflow-hidden pointer-events-none hidden lg:block">
+      <div className="relative h-full flex flex-col justify-center gap-3 pl-4">
+        <AnimatePresence mode="popLayout">
+          {visibleNotifs.map((idx, i) => {
+            const notif = saleNotifications[idx];
+            return (
+              <motion.div
+                key={`${idx}-${i}-${indexRef.current}`}
+                initial={{ opacity: 0, x: -60, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -40, scale: 0.9 }}
+                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                className="flex items-center gap-3 rounded-xl border border-primary/20 bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 shrink-0">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">
+                    Venda aprovada via Pix!
+                  </p>
+                  <p className="text-[0.65rem] text-muted-foreground truncate">
+                    {notif.name} • {notif.product}
+                  </p>
+                  <p className="text-xs font-bold text-primary mt-0.5">{notif.amount}</p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Interactive Grid Background ─── */
+function GridBackground() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { damping: 25, stiffness: 150 });
+  const springY = useSpring(mouseY, { damping: 25, stiffness: 150 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Animated grid lines */}
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(hsl(var(--primary)) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)
+          `,
+          backgroundSize: "60px 60px",
+        }}
+      />
+      {/* Radial glow that follows mouse */}
+      <motion.div
+        className="absolute w-[600px] h-[600px] rounded-full"
+        style={{
+          x: springX,
+          y: springY,
+          translateX: "-50%",
+          translateY: "-50%",
+          background: "radial-gradient(circle, hsla(158, 94%, 30%, 0.08) 0%, transparent 70%)",
+        }}
+      />
+      {/* Fixed ambient glows */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px]" />
+    </div>
+  );
+}
+
+/* ─── Floating Particles ─── */
+function FloatingParticles() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 rounded-full bg-primary/20"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+          animate={{
+            y: [0, -30, 0],
+            opacity: [0.2, 0.6, 0.2],
+            scale: [1, 1.5, 1],
+          }}
+          transition={{
+            duration: 3 + Math.random() * 4,
+            repeat: Infinity,
+            delay: Math.random() * 3,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Data ─── */
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
   whileInView: { opacity: 1, y: 0 },
@@ -58,7 +204,31 @@ const testimonials = [
 
 const marqueeText = "Transformando vidas através do digital";
 
+/* ─── Counter Animation ─── */
+function AnimatedCounter({ value, suffix = "" }: { value: string; suffix?: string }) {
+  return (
+    <motion.span
+      initial={{ opacity: 0, scale: 0.5 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ type: "spring", damping: 15, stiffness: 200 }}
+      className="text-5xl md:text-6xl font-bold text-gradient-primary inline-block"
+    >
+      {value}{suffix}
+    </motion.span>
+  );
+}
+
+/* ─── Main Landing ─── */
 export default function Landing() {
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const dashboardY = useTransform(scrollYProgress, [0, 1], [0, -80]);
+  const dashboardScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Header */}
@@ -87,12 +257,12 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
-        </div>
-        <div className="container relative py-20 md:py-32 lg:py-40">
+      {/* Hero Section with interactive background */}
+      <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center">
+        <GridBackground />
+        <FloatingParticles />
+
+        <div className="container relative py-16 md:py-24 lg:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -115,7 +285,7 @@ export default function Landing() {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital — tudo em uma única plataforma.
+              Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -135,7 +305,7 @@ export default function Landing() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
-              className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground"
+              className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground"
             >
               <div className="flex -space-x-2">
                 {[...Array(5)].map((_, i) => (
@@ -147,17 +317,43 @@ export default function Landing() {
               <span><strong className="text-foreground">+10.000</strong> produtores já confiam na Aether</span>
             </motion.div>
           </motion.div>
+
+          {/* Dashboard Preview + Floating Notifications */}
+          <div className="relative mt-16 md:mt-20 max-w-5xl mx-auto">
+            <FloatingNotifications />
+            <motion.div
+              style={{ y: dashboardY, scale: dashboardScale }}
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
+              className="relative rounded-2xl border border-border/50 overflow-hidden shadow-2xl shadow-primary/5 group"
+            >
+              {/* Shimmer overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 translate-x-[-100%] group-hover:translate-x-[100%] pointer-events-none" style={{ transition: "transform 1.5s ease" }} />
+              <img
+                src={dashboardPreview}
+                alt="Dashboard Aether com métricas de vendas em tempo real"
+                className="w-full"
+              />
+              {/* Gradient fade at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Highlight Cards */}
+      {/* Highlight Cards with hover tilt effect */}
       <section className="container pb-20">
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
           {highlights.map((item, i) => (
-            <motion.div key={item.title} {...stagger} transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card transition-all duration-300"
+            <motion.div
+              key={item.title}
+              {...stagger}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              whileHover={{ y: -5, scale: 1.02 }}
+              className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card transition-all duration-300 cursor-default"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                 <item.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
               </div>
               <h3 className="font-semibold text-sm md:text-base">{item.title}</h3>
@@ -167,7 +363,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ===== Marquee "Transformando vidas" ===== */}
+      {/* Marquee */}
       <section className="relative border-y border-border/50 bg-primary/5 py-5 overflow-hidden">
         <div className="flex whitespace-nowrap animate-marquee">
           {[...Array(12)].map((_, i) => (
@@ -178,7 +374,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ===== Big Stats (Braip-style) ===== */}
+      {/* Big Stats with animated counters */}
       <section className="bg-card/30">
         <div className="container py-20">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
@@ -191,10 +387,14 @@ export default function Landing() {
 
           <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
             {bigStats.map((stat, i) => (
-              <motion.div key={stat.label} {...stagger} transition={{ delay: i * 0.15, duration: 0.5 }}
-                className="text-center rounded-2xl border border-border/50 bg-background p-8 space-y-2"
+              <motion.div
+                key={stat.label}
+                {...stagger}
+                transition={{ delay: i * 0.15, duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                className="text-center rounded-2xl border border-border/50 bg-background p-8 space-y-2 hover:border-primary/30 transition-all duration-300"
               >
-                <p className="text-5xl md:text-6xl font-bold text-gradient-primary">{stat.value}</p>
+                <AnimatedCounter value={stat.value} />
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </motion.div>
             ))}
@@ -202,7 +402,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section with staggered reveal */}
       <section id="features" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
           <span className="text-xs font-medium uppercase tracking-widest text-primary">Recursos</span>
@@ -217,12 +417,18 @@ export default function Landing() {
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
-            <motion.div key={f.title} {...stagger} transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="group relative rounded-2xl border border-border/50 bg-card/50 p-7 space-y-4 hover:border-primary/30 transition-all duration-300 overflow-hidden"
+            <motion.div
+              key={f.title}
+              {...stagger}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              whileHover={{ y: -8, scale: 1.01 }}
+              className="group relative rounded-2xl border border-border/50 bg-card/50 p-7 space-y-4 hover:border-primary/30 transition-all duration-300 overflow-hidden cursor-default"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {/* Glow dot */}
+              <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
                   <f.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
@@ -249,7 +455,11 @@ export default function Landing() {
 
           <div className="grid gap-5 md:grid-cols-3 max-w-3xl mx-auto">
             {paymentMethods.map((pm, i) => (
-              <motion.div key={pm.name} {...stagger} transition={{ delay: i * 0.1, duration: 0.5 }}
+              <motion.div
+                key={pm.name}
+                {...stagger}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                whileHover={{ y: -5, scale: 1.03 }}
                 className="rounded-2xl border border-border/50 bg-background p-6 text-center space-y-3 hover:border-primary/30 transition-all duration-300"
               >
                 <span className="text-4xl">{pm.icon}</span>
@@ -263,7 +473,7 @@ export default function Landing() {
           </div>
 
           <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.6 }} className="mt-12 max-w-xl mx-auto text-center">
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 shimmer-gold">
               <p className="text-sm text-muted-foreground mb-2">Taxa para cartões na plataforma</p>
               <p className="text-4xl md:text-5xl font-bold tracking-tight text-gradient-primary">
                 3,89% + R$2,49
@@ -276,11 +486,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ===== App Coming Soon (Braip-style) ===== */}
+      {/* App Coming Soon */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px]" />
-        </div>
+        <FloatingParticles />
         <div className="container relative py-20 md:py-28">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
@@ -308,6 +516,7 @@ export default function Landing() {
             <motion.div
               {...fadeUp}
               transition={{ delay: 0.2, duration: 0.6 }}
+              whileHover={{ rotate: 2, scale: 1.02 }}
               className="flex justify-center"
             >
               <img
@@ -330,8 +539,12 @@ export default function Landing() {
         </motion.div>
         <div className="grid gap-5 md:grid-cols-3">
           {testimonials.map((t, i) => (
-            <motion.div key={t.name} {...stagger} transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="rounded-2xl border border-border/50 bg-card/50 p-7 space-y-4"
+            <motion.div
+              key={t.name}
+              {...stagger}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              whileHover={{ y: -5 }}
+              className="rounded-2xl border border-border/50 bg-card/50 p-7 space-y-4 hover:border-primary/20 transition-all duration-300"
             >
               <div className="flex gap-0.5">
                 {[...Array(t.stars)].map((_, j) => (
@@ -358,6 +571,7 @@ export default function Landing() {
         <motion.div {...fadeUp} transition={{ duration: 0.6 }}
           className="relative rounded-3xl border border-primary/20 bg-primary/5 overflow-hidden"
         >
+          <FloatingParticles />
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/10 blur-[100px]" />
           </div>
