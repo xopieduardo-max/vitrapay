@@ -34,7 +34,7 @@ const REVENUE_GOAL = 1000000;
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Produtos", url: "/products", icon: Package },
-  { title: "Vitrine", url: "/marketplace", icon: Store },
+  { title: "Oportunidades", url: "/marketplace", icon: Store },
   { title: "Minhas Vendas", url: "/sales", icon: ShoppingBag },
   { title: "Relatórios", url: "/purchases", icon: FileText },
   { title: "Afiliados", url: "/affiliates", icon: Users },
