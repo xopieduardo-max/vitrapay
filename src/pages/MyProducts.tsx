@@ -96,10 +96,10 @@ export default function MyProducts() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="gap-2 text-sm">
+                <DropdownMenuItem className="gap-2 text-sm" onClick={() => window.open(`/checkout/${product.id}`, "_blank")}>
                   <Eye className="h-4 w-4" strokeWidth={1.5} /> Visualizar
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 text-sm">
+                <DropdownMenuItem className="gap-2 text-sm" onClick={() => navigate(`/products/${product.id}/edit`)}>
                   <Edit className="h-4 w-4" strokeWidth={1.5} /> Editar
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2 text-sm text-destructive">
