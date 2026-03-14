@@ -173,6 +173,7 @@ export default function Marketplace() {
                 salesCount={product.salesCount}
                 index={i}
                 featured
+                onClick={() => setSelectedProduct(product)}
               />
             ))}
           </div>
