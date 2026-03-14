@@ -466,6 +466,47 @@ export type Database = {
           },
         ]
       }
+      product_pixels: {
+        Row: {
+          access_token: string | null
+          config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          pixel_id: string
+          platform: string
+          product_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          pixel_id: string
+          platform: string
+          product_id: string
+        }
+        Update: {
+          access_token?: string | null
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          pixel_id?: string
+          platform?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_pixels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           affiliate_commission: number | null
