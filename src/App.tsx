@@ -23,6 +23,9 @@ import Checkout from "./pages/Checkout";
 import MemberArea from "./pages/MemberArea";
 import Finance from "./pages/Finance";
 import NotFound from "./pages/NotFound";
+import TermsOfUse from "./pages/TermsOfUse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Community from "./pages/Community";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -32,6 +35,7 @@ import AdminWithdrawals from "./pages/AdminWithdrawals";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminPopups from "./pages/admin/AdminPopups";
 import AdminFakeSales from "./pages/admin/AdminFakeSales";
+import AdminCommunity from "./pages/admin/AdminCommunity";
 
 const queryClient = new QueryClient();
 
