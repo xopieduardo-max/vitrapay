@@ -1,11 +1,12 @@
 import {
   Zap, ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
   BarChart3, Rocket, Clock, Headphones, Award, ChevronRight, Star,
-  DollarSign, Wallet, Globe, Play, CheckCircle2, Sparkles,
+  DollarSign, Wallet, Globe, Play, CheckCircle2, Sparkles, Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import appMockup from "@/assets/app-mockup.png";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -29,36 +30,12 @@ const highlights = [
 ];
 
 const features = [
-  {
-    icon: Package,
-    title: "Produtos Digitais",
-    desc: "Venda cursos, e-books, templates, mentorias e qualquer infoproduto com facilidade.",
-  },
-  {
-    icon: Users,
-    title: "Programa de Afiliados",
-    desc: "Deixe outros promoverem seus produtos e defina comissões personalizadas.",
-  },
-  {
-    icon: CreditCard,
-    title: "Checkout de Alta Conversão",
-    desc: "Checkout customizável com timer, banners, cupons e order bumps.",
-  },
-  {
-    icon: Globe,
-    title: "Área de Membros",
-    desc: "Player de vídeo, módulos, aulas e acompanhamento de progresso dos alunos.",
-  },
-  {
-    icon: Wallet,
-    title: "Financeiro Completo",
-    desc: "Saldo, comissões, histórico de saques e pagamento via Pix automático.",
-  },
-  {
-    icon: BarChart3,
-    title: "Funil de Vendas",
-    desc: "Upsell, downsell e order bumps integrados ao seu checkout.",
-  },
+  { icon: Package, title: "Produtos Digitais", desc: "Venda cursos, e-books, templates, mentorias e qualquer infoproduto com facilidade." },
+  { icon: Users, title: "Programa de Afiliados", desc: "Deixe outros promoverem seus produtos e defina comissões personalizadas." },
+  { icon: CreditCard, title: "Checkout de Alta Conversão", desc: "Checkout customizável com timer, banners, cupons e order bumps." },
+  { icon: Globe, title: "Área de Membros", desc: "Player de vídeo, módulos, aulas e acompanhamento de progresso dos alunos." },
+  { icon: Wallet, title: "Financeiro Completo", desc: "Saldo, comissões, histórico de saques e pagamento via Pix automático." },
+  { icon: BarChart3, title: "Funil de Vendas", desc: "Upsell, downsell e order bumps integrados ao seu checkout." },
 ];
 
 const paymentMethods = [
@@ -67,33 +44,19 @@ const paymentMethods = [
   { name: "Boleto Bancário", time: "1 dia", icon: "📄" },
 ];
 
-const stats = [
-  { value: "10k+", label: "Produtores ativos" },
-  { value: "R$ 50M+", label: "Em vendas processadas" },
-  { value: "99.9%", label: "Uptime garantido" },
-  { value: "24/7", label: "Suporte humanizado" },
+const bigStats = [
+  { value: "50+", label: "colaboradores engajados" },
+  { value: "500K+", label: "usuários cadastrados" },
+  { value: "10 mil+", label: "produtos cadastrados" },
 ];
 
 const testimonials = [
-  {
-    name: "Lucas Andrade",
-    role: "Infoprodutor",
-    text: "Migrei pra Aether e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.",
-    stars: 5,
-  },
-  {
-    name: "Mariana Costa",
-    role: "Produtora de Cursos",
-    text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.",
-    stars: 5,
-  },
-  {
-    name: "Rafael Souza",
-    role: "Afiliado Top",
-    text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.",
-    stars: 5,
-  },
+  { name: "Lucas Andrade", role: "Infoprodutor", text: "Migrei pra Aether e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
+  { name: "Mariana Costa", role: "Produtora de Cursos", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
+  { name: "Rafael Souza", role: "Afiliado Top", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 },
 ];
+
+const marqueeText = "Transformando vidas através do digital";
 
 export default function Landing() {
   return (
@@ -105,7 +68,7 @@ export default function Landing() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary glow-primary">
               <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
             </div>
-            <span className="text-xl font-bold tracking-title">Aether</span>
+            <span className="text-xl font-bold tracking-tight">Aether</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
@@ -126,12 +89,9 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative">
-        {/* Background glow effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px]" />
         </div>
-
         <div className="container relative py-20 md:py-32 lg:py-40">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -139,7 +99,6 @@ export default function Landing() {
             transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
             className="max-w-4xl mx-auto text-center space-y-8"
           >
-            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -150,7 +109,7 @@ export default function Landing() {
               <span>A plataforma que acelera seus resultados</span>
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-display leading-[1.05]">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
               Venda produtos digitais{" "}
               <span className="text-gradient-primary">sem limites.</span>
             </h1>
@@ -160,28 +119,18 @@ export default function Landing() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button
-                size="lg"
-                className="h-14 px-10 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200"
-                asChild
-              >
+              <Button size="lg" className="h-14 px-10 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200" asChild>
                 <Link to="/auth">
                   Criar minha conta grátis <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-14 px-10 text-base gap-2 border-border/50"
-                asChild
-              >
+              <Button size="lg" variant="outline" className="h-14 px-10 text-base gap-2 border-border/50" asChild>
                 <Link to="/marketplace">
                   <Play className="h-4 w-4" /> Ver Marketplace
                 </Link>
               </Button>
             </div>
 
-            {/* Social proof */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -190,56 +139,62 @@ export default function Landing() {
             >
               <div className="flex -space-x-2">
                 {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-8 w-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[0.6rem] font-bold text-primary"
-                  >
+                  <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[0.6rem] font-bold text-primary">
                     {String.fromCharCode(65 + i)}
                   </div>
                 ))}
               </div>
-              <span>
-                <strong className="text-foreground">+10.000</strong> produtores já confiam na Aether
-              </span>
+              <span><strong className="text-foreground">+10.000</strong> produtores já confiam na Aether</span>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Highlight Cards (Cakto-style bento) */}
+      {/* Highlight Cards */}
       <section className="container pb-20">
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
           {highlights.map((item, i) => (
-            <motion.div
-              key={item.title}
-              {...stagger}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
+            <motion.div key={item.title} {...stagger} transition={{ delay: i * 0.08, duration: 0.5 }}
               className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card transition-all duration-300"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                 <item.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
               </div>
-              <h3 className="font-semibold tracking-title text-sm md:text-base">{item.title}</h3>
+              <h3 className="font-semibold text-sm md:text-base">{item.title}</h3>
               <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="border-y border-border/50 bg-card/30">
-        <div className="container py-16">
-          <div className="grid gap-8 grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                {...stagger}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="text-center space-y-2"
+      {/* ===== Marquee "Transformando vidas" ===== */}
+      <section className="relative border-y border-border/50 bg-primary/5 py-5 overflow-hidden">
+        <div className="flex whitespace-nowrap animate-marquee">
+          {[...Array(12)].map((_, i) => (
+            <span key={i} className="mx-8 text-lg md:text-xl font-bold text-primary/80 flex items-center gap-3">
+              <Zap className="h-4 w-4" /> {marqueeText}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== Big Stats (Braip-style) ===== */}
+      <section className="bg-card/30">
+        <div className="container py-20">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
+            <span className="text-xs font-medium uppercase tracking-widest text-primary">Sobre nós</span>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mt-4">
+              Somos muito mais que uma{" "}
+              <span className="text-gradient-primary">plataforma</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
+            {bigStats.map((stat, i) => (
+              <motion.div key={stat.label} {...stagger} transition={{ delay: i * 0.15, duration: 0.5 }}
+                className="text-center rounded-2xl border border-border/50 bg-background p-8 space-y-2"
               >
-                <p className="text-3xl md:text-5xl font-bold tracking-display text-gradient-primary">
-                  {stat.value}
-                </p>
+                <p className="text-5xl md:text-6xl font-bold text-gradient-primary">{stat.value}</p>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </motion.div>
             ))}
@@ -250,8 +205,8 @@ export default function Landing() {
       {/* Features Section */}
       <section id="features" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-label text-primary">Recursos</span>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-display">
+          <span className="text-xs font-medium uppercase tracking-widest text-primary">Recursos</span>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Tudo que você precisa para{" "}
             <span className="text-gradient-primary">vender online</span>
           </h2>
@@ -262,19 +217,15 @@ export default function Landing() {
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              {...stagger}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
+            <motion.div key={f.title} {...stagger} transition={{ delay: i * 0.08, duration: 0.5 }}
               className="group relative rounded-2xl border border-border/50 bg-card/50 p-7 space-y-4 hover:border-primary/30 transition-all duration-300 overflow-hidden"
             >
-              {/* Subtle glow on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
                   <f.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold tracking-title">{f.title}</h3>
+                <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </div>
             </motion.div>
@@ -282,12 +233,12 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Payment Methods (Cakto-style) */}
+      {/* Payment Methods */}
       <section id="pricing" className="bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="text-xs font-medium uppercase tracking-label text-primary">Pagamentos</span>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-display">
+            <span className="text-xs font-medium uppercase tracking-widest text-primary">Pagamentos</span>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Receba de{" "}
               <span className="text-gradient-primary">múltiplas formas</span>
             </h2>
@@ -298,14 +249,11 @@ export default function Landing() {
 
           <div className="grid gap-5 md:grid-cols-3 max-w-3xl mx-auto">
             {paymentMethods.map((pm, i) => (
-              <motion.div
-                key={pm.name}
-                {...stagger}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
+              <motion.div key={pm.name} {...stagger} transition={{ delay: i * 0.1, duration: 0.5 }}
                 className="rounded-2xl border border-border/50 bg-background p-6 text-center space-y-3 hover:border-primary/30 transition-all duration-300"
               >
                 <span className="text-4xl">{pm.icon}</span>
-                <h3 className="font-semibold tracking-title">{pm.name}</h3>
+                <h3 className="font-semibold">{pm.name}</h3>
                 <p className="text-xs text-muted-foreground">
                   Prazo de recebimento:{" "}
                   <span className="text-primary font-medium">{pm.time}</span>
@@ -314,15 +262,10 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* Tax highlight */}
-          <motion.div
-            {...fadeUp}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="mt-12 max-w-xl mx-auto text-center"
-          >
+          <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.6 }} className="mt-12 max-w-xl mx-auto text-center">
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8">
               <p className="text-sm text-muted-foreground mb-2">Taxa para cartões na plataforma</p>
-              <p className="text-4xl md:text-5xl font-bold tracking-display text-gradient-primary">
+              <p className="text-4xl md:text-5xl font-bold tracking-tight text-gradient-primary">
                 3,89% + R$2,49
               </p>
               <p className="text-sm text-muted-foreground mt-3">
@@ -333,21 +276,61 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ===== App Coming Soon (Braip-style) ===== */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px]" />
+        </div>
+        <div className="container relative py-20 md:py-28">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
+                <Smartphone className="h-3.5 w-3.5" /> Novidade
+              </span>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+                Em breve o app da{" "}
+                <span className="text-gradient-primary">Aether!</span>
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Com o app da Aether você terá tudo o que precisa para gerenciar suas vendas na palma da sua mão. Acompanhe métricas, receba notificações de vendas e saque seus ganhos de qualquer lugar.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  App Store — Em breve
+                </Button>
+                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 1.33a1.004 1.004 0 010 1.724l-2.302 1.33-2.498-2.498 2.498-2.886zM5.864 2.658L16.8 8.99l-2.302 2.302-8.635-8.635z"/></svg>
+                  Google Play — Em breve
+                </Button>
+              </div>
+            </motion.div>
+            <motion.div
+              {...fadeUp}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="flex justify-center"
+            >
+              <img
+                src={appMockup}
+                alt="App Aether em breve"
+                className="w-full max-w-md drop-shadow-2xl"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section id="testimonials" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-label text-primary">Depoimentos</span>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-display">
+          <span className="text-xs font-medium uppercase tracking-widest text-primary">Depoimentos</span>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Quem usa, <span className="text-gradient-primary">recomenda</span>
           </h2>
         </motion.div>
-
         <div className="grid gap-5 md:grid-cols-3">
           {testimonials.map((t, i) => (
-            <motion.div
-              key={t.name}
-              {...stagger}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
+            <motion.div key={t.name} {...stagger} transition={{ delay: i * 0.1, duration: 0.5 }}
               className="rounded-2xl border border-border/50 bg-card/50 p-7 space-y-4"
             >
               <div className="flex gap-0.5">
@@ -372,18 +355,14 @@ export default function Landing() {
 
       {/* CTA Section */}
       <section className="container pb-20 md:pb-28">
-        <motion.div
-          {...fadeUp}
-          transition={{ duration: 0.6 }}
+        <motion.div {...fadeUp} transition={{ duration: 0.6 }}
           className="relative rounded-3xl border border-primary/20 bg-primary/5 overflow-hidden"
         >
-          {/* Background glow */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/10 blur-[100px]" />
           </div>
-
           <div className="relative px-8 py-16 md:py-24 text-center space-y-6">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-display">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Comece a vender{" "}
               <span className="text-gradient-primary">agora mesmo</span>
             </h2>
@@ -391,17 +370,13 @@ export default function Landing() {
               Crie sua conta grátis em menos de 2 minutos e comece a faturar com seus produtos digitais.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button
-                size="lg"
-                className="h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200"
-                asChild
-              >
+              <Button size="lg" className="h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200" asChild>
                 <Link to="/auth">
                   Criar minha conta grátis <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
             </div>
-            <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground pt-4">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground pt-4">
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Sem taxa de adesão
               </span>
@@ -425,14 +400,14 @@ export default function Landing() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                   <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
                 </div>
-                <span className="text-lg font-bold tracking-title">Aether</span>
+                <span className="text-lg font-bold tracking-tight">Aether</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 A plataforma de pagamentos que acelera seus resultados digitais.
               </p>
             </div>
             <div className="space-y-3">
-              <h4 className="text-xs font-medium uppercase tracking-label text-muted-foreground/60">Produto</h4>
+              <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">Produto</h4>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <Link to="/marketplace" className="hover:text-foreground transition-colors">Marketplace</Link>
                 <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
@@ -440,7 +415,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="space-y-3">
-              <h4 className="text-xs font-medium uppercase tracking-label text-muted-foreground/60">Empresa</h4>
+              <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">Empresa</h4>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <a href="#" className="hover:text-foreground transition-colors">Sobre</a>
                 <a href="#" className="hover:text-foreground transition-colors">Blog</a>
@@ -448,7 +423,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="space-y-3">
-              <h4 className="text-xs font-medium uppercase tracking-label text-muted-foreground/60">Legal</h4>
+              <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">Legal</h4>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <a href="#" className="hover:text-foreground transition-colors">Termos de Uso</a>
                 <a href="#" className="hover:text-foreground transition-colors">Privacidade</a>
