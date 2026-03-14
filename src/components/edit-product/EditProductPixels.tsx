@@ -300,7 +300,7 @@ export default function EditProductPixels({ productId }: Props) {
                           updatePixel.mutate({
                             id: platformPixels[0].id,
                             updates: {
-                              config: { ...platformPixels[0].config, [conv.key]: Number(e.target.value) },
+                              config: { ...(platformPixels[0].config as Record<string, any>), [conv.key]: Number(e.target.value) },
                             },
                           })
                         }
