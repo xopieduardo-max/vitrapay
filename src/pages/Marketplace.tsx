@@ -212,6 +212,7 @@ export default function Marketplace() {
                 commission={product.affiliate_commission || 0}
                 salesCount={product.salesCount}
                 index={i}
+                onClick={() => setSelectedProduct(product)}
               />
             ))}
           </div>
