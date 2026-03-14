@@ -48,6 +48,7 @@ const navItems = [
   { title: "Relatórios", url: "/purchases", icon: FileText },
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
   { title: "Financeiro", url: "/finance", icon: Landmark },
+  { title: "Comunidade", url: "/community", icon: MessageCircle },
 ];
 
 export function AppSidebar() {

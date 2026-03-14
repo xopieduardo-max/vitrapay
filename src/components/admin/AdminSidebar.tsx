@@ -13,6 +13,7 @@ const navItems = [
   { title: "Gerar Vendas", url: "/admin/fake-sales", icon: ShoppingBag },
   { title: "Usuários", url: "/admin/users", icon: Users },
   { title: "Saques", url: "/admin/withdrawals", icon: ArrowDownToLine },
+  { title: "Comunidade", url: "/admin/community", icon: Lightbulb },
   { title: "Banners", url: "/admin/banners", icon: Image },
   { title: "Pop-ups", url: "/admin/popups", icon: MessageSquareMore },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
