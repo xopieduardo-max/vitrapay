@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, Zap, ArrowLeft, ShoppingBag,
+  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, Zap, ArrowLeft, ShoppingBag, Lightbulb,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
