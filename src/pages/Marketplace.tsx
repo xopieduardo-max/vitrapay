@@ -224,6 +224,12 @@ export default function Marketplace() {
           </div>
         )}
       </motion.div>
+      {/* Product Drawer */}
+      <ProductDrawer
+        product={selectedProduct}
+        open={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   );
 }
