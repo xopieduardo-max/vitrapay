@@ -58,6 +58,8 @@ export default function Checkout() {
     installments: "1",
   });
 
+  const [checkoutBlocks, setCheckoutBlocks] = useState<any[]>([]);
+
   useEffect(() => {
     if (!id) return;
     const loadCheckout = async () => {
@@ -89,6 +91,14 @@ export default function Checkout() {
         .eq("is_active", true)
         .order("position", { ascending: true });
       if (testis) setTestimonials(testis);
+
+      const { data: blocks } = await supabase
+        .from("checkout_blocks")
+        .select("*")
+        .eq("product_id", id)
+        .eq("is_active", true)
+        .order("position", { ascending: true });
+      if (blocks) setCheckoutBlocks(blocks);
 
       setLoading(false);
     };
