@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { PlatformPopup } from "@/components/PlatformPopup";
 
 export function DashboardLayout() {
   return (
