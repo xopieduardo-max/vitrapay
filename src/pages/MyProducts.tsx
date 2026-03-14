@@ -1,8 +1,11 @@
-import { Plus, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockProducts } from "@/lib/mockData";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +14,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function MyProducts() {
-  const myProducts = mockProducts.slice(0, 4);
+  const { user } = useAuth();
+
+  const { data: myProducts = [], isLoading } = useQuery({
+    queryKey: ["my-products", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("producer_id", user.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   return (
     <div className="space-y-6">

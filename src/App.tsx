@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Marketplace from "./pages/Marketplace";
 import ProductDetail from "./pages/ProductDetail";
 import MyProducts from "./pages/MyProducts";
+import CreateProduct from "./pages/CreateProduct";
 import Sales from "./pages/Sales";
 import Affiliates from "./pages/Affiliates";
 import BuyerLibrary from "./pages/BuyerLibrary";
