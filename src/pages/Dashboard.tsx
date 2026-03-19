@@ -35,9 +35,9 @@ import {
 const REVENUE_GOAL = 1000000;
 
 const paymentMethods = [
-  { name: "Cartão de crédito", icon: CreditCard },
-  { name: "Pix", icon: QrCode },
-  { name: "Boleto", icon: Landmark },
+  { name: "Cartão de crédito", key: "card", icon: CreditCard },
+  { name: "Pix", key: "pix", icon: QrCode },
+  { name: "Boleto", key: "boleto", icon: Landmark },
 ];
 
 const anim = (delay: number) => ({
@@ -157,7 +157,7 @@ export default function Dashboard() {
 
   // Quick links for mobile
   const quickLinks = [
-    { label: "Relatórios", icon: BarChart3, path: "/purchases" },
+    { label: "Relatórios", icon: BarChart3, path: "/sales" },
     { label: "Produtos", icon: Package, path: "/products" },
     { label: "Afiliados", icon: Users, path: "/affiliates" },
     { label: "Suporte", icon: HelpCircle, path: "/admin/settings" },
@@ -412,7 +412,7 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground mb-4">Conversão de pagamento</p>
             <div className="space-y-5">
               {paymentMethods.map((method) => {
-                const data = salesByProvider[method.name] || { count: 0, amount: 0 };
+                const data = salesByProvider[method.key] || { count: 0, amount: 0 };
                 const total = salesData.length || 1;
                 const pct = ((data.count / total) * 100);
                 return (
