@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,6 @@ import { Loader2 } from "lucide-react";
 
 export default function AdminLayout() {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
 
   const { data: isAdmin, isLoading } = useQuery({
     queryKey: ["is-admin", user?.id],
@@ -29,8 +28,7 @@ export default function AdminLayout() {
   }
 
   if (!user) {
-    navigate("/auth");
-    return null;
+    return <Navigate to="/auth" replace />;
   }
 
   if (!isAdmin) {
