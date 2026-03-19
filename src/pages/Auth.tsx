@@ -205,61 +205,34 @@ export default function Auth() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Digite o código</h1>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Insira o código de 6 dígitos enviado para o seu email.
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                    <Zap className="h-8 w-8 text-primary" />
+                  </div>
+                  <h1 className="text-2xl font-bold tracking-tight">Confirme seu e-mail</h1>
+                  <p className="text-sm text-muted-foreground max-w-xs">
+                    Enviamos um link de confirmação para <span className="font-medium text-foreground">{email}</span>. Abra seu e-mail e clique no link para ativar sua conta.
                   </p>
                 </div>
 
-                {/* User info card */}
-                <div className="rounded-lg border border-border p-4">
-                  <p className="text-xs text-muted-foreground mb-2">Você está entrando como:</p>
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-muted-foreground">
-                      {email.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="text-sm font-medium">{email}</span>
-                  </div>
-                  <button
-                    onClick={() => { setStep("credentials"); setOtp(""); }}
-                    className="mt-3 text-xs text-primary hover:underline"
+                <div className="rounded-lg border border-border bg-muted/30 p-4 text-center space-y-2">
+                  <p className="text-xs text-muted-foreground">Não recebeu o e-mail? Verifique sua caixa de spam ou clique abaixo para reenviar.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={countdown > 0 || loading}
+                    onClick={handleResendOtp}
                   >
-                    Deseja entrar com outra conta? <span className="font-medium">Clique aqui</span>
-                  </button>
+                    {countdown > 0 ? `Reenviar em ${countdown}s` : "Reenviar e-mail"}
+                  </Button>
                 </div>
 
-                {/* OTP Input */}
-                <div className="flex justify-center">
-                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} className="h-14 w-12 text-lg border-border" />
-                      <InputOTPSlot index={1} className="h-14 w-12 text-lg border-border" />
-                      <InputOTPSlot index={2} className="h-14 w-12 text-lg border-border" />
-                      <InputOTPSlot index={3} className="h-14 w-12 text-lg border-border" />
-                      <InputOTPSlot index={4} className="h-14 w-12 text-lg border-border" />
-                      <InputOTPSlot index={5} className="h-14 w-12 text-lg border-border" />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-
-                {/* Resend */}
                 <Button
-                  variant="outline"
-                  className="w-full h-12"
-                  disabled={countdown > 0 || loading}
-                  onClick={handleResendOtp}
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => { setStep("credentials"); setOtp(""); }}
                 >
-                  {countdown > 0 ? `Reenviar Em ${countdown}s` : "Reenviar Código"}
-                </Button>
-
-                {/* Confirm */}
-                <Button
-                  className="w-full h-12 text-base font-semibold"
-                  disabled={otp.length < 6 || loading}
-                  onClick={handleVerifyOtp}
-                >
-                  {loading ? "Verificando..." : "Confirmar Código"}
+                  <ArrowLeft className="h-4 w-4 mr-2" /> Voltar ao cadastro
                 </Button>
               </motion.div>
             )}
