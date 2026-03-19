@@ -384,7 +384,7 @@ export default function Checkout() {
           {purchaseResult.product_type === "lms" && (
             <Button
               className="w-full h-12 text-sm font-bold gap-2 rounded-xl"
-              style={{ background: "hsl(158,94%,30%)", color: "white" }}
+              style={{ background: "hsl(270,52%,49%)", color: "white" }}
               onClick={() => toast({ title: "Acesse com seu email", description: "Faça login para acessar a área de membros." })}
             >
               Acessar Área de Membros
