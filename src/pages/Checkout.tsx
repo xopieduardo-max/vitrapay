@@ -354,8 +354,8 @@ export default function Checkout() {
           style={{ background: "hsl(240,10%,8%)", border: "1px solid hsl(240,5%,15%)" }}
         >
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(158,94%,30%,0.15)" }}>
-              <CheckCircle2 className="h-8 w-8" style={{ color: "hsl(158,94%,40%)" }} />
+            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(270,52%,49%,0.15)" }}>
+              <CheckCircle2 className="h-8 w-8" style={{ color: "hsl(270,52%,58%)" }} />
             </div>
           </div>
           <h1 className="text-2xl font-bold">Compra Confirmada!</h1>
