@@ -7,95 +7,95 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 234 33% 11%;
     --card: 0 0% 97%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 234 33% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 158 94% 30%;
+    --popover-foreground: 234 33% 11%;
+    --primary: 270 52% 49%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 5% 92%;
-    --secondary-foreground: 240 10% 10%;
+    --secondary-foreground: 234 33% 11%;
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
-    --accent: 210 100% 50%;
+    --accent: 215 100% 59%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 240 5% 87%;
     --input: 240 5% 87%;
-    --ring: 158 94% 30%;
+    --ring: 270 52% 49%;
     --radius: 0.75rem;
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5% 26%;
-    --sidebar-primary: 158 94% 30%;
+    --sidebar-foreground: 234 33% 20%;
+    --sidebar-primary: 270 52% 49%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 5% 94%;
-    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-accent-foreground: 234 33% 11%;
     --sidebar-border: 240 5% 90%;
-    --sidebar-ring: 158 94% 30%;
+    --sidebar-ring: 270 52% 49%;
 
-    --success: 158 94% 30%;
+    --success: 186 57% 51%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 210 100% 50%;
+    --info: 215 100% 59%;
     --info-foreground: 0 0% 100%;
 
-    --chart-1: 158 94% 30%;
-    --chart-2: 210 100% 50%;
-    --chart-3: 280 65% 60%;
+    --chart-1: 270 52% 49%;
+    --chart-2: 215 100% 59%;
+    --chart-3: 186 57% 51%;
     --chart-4: 38 92% 50%;
     --chart-5: 0 84% 60%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(158, 94%, 30%), hsl(158, 94%, 40%));
-    --shadow-glow: 0 0 20px hsla(158, 94%, 30%, 0.2);
+    --gradient-primary: linear-gradient(135deg, hsl(270, 52%, 49%), hsl(215, 100%, 59%));
+    --shadow-glow: 0 0 20px hsla(270, 52%, 49%, 0.2);
   }
 
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 234 33% 11%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
+    --card: 234 30% 14%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 6%;
+    --popover: 234 30% 14%;
     --popover-foreground: 0 0% 98%;
-    --primary: 158 94% 30%;
+    --primary: 270 52% 49%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 13%;
+    --secondary: 234 25% 18%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 5% 13%;
-    --muted-foreground: 240 4% 55%;
-    --accent: 210 100% 50%;
+    --muted: 234 25% 18%;
+    --muted-foreground: 234 15% 55%;
+    --accent: 215 100% 59%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
-    --ring: 158 94% 30%;
-    --sidebar-background: 240 10% 5%;
-    --sidebar-foreground: 240 5% 65%;
-    --sidebar-primary: 158 94% 30%;
+    --border: 234 20% 20%;
+    --input: 234 20% 20%;
+    --ring: 270 52% 49%;
+    --sidebar-background: 234 33% 9%;
+    --sidebar-foreground: 234 15% 65%;
+    --sidebar-primary: 270 52% 49%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 10%;
+    --sidebar-accent: 234 25% 15%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 5% 12%;
-    --sidebar-ring: 158 94% 30%;
+    --sidebar-border: 234 20% 16%;
+    --sidebar-ring: 270 52% 49%;
 
-    --success: 158 94% 30%;
+    --success: 186 57% 51%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 210 100% 50%;
+    --info: 215 100% 59%;
     --info-foreground: 0 0% 100%;
 
-    --chart-1: 158 94% 30%;
-    --chart-2: 210 100% 50%;
-    --chart-3: 280 65% 60%;
+    --chart-1: 270 52% 49%;
+    --chart-2: 215 100% 59%;
+    --chart-3: 186 57% 51%;
     --chart-4: 38 92% 50%;
     --chart-5: 0 84% 60%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(158, 94%, 30%), hsl(158, 94%, 40%));
-    --shadow-glow: 0 0 20px hsla(158, 94%, 30%, 0.2);
+    --gradient-primary: linear-gradient(135deg, hsl(270, 52%, 49%), hsl(215, 100%, 59%));
+    --shadow-glow: 0 0 20px hsla(270, 52%, 49%, 0.2);
   }
 }
 
