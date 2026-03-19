@@ -865,7 +865,7 @@ export default function Checkout() {
                         {t.author_avatar_url ? (
                           <img src={t.author_avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
                         ) : (
-                          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(158, 94%, 40%)" }}>
+                          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(270, 52%, 49%, 0.2)", color: "hsl(270, 52%, 58%)" }}>
                             {t.author_name?.charAt(0)?.toUpperCase()}
                           </div>
                         )}
