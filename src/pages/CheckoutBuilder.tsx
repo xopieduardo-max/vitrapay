@@ -307,7 +307,7 @@ export default function CheckoutBuilder() {
                   <div className="space-y-2.5 pt-2">
                     <div className="h-3 w-40 rounded" style={{ background: "hsl(240,10%,14%)" }} />
                     <div className="flex gap-2">
-                      <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(158,94%,30%,0.15)", border: "1px solid hsl(158,94%,30%,0.4)" }} />
+                      <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(270,52%,49%,0.15)", border: "1px solid hsl(270,52%,49%,0.4)" }} />
                       <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
                     </div>
                     <div className="h-10 w-full rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
