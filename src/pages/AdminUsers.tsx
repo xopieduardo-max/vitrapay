@@ -1,6 +1,8 @@
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Shield, Package, ShoppingCart, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MoreHorizontal, Shield, Package, ShoppingCart, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +12,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 
 const roleConfig = {
@@ -18,11 +27,16 @@ const roleConfig = {
   buyer: { label: "Comprador", icon: ShoppingCart, className: "bg-warning/10 text-warning border-warning/20" },
 };
 
+const ITEMS_PER_PAGE = 15;
+
 export default function AdminUsers() {
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
+
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users-list"],
     queryFn: async () => {
-      // Get all profiles
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url, created_at")
@@ -30,7 +44,6 @@ export default function AdminUsers() {
 
       if (!profiles) return [];
 
-      // Get all roles
       const { data: roles } = await supabase
         .from("user_roles")
         .select("user_id, role");
@@ -43,7 +56,6 @@ export default function AdminUsers() {
 
       return profiles.map((p: any) => {
         const userRoles = rolesMap[p.user_id] || ["buyer"];
-        // Show highest role
         const role = userRoles.includes("admin") ? "admin" : userRoles.includes("producer") ? "producer" : "buyer";
         return {
           id: p.user_id,
@@ -54,6 +66,25 @@ export default function AdminUsers() {
       });
     },
   });
+
+  const filtered = useMemo(() => {
+    let result = users;
+    if (roleFilter !== "all") {
+      result = result.filter((u: any) => u.role === roleFilter);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter((u: any) => u.name.toLowerCase().includes(q));
+    }
+    return result;
+  }, [users, roleFilter, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
+  // Reset page when filters change
+  const handleSearch = (v: string) => { setSearch(v); setPage(1); };
+  const handleRoleFilter = (v: string) => { setRoleFilter(v); setPage(1); };
 
   if (isLoading) {
     return (
@@ -71,6 +102,31 @@ export default function AdminUsers() {
           {users.length} usuário(s) cadastrado(s)
         </p>
       </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Buscar por nome..."
+            className="pl-9 h-9 text-sm"
+          />
+        </div>
+        <Select value={roleFilter} onValueChange={handleRoleFilter}>
+          <SelectTrigger className="w-[160px] h-9 text-sm">
+            <SelectValue placeholder="Todas as funções" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as funções</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="producer">Produtor</SelectItem>
+            <SelectItem value="buyer">Comprador</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="grid grid-cols-[1fr_100px_100px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-widest text-muted-foreground">
           <span>Nome</span>
@@ -78,7 +134,7 @@ export default function AdminUsers() {
           <span>Cadastro</span>
           <span></span>
         </div>
-        {users.map((user: any, i: number) => {
+        {paginated.map((user: any, i: number) => {
           const rc = roleConfig[user.role as keyof typeof roleConfig] || roleConfig.buyer;
           return (
             <motion.div
@@ -108,12 +164,44 @@ export default function AdminUsers() {
             </motion.div>
           );
         })}
-        {users.length === 0 && (
+        {paginated.length === 0 && (
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Nenhum usuário cadastrado.
+            Nenhum usuário encontrado.
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground text-xs">
+            Mostrando {(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)} de {filtered.length}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground px-2">
+              {page} / {totalPages}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={page >= totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

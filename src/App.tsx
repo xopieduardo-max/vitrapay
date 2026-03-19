@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { AuthGuard } from "@/components/AuthGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -55,22 +56,24 @@ const App = () => (
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
 
-            {/* Producer panel */}
-            <Route element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/products" element={<MyProducts />} />
-              <Route path="/products/new" element={<CreateProduct />} />
-              <Route path="/products/:id/edit" element={<EditProduct />} />
-              <Route path="/products/:id/checkout-builder" element={<CheckoutBuilder />} />
-              <Route path="/sales" element={<Sales />} />
-              <Route path="/affiliates" element={<Affiliates />} />
-              <Route path="/library" element={<BuyerLibrary />} />
-              <Route path="/purchases" element={<Purchases />} />
-              <Route path="/finance" element={<Finance />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/settings" element={<Settings />} />
+            {/* Protected producer panel */}
+            <Route element={<AuthGuard />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/marketplace" element={<Marketplace />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/products" element={<MyProducts />} />
+                <Route path="/products/new" element={<CreateProduct />} />
+                <Route path="/products/:id/edit" element={<EditProduct />} />
+                <Route path="/products/:id/checkout-builder" element={<CheckoutBuilder />} />
+                <Route path="/sales" element={<Sales />} />
+                <Route path="/affiliates" element={<Affiliates />} />
+                <Route path="/library" element={<BuyerLibrary />} />
+                <Route path="/purchases" element={<Purchases />} />
+                <Route path="/finance" element={<Finance />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
             </Route>
 
             {/* Admin panel */}
