@@ -112,10 +112,8 @@ export default function Auth() {
         <div className="mx-auto w-full max-w-md space-y-8">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-              <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
-            </div>
-            <span className="text-xl font-bold tracking-tight">Aether</span>
+            <img src="/vitra-logo.png" alt="Vitra" className="h-10 w-10 object-contain" />
+            <span className="text-xl font-bold tracking-tight">VITRA</span>
           </Link>
 
           <AnimatePresence mode="wait">
