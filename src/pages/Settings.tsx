@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Camera, LogOut, Loader2, Save, KeyRound, User } from "lucide-react";
+import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
@@ -22,7 +23,6 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
@@ -114,7 +114,6 @@ export default function Settings() {
       toast.error("Erro ao alterar senha: " + error.message);
     } else {
       toast.success("Senha alterada com sucesso!");
-      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     }
@@ -213,6 +212,21 @@ export default function Settings() {
               Salvar Perfil
             </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Theme Section */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Palette className="h-4 w-4 text-primary" />
+          Aparência
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm">Tema da interface</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Alterne entre modo claro e escuro</p>
+          </div>
+          <ThemeToggle />
         </div>
       </div>
 
