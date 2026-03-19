@@ -9,7 +9,50 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Loader2, Settings } from "lucide-react";
 
-const PLATFORMS = [
+type PixelConfigValue = string | number | boolean;
+type PixelConfig = Record<string, PixelConfigValue>;
+
+interface PlatformField {
+  key: string;
+  label: string;
+  placeholder: string;
+}
+
+interface PlatformOption {
+  key: string;
+  label: string;
+  default?: boolean;
+}
+
+interface PlatformConversionOption {
+  key: string;
+  label: string;
+  default: number;
+}
+
+interface PlatformConfigDef {
+  id: string;
+  label: string;
+  icon: string;
+  color: string;
+  fields: PlatformField[];
+  hasAccessToken: boolean;
+  eventOptions: PlatformOption[];
+  conversionOptions: PlatformConversionOption[];
+  extraOptions: PlatformOption[];
+  maxPixels: number;
+}
+
+interface ProductPixel {
+  id: string;
+  product_id: string;
+  platform: string;
+  pixel_id: string;
+  access_token: string | null;
+  config: PixelConfig | null;
+}
+
+const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "facebook",
     label: "Facebook",
@@ -73,7 +116,7 @@ const PLATFORMS = [
     extraOptions: [{ key: "disable_bump_events", label: "Desativar eventos de order bumps?" }],
     maxPixels: 50,
   },
-] as const;
+];
 
 interface Props {
   productId: string;
@@ -86,13 +129,15 @@ export default function EditProductPixels({ productId }: Props) {
 
   const { data: pixels = [], isLoading } = useQuery({
     queryKey: ["product-pixels", productId],
-    queryFn: async () => {
-      const { data } = await supabase
+    queryFn: async (): Promise<ProductPixel[]> => {
+      const { data, error } = await supabase
         .from("product_pixels")
         .select("*")
         .eq("product_id", productId)
         .order("created_at", { ascending: true });
-      return data || [];
+
+      if (error) throw error;
+      return (data as ProductPixel[]) || [];
     },
   });
 
@@ -117,23 +162,20 @@ export default function EditProductPixels({ productId }: Props) {
       queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] });
       toast({ title: "Pixel adicionado" });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({ title: "Erro ao adicionar pixel", description: error.message, variant: "destructive" });
     },
   });
 
   const updatePixel = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, any> }) => {
-      const { error } = await supabase
-        .from("product_pixels")
-        .update(updates)
-        .eq("id", id);
+    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, unknown> }) => {
+      const { error } = await supabase.from("product_pixels").update(updates).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({ title: "Erro ao atualizar pixel", description: error.message, variant: "destructive" });
     },
   });
@@ -147,13 +189,13 @@ export default function EditProductPixels({ productId }: Props) {
       queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] });
       toast({ title: "Pixel removido" });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({ title: "Erro ao remover pixel", description: error.message, variant: "destructive" });
     },
   });
 
-  const platform = PLATFORMS.find((item) => item.id === activeTab)!;
-  const platformPixels = pixels.filter((pixel: any) => pixel.platform === activeTab);
+  const platform = PLATFORMS.find((item) => item.id === activeTab) ?? PLATFORMS[0];
+  const platformPixels = pixels.filter((pixel) => pixel.platform === activeTab);
 
   const gridTemplateColumns = useMemo(() => {
     const columns = [...platform.fields.map(() => "minmax(0,1fr)")];
@@ -166,20 +208,22 @@ export default function EditProductPixels({ productId }: Props) {
     return columns.join(" ");
   }, [platform]);
 
-  const getFieldValue = (pixel: any, key: string) => {
+  const getPixelConfig = (pixel: ProductPixel): PixelConfig => pixel.config ?? {};
+
+  const getFieldValue = (pixel: ProductPixel, key: string) => {
     if (key === "pixel_id") return pixel.pixel_id || "";
     if (key === "access_token") return pixel.access_token || "";
-    return pixel.config?.[key] ?? "";
+    return String(getPixelConfig(pixel)[key] ?? "");
   };
 
-  const buildFieldUpdate = (pixel: any, key: string, value: string) => {
+  const buildFieldUpdate = (pixel: ProductPixel, key: string, value: string) => {
     if (key === "pixel_id" || key === "access_token") {
       return { [key]: value };
     }
 
     return {
       config: {
-        ...(pixel.config as Record<string, any>),
+        ...getPixelConfig(pixel),
         [key]: value,
       },
     };
@@ -193,7 +237,7 @@ export default function EditProductPixels({ productId }: Props) {
     <div className="space-y-6">
       <div className="flex items-center gap-1 overflow-x-auto">
         {PLATFORMS.map((item) => {
-          const count = pixels.filter((pixel: any) => pixel.platform === item.id).length;
+          const count = pixels.filter((pixel) => pixel.platform === item.id).length;
           return (
             <button
               key={item.id}
@@ -240,7 +284,7 @@ export default function EditProductPixels({ productId }: Props) {
             Nenhum pixel adicionado
           </div>
         ) : (
-          platformPixels.map((pixel: any) => (
+          platformPixels.map((pixel) => (
             <div
               key={pixel.id}
               className="grid gap-4 px-4 py-3 border-b border-border last:border-0 items-center"
@@ -312,13 +356,13 @@ export default function EditProductPixels({ productId }: Props) {
             <div key={option.key} className="space-y-2">
               <div className="flex items-center gap-3">
                 <Switch
-                  checked={platformPixels[0]?.config?.[option.key] ?? option.default}
+                  checked={Boolean(getPixelConfig(platformPixels[0])[option.key] ?? option.default)}
                   onCheckedChange={(value) =>
                     updatePixel.mutate({
                       id: platformPixels[0].id,
                       updates: {
                         config: {
-                          ...(platformPixels[0].config as Record<string, any>),
+                          ...getPixelConfig(platformPixels[0]),
                           [option.key]: value,
                         },
                       },
@@ -336,13 +380,13 @@ export default function EditProductPixels({ productId }: Props) {
                     <div className="flex items-center gap-2 w-32">
                       <Input
                         type="number"
-                        value={platformPixels[0]?.config?.[conversion.key] ?? conversion.default}
+                        value={Number(getPixelConfig(platformPixels[0])[conversion.key] ?? conversion.default)}
                         onChange={(event) =>
                           updatePixel.mutate({
                             id: platformPixels[0].id,
                             updates: {
                               config: {
-                                ...(platformPixels[0].config as Record<string, any>),
+                                ...getPixelConfig(platformPixels[0]),
                                 [conversion.key]: Number(event.target.value),
                               },
                             },
@@ -360,13 +404,13 @@ export default function EditProductPixels({ productId }: Props) {
           {platform.extraOptions.map((option) => (
             <div key={option.key} className="flex items-center gap-3">
               <Switch
-                checked={platformPixels[0]?.config?.[option.key] ?? false}
+                checked={Boolean(getPixelConfig(platformPixels[0])[option.key] ?? false)}
                 onCheckedChange={(value) =>
                   updatePixel.mutate({
                     id: platformPixels[0].id,
                     updates: {
                       config: {
-                        ...(platformPixels[0].config as Record<string, any>),
+                        ...getPixelConfig(platformPixels[0]),
                         [option.key]: value,
                       },
                     },
