@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Zap, ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
+  ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
   BarChart3, Rocket, Clock, Headphones, Award, Star,
   DollarSign, Wallet, Globe, Play, CheckCircle2, Sparkles, Smartphone,
   Bell,
@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
+import vitraLogo from "@/assets/vitra-logo.png";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
@@ -35,10 +36,10 @@ const methodConfig = {
   },
   card: {
     label: "Venda aprovada via Cartão!",
-    iconBg: "bg-blue-500/15",
-    iconColor: "text-blue-500",
-    borderColor: "border-blue-500/20",
-    amountColor: "text-blue-500",
+    iconBg: "bg-accent/15",
+    iconColor: "text-accent",
+    borderColor: "border-accent/20",
+    amountColor: "text-accent",
   },
 };
 
@@ -94,57 +95,11 @@ function FloatingNotifications() {
   );
 }
 
-/* ─── Interactive Grid Background ─── */
-function GridBackground() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { damping: 25, stiffness: 150 });
-  const springY = useSpring(mouseY, { damping: 25, stiffness: 150 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Animated grid lines */}
-      <div className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(hsl(var(--primary)) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)
-          `,
-          backgroundSize: "60px 60px",
-        }}
-      />
-      {/* Radial glow that follows mouse */}
-      <motion.div
-        className="absolute w-[600px] h-[600px] rounded-full"
-        style={{
-          x: springX,
-          y: springY,
-          translateX: "-50%",
-          translateY: "-50%",
-          background: "radial-gradient(circle, hsla(158, 94%, 30%, 0.08) 0%, transparent 70%)",
-        }}
-      />
-      {/* Fixed ambient glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px]" />
-    </div>
-  );
-}
-
 /* ─── Floating Particles ─── */
 function FloatingParticles() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
+      {[...Array(15)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 rounded-full bg-primary/20"
@@ -213,7 +168,7 @@ const bigStats = [
 ];
 
 const testimonials = [
-  { name: "Lucas Andrade", role: "Infoprodutor", text: "Migrei pra Aether e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
+  { name: "Lucas Andrade", role: "Infoprodutor", text: "Migrei pra Vitra e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
   { name: "Mariana Costa", role: "Produtora de Cursos", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
   { name: "Rafael Souza", role: "Afiliado Top", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 },
 ];
@@ -221,7 +176,7 @@ const testimonials = [
 const marqueeText = "Transformando vidas através do digital";
 
 /* ─── Counter Animation ─── */
-function AnimatedCounter({ value, suffix = "" }: { value: string; suffix?: string }) {
+function AnimatedCounter({ value }: { value: string }) {
   return (
     <motion.span
       initial={{ opacity: 0, scale: 0.5 }}
@@ -230,7 +185,7 @@ function AnimatedCounter({ value, suffix = "" }: { value: string; suffix?: strin
       transition={{ type: "spring", damping: 15, stiffness: 200 }}
       className="text-5xl md:text-6xl font-bold text-gradient-primary inline-block"
     >
-      {value}{suffix}
+      {value}
     </motion.span>
   );
 }
@@ -247,95 +202,127 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
-      {/* Header */}
+      {/* ═══════════════ HEADER ═══════════════ */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary glow-primary">
-              <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
-            </div>
-            <span className="text-xl font-bold tracking-tight">Aether</span>
+          <Link to="/" className="flex items-center gap-2.5">
+            <img src={vitraLogo} alt="Vitra" className="h-9 w-9 object-contain" />
+            <span className="text-xl font-bold tracking-tight">VITRA</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+            <a href="#about" className="hover:text-foreground transition-colors">Sobre</a>
             <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Taxas</a>
-            <a href="#testimonials" className="hover:text-foreground transition-colors">Depoimentos</a>
             <Link to="/marketplace" className="hover:text-foreground transition-colors">Marketplace</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
               <Link to="/auth">Login</Link>
             </Button>
-            <Button size="sm" asChild className="glow-primary">
-              <Link to="/auth">Criar minha conta</Link>
+            <Button size="sm" asChild className="glow-primary rounded-full px-6">
+              <Link to="/auth">Sign up</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section with interactive background */}
-      <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center">
-        <GridBackground />
+      {/* ═══════════════ HERO ═══════════════ */}
+      <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden">
+        {/* Background decorative logo */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[15%] opacity-[0.07] pointer-events-none hidden lg:block">
+          <img src={vitraLogo} alt="" className="w-[700px] h-[700px] object-contain" />
+        </div>
+
+        {/* Ambient glows */}
+        <div className="absolute top-1/4 left-1/3 w-[500px] h-[400px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[300px] rounded-full bg-accent/6 blur-[100px] pointer-events-none" />
+
         <FloatingParticles />
 
         <div className="container relative py-16 md:py-24 lg:py-32">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="max-w-4xl mx-auto text-center space-y-8"
-          >
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Text content */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
+              className="space-y-8"
             >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>A plataforma que acelera seus resultados</span>
-            </motion.div>
+              <div>
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.7 }}
+                  className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.05]"
+                >
+                  <span className="text-gradient-primary">digital</span>
+                  <br />
+                  marketplace
+                </motion.h1>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-              Venda produtos digitais{" "}
-              <span className="text-gradient-primary">sem limites.</span>
-            </h1>
-
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="h-14 px-10 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200" asChild>
-                <Link to="/auth">
-                  Criar minha conta grátis <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-10 text-base gap-2 border-border/50" asChild>
-                <Link to="/marketplace">
-                  <Play className="h-4 w-4" /> Ver Marketplace
-                </Link>
-              </Button>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground"
-            >
-              <div className="flex -space-x-2">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[0.6rem] font-bold text-primary">
-                    {String.fromCharCode(65 + i)}
-                  </div>
-                ))}
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.7 }}
+                  className="mt-6 text-lg text-muted-foreground max-w-md leading-relaxed"
+                >
+                  A plataforma completa para vender produtos digitais, gerenciar afiliados e escalar seu negócio online.
+                </motion.p>
               </div>
-              <span><strong className="text-foreground">+10.000</strong> produtores já confiam na Aether</span>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.7 }}
+                className="flex flex-col sm:flex-row items-start gap-4"
+              >
+                <Button size="lg" className="h-14 px-10 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200 rounded-full" asChild>
+                  <Link to="/auth">
+                    Saiba mais <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="h-14 px-10 text-base gap-2 border-border/50 rounded-full" asChild>
+                  <Link to="/auth">
+                    Login <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.8 }}
+                className="flex items-center gap-4 text-sm text-muted-foreground"
+              >
+                <div className="flex -space-x-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[0.6rem] font-bold text-primary">
+                      {String.fromCharCode(65 + i)}
+                    </div>
+                  ))}
+                </div>
+                <span><strong className="text-foreground">+10.000</strong> produtores confiam na Vitra</span>
+              </motion.div>
             </motion.div>
-          </motion.div>
+
+            {/* Right: Logo visual */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
+              className="hidden lg:flex justify-center items-center relative"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent rounded-full blur-3xl" />
+              <img
+                src={vitraLogo}
+                alt="Vitra Logo"
+                className="relative w-[400px] h-[400px] object-contain drop-shadow-2xl"
+              />
+            </motion.div>
+          </div>
 
           {/* Dashboard Preview + Floating Notifications */}
-          <div className="mt-16 md:mt-20 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
+          <div className="mt-16 md:mt-24 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
             {/* Notifications column */}
             <div className="order-2 lg:order-1 max-h-[500px] overflow-hidden">
               <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
@@ -355,7 +342,7 @@ export default function Landing() {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
                 src={dashboardPreview}
-                alt="Dashboard Aether com métricas de vendas em tempo real"
+                alt="Dashboard Vitra com métricas de vendas em tempo real"
                 className="w-full"
               />
               <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
@@ -364,7 +351,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Highlight Cards with hover tilt effect */}
+      {/* ═══════════════ HIGHLIGHT CARDS ═══════════════ */}
       <section className="container pb-20">
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
           {highlights.map((item, i) => (
@@ -385,19 +372,19 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Marquee */}
+      {/* ═══════════════ MARQUEE ═══════════════ */}
       <section className="relative border-y border-border/50 bg-primary/5 py-5 overflow-hidden">
         <div className="flex whitespace-nowrap animate-marquee">
           {[...Array(12)].map((_, i) => (
             <span key={i} className="mx-8 text-lg md:text-xl font-bold text-primary/80 flex items-center gap-3">
-              <Zap className="h-4 w-4" /> {marqueeText}
+              <Sparkles className="h-4 w-4" /> {marqueeText}
             </span>
           ))}
         </div>
       </section>
 
-      {/* Big Stats with animated counters */}
-      <section className="bg-card/30">
+      {/* ═══════════════ BIG STATS ═══════════════ */}
+      <section id="about" className="bg-card/30">
         <div className="container py-20">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
             <span className="text-xs font-medium uppercase tracking-widest text-primary">Sobre nós</span>
@@ -424,7 +411,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Section with staggered reveal */}
+      {/* ═══════════════ FEATURES ═══════════════ */}
       <section id="features" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
           <span className="text-xs font-medium uppercase tracking-widest text-primary">Recursos</span>
@@ -447,7 +434,6 @@ export default function Landing() {
               className="group relative rounded-2xl border border-border/50 bg-card/50 p-7 space-y-4 hover:border-primary/30 transition-all duration-300 overflow-hidden cursor-default"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              {/* Glow dot */}
               <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
@@ -461,7 +447,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Payment Methods */}
+      {/* ═══════════════ PAYMENT METHODS ═══════════════ */}
       <section id="pricing" className="bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
@@ -508,7 +494,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* App Coming Soon */}
+      {/* ═══════════════ APP COMING SOON ═══════════════ */}
       <section className="relative overflow-hidden">
         <FloatingParticles />
         <div className="container relative py-20 md:py-28">
@@ -519,17 +505,17 @@ export default function Landing() {
               </span>
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
                 Em breve o app da{" "}
-                <span className="text-gradient-primary">Aether!</span>
+                <span className="text-gradient-primary">Vitra!</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Com o app da Aether você terá tudo o que precisa para gerenciar suas vendas na palma da sua mão. Acompanhe métricas, receba notificações de vendas e saque seus ganhos de qualquer lugar.
+                Com o app da Vitra você terá tudo o que precisa para gerenciar suas vendas na palma da sua mão. Acompanhe métricas, receba notificações de vendas e saque seus ganhos de qualquer lugar.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
+                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50 rounded-full" disabled>
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
                   App Store — Em breve
                 </Button>
-                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
+                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50 rounded-full" disabled>
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 1.33a1.004 1.004 0 010 1.724l-2.302 1.33-2.498-2.498 2.498-2.886zM5.864 2.658L16.8 8.99l-2.302 2.302-8.635-8.635z"/></svg>
                   Google Play — Em breve
                 </Button>
@@ -543,7 +529,7 @@ export default function Landing() {
             >
               <img
                 src={appMockup}
-                alt="App Aether em breve"
+                alt="App Vitra em breve"
                 className="w-full max-w-md drop-shadow-2xl"
               />
             </motion.div>
@@ -551,7 +537,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* ═══════════════ TESTIMONIALS ═══════════════ */}
       <section id="testimonials" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
           <span className="text-xs font-medium uppercase tracking-widest text-primary">Depoimentos</span>
@@ -588,7 +574,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* ═══════════════ CTA ═══════════════ */}
       <section className="container pb-20 md:pb-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }}
           className="relative rounded-3xl border border-primary/20 bg-primary/5 overflow-hidden"
@@ -606,7 +592,7 @@ export default function Landing() {
               Crie sua conta grátis em menos de 2 minutos e comece a faturar com seus produtos digitais.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200" asChild>
+              <Button size="lg" className="h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200 rounded-full" asChild>
                 <Link to="/auth">
                   Criar minha conta grátis <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -627,19 +613,17 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* Footer */}
+      {/* ═══════════════ FOOTER ═══════════════ */}
       <footer className="border-t border-border/50 bg-card/30">
         <div className="container py-12">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
-                </div>
-                <span className="text-lg font-bold tracking-tight">Aether</span>
+              <div className="flex items-center gap-2.5">
+                <img src={vitraLogo} alt="Vitra" className="h-8 w-8 object-contain" />
+                <span className="text-lg font-bold tracking-tight">VITRA</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                A plataforma de pagamentos que acelera seus resultados digitais.
+                O marketplace digital que acelera seus resultados.
               </p>
             </div>
             <div className="space-y-3">
@@ -665,8 +649,8 @@ export default function Landing() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <span>© 2026 Aether. Todos os direitos reservados.</span>
-            <span className="text-xs">Feito com precisão ⚡</span>
+            <span>© 2026 Vitra. Todos os direitos reservados.</span>
+            <span className="text-xs">Digital Marketplace ✦</span>
           </div>
         </div>
       </footer>
