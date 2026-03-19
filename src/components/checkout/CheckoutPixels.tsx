@@ -15,7 +15,6 @@ interface Props {
 }
 
 export function useCheckoutPixels(pixels: Pixel[]) {
-  // Inject pixel base scripts on mount
   useEffect(() => {
     if (!pixels.length) return;
 
@@ -61,7 +60,6 @@ export function useCheckoutPixels(pixels: Pixel[]) {
       }
 
       if (px.platform === "google_ads") {
-        // Uses same gtag - just add config
         if (!document.querySelector('script[src*="googletagmanager"]')) {
           const gtagScript = document.createElement("script");
           gtagScript.async = true;
@@ -78,6 +76,7 @@ export function useCheckoutPixels(pixels: Pixel[]) {
           document.head.appendChild(initScript);
           scripts.push(initScript);
         }
+
         const configScript = document.createElement("script");
         configScript.innerHTML = `gtag('config', '${px.pixel_id}');`;
         document.head.appendChild(configScript);
@@ -112,7 +111,7 @@ export function useCheckoutPixels(pixels: Pixel[]) {
     });
 
     return () => {
-      scripts.forEach((s) => s.remove());
+      scripts.forEach((script) => script.remove());
     };
   }, [pixels]);
 }
@@ -143,8 +142,11 @@ export function firePixelEvent(
 
     if (px.platform === "google_ads" && w.gtag) {
       if (event === "Purchase" && value) {
+        const conversionLabel = px.config?.conversion_label;
+        const sendTo = conversionLabel ? `${px.pixel_id}/${conversionLabel}` : px.pixel_id;
+
         w.gtag("event", "conversion", {
-          send_to: px.pixel_id,
+          send_to: sendTo,
           value: value / 100,
           currency,
         });
