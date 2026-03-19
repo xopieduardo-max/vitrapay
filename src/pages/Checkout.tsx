@@ -57,7 +57,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
         <div className="rounded-xl p-5 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
           {(c.items || []).map((item: string, i: number) => (
             <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "hsl(0,0%,90%)" }}>
-              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(158, 94%, 40%)" }} />
+              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(270, 52%, 58%)" }} />
               {item}
             </div>
           ))}
