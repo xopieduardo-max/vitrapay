@@ -1,30 +1,33 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Save, Loader2, Copy, Check, ExternalLink,
-  Settings, Tag, Link2, Eye, Plus, Trash2, Star,
-  ShoppingCart, MessageSquareQuote, BarChart3,
+  ArrowLeft,
+  Save,
+  Loader2,
+  Settings,
+  Tag,
+  Link2,
+  Eye,
+  ShoppingCart,
+  BarChart3,
 } from "lucide-react";
 
-// ── Sub-components ──
 import EditProductSettings from "@/components/edit-product/EditProductSettings";
 import EditProductCoupons from "@/components/edit-product/EditProductCoupons";
 import EditProductLinks from "@/components/edit-product/EditProductLinks";
 import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
 import EditProductPixels from "@/components/edit-product/EditProductPixels";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const PRODUCT_TABS = ["settings", "checkout", "pixels", "coupons", "links"] as const;
+type ProductTab = (typeof PRODUCT_TABS)[number];
 
 export default function EditProduct() {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +35,13 @@ export default function EditProduct() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [saving, setSaving] = useState(false);
+
+  const requestedTab = searchParams.get("tab");
+  const currentTab: ProductTab = PRODUCT_TABS.includes(requestedTab as ProductTab)
+    ? (requestedTab as ProductTab)
+    : "settings";
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["edit-product", id],
@@ -62,6 +71,18 @@ export default function EditProduct() {
   }
 
   const updateField = (field: string, value: any) => setForm((f) => ({ ...f, [field]: value }));
+
+  const handleTabChange = (tab: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (tab === "settings") {
+      nextParams.delete("tab");
+    } else {
+      nextParams.set("tab", tab);
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  };
 
   const handleSave = async () => {
     if (!product) return;
@@ -119,7 +140,6 @@ export default function EditProduct() {
       transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
       className="space-y-6 pb-20 md:pb-6 max-w-4xl"
     >
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/products")}>
@@ -148,8 +168,7 @@ export default function EditProduct() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="settings" className="w-full">
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-4 overflow-x-auto flex-nowrap">
           {[
             { value: "settings", icon: Settings, label: "Geral" },

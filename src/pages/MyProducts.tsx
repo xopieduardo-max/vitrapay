@@ -1,4 +1,4 @@
-import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2 } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
@@ -64,53 +64,61 @@ export default function MyProducts() {
           </Button>
         </div>
       ) : (
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <div className="grid grid-cols-[1fr_120px_100px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
-          <span>Produto</span>
-          <span>Preço</span>
-          <span>Status</span>
-          <span></span>
-        </div>
-        {myProducts.map((product, i) => (
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <div className="grid grid-cols-[1fr_120px_100px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
+            <span>Produto</span>
+            <span>Preço</span>
+            <span>Status</span>
+            <span></span>
+          </div>
+          {myProducts.map((product, i) => (
             <motion.div
-            key={product.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="grid grid-cols-[1fr_120px_100px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-            onClick={() => navigate(`/products/${product.id}/edit`)}
-          >
-            <div>
-              <p className="text-sm font-medium">{product.title}</p>
-              <p className="text-xs text-muted-foreground">{product.type === "lms" ? "Área de Membros" : "Download"}</p>
-            </div>
-            <span className="text-sm font-semibold stat-value">
-              R$ {(product.price / 100).toFixed(2)}
-            </span>
-            <Badge variant="secondary" className={`text-[0.65rem] w-fit ${product.is_published ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground border-border"}`}>
-              {product.is_published ? "Ativo" : "Rascunho"}
-            </Badge>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" strokeWidth={1.5} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem className="gap-2 text-sm" onClick={() => window.open(`/checkout/${product.id}`, "_blank")}>
-                  <Eye className="h-4 w-4" strokeWidth={1.5} /> Visualizar
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 text-sm" onClick={() => navigate(`/products/${product.id}/edit`)}>
-                  <Edit className="h-4 w-4" strokeWidth={1.5} /> Editar
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 text-sm text-destructive">
-                  <Trash2 className="h-4 w-4" strokeWidth={1.5} /> Excluir
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </motion.div>
-        ))}
-      </div>
+              key={product.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+              className="grid grid-cols-[1fr_120px_100px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+              onClick={() => navigate(`/products/${product.id}/edit`)}
+            >
+              <div>
+                <p className="text-sm font-medium">{product.title}</p>
+                <p className="text-xs text-muted-foreground">{product.type === "lms" ? "Área de Membros" : "Download"}</p>
+              </div>
+              <span className="text-sm font-semibold stat-value">
+                R$ {(product.price / 100).toFixed(2)}
+              </span>
+              <Badge variant="secondary" className={`text-[0.65rem] w-fit ${product.is_published ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground border-border"}`}>
+                {product.is_published ? "Ativo" : "Rascunho"}
+              </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <MoreHorizontal className="h-4 w-4" strokeWidth={1.5} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+                  <DropdownMenuItem className="gap-2 text-sm" onClick={() => window.open(`/checkout/${product.id}`, "_blank")}>
+                    <Eye className="h-4 w-4" strokeWidth={1.5} /> Visualizar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 text-sm" onClick={() => navigate(`/products/${product.id}/edit`)}>
+                    <Edit className="h-4 w-4" strokeWidth={1.5} /> Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 text-sm" onClick={() => navigate(`/products/${product.id}/edit?tab=pixels`)}>
+                    <BarChart3 className="h-4 w-4" strokeWidth={1.5} /> Pixels
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 text-sm text-destructive">
+                    <Trash2 className="h-4 w-4" strokeWidth={1.5} /> Excluir
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </motion.div>
+          ))}
+        </div>
       )}
     </div>
   );
