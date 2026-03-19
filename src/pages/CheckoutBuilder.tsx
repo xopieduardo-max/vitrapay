@@ -284,7 +284,7 @@ export default function CheckoutBuilder() {
                   <div className="h-14 w-14 rounded-lg shrink-0" style={{ background: "hsl(240,10%,14%)" }} />
                   <div className="flex-1">
                     <div className="h-4 w-40 rounded" style={{ background: "hsl(240,10%,14%)" }} />
-                    <div className="h-3 w-24 rounded mt-2" style={{ background: "hsl(158,94%,30%,0.3)" }} />
+                    <div className="h-3 w-24 rounded mt-2" style={{ background: "hsl(270,52%,49%,0.3)" }} />
                   </div>
                 </div>
               </div>
