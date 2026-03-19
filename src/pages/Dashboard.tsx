@@ -412,7 +412,7 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground mb-4">Conversão de pagamento</p>
             <div className="space-y-5">
               {paymentMethods.map((method) => {
-                const data = salesByProvider[method.name] || { count: 0, amount: 0 };
+                const data = salesByProvider[method.key] || { count: 0, amount: 0 };
                 const total = salesData.length || 1;
                 const pct = ((data.count / total) * 100);
                 return (
