@@ -77,7 +77,7 @@ export default function Auth() {
         type: "signup",
       });
       if (error) throw error;
-      toast({ title: "Conta confirmada!", description: "Bem-vindo à Aether." });
+      toast({ title: "Conta confirmada!", description: "Bem-vindo à Vitra." });
       navigate("/dashboard");
     } catch (error: any) {
       toast({
