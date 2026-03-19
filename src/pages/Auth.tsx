@@ -276,7 +276,7 @@ export default function Auth() {
       <div className="hidden lg:block lg:flex-1 relative overflow-hidden">
         <img
           src={authBanner}
-          alt="Aether — Acelerando rumo ao futuro"
+          alt="Vitra — Acelerando rumo ao futuro"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
