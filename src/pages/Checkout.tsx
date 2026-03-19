@@ -57,7 +57,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
         <div className="rounded-xl p-5 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
           {(c.items || []).map((item: string, i: number) => (
             <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "hsl(0,0%,90%)" }}>
-              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(270, 52%, 58%)" }} />
+              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(158, 94%, 40%)" }} />
               {item}
             </div>
           ))}
@@ -65,7 +65,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       );
     case "badge": {
       const colors: Record<string, string> = {
-        green: "hsl(270, 52%, 49%)",
+        green: "hsl(158, 94%, 30%)",
         gold: "hsl(38, 92%, 50%)",
         blue: "hsl(210, 100%, 50%)",
       };
@@ -89,7 +89,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       return (
         <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(270, 52%, 49%, 0.2)", color: "hsl(270, 52%, 58%)" }}>
+            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(158, 94%, 40%)" }}>
               {(c.author || "A").charAt(0).toUpperCase()}
             </div>
             <div>
@@ -354,8 +354,8 @@ export default function Checkout() {
           style={{ background: "hsl(240,10%,8%)", border: "1px solid hsl(240,5%,15%)" }}
         >
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(270,52%,49%,0.15)" }}>
-              <CheckCircle2 className="h-8 w-8" style={{ color: "hsl(270,52%,58%)" }} />
+            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(158,94%,30%,0.15)" }}>
+              <CheckCircle2 className="h-8 w-8" style={{ color: "hsl(158,94%,40%)" }} />
             </div>
           </div>
           <h1 className="text-2xl font-bold">Compra Confirmada!</h1>
@@ -375,7 +375,7 @@ export default function Checkout() {
           {purchaseResult.file_url && (
             <Button
               className="w-full h-12 text-sm font-bold gap-2 rounded-xl"
-              style={{ background: "hsl(270,52%,49%)", color: "white" }}
+              style={{ background: "hsl(158,94%,30%)", color: "white" }}
               onClick={() => window.open(purchaseResult.file_url, "_blank")}
             >
               <ArrowDownToLine className="h-4 w-4" /> Baixar Produto
@@ -384,7 +384,7 @@ export default function Checkout() {
           {purchaseResult.product_type === "lms" && (
             <Button
               className="w-full h-12 text-sm font-bold gap-2 rounded-xl"
-              style={{ background: "hsl(270,52%,49%)", color: "white" }}
+              style={{ background: "hsl(158,94%,30%)", color: "white" }}
               onClick={() => toast({ title: "Acesse com seu email", description: "Faça login para acessar a área de membros." })}
             >
               Acessar Área de Membros
@@ -445,7 +445,7 @@ export default function Checkout() {
 
       {/* ── Headline Banner ── */}
       {product.checkout_headline && (
-        <div className="py-2.5 text-center text-sm font-bold tracking-wide" style={{ background: "hsl(270, 52%, 49%)", color: "white" }}>
+        <div className="py-2.5 text-center text-sm font-bold tracking-wide" style={{ background: "hsl(158, 94%, 30%)", color: "white" }}>
           {product.checkout_headline}
         </div>
       )}
@@ -577,9 +577,9 @@ export default function Checkout() {
                     onClick={() => setPaymentMethod(method)}
                     className="flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-medium transition-all whitespace-nowrap"
                     style={{
-                      background: paymentMethod === method ? "hsl(270, 52%, 49%)" : "hsl(240, 10%, 12%)",
+                      background: paymentMethod === method ? "hsl(158, 94%, 30%)" : "hsl(240, 10%, 12%)",
                       color: paymentMethod === method ? "white" : "hsl(240, 5%, 60%)",
-                      border: paymentMethod === method ? "1px solid hsl(270, 52%, 54%)" : "1px solid hsl(240, 5%, 18%)",
+                      border: paymentMethod === method ? "1px solid hsl(158, 94%, 35%)" : "1px solid hsl(240, 5%, 18%)",
                     }}
                   >
                     {method === "pix" ? <QrCode className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
@@ -680,8 +680,8 @@ export default function Checkout() {
                       onClick={() => toggleBump(bump.id)}
                       className="rounded-xl p-4 cursor-pointer transition-all"
                       style={{
-                        background: isSelected ? "hsl(270, 52%, 49%, 0.1)" : "hsl(240, 10%, 8%)",
-                        border: isSelected ? "2px solid hsl(270, 52%, 49%)" : "2px solid hsl(240, 5%, 15%)",
+                        background: isSelected ? "hsl(158, 94%, 30%, 0.1)" : "hsl(240, 10%, 8%)",
+                        border: isSelected ? "2px solid hsl(158, 94%, 30%)" : "2px solid hsl(240, 5%, 15%)",
                       }}
                     >
                       {bump.title && (
@@ -822,7 +822,7 @@ export default function Checkout() {
                 disabled={processing}
                 className="w-full h-14 text-base font-bold gap-2 rounded-xl"
                 size="lg"
-                style={{ background: "hsl(270, 52%, 49%)", color: "white" }}
+                style={{ background: "hsl(158, 94%, 30%)", color: "white" }}
               >
                 {processing ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -865,7 +865,7 @@ export default function Checkout() {
                         {t.author_avatar_url ? (
                           <img src={t.author_avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
                         ) : (
-                          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(270, 52%, 49%, 0.2)", color: "hsl(270, 52%, 58%)" }}>
+                          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(158, 94%, 40%)" }}>
                             {t.author_name?.charAt(0)?.toUpperCase()}
                           </div>
                         )}

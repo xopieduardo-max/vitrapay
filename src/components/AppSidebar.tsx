@@ -83,10 +83,12 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="p-4">
         <NavLink to="/" className="flex items-center gap-2">
-          <img src="/vitra-logo.png" alt="Vitra" className="h-8 w-8 object-contain" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
+          </div>
           {!collapsed && (
             <span className="text-lg font-bold tracking-tight text-foreground">
-              VITRA
+              Aether
             </span>
           )}
         </NavLink>

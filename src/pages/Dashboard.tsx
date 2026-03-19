@@ -169,7 +169,7 @@ export default function Dashboard() {
       <motion.div {...anim(0)} className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
         <img
           src={dashboardBanner}
-          alt="Banner promocional Vitra"
+          alt="Banner promocional Aether"
           className="w-full h-auto object-cover rounded-xl"
           style={{ maxHeight: 160 }}
         />
