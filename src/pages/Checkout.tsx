@@ -65,7 +65,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       );
     case "badge": {
       const colors: Record<string, string> = {
-        green: "hsl(158, 94%, 30%)",
+        green: "hsl(270, 52%, 49%)",
         gold: "hsl(38, 92%, 50%)",
         blue: "hsl(210, 100%, 50%)",
       };
