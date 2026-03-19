@@ -157,7 +157,7 @@ export default function Dashboard() {
 
   // Quick links for mobile
   const quickLinks = [
-    { label: "Relatórios", icon: BarChart3, path: "/purchases" },
+    { label: "Relatórios", icon: BarChart3, path: "/sales" },
     { label: "Produtos", icon: Package, path: "/products" },
     { label: "Afiliados", icon: Users, path: "/affiliates" },
     { label: "Suporte", icon: HelpCircle, path: "/admin/settings" },
