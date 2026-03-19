@@ -4,7 +4,7 @@ export const mockProducts = [
     title: "Curso Completo de React + TypeScript",
     producer: "Dev Academy",
     price: 29700,
-    coverColor: "hsl(158, 40%, 20%)",
+    coverColor: "hsl(270, 40%, 25%)",
     type: "lms" as const,
     sales: 1247,
     commission: 40,

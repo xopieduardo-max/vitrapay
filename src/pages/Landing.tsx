@@ -28,10 +28,10 @@ function generateNotification() {
 const methodConfig = {
   pix: {
     label: "Venda aprovada via Pix!",
-    iconBg: "bg-emerald-500/15",
-    iconColor: "text-emerald-500",
-    borderColor: "border-emerald-500/20",
-    amountColor: "text-emerald-500",
+    iconBg: "bg-primary/15",
+    iconColor: "text-primary",
+    borderColor: "border-primary/20",
+    amountColor: "text-primary",
   },
   card: {
     label: "Venda aprovada via Cartão!",

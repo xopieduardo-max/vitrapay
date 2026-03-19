@@ -89,7 +89,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       return (
         <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(158, 94%, 40%)" }}>
+            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(270, 52%, 49%, 0.2)", color: "hsl(270, 52%, 58%)" }}>
               {(c.author || "A").charAt(0).toUpperCase()}
             </div>
             <div>
