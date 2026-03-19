@@ -132,7 +132,7 @@ export default function Auth() {
                   </h1>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {isLogin
-                      ? "Insira seus dados abaixo para continuar sua jornada na Aether"
+                      ? "Insira seus dados abaixo para continuar sua jornada na Vitra"
                       : "Comece a vender produtos digitais hoje mesmo"}
                   </p>
                 </div>
