@@ -35,9 +35,9 @@ import {
 const REVENUE_GOAL = 1000000;
 
 const paymentMethods = [
-  { name: "Cartão de crédito", icon: CreditCard },
-  { name: "Pix", icon: QrCode },
-  { name: "Boleto", icon: Landmark },
+  { name: "Cartão de crédito", key: "card", icon: CreditCard },
+  { name: "Pix", key: "pix", icon: QrCode },
+  { name: "Boleto", key: "boleto", icon: Landmark },
 ];
 
 const anim = (delay: number) => ({
