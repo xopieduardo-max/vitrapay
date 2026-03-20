@@ -56,6 +56,7 @@ const App = () => (
             <Route path="/learn/:productId" element={<MemberArea />} />
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/install" element={<Install />} />
 
             {/* Protected producer panel */}
             <Route element={<AuthGuard />}>
