@@ -89,7 +89,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       return (
         <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(48, 96%, 45%)" }}>
+            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(48, 96%, 53%, 0.2)", color: "hsl(48, 96%, 45%)" }}>
               {(c.author || "A").charAt(0).toUpperCase()}
             </div>
             <div>
@@ -354,7 +354,7 @@ export default function Checkout() {
           style={{ background: "hsl(240,10%,8%)", border: "1px solid hsl(240,5%,15%)" }}
         >
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(158,94%,30%,0.15)" }}>
+            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(48,96%,53%,0.15)" }}>
               <CheckCircle2 className="h-8 w-8" style={{ color: "hsl(48,96%,45%)" }} />
             </div>
           </div>
@@ -680,7 +680,7 @@ export default function Checkout() {
                       onClick={() => toggleBump(bump.id)}
                       className="rounded-xl p-4 cursor-pointer transition-all"
                       style={{
-                        background: isSelected ? "hsl(158, 94%, 30%, 0.1)" : "hsl(240, 10%, 8%)",
+                        background: isSelected ? "hsl(48, 96%, 53%, 0.1)" : "hsl(240, 10%, 8%)",
                         border: isSelected ? "2px solid hsl(48, 96%, 53%)" : "2px solid hsl(240, 5%, 15%)",
                       }}
                     >
@@ -865,7 +865,7 @@ export default function Checkout() {
                         {t.author_avatar_url ? (
                           <img src={t.author_avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
                         ) : (
-                          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(158, 94%, 30%, 0.2)", color: "hsl(48, 96%, 45%)" }}>
+                          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(48, 96%, 53%, 0.2)", color: "hsl(48, 96%, 45%)" }}>
                             {t.author_name?.charAt(0)?.toUpperCase()}
                           </div>
                         )}

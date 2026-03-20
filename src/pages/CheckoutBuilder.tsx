@@ -284,7 +284,7 @@ export default function CheckoutBuilder() {
                   <div className="h-14 w-14 rounded-lg shrink-0" style={{ background: "hsl(240,10%,14%)" }} />
                   <div className="flex-1">
                     <div className="h-4 w-40 rounded" style={{ background: "hsl(240,10%,14%)" }} />
-                    <div className="h-3 w-24 rounded mt-2" style={{ background: "hsl(158,94%,30%,0.3)" }} />
+                    <div className="h-3 w-24 rounded mt-2" style={{ background: "hsl(48,96%,53%,0.3)" }} />
                   </div>
                 </div>
               </div>
@@ -307,7 +307,7 @@ export default function CheckoutBuilder() {
                   <div className="space-y-2.5 pt-2">
                     <div className="h-3 w-40 rounded" style={{ background: "hsl(240,10%,14%)" }} />
                     <div className="flex gap-2">
-                      <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(158,94%,30%,0.15)", border: "1px solid hsl(158,94%,30%,0.4)" }} />
+                      <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(48,96%,53%,0.15)", border: "1px solid hsl(48,96%,53%,0.4)" }} />
                       <div className="h-10 flex-1 rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
                     </div>
                     <div className="h-10 w-full rounded-lg" style={{ background: "hsl(240,10%,10%)", border: "1px solid hsl(240,5%,15%)" }} />
