@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
-import logoHorizontal from "@/assets/logo-vitrapay-horizontal.png";
+import { ThemeLogo } from "@/components/ThemeLogo";
 import logoImg from "@/assets/logo-vitrapay.png";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
 
