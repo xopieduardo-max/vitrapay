@@ -40,7 +40,6 @@ interface PlatformConfigDef {
   label: string;
   logo: string;
   fields: PlatformField[];
-  fields: PlatformField[];
   hasAccessToken: boolean;
   eventOptions: PlatformOption[];
   conversionOptions: PlatformConversionOption[];
