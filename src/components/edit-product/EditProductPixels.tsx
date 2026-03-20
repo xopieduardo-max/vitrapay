@@ -38,7 +38,7 @@ interface PlatformConversionOption {
 interface PlatformConfigDef {
   id: string;
   label: string;
-  icon: string;
+  logo: string;
   color: string;
   fields: PlatformField[];
   hasAccessToken: boolean;
