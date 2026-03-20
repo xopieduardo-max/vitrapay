@@ -1,4 +1,4 @@
-import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2, BarChart3 } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2, BarChart3, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
@@ -30,6 +30,29 @@ export default function MyProducts() {
       return data;
     },
     enabled: !!user,
+  });
+
+  const productIds = myProducts.map((p) => p.id);
+
+  const { data: pixelCounts = {} } = useQuery({
+    queryKey: ["pixel-counts", productIds],
+    queryFn: async () => {
+      if (productIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from("product_pixels")
+        .select("product_id, platform")
+        .in("product_id", productIds);
+      if (error) throw error;
+      const counts: Record<string, string[]> = {};
+      for (const row of data || []) {
+        if (!counts[row.product_id]) counts[row.product_id] = [];
+        if (!counts[row.product_id].includes(row.platform)) {
+          counts[row.product_id].push(row.platform);
+        }
+      }
+      return counts;
+    },
+    enabled: productIds.length > 0,
   });
 
   return (
@@ -65,10 +88,11 @@ export default function MyProducts() {
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="grid grid-cols-[1fr_120px_100px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
+          <div className="grid grid-cols-[1fr_120px_100px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
             <span>Produto</span>
             <span>Preço</span>
             <span>Status</span>
+            <span>Pixels</span>
             <span></span>
           </div>
           {myProducts.map((product, i) => (
@@ -77,7 +101,7 @@ export default function MyProducts() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="grid grid-cols-[1fr_120px_100px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+              className="grid grid-cols-[1fr_120px_100px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
               onClick={() => navigate(`/products/${product.id}/edit`)}
             >
               <div>
@@ -90,6 +114,14 @@ export default function MyProducts() {
               <Badge variant="secondary" className={`text-[0.65rem] w-fit ${product.is_published ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground border-border"}`}>
                 {product.is_published ? "Ativo" : "Rascunho"}
               </Badge>
+              {(pixelCounts[product.id] ?? []).length > 0 ? (
+                <div className="flex items-center gap-1.5">
+                  <Radio className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs text-primary font-medium">{pixelCounts[product.id].length}</span>
+                </div>
+              ) : (
+                <span className="text-xs text-muted-foreground">—</span>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
