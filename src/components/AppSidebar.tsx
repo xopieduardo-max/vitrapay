@@ -43,6 +43,7 @@ const navItems = [
   { title: "Financeiro", url: "/finance", icon: Landmark },
   { title: "Comunidade", url: "/community", icon: MessageCircle },
   { title: "Ajustes", url: "/settings", icon: Settings },
+  { title: "Baixar App", url: "/install", icon: Smartphone },
 ];
 
 export function AppSidebar() {
