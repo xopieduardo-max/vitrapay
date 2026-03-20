@@ -434,3 +434,48 @@ export default function AdminFakeSales() {
     </div>
   );
 }
+
+function TestPushButton({ producerId }: { producerId: string }) {
+  const { toast } = useToast();
+  const [sending, setSending] = useState(false);
+
+  const sendTestPush = async () => {
+    if (!producerId) {
+      toast({ title: "Selecione um usuário primeiro", variant: "destructive" });
+      return;
+    }
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-push", {
+        body: {
+          producer_id: producerId,
+          title: "🔔 Teste de notificação",
+          body: "Se você está vendo isso, o push funciona!",
+          url: "/dashboard",
+        },
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result.sent > 0) {
+        toast({ title: `✅ Push enviado! (${result.sent} dispositivo${result.sent > 1 ? "s" : ""})` });
+      } else {
+        toast({
+          title: "⚠️ Nenhum dispositivo cadastrado",
+          description: "O usuário precisa ativar notificações em Ajustes primeiro.",
+          variant: "destructive",
+        });
+      }
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar push", description: e.message, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Button variant="outline" className="gap-1.5" onClick={sendTestPush} disabled={sending || !producerId}>
+      {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+      Enviar push teste
+    </Button>
+  );
+}
