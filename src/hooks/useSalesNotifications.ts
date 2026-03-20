@@ -20,7 +20,7 @@ export function useSalesNotifications() {
           table: "sales",
           filter: `producer_id=eq.${user.id}`,
         },
-        (payload: any) => {
+        async (payload: any) => {
           const amount = payload.new?.amount || 0;
           const method = payload.new?.payment_provider || "pix";
           const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -30,6 +30,20 @@ export function useSalesNotifications() {
           });
 
           setNewSalesCount((prev) => prev + 1);
+
+          // Trigger push notification via edge function
+          try {
+            await supabase.functions.invoke("send-push", {
+              body: {
+                producer_id: user.id,
+                title: `Nova venda de ${fmt}! 🎉`,
+                body: `Pagamento via ${method === "pix" ? "Pix" : method === "card" ? "Cartão" : "Boleto"}`,
+                url: "/sales",
+              },
+            });
+          } catch (e) {
+            console.error("Push notification error:", e);
+          }
         }
       )
       .subscribe();

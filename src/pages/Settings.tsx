@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette } from "lucide-react";
+import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
@@ -230,6 +231,9 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Push Notifications Section */}
+      <NotificationsSection />
+
       {/* Password Section */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-6">
         <div className="flex items-center gap-2 text-sm font-semibold">
@@ -280,6 +284,47 @@ export default function Settings() {
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function NotificationsSection() {
+  const { isSubscribed, isSupported, permission, subscribe, unsubscribe } = usePushNotifications();
+
+  if (!isSupported) return null;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Bell className="h-4 w-4 text-primary" />
+        Notificações Push
+      </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm">Alertas de venda no celular</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {isSubscribed
+              ? "Você receberá notificações a cada nova venda"
+              : "Ative para receber alertas instantâneos de vendas"}
+          </p>
+        </div>
+        {isSubscribed ? (
+          <Button variant="outline" size="sm" onClick={unsubscribe}>
+            <BellOff className="h-4 w-4 mr-2" />
+            Desativar
+          </Button>
+        ) : (
+          <Button size="sm" onClick={subscribe}>
+            <Bell className="h-4 w-4 mr-2" />
+            Ativar
+          </Button>
+        )}
+      </div>
+      {permission === "denied" && (
+        <p className="text-xs text-destructive">
+          Notificações bloqueadas pelo navegador. Vá nas configurações do navegador para permitir.
+        </p>
+      )}
     </div>
   );
 }
