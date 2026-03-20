@@ -44,8 +44,8 @@ serve(async (req) => {
 
     webpush.setVapidDetails(
       "mailto:noreply@aetherpay.lovable.app",
-      vapidPublicKey,
-      vapidPrivateKey
+      cleanPublicKey,
+      cleanPrivateKey
     );
 
     const supabase = createClient(supabaseUrl, supabaseKey);
