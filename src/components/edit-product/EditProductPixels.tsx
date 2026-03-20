@@ -79,7 +79,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "google_ads",
     label: "Google Ads",
-    icon: "▲",
+    logo: pixelGoogleAdsLogo,
     color: "bg-[#4285F4]",
     fields: [
       { key: "pixel_id", label: "ID do Pixel", placeholder: "AW-123456789" },
