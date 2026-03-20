@@ -142,6 +142,25 @@ export default function AdminFakeSales() {
         if (error) throw error;
       }
 
+      // Send push notification to the producer
+      try {
+        const product = products.find((p: any) => p.id === productId);
+        const price = customPrice ? Math.round(parseFloat(customPrice) * 100) : (product?.price || 0);
+        const fmt2 = `R$ ${(price / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+        
+        await supabase.functions.invoke("send-push", {
+          body: {
+            producer_id: producerId,
+            title: `Nova venda de ${fmt2}! 🎉`,
+            body: `Você acabou de receber uma nova venda via ${salesToInsert[0]?.payment_provider || "pix"}.`,
+            url: "/sales",
+          },
+        });
+        console.log("[FakeSales] Push sent to producer:", producerId);
+      } catch (e) {
+        console.error("[FakeSales] Push send error:", e);
+      }
+
       return salesToInsert.length;
     },
     onSuccess: (count) => {

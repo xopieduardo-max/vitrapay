@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,7 @@ export function usePushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
+  const autoSubAttempted = useRef(false);
 
   useEffect(() => {
     const hasSW = "serviceWorker" in navigator;
@@ -40,6 +41,28 @@ export function usePushNotifications() {
     }
   }, []);
 
+  // Auto-subscribe when user is logged in and push is supported
+  useEffect(() => {
+    if (!user || !isSupported || autoSubAttempted.current) return;
+    if (isSubscribed) return; // Already subscribed
+
+    // Only auto-subscribe if permission is already granted or default (will prompt)
+    // If denied, we can't do anything
+    if (Notification.permission === "denied") return;
+
+    // If already granted, silently subscribe without prompting
+    if (Notification.permission === "granted") {
+      autoSubAttempted.current = true;
+      console.log("[Push] Auto-subscribing (permission already granted)...");
+      silentSubscribe();
+    } else {
+      // Permission is "default" - auto-prompt the user once
+      autoSubAttempted.current = true;
+      console.log("[Push] Auto-prompting for push permission...");
+      subscribe(true);
+    }
+  }, [user, isSupported, isSubscribed]);
+
   async function checkExistingSubscription() {
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -52,7 +75,48 @@ export function usePushNotifications() {
     }
   }
 
-  async function subscribe() {
+  // Subscribe without showing toasts (for auto-subscribe)
+  async function silentSubscribe() {
+    if (!user) return;
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+      console.log("[Push] Auto-subscribed:", subscription.endpoint.slice(0, 60));
+
+      const subJson = subscription.toJSON();
+      const keys = subJson.keys!;
+
+      await supabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("endpoint", subJson.endpoint!);
+
+      const { error } = await supabase
+        .from("push_subscriptions")
+        .insert({
+          user_id: user.id,
+          endpoint: subJson.endpoint!,
+          p256dh: keys.p256dh!,
+          auth: keys.auth!,
+        });
+
+      if (error) {
+        console.error("[Push] Auto-subscribe DB error:", error);
+        return;
+      }
+
+      console.log("[Push] Auto-subscribed and saved successfully");
+      setIsSubscribed(true);
+    } catch (e) {
+      console.error("[Push] Silent subscribe error:", e);
+    }
+  }
+
+  async function subscribe(isAuto = false) {
     if (!user || !isSupported) {
       console.log("[Push] Cannot subscribe:", { user: !!user, isSupported });
       return;
@@ -65,11 +129,13 @@ export function usePushNotifications() {
       console.log("[Push] Permission result:", perm);
 
       if (perm !== "granted") {
-        toast({
-          title: "Permissão negada",
-          description: "Ative as notificações nas configurações do navegador.",
-          variant: "destructive",
-        });
+        if (!isAuto) {
+          toast({
+            title: "Permissão negada",
+            description: "Ative as notificações nas configurações do navegador.",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
@@ -87,17 +153,13 @@ export function usePushNotifications() {
       const keys = subJson.keys!;
       
       console.log("[Push] Saving to database for user:", user.id);
-      console.log("[Push] Endpoint:", subJson.endpoint?.slice(0, 60));
-      console.log("[Push] Has p256dh:", !!keys.p256dh, "Has auth:", !!keys.auth);
 
-      // First try to delete any existing subscription for this user+endpoint
       await supabase
         .from("push_subscriptions")
         .delete()
         .eq("user_id", user.id)
         .eq("endpoint", subJson.endpoint!);
 
-      // Then insert fresh
       const { data, error } = await supabase
         .from("push_subscriptions")
         .insert({
@@ -115,14 +177,19 @@ export function usePushNotifications() {
 
       console.log("[Push] Saved successfully:", data);
       setIsSubscribed(true);
-      toast({ title: "Notificações ativadas! 🔔", description: "Você receberá alertas de vendas no celular." });
+      
+      if (!isAuto) {
+        toast({ title: "Notificações ativadas! 🔔", description: "Você receberá alertas de vendas no celular." });
+      }
     } catch (e: any) {
       console.error("[Push] Subscribe error:", e);
-      toast({
-        title: "Erro ao ativar notificações",
-        description: e.message || String(e),
-        variant: "destructive",
-      });
+      if (!isAuto) {
+        toast({
+          title: "Erro ao ativar notificações",
+          description: e.message || String(e),
+          variant: "destructive",
+        });
+      }
     }
   }
 
@@ -145,5 +212,5 @@ export function usePushNotifications() {
     }
   }
 
-  return { isSubscribed, isSupported, permission, subscribe, unsubscribe };
+  return { isSubscribed, isSupported, permission, subscribe: () => subscribe(false), unsubscribe };
 }
