@@ -1,11 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+export interface SaleNotification {
+  id: string;
+  title: string;
+  description: string;
+  time: Date;
+}
+
 export function useSalesNotifications() {
   const { user } = useAuth();
   const [newSalesCount, setNewSalesCount] = useState(0);
+  const [notifications, setNotifications] = useState<SaleNotification[]>([]);
+  const notifIdRef = useRef(0);
 
   useEffect(() => {
     if (!user) return;
@@ -24,11 +33,22 @@ export function useSalesNotifications() {
           const amount = payload.new?.amount || 0;
           const method = payload.new?.payment_provider || "pix";
           const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+          const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão" : "Boleto";
 
-          toast.success(`Nova venda de ${fmt}!`, {
-            description: `Pagamento via ${method === "pix" ? "Pix" : method === "card" ? "Cartão" : "Boleto"}`,
-          });
+          const title = `Nova venda de ${fmt}! 🎉`;
+          const description = `Pagamento via ${methodLabel}`;
 
+          toast.success(title, { description });
+
+          notifIdRef.current++;
+          const notif: SaleNotification = {
+            id: `notif-${notifIdRef.current}-${Date.now()}`,
+            title,
+            description,
+            time: new Date(),
+          };
+
+          setNotifications((prev) => [notif, ...prev].slice(0, 50));
           setNewSalesCount((prev) => prev + 1);
 
           // Trigger push notification via edge function
@@ -36,8 +56,8 @@ export function useSalesNotifications() {
             await supabase.functions.invoke("send-push", {
               body: {
                 producer_id: user.id,
-                title: `Nova venda de ${fmt}! 🎉`,
-                body: `Pagamento via ${method === "pix" ? "Pix" : method === "card" ? "Cartão" : "Boleto"}`,
+                title,
+                body: description,
                 url: "/sales",
               },
             });
@@ -55,5 +75,5 @@ export function useSalesNotifications() {
 
   const clearCount = () => setNewSalesCount(0);
 
-  return { newSalesCount, clearCount };
+  return { newSalesCount, notifications, clearCount };
 }
