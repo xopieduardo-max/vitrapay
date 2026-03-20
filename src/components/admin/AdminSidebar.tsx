@@ -1,6 +1,7 @@
 import {
-  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, Zap, ArrowLeft, ShoppingBag, Lightbulb, Bell,
+  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, ArrowLeft, ShoppingBag, Lightbulb, Bell,
 } from "lucide-react";
+import logoImg from "@/assets/logo-vitrapay.png";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import {
