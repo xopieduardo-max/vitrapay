@@ -39,7 +39,7 @@ interface PlatformConfigDef {
   id: string;
   label: string;
   logo: string;
-  color: string;
+  fields: PlatformField[];
   fields: PlatformField[];
   hasAccessToken: boolean;
   eventOptions: PlatformOption[];
