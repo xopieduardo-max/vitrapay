@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import authBanner from "@/assets/auth-banner.png";
+import logoImg from "@/assets/logo-vitrapay.png";
 
 type Step = "credentials" | "otp";
 
