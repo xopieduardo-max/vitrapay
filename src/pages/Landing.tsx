@@ -543,7 +543,7 @@ export default function Landing() {
               <img
                 src={appMockup}
                 alt="App VitraPay em breve"
-                className="w-full max-w-md drop-shadow-2xl"
+                className="w-full max-w-[240px] md:max-w-[280px] drop-shadow-2xl rounded-3xl"
               />
             </motion.div>
           </div>
