@@ -1,16 +1,16 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet } from "react-router-dom";
-import { Search, Bell } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PlatformPopup } from "@/components/PlatformPopup";
 import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
 import { useSalesNotifications } from "@/hooks/useSalesNotifications";
-import { Button } from "@/components/ui/button";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 
 export function DashboardLayout() {
-  const { newSalesCount, clearCount } = useSalesNotifications();
+  const { newSalesCount, notifications, clearCount } = useSalesNotifications();
 
   return (
     <SidebarProvider>
@@ -26,19 +26,11 @@ export function DashboardLayout() {
                 className="pl-9 h-9 bg-muted/50 border-transparent focus:border-border text-sm"
               />
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9"
-              onClick={clearCount}
-            >
-              <Bell className="h-4 w-4" strokeWidth={1.5} />
-              {newSalesCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-primary text-[0.6rem] font-bold text-primary-foreground">
-                  {newSalesCount > 99 ? "99+" : newSalesCount}
-                </span>
-              )}
-            </Button>
+            <NotificationsDropdown
+              count={newSalesCount}
+              notifications={notifications}
+              onClear={clearCount}
+            />
           </header>
           <main className="flex-1 p-4 md:p-6">
             <Outlet />
