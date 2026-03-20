@@ -39,6 +39,7 @@ import AdminBanners from "./pages/admin/AdminBanners";
 import AdminPopups from "./pages/admin/AdminPopups";
 import AdminFakeSales from "./pages/admin/AdminFakeSales";
 import AdminCommunity from "./pages/admin/AdminCommunity";
+import AdminPushNotifications from "./pages/admin/AdminPushNotifications";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="/admin/popups" element={<AdminPopups />} />
               <Route path="/admin/fake-sales" element={<AdminFakeSales />} />
               <Route path="/admin/community" element={<AdminCommunity />} />
+              <Route path="/admin/push" element={<AdminPushNotifications />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
 

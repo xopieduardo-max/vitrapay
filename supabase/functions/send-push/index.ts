@@ -8,7 +8,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// VAPID keys for push notifications
 const VAPID_PUBLIC_KEY = "BMl6o6EhTPzsw80f47Dxs3_GqfrtFV0L8dHuhKTpiqfc_RL7cMbt0ahYuMwBesOIYPieW-UCihniGf7hJ-_iOvQ";
 const VAPID_PRIVATE_KEY = "oEmxqbA2jtWLOsrXbOhHiKtpS_bAyakweV9HjA_zfsY";
 
@@ -24,10 +23,10 @@ serve(async (req) => {
   }
 
   try {
-    const { producer_id, title, body, url } = await req.json();
+    const { producer_id, broadcast, title, body, url } = await req.json();
 
-    if (!producer_id) {
-      return new Response(JSON.stringify({ error: "producer_id required" }), {
+    if (!producer_id && !broadcast) {
+      return new Response(JSON.stringify({ error: "producer_id or broadcast required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -37,13 +36,26 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: subscriptions, error } = await supabase
-      .from("push_subscriptions")
-      .select("*")
-      .eq("user_id", producer_id);
+    let subscriptions: any[] = [];
 
-    if (error) throw error;
-    if (!subscriptions || subscriptions.length === 0) {
+    if (broadcast) {
+      // Send to ALL subscribed users
+      const { data, error } = await supabase
+        .from("push_subscriptions")
+        .select("*");
+      if (error) throw error;
+      subscriptions = data || [];
+    } else {
+      // Send to a specific user
+      const { data, error } = await supabase
+        .from("push_subscriptions")
+        .select("*")
+        .eq("user_id", producer_id);
+      if (error) throw error;
+      subscriptions = data || [];
+    }
+
+    if (subscriptions.length === 0) {
       return new Response(JSON.stringify({ sent: 0, message: "No subscriptions" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -55,7 +67,7 @@ serve(async (req) => {
       body: body || "Você acabou de receber uma nova venda.",
       url: url || "/dashboard",
       icon: "/pwa-192x192.png",
-      badge: "/pwa-192x192.png",
+      badge: "/badge-icon.png",
     });
 
     let sent = 0;
@@ -84,7 +96,7 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ sent }), {
+    return new Response(JSON.stringify({ sent, total: subscriptions.length }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

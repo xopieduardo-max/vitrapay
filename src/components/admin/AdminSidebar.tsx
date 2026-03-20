@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, Zap, ArrowLeft, ShoppingBag, Lightbulb,
+  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, Zap, ArrowLeft, ShoppingBag, Lightbulb, Bell,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -16,6 +16,7 @@ const navItems = [
   { title: "Comunidade", url: "/admin/community", icon: Lightbulb },
   { title: "Banners", url: "/admin/banners", icon: Image },
   { title: "Pop-ups", url: "/admin/popups", icon: MessageSquareMore },
+  { title: "Notificações Push", url: "/admin/push", icon: Bell },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
 ];
 
