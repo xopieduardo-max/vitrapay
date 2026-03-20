@@ -42,8 +42,11 @@ export default defineConfig(({ mode }) => ({
           },
         ],
       },
-      workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
+      injectRegister: "auto",
+      strategies: "injectManifest",
+      srcDir: "public",
+      filename: "custom-sw.js",
+      injectManifest: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
       },
     }),
