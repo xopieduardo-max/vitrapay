@@ -3,6 +3,7 @@ import { Smartphone, Apple, MonitorSmartphone, Share, PlusSquare, MoreVertical, 
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import appMockup from "@/assets/app-mockup.png";
 
 type Platform = "ios" | "android" | null;
 
@@ -122,19 +123,29 @@ export default function Install() {
           </motion.div>
         ) : (
           <>
-            {/* Hero */}
+            {/* Hero with phone mockup */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center space-y-3 mb-8"
+              className="text-center space-y-5 mb-8"
             >
-              <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
-                <Smartphone className="h-8 w-8 text-primary-foreground" />
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1, duration: 0.5 }}
+                className="relative mx-auto w-48 sm:w-56"
+              >
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75" />
+                <img
+                  src={appMockup}
+                  alt="App Aether no celular"
+                  className="relative w-full drop-shadow-2xl"
+                />
+              </motion.div>
               <h1 className="text-2xl font-bold text-foreground">
                 Instale o Aether
               </h1>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
                 Tenha acesso rápido ao seu painel, receba notificações de vendas em tempo real e use o app mesmo offline.
               </p>
             </motion.div>
