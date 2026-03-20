@@ -94,8 +94,8 @@
     --chart-4: 38 92% 50%;
     --chart-5: 0 84% 60%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(158, 94%, 30%), hsl(158, 94%, 40%));
-    --shadow-glow: 0 0 20px hsla(158, 94%, 30%, 0.2);
+    --gradient-primary: linear-gradient(135deg, hsl(48, 96%, 53%), hsl(45, 96%, 45%));
+    --shadow-glow: 0 0 20px hsla(48, 96%, 53%, 0.2);
   }
 }
 
