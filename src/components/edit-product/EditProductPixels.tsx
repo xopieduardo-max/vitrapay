@@ -61,7 +61,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "facebook",
     label: "Facebook",
-    icon: "f",
+    logo: pixelFacebookLogo,
     color: "bg-[#1877F2]",
     fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "1293867678159457" }],
     hasAccessToken: false,
