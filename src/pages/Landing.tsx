@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
+import logoImg from "@/assets/logo-vitrapay.png";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
@@ -130,7 +131,7 @@ function GridBackground() {
           y: springY,
           translateX: "-50%",
           translateY: "-50%",
-          background: "radial-gradient(circle, hsla(158, 94%, 30%, 0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, hsla(48, 96%, 53%, 0.08) 0%, transparent 70%)",
         }}
       />
       {/* Fixed ambient glows */}
@@ -251,9 +252,7 @@ export default function Landing() {
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary glow-primary">
-              <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
-            </div>
+            <img src={logoImg} alt="VitraPay" className="h-10 w-10 rounded-xl object-contain" />
             <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
@@ -633,9 +632,7 @@ export default function Landing() {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
-                </div>
+                <img src={logoImg} alt="VitraPay" className="h-9 w-9 rounded-lg object-contain" />
                 <span className="text-lg font-bold tracking-tight">VitraPay</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">

@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
         name: "VitraPay — Vendas Digitais",
         short_name: "VitraPay",
         description: "Plataforma de infoprodutos e vendas digitais",
-        theme_color: "#10b981",
+        theme_color: "#EAB308",
         background_color: "#0a0a0a",
         display: "standalone",
         start_url: "/dashboard",

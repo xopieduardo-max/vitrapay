@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import authBanner from "@/assets/auth-banner.png";
+import logoImg from "@/assets/logo-vitrapay.png";
 
 type Step = "credentials" | "otp";
 
@@ -111,9 +112,7 @@ export default function Auth() {
         <div className="mx-auto w-full max-w-md space-y-8">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-              <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
-            </div>
+            <img src={logoImg} alt="VitraPay" className="h-10 w-10 rounded-xl object-contain" />
             <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
 
@@ -206,7 +205,7 @@ export default function Auth() {
               >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                    <Zap className="h-8 w-8 text-primary" />
+                    <img src={logoImg} alt="" className="h-10 w-10 object-contain" />
                   </div>
                   <h1 className="text-2xl font-bold tracking-tight">Confirme seu e-mail</h1>
                   <p className="text-sm text-muted-foreground max-w-xs">
