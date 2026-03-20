@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import logoIcon from "@/assets/logo-vitrapay.png";
 
@@ -8,38 +8,34 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
 
-  const springConfig = { damping: 20, stiffness: 150 };
+  const springConfig = { damping: 20, stiffness: 120 };
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
-  const rotateX = useTransform(smoothY, [0, 1], [25, -25]);
-  const rotateY = useTransform(smoothX, [0, 1], [-25, 25]);
-  const glowX = useTransform(smoothX, [0, 1], ["0%", "100%"]);
-  const glowY = useTransform(smoothY, [0, 1], ["0%", "100%"]);
+  const rotateX = useTransform(smoothY, [0, 1], [20, -20]);
+  const rotateY = useTransform(smoothX, [0, 1], [-20, 20]);
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const maxDist = 500;
-    const dx = (e.clientX - centerX) / maxDist;
-    const dy = (e.clientY - centerY) / maxDist;
-    mouseX.set(Math.max(0, Math.min(1, 0.5 + dx * 0.5)));
-    mouseY.set(Math.max(0, Math.min(1, 0.5 + dy * 0.5)));
-  };
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const maxDist = 600;
+      const dx = (e.clientX - centerX) / maxDist;
+      const dy = (e.clientY - centerY) / maxDist;
+      mouseX.set(Math.max(0, Math.min(1, 0.5 + dx * 0.5)));
+      mouseY.set(Math.max(0, Math.min(1, 0.5 + dy * 0.5)));
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY]);
 
   return (
     <div
       ref={ref}
       className={`relative ${className}`}
-      style={{ perspective: "1000px" }}
-      onMouseEnter={() => window.addEventListener("mousemove", handleMouseMove)}
-      onMouseLeave={() => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        mouseX.set(0.5);
-        mouseY.set(0.5);
-      }}
+      style={{ perspective: "800px" }}
     >
       <motion.div
         style={{
@@ -47,40 +43,26 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
           rotateY,
           transformStyle: "preserve-3d",
         }}
-        className="relative"
+        className="relative w-full h-full"
       >
-        {/* Glow behind logo */}
-        <motion.div
-          className="absolute inset-0 rounded-3xl blur-3xl opacity-40"
-          style={{
-            background: `radial-gradient(circle at ${glowX} ${glowY}, hsla(48, 96%, 53%, 0.5), transparent 70%)`,
-          }}
-        />
+        {/* Glow */}
+        <div className="absolute -inset-4 rounded-full bg-primary/10 blur-3xl" />
 
-        {/* Shadow layer for depth */}
+        {/* Shadow layer */}
         <motion.img
           src={logoIcon}
           alt=""
           aria-hidden
-          className="absolute inset-0 w-full h-full object-contain blur-md opacity-20"
-          style={{ transform: "translateZ(-40px) scale(1.1)" }}
+          className="absolute inset-0 w-full h-full object-contain blur-lg opacity-30"
+          style={{ transform: "translateZ(-30px) scale(1.15)" }}
         />
 
         {/* Main logo */}
         <motion.img
           src={logoIcon}
-          alt="VitraPay Logo"
-          className="relative w-full h-full object-contain drop-shadow-2xl"
-          style={{ transform: "translateZ(40px)" }}
-        />
-
-        {/* Shine overlay */}
-        <motion.div
-          className="absolute inset-0 rounded-3xl pointer-events-none"
-          style={{
-            background: `linear-gradient(135deg, transparent 30%, hsla(48, 96%, 70%, 0.15) 50%, transparent 70%)`,
-            transform: "translateZ(50px)",
-          }}
+          alt="VitraPay Logo 3D"
+          className="relative w-full h-full object-contain drop-shadow-[0_0_25px_hsla(48,96%,53%,0.3)]"
+          style={{ transform: "translateZ(30px)" }}
         />
       </motion.div>
     </div>
