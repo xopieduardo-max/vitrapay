@@ -8,9 +8,12 @@ import { PlatformPopup } from "@/components/PlatformPopup";
 import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
 import { useSalesNotifications } from "@/hooks/useSalesNotifications";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export function DashboardLayout() {
   const { newSalesCount, notifications, clearCount } = useSalesNotifications();
+  // Auto-subscribe to push notifications on load
+  usePushNotifications();
 
   return (
     <SidebarProvider>
