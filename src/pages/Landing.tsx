@@ -250,9 +250,7 @@ export default function Landing() {
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary glow-primary">
-              <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
-            </div>
+            <img src={logoImg} alt="VitraPay" className="h-10 w-10 rounded-xl object-contain" />
             <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
