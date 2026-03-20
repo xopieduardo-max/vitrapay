@@ -25,11 +25,17 @@ export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
 
   useEffect(() => {
-    const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+    const hasSW = "serviceWorker" in navigator;
+    const hasPush = "PushManager" in window;
+    const hasNotif = "Notification" in window;
+    const supported = hasSW && hasPush && hasNotif;
+    
+    console.log("[Push] Support check:", { hasSW, hasPush, hasNotif, supported });
     setIsSupported(supported);
 
     if (supported) {
       setPermission(Notification.permission);
+      console.log("[Push] Current permission:", Notification.permission);
       checkExistingSubscription();
     }
   }, []);
@@ -37,19 +43,26 @@ export function usePushNotifications() {
   async function checkExistingSubscription() {
     try {
       const registration = await navigator.serviceWorker.ready;
+      console.log("[Push] SW ready, scope:", registration.scope);
       const subscription = await registration.pushManager.getSubscription();
+      console.log("[Push] Existing subscription:", subscription ? "YES" : "NO");
       setIsSubscribed(!!subscription);
-    } catch {
-      // Service worker not ready yet
+    } catch (e) {
+      console.error("[Push] checkExistingSubscription error:", e);
     }
   }
 
   async function subscribe() {
-    if (!user || !isSupported) return;
+    if (!user || !isSupported) {
+      console.log("[Push] Cannot subscribe:", { user: !!user, isSupported });
+      return;
+    }
 
     try {
+      console.log("[Push] Requesting permission...");
       const perm = await Notification.requestPermission();
       setPermission(perm);
+      console.log("[Push] Permission result:", perm);
 
       if (perm !== "granted") {
         toast({
@@ -60,34 +73,54 @@ export function usePushNotifications() {
         return;
       }
 
+      console.log("[Push] Waiting for SW ready...");
       const registration = await navigator.serviceWorker.ready;
+      console.log("[Push] SW ready. Subscribing to push...");
+      
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
+      console.log("[Push] Push subscription created:", subscription.endpoint.slice(0, 60));
 
       const subJson = subscription.toJSON();
       const keys = subJson.keys!;
+      
+      console.log("[Push] Saving to database for user:", user.id);
+      console.log("[Push] Endpoint:", subJson.endpoint?.slice(0, 60));
+      console.log("[Push] Has p256dh:", !!keys.p256dh, "Has auth:", !!keys.auth);
 
-      const { error } = await supabase.from("push_subscriptions" as any).upsert(
-        {
+      // First try to delete any existing subscription for this user+endpoint
+      await supabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("endpoint", subJson.endpoint!);
+
+      // Then insert fresh
+      const { data, error } = await supabase
+        .from("push_subscriptions")
+        .insert({
           user_id: user.id,
           endpoint: subJson.endpoint!,
-          p256dh: keys.p256dh,
-          auth: keys.auth,
-        },
-        { onConflict: "user_id,endpoint" }
-      );
+          p256dh: keys.p256dh!,
+          auth: keys.auth!,
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("[Push] Database save error:", JSON.stringify(error));
+        throw error;
+      }
 
+      console.log("[Push] Saved successfully:", data);
       setIsSubscribed(true);
       toast({ title: "Notificações ativadas! 🔔", description: "Você receberá alertas de vendas no celular." });
     } catch (e: any) {
-      console.error("Push subscription error:", e);
+      console.error("[Push] Subscribe error:", e);
       toast({
         title: "Erro ao ativar notificações",
-        description: e.message,
+        description: e.message || String(e),
         variant: "destructive",
       });
     }
@@ -100,7 +133,7 @@ export function usePushNotifications() {
       if (subscription) {
         await subscription.unsubscribe();
         await supabase
-          .from("push_subscriptions" as any)
+          .from("push_subscriptions")
           .delete()
           .eq("user_id", user?.id)
           .eq("endpoint", subscription.endpoint);
@@ -108,7 +141,7 @@ export function usePushNotifications() {
       setIsSubscribed(false);
       toast({ title: "Notificações desativadas" });
     } catch (e: any) {
-      console.error("Push unsubscribe error:", e);
+      console.error("[Push] Unsubscribe error:", e);
     }
   }
 
