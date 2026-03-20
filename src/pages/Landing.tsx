@@ -630,9 +630,7 @@ export default function Landing() {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
-                </div>
+                <img src={logoImg} alt="VitraPay" className="h-9 w-9 rounded-lg object-contain" />
                 <span className="text-lg font-bold tracking-tight">VitraPay</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">

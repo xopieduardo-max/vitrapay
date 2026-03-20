@@ -205,7 +205,7 @@ export default function Auth() {
               >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                    <Zap className="h-8 w-8 text-primary" />
+                    <img src={logoImg} alt="" className="h-10 w-10 object-contain" />
                   </div>
                   <h1 className="text-2xl font-bold tracking-tight">Confirme seu e-mail</h1>
                   <p className="text-sm text-muted-foreground max-w-xs">
