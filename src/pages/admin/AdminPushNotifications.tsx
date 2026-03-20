@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Bell, Loader2, Send, Users } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Bell, Loader2, Send, Users, Clock, History } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const EMOJI_SUGGESTIONS = ["🎉", "🔥", "💰", "⚡", "🚀", "📢", "🎁", "✨", "💎", "🏆", "📣", "💥"];
 
 export default function AdminPushNotifications() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("/dashboard");
@@ -26,12 +31,24 @@ export default function AdminPushNotifications() {
     },
   });
 
+  const { data: history = [] } = useQuery({
+    queryKey: ["push-notifications-log"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("push_notifications_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return data || [];
+    },
+  });
+
   const addEmoji = (emoji: string) => {
     setTitle((prev) => prev + emoji);
   };
 
   const handleSend = async () => {
-    if (!title.trim()) {
+    if (!title.trim() || !user) {
       toast.error("Digite um título para a notificação.");
       return;
     }
@@ -50,6 +67,19 @@ export default function AdminPushNotifications() {
       if (error) throw error;
 
       const result = data as any;
+
+      // Save to history log
+      await supabase.from("push_notifications_log").insert({
+        title: title.trim(),
+        body: body.trim() || null,
+        url: url.trim() || "/dashboard",
+        sent_count: result.sent || 0,
+        total_devices: result.total || 0,
+        sent_by: user.id,
+      } as any);
+
+      queryClient.invalidateQueries({ queryKey: ["push-notifications-log"] });
+
       if (result.sent > 0) {
         toast.success(`Notificação enviada para ${result.sent} dispositivo(s)!`);
         setTitle("");
@@ -163,6 +193,48 @@ export default function AdminPushNotifications() {
             Enviar para todos
           </Button>
         </div>
+      </div>
+
+      {/* History */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
+          <h2 className="text-sm font-semibold flex items-center gap-2">
+            <History className="h-3.5 w-3.5" />
+            Histórico de envios
+          </h2>
+        </div>
+
+        {history.length === 0 ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            Nenhuma notificação enviada ainda.
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {(history as any[]).map((item) => (
+              <div key={item.id} className="px-4 py-3 hover:bg-muted/20 transition-colors">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{item.title}</p>
+                    {item.body && (
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{item.body}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-medium text-primary">
+                      {item.sent_count}/{item.total_devices}
+                    </span>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span className="text-[0.65rem]">
+                        {format(new Date(item.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
