@@ -6,12 +6,12 @@ import {
   FileText,
   Users,
   Landmark,
-  Zap,
   Shield,
   MessageCircle,
   Settings,
   Smartphone,
 } from "lucide-react";
+import logoImg from "@/assets/logo-vitrapay.png";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
