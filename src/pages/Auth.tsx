@@ -76,7 +76,7 @@ export default function Auth() {
         type: "signup",
       });
       if (error) throw error;
-      toast({ title: "Conta confirmada!", description: "Bem-vindo à Aether." });
+      toast({ title: "Conta confirmada!", description: "Bem-vindo à VitraPay." });
       navigate("/dashboard");
     } catch (error: any) {
       toast({
@@ -114,7 +114,7 @@ export default function Auth() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
               <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
             </div>
-            <span className="text-xl font-bold tracking-tight">Aether</span>
+            <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
 
           <AnimatePresence mode="wait">
@@ -133,7 +133,7 @@ export default function Auth() {
                   </h1>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {isLogin
-                      ? "Insira seus dados abaixo para continuar sua jornada na Aether"
+                      ? "Insira seus dados abaixo para continuar sua jornada na VitraPay"
                       : "Comece a vender produtos digitais hoje mesmo"}
                   </p>
                 </div>
@@ -250,7 +250,7 @@ export default function Auth() {
       <div className="hidden lg:block lg:flex-1 relative overflow-hidden">
         <img
           src={authBanner}
-          alt="Aether — Acelerando rumo ao futuro"
+          alt="VitraPay — Acelerando rumo ao futuro"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
