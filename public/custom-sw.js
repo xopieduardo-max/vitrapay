@@ -17,7 +17,7 @@ self.addEventListener("push", (event) => {
   const options = {
     body: data.body || "",
     icon: data.icon || "/pwa-192x192.png",
-    badge: data.badge || "/pwa-192x192.png",
+    badge: data.badge || "/badge-icon.png",
     vibrate: [200, 100, 200],
     tag: "sale-notification",
     renotify: true,
