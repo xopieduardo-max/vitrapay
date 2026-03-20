@@ -10,8 +10,7 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
-import logoHorizontal from "@/assets/logo-vitrapay-horizontal.png";
-import logoImg from "@/assets/logo-vitrapay.png";
+import { ThemeLogo } from "@/components/ThemeLogo";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
 
 /* ─── Floating Sale Notifications ─── */
@@ -254,7 +253,7 @@ export default function Landing() {
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoHorizontal} alt="VitraPay" className="h-8 object-contain" />
+            <ThemeLogo variant="horizontal" className="h-8 object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
@@ -635,7 +634,7 @@ export default function Landing() {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <img src={logoHorizontal} alt="VitraPay" className="h-7 object-contain" />
+                <ThemeLogo variant="horizontal" className="h-7 object-contain" />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 A plataforma de pagamentos que acelera seus resultados digitais.

@@ -11,7 +11,7 @@ import {
   Settings,
   Smartphone,
 } from "lucide-react";
-import logoImg from "@/assets/logo-vitrapay.png";
+import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -85,7 +85,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="p-4">
         <NavLink to="/" className="flex items-center gap-2">
-          <img src={logoImg} alt="VitraPay" className="h-9 w-9 rounded-lg object-contain" />
+          <ThemeLogo variant="icon" className="h-9 w-9 rounded-lg object-contain" />
           {!collapsed && (
             <span className="text-lg font-bold tracking-tight text-foreground">
               VitraPay
@@ -99,7 +99,7 @@ export function AppSidebar() {
         <div className="px-3 mb-2">
           <div className="rounded-lg border border-primary/30 bg-card p-3 space-y-2">
             <div className="flex items-center gap-2">
-              <img src={logoImg} alt="" className="h-7 w-7 rounded-md object-contain" />
+              <ThemeLogo variant="icon" className="h-7 w-7 rounded-md object-contain" />
               <div>
                 <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Faturamento</p>
                 <p className="text-sm font-bold">
