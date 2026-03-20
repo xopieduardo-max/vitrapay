@@ -99,7 +99,7 @@ export function AppSidebar() {
         <div className="px-3 mb-2">
           <div className="rounded-lg border border-primary/30 bg-card p-3 space-y-2">
             <div className="flex items-center gap-2">
-              <img src={logoImg} alt="" className="h-7 w-7 rounded-md object-contain" />
+              <ThemeLogo variant="icon" className="h-7 w-7 rounded-md object-contain" />
               <div>
                 <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Faturamento</p>
                 <p className="text-sm font-bold">

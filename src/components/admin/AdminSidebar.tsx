@@ -31,7 +31,7 @@ export function AdminSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="p-4">
         <NavLink to="/admin" className="flex items-center gap-2">
-          <img src={logoImg} alt="Admin" className="h-8 w-8 rounded-lg object-contain" />
+          <ThemeLogo variant="icon" className="h-8 w-8 rounded-lg object-contain" />
           {!collapsed && (
             <span className="text-lg font-bold tracking-tight text-foreground">
               Admin
