@@ -131,6 +131,7 @@ function GridBackground() {
           translateX: "-50%",
           translateY: "-50%",
           background: "radial-gradient(circle, hsla(48, 96%, 53%, 0.08) 0%, transparent 70%)",
+        }}
       />
       {/* Fixed ambient glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
