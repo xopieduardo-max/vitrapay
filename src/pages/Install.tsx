@@ -3,6 +3,7 @@ import { Smartphone, Apple, MonitorSmartphone, Share, PlusSquare, MoreVertical, 
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import appMockup from "@/assets/app-mockup.png";
 
 type Platform = "ios" | "android" | null;
 
