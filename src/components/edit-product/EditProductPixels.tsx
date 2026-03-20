@@ -9,6 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Loader2, Settings } from "lucide-react";
 
+import pixelFacebookLogo from "@/assets/pixel-facebook.png";
+import pixelGoogleAdsLogo from "@/assets/pixel-google-ads.png";
+import pixelGoogleAnalyticsLogo from "@/assets/pixel-google-analytics.png";
+import pixelTiktokLogo from "@/assets/pixel-tiktok.png";
+
 type PixelConfigValue = string | number | boolean;
 type PixelConfig = Record<string, PixelConfigValue>;
 
