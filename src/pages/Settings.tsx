@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette } from "lucide-react";
+import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
