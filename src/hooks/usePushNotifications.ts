@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const VAPID_PUBLIC_KEY =
-  "BKpiiCIgYV0XdT4UBSvqOTHfDocE2bl1mn58jQfT-wfXJ6HaB4fK22kA9Ji86Pc3F0WTKawG0aFyy5uLzYQ_feo";
+  "BMl6o6EhTPzsw80f47Dxs3_GqfrtFV0L8dHuhKTpiqfc_RL7cMbt0ahYuMwBesOIYPieW-UCihniGf7hJ-_iOvQ";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
