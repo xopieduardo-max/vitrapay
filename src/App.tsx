@@ -88,6 +88,7 @@ const App = () => (
               <Route path="/admin/popups" element={<AdminPopups />} />
               <Route path="/admin/fake-sales" element={<AdminFakeSales />} />
               <Route path="/admin/community" element={<AdminCommunity />} />
+              <Route path="/admin/push" element={<AdminPushNotifications />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
 
