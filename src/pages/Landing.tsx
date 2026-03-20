@@ -635,8 +635,7 @@ export default function Landing() {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <img src={logoImg} alt="VitraPay" className="h-9 w-9 rounded-lg object-contain" />
-                <span className="text-lg font-bold tracking-tight">VitraPay</span>
+                <img src={logoHorizontal} alt="VitraPay" className="h-7 object-contain" />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 A plataforma de pagamentos que acelera seus resultados digitais.
