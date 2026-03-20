@@ -28,12 +28,19 @@ serve(async (req) => {
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
 
+    console.log("VAPID public key length:", vapidPublicKey?.length, "first chars:", vapidPublicKey?.slice(0, 10));
+    console.log("VAPID private key length:", vapidPrivateKey?.length);
+
     if (!vapidPublicKey || !vapidPrivateKey) {
       return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Trim any whitespace/quotes that might have been added
+    const cleanPublicKey = vapidPublicKey.trim().replace(/^["']|["']$/g, '');
+    const cleanPrivateKey = vapidPrivateKey.trim().replace(/^["']|["']$/g, '');
 
     webpush.setVapidDetails(
       "mailto:noreply@aetherpay.lovable.app",
