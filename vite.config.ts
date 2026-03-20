@@ -42,12 +42,10 @@ export default defineConfig(({ mode }) => ({
           },
         ],
       },
-      injectRegister: "auto",
-      strategies: "injectManifest",
-      srcDir: "public",
-      filename: "custom-sw.js",
-      injectManifest: {
+      workbox: {
+        navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        importScripts: ["/custom-sw.js"],
       },
     }),
   ].filter(Boolean),
