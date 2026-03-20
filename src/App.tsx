@@ -28,6 +28,7 @@ import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Community from "./pages/Community";
 import Settings from "./pages/Settings";
+import Install from "./pages/Install";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/learn/:productId" element={<MemberArea />} />
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/install" element={<Install />} />
 
             {/* Protected producer panel */}
             <Route element={<AuthGuard />}>
