@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X,
+  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X, Bell,
 } from "lucide-react";
 
 interface DaySchedule {
@@ -356,18 +356,21 @@ export default function AdminFakeSales() {
           </div>
         </div>
 
-        <Button
-          className="gap-1.5"
-          onClick={() => generateSales.mutate()}
-          disabled={generateSales.isPending || !productId || !producerId || totalSales === 0}
-        >
-          {generateSales.isPending ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Plus className="h-3.5 w-3.5" />
-          )}
-          Gerar {totalSales} venda(s)
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            className="gap-1.5"
+            onClick={() => generateSales.mutate()}
+            disabled={generateSales.isPending || !productId || !producerId || totalSales === 0}
+          >
+            {generateSales.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Plus className="h-3.5 w-3.5" />
+            )}
+            Gerar {totalSales} venda(s)
+          </Button>
+          <TestPushButton producerId={producerId} />
+        </div>
       </div>
 
       {/* Recent fake sales */}
@@ -429,5 +432,50 @@ export default function AdminFakeSales() {
         )}
       </div>
     </div>
+  );
+}
+
+function TestPushButton({ producerId }: { producerId: string }) {
+  const { toast } = useToast();
+  const [sending, setSending] = useState(false);
+
+  const sendTestPush = async () => {
+    if (!producerId) {
+      toast({ title: "Selecione um usuário primeiro", variant: "destructive" });
+      return;
+    }
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-push", {
+        body: {
+          producer_id: producerId,
+          title: "🔔 Teste de notificação",
+          body: "Se você está vendo isso, o push funciona!",
+          url: "/dashboard",
+        },
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result.sent > 0) {
+        toast({ title: `✅ Push enviado! (${result.sent} dispositivo${result.sent > 1 ? "s" : ""})` });
+      } else {
+        toast({
+          title: "⚠️ Nenhum dispositivo cadastrado",
+          description: "O usuário precisa ativar notificações em Ajustes primeiro.",
+          variant: "destructive",
+        });
+      }
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar push", description: e.message, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Button variant="outline" className="gap-1.5" onClick={sendTestPush} disabled={sending || !producerId}>
+      {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+      Enviar push teste
+    </Button>
   );
 }

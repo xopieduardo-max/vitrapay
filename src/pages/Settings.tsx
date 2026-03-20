@@ -290,8 +290,50 @@ export default function Settings() {
 
 function NotificationsSection() {
   const { isSubscribed, isSupported, permission, subscribe, unsubscribe } = usePushNotifications();
+  const { user } = useAuth();
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
 
-  if (!isSupported) return null;
+  if (!isSupported) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Bell className="h-4 w-4 text-primary" />
+          Notificações Push
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Notificações push não são suportadas neste navegador. Para receber notificações, instale o app na tela inicial do celular.
+        </p>
+      </div>
+    );
+  }
+
+  const sendTest = async () => {
+    if (!user) return;
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-push", {
+        body: {
+          producer_id: user.id,
+          title: "🔔 Teste de notificação",
+          body: "Push notifications estão funcionando!",
+          url: "/settings",
+        },
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result.sent > 0) {
+        setTestResult(`✅ Enviado para ${result.sent} dispositivo(s)!`);
+      } else {
+        setTestResult("⚠️ Nenhum dispositivo cadastrado. Tente desativar e ativar novamente.");
+      }
+    } catch (e: any) {
+      setTestResult(`❌ Erro: ${e.message}`);
+    } finally {
+      setTesting(false);
+    }
+  };
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
@@ -320,6 +362,17 @@ function NotificationsSection() {
           </Button>
         )}
       </div>
+      {isSubscribed && (
+        <div className="pt-2 border-t border-border space-y-2">
+          <Button variant="outline" size="sm" onClick={sendTest} disabled={testing}>
+            {testing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Bell className="h-4 w-4 mr-2" />}
+            Enviar notificação de teste
+          </Button>
+          {testResult && (
+            <p className="text-xs text-muted-foreground">{testResult}</p>
+          )}
+        </div>
+      )}
       {permission === "denied" && (
         <p className="text-xs text-destructive">
           Notificações bloqueadas pelo navegador. Vá nas configurações do navegador para permitir.
