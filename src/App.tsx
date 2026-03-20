@@ -28,6 +28,7 @@ import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Community from "./pages/Community";
 import Settings from "./pages/Settings";
+import Install from "./pages/Install";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
