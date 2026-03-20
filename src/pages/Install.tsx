@@ -218,7 +218,7 @@ export default function Install() {
               </motion.div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground mb-2">
-                  Instale o Aether
+                  Instale o VitraPay
                 </h1>
                 <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
                   Adicione o app à sua tela inicial em <strong className="text-foreground">3 passos simples</strong>

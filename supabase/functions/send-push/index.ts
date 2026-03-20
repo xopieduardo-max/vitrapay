@@ -12,7 +12,7 @@ const VAPID_PUBLIC_KEY = "BMl6o6EhTPzsw80f47Dxs3_GqfrtFV0L8dHuhKTpiqfc_RL7cMbt0a
 const VAPID_PRIVATE_KEY = "oEmxqbA2jtWLOsrXbOhHiKtpS_bAyakweV9HjA_zfsY";
 
 webpush.setVapidDetails(
-  "mailto:noreply@aetherpay.lovable.app",
+  "mailto:noreply@vitrapay.com.br",
   VAPID_PUBLIC_KEY,
   VAPID_PRIVATE_KEY
 );
