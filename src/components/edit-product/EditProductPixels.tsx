@@ -253,9 +253,7 @@ export default function EditProductPixels({ productId }: Props) {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
               }`}
             >
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded text-[0.6rem] text-white font-bold ${item.color}`}>
-                {item.icon}
-              </span>
+              <img src={item.logo} alt={item.label} className="h-5 w-5 rounded object-contain" />
               {item.label}
               {count > 0 && (
                 <Badge variant="secondary" className="text-[0.55rem] h-4 px-1.5">
