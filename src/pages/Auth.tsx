@@ -112,9 +112,7 @@ export default function Auth() {
         <div className="mx-auto w-full max-w-md space-y-8">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-              <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
-            </div>
+            <img src={logoImg} alt="VitraPay" className="h-10 w-10 rounded-xl object-contain" />
             <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
 
