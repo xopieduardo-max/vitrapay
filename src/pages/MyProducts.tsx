@@ -32,6 +32,29 @@ export default function MyProducts() {
     enabled: !!user,
   });
 
+  const productIds = myProducts.map((p) => p.id);
+
+  const { data: pixelCounts = {} } = useQuery({
+    queryKey: ["pixel-counts", productIds],
+    queryFn: async () => {
+      if (productIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from("product_pixels")
+        .select("product_id, platform")
+        .in("product_id", productIds);
+      if (error) throw error;
+      const counts: Record<string, string[]> = {};
+      for (const row of data || []) {
+        if (!counts[row.product_id]) counts[row.product_id] = [];
+        if (!counts[row.product_id].includes(row.platform)) {
+          counts[row.product_id].push(row.platform);
+        }
+      }
+      return counts;
+    },
+    enabled: productIds.length > 0,
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
