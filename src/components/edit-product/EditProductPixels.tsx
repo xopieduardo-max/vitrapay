@@ -106,7 +106,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "tiktok",
     label: "TikTok",
-    icon: "♪",
+    logo: pixelTiktokLogo,
     color: "bg-[#010101]",
     fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "XXXXXXXXXXXXXXXXX" }],
     hasAccessToken: true,
