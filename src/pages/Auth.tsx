@@ -112,7 +112,7 @@ export default function Auth() {
         <div className="mx-auto w-full max-w-md space-y-8">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2">
-            <img src={logoImg} alt="VitraPay" className="h-10 w-10 rounded-xl object-contain" />
+            <ThemeLogo variant="horizontal" className="h-10 object-contain" />
             <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
 
