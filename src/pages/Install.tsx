@@ -189,7 +189,7 @@ export default function Install() {
             </div>
             <h1 className="text-xl font-bold text-foreground">App já instalado!</h1>
             <p className="text-sm text-muted-foreground">
-              O Aether já está instalado no seu dispositivo. Aproveite!
+              O VitraPay já está instalado no seu dispositivo. Aproveite!
             </p>
             <Link to="/dashboard">
               <Button className="mt-4">Ir para o Dashboard</Button>
