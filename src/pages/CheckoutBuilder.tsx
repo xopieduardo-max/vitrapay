@@ -317,7 +317,7 @@ export default function CheckoutBuilder() {
                     </div>
                   </div>
                   {/* Buy button */}
-                  <div className="h-12 w-full rounded-xl" style={{ background: "hsl(158, 94%, 30%)" }} />
+                  <div className="h-12 w-full rounded-xl" style={{ background: "hsl(48, 96%, 53%)" }} />
                   {/* Trust badges */}
                   <div className="flex items-center justify-center gap-2 py-2">
                     <div className="h-3 w-48 rounded" style={{ background: "hsl(240,10%,12%)" }} />
