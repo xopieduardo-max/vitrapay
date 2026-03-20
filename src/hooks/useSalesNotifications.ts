@@ -33,10 +33,10 @@ export function useSalesNotifications() {
           const amount = payload.new?.amount || 0;
           const method = payload.new?.payment_provider || "pix";
           const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-          const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão" : "Boleto";
+          const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão de Crédito" : "Boleto";
 
-          const title = `Nova venda de ${fmt}! 🎉`;
-          const description = `Pagamento via ${methodLabel}`;
+          const title = `Venda Aprovada!`;
+          const description = `Pagamento via ${methodLabel} • Valor: ${fmt}`;
 
           toast.success(title, { description });
 
@@ -56,8 +56,8 @@ export function useSalesNotifications() {
             await supabase.functions.invoke("send-push", {
               body: {
                 producer_id: user.id,
-                title,
-                body: description,
+                title: `Venda Aprovada! 🎉`,
+                body: `Pagamento via ${methodLabel}\nValor: ${fmt}`,
                 url: "/sales",
               },
             });

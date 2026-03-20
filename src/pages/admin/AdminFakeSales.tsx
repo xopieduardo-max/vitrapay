@@ -147,12 +147,13 @@ export default function AdminFakeSales() {
         const product = products.find((p: any) => p.id === productId);
         const price = customPrice ? Math.round(parseFloat(customPrice) * 100) : (product?.price || 0);
         const fmt2 = `R$ ${(price / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+        const methodLabel = salesToInsert[0]?.payment_provider === "card" ? "Cartão de Crédito" : salesToInsert[0]?.payment_provider === "boleto" ? "Boleto" : "Pix";
         
         await supabase.functions.invoke("send-push", {
           body: {
             producer_id: producerId,
-            title: `Nova venda de ${fmt2}! 🎉`,
-            body: `Você acabou de receber uma nova venda via ${salesToInsert[0]?.payment_provider || "pix"}.`,
+            title: `Venda Aprovada! 🎉`,
+            body: `Pagamento via ${methodLabel}\nValor: ${fmt2}`,
             url: "/sales",
           },
         });
