@@ -8,6 +8,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// VAPID keys for push notifications
+const VAPID_PUBLIC_KEY = "BMl6o6EhTPzsw80f47Dxs3_GqfrtFV0L8dHuhKTpiqfc_RL7cMbt0ahYuMwBesOIYPieW-UCihniGf7hJ-_iOvQ";
+const VAPID_PRIVATE_KEY = "oEmxqbA2jtWLOsrXbOhHiKtpS_bAyakweV9HjA_zfsY";
+
+webpush.setVapidDetails(
+  "mailto:noreply@aetherpay.lovable.app",
+  VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY
+);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,29 +35,6 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
-    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
-
-    console.log("VAPID public key length:", vapidPublicKey?.length, "first chars:", vapidPublicKey?.slice(0, 10));
-    console.log("VAPID private key length:", vapidPrivateKey?.length);
-
-    if (!vapidPublicKey || !vapidPrivateKey) {
-      return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Trim any whitespace/quotes that might have been added
-    const cleanPublicKey = vapidPublicKey.trim().replace(/^["']|["']$/g, '');
-    const cleanPrivateKey = vapidPrivateKey.trim().replace(/^["']|["']$/g, '');
-
-    webpush.setVapidDetails(
-      "mailto:noreply@aetherpay.lovable.app",
-      cleanPublicKey,
-      cleanPrivateKey
-    );
-
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data: subscriptions, error } = await supabase
