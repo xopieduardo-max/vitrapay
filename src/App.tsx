@@ -39,6 +39,7 @@ import AdminBanners from "./pages/admin/AdminBanners";
 import AdminPopups from "./pages/admin/AdminPopups";
 import AdminFakeSales from "./pages/admin/AdminFakeSales";
 import AdminCommunity from "./pages/admin/AdminCommunity";
+import AdminPushNotifications from "./pages/admin/AdminPushNotifications";
 
 const queryClient = new QueryClient();
 
