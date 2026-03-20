@@ -11,7 +11,7 @@ export default function TermsOfUse() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary glow-primary">
               <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
             </div>
-            <span className="text-xl font-bold tracking-tight">Aether</span>
+            <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/" className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Voltar</Link>
@@ -26,17 +26,17 @@ export default function TermsOfUse() {
         <div className="prose prose-sm prose-invert max-w-none space-y-6 text-muted-foreground [&_h2]:text-foreground [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-3 [&_strong]:text-foreground">
 
           <h2>1. Aceitação dos Termos</h2>
-          <p>Ao acessar ou utilizar a plataforma Aether ("Plataforma"), você concorda com estes Termos de Uso. Caso não concorde com qualquer disposição, não utilize a Plataforma.</p>
+          <p>Ao acessar ou utilizar a plataforma VitraPay ("Plataforma"), você concorda com estes Termos de Uso. Caso não concorde com qualquer disposição, não utilize a Plataforma.</p>
 
           <h2>2. Definições</h2>
-          <p><strong>Plataforma:</strong> Sistema de intermediação de pagamentos e distribuição de produtos digitais operado pela Aether.</p>
+          <p><strong>Plataforma:</strong> Sistema de intermediação de pagamentos e distribuição de produtos digitais operado pela VitraPay.</p>
           <p><strong>Produtor:</strong> Pessoa física ou jurídica que cria e disponibiliza produtos digitais na Plataforma.</p>
           <p><strong>Afiliado:</strong> Usuário que promove produtos de Produtores em troca de comissão.</p>
           <p><strong>Comprador:</strong> Usuário que adquire produtos digitais através da Plataforma.</p>
 
           <h2>3. Natureza do Serviço — Intermediação</h2>
-          <p>A Aether atua exclusivamente como <strong>intermediadora de pagamentos e distribuidora tecnológica</strong>. A Plataforma não é responsável pelo conteúdo, qualidade, legalidade, veracidade ou adequação dos produtos digitais ofertados pelos Produtores.</p>
-          <p>Nos termos do artigo 730 e seguintes do Código Civil Brasileiro e da Lei nº 12.965/2014 (Marco Civil da Internet), a Aether:</p>
+          <p>A VitraPay atua exclusivamente como <strong>intermediadora de pagamentos e distribuidora tecnológica</strong>. A Plataforma não é responsável pelo conteúdo, qualidade, legalidade, veracidade ou adequação dos produtos digitais ofertados pelos Produtores.</p>
+          <p>Nos termos do artigo 730 e seguintes do Código Civil Brasileiro e da Lei nº 12.965/2014 (Marco Civil da Internet), a VitraPay:</p>
           <ul className="list-disc pl-6 space-y-1">
             <li>Não produz, edita ou supervisiona o conteúdo dos produtos digitais;</li>
             <li>Não garante resultados financeiros ou de qualquer outra natureza aos Compradores;</li>
@@ -69,22 +69,22 @@ export default function TermsOfUse() {
           <p>Os prazos de repasse seguem as condições de cada método de pagamento (Pix, cartão de crédito, boleto bancário).</p>
 
           <h2>7. Política de Reembolso</h2>
-          <p>Reembolsos são processados conforme o Código de Defesa do Consumidor. O Produtor pode estabelecer políticas de garantia estendida. A Aether atua como intermediadora no processamento do reembolso, mas a responsabilidade pela política é do Produtor.</p>
+          <p>Reembolsos são processados conforme o Código de Defesa do Consumidor. O Produtor pode estabelecer políticas de garantia estendida. A VitraPay atua como intermediadora no processamento do reembolso, mas a responsabilidade pela política é do Produtor.</p>
 
           <h2>8. Propriedade Intelectual</h2>
-          <p>Todo o conteúdo dos produtos digitais pertence aos respectivos Produtores. A marca, logotipo e tecnologia da Plataforma são de propriedade exclusiva da Aether.</p>
+          <p>Todo o conteúdo dos produtos digitais pertence aos respectivos Produtores. A marca, logotipo e tecnologia da Plataforma são de propriedade exclusiva da VitraPay.</p>
 
           <h2>9. Suspensão e Encerramento</h2>
-          <p>A Aether reserva-se o direito de suspender ou encerrar contas que violem estes Termos, pratiquem fraudes, ofereçam conteúdo ilegal ou prejudiquem a reputação da Plataforma.</p>
+          <p>A VitraPay reserva-se o direito de suspender ou encerrar contas que violem estes Termos, pratiquem fraudes, ofereçam conteúdo ilegal ou prejudiquem a reputação da Plataforma.</p>
 
           <h2>10. Limitação de Responsabilidade</h2>
-          <p>A Aether não será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso da Plataforma ou da aquisição de produtos digitais. A responsabilidade máxima da Aether limita-se ao valor das taxas de intermediação cobradas nos últimos 12 meses.</p>
+          <p>A VitraPay não será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso da Plataforma ou da aquisição de produtos digitais. A responsabilidade máxima da VitraPay limita-se ao valor das taxas de intermediação cobradas nos últimos 12 meses.</p>
 
           <h2>11. Legislação Aplicável</h2>
           <p>Estes Termos são regidos pela legislação brasileira. Fica eleito o foro da Comarca de São Paulo/SP para dirimir quaisquer controvérsias.</p>
 
           <h2>12. Alterações</h2>
-          <p>A Aether poderá alterar estes Termos a qualquer momento, notificando os usuários com antecedência mínima de 30 dias. O uso continuado da Plataforma após as alterações constitui aceitação dos novos termos.</p>
+          <p>A VitraPay poderá alterar estes Termos a qualquer momento, notificando os usuários com antecedência mínima de 30 dias. O uso continuado da Plataforma após as alterações constitui aceitação dos novos termos.</p>
         </div>
       </main>
     </div>

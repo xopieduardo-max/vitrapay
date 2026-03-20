@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary glow-primary">
               <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
             </div>
-            <span className="text-xl font-bold tracking-tight">Aether</span>
+            <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/" className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Voltar</Link>
@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
         <div className="prose prose-sm prose-invert max-w-none space-y-6 text-muted-foreground [&_h2]:text-foreground [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-3 [&_strong]:text-foreground">
 
           <h2>1. Introdução</h2>
-          <p>A Aether ("nós", "nosso") está comprometida com a proteção dos dados pessoais dos seus usuários, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD) e demais normas aplicáveis.</p>
+          <p>A VitraPay ("nós", "nosso") está comprometida com a proteção dos dados pessoais dos seus usuários, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD) e demais normas aplicáveis.</p>
 
           <h2>2. Dados Coletados</h2>
           <p>Coletamos as seguintes categorias de dados:</p>
@@ -88,7 +88,7 @@ export default function PrivacyPolicy() {
           <p>Utilizamos cookies essenciais para o funcionamento da Plataforma e cookies analíticos para entender o uso dos serviços. Você pode gerenciar cookies através das configurações do seu navegador.</p>
 
           <h2>10. Papel de Intermediador</h2>
-          <p>A Aether atua como <strong>operadora de dados</strong> nas transações entre Produtores e Compradores. O Produtor é o <strong>controlador dos dados</strong> dos seus clientes e responsável pelo tratamento adequado conforme a LGPD.</p>
+          <p>A VitraPay atua como <strong>operadora de dados</strong> nas transações entre Produtores e Compradores. O Produtor é o <strong>controlador dos dados</strong> dos seus clientes e responsável pelo tratamento adequado conforme a LGPD.</p>
 
           <h2>11. Encarregado de Proteção de Dados (DPO)</h2>
           <p>Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de dados pessoais, entre em contato com nosso Encarregado de Proteção de Dados através do e-mail disponível na seção de contato da Plataforma.</p>

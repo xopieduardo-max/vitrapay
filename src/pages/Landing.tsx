@@ -213,7 +213,7 @@ const bigStats = [
 ];
 
 const testimonials = [
-  { name: "Lucas Andrade", role: "Infoprodutor", text: "Migrei pra Aether e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
+  { name: "Lucas Andrade", role: "Infoprodutor", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
   { name: "Mariana Costa", role: "Produtora de Cursos", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
   { name: "Rafael Souza", role: "Afiliado Top", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 },
 ];
@@ -254,7 +254,7 @@ export default function Landing() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary glow-primary">
               <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
             </div>
-            <span className="text-xl font-bold tracking-tight">Aether</span>
+            <span className="text-xl font-bold tracking-tight">VitraPay</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
@@ -330,7 +330,7 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <span><strong className="text-foreground">+10.000</strong> produtores já confiam na Aether</span>
+              <span><strong className="text-foreground">+10.000</strong> produtores já confiam na VitraPay</span>
             </motion.div>
           </motion.div>
 
@@ -355,7 +355,7 @@ export default function Landing() {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
                 src={dashboardPreview}
-                alt="Dashboard Aether com métricas de vendas em tempo real"
+                alt="Dashboard VitraPay com métricas de vendas em tempo real"
                 className="w-full"
               />
               <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
@@ -519,10 +519,10 @@ export default function Landing() {
               </span>
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
                 Em breve o app da{" "}
-                <span className="text-gradient-primary">Aether!</span>
+                <span className="text-gradient-primary">VitraPay!</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Com o app da Aether você terá tudo o que precisa para gerenciar suas vendas na palma da sua mão. Acompanhe métricas, receba notificações de vendas e saque seus ganhos de qualquer lugar.
+                Com o app da VitraPay você terá tudo o que precisa para gerenciar suas vendas na palma da sua mão. Acompanhe métricas, receba notificações de vendas e saque seus ganhos de qualquer lugar.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
@@ -543,7 +543,7 @@ export default function Landing() {
             >
               <img
                 src={appMockup}
-                alt="App Aether em breve"
+                alt="App VitraPay em breve"
                 className="w-full max-w-md drop-shadow-2xl"
               />
             </motion.div>
@@ -636,7 +636,7 @@ export default function Landing() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                   <Zap className="h-4 w-4 text-primary-foreground" strokeWidth={2} />
                 </div>
-                <span className="text-lg font-bold tracking-tight">Aether</span>
+                <span className="text-lg font-bold tracking-tight">VitraPay</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 A plataforma de pagamentos que acelera seus resultados digitais.
@@ -665,7 +665,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <span>© 2026 Aether. Todos os direitos reservados.</span>
+            <span>© 2026 VitraPay. Todos os direitos reservados.</span>
             <span className="text-xs">Feito com precisão ⚡</span>
           </div>
         </div>
