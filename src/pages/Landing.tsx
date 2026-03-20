@@ -295,6 +295,16 @@ export default function Landing() {
               <span>A plataforma que acelera seus resultados</span>
             </motion.div>
 
+            {/* Interactive 3D Logo */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              transition={{ delay: 0.2, duration: 0.8, type: "spring", damping: 15 }}
+              className="flex justify-center"
+            >
+              <Interactive3DLogo className="w-28 h-28 md:w-36 md:h-36 cursor-grab active:cursor-grabbing" />
+            </motion.div>
+
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
               Venda produtos digitais{" "}
               <span className="text-gradient-primary">sem limites.</span>
