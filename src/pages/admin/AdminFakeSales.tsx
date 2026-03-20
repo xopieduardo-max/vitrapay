@@ -356,18 +356,21 @@ export default function AdminFakeSales() {
           </div>
         </div>
 
-        <Button
-          className="gap-1.5"
-          onClick={() => generateSales.mutate()}
-          disabled={generateSales.isPending || !productId || !producerId || totalSales === 0}
-        >
-          {generateSales.isPending ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Plus className="h-3.5 w-3.5" />
-          )}
-          Gerar {totalSales} venda(s)
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            className="gap-1.5"
+            onClick={() => generateSales.mutate()}
+            disabled={generateSales.isPending || !productId || !producerId || totalSales === 0}
+          >
+            {generateSales.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Plus className="h-3.5 w-3.5" />
+            )}
+            Gerar {totalSales} venda(s)
+          </Button>
+          <TestPushButton producerId={producerId} />
+        </div>
       </div>
 
       {/* Recent fake sales */}
