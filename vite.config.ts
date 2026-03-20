@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "prompt",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: {
-        name: "Aether — Vendas Digitais",
-        short_name: "Aether",
+        name: "VitraPay — Vendas Digitais",
+        short_name: "VitraPay",
         description: "Plataforma de infoprodutos e vendas digitais",
         theme_color: "#10b981",
         background_color: "#0a0a0a",

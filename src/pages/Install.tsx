@@ -189,7 +189,7 @@ export default function Install() {
             </div>
             <h1 className="text-xl font-bold text-foreground">App já instalado!</h1>
             <p className="text-sm text-muted-foreground">
-              O Aether já está instalado no seu dispositivo. Aproveite!
+              O VitraPay já está instalado no seu dispositivo. Aproveite!
             </p>
             <Link to="/dashboard">
               <Button className="mt-4">Ir para o Dashboard</Button>
@@ -212,13 +212,13 @@ export default function Install() {
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75" />
                 <img
                   src={appMockup}
-                  alt="App Aether no celular"
+                  alt="App VitraPay no celular"
                   className="relative w-full drop-shadow-2xl"
                 />
               </motion.div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground mb-2">
-                  Instale o Aether
+                  Instale o VitraPay
                 </h1>
                 <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
                   Adicione o app à sua tela inicial em <strong className="text-foreground">3 passos simples</strong>

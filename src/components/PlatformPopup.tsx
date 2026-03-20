@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
-const DISMISSED_KEY = "aether_dismissed_popups";
+const DISMISSED_KEY = "vitrapay_dismissed_popups";
 
 function getDismissed(): string[] {
   try {
