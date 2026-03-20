@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import appMockup from "@/assets/app-mockup.png";
+import { IPhoneFrame } from "@/components/IPhoneFrame";
 
 type Platform = "ios" | "android" | null;
 
@@ -210,11 +211,13 @@ export default function Install() {
                 className="relative mx-auto w-40 sm:w-48"
               >
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75" />
-                <img
-                  src={appMockup}
-                  alt="App VitraPay no celular"
-                  className="relative w-full drop-shadow-2xl"
-                />
+                <IPhoneFrame className="relative">
+                  <img
+                    src={appMockup}
+                    alt="App VitraPay no celular"
+                    className="w-full"
+                  />
+                </IPhoneFrame>
               </motion.div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground mb-2">
