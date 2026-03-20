@@ -12,6 +12,7 @@ import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
+import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
