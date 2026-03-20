@@ -254,7 +254,7 @@ export default function Landing() {
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoHorizontal} alt="VitraPay" className="h-8 object-contain" />
+            <ThemeLogo variant="horizontal" className="h-8 object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
