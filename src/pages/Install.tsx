@@ -212,7 +212,7 @@ export default function Install() {
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75" />
                 <img
                   src={appMockup}
-                  alt="App Aether no celular"
+                  alt="App VitraPay no celular"
                   className="relative w-full drop-shadow-2xl"
                 />
               </motion.div>
