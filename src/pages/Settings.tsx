@@ -231,6 +231,9 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Push Notifications Section */}
+      <NotificationsSection />
+
       {/* Password Section */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-6">
         <div className="flex items-center gap-2 text-sm font-semibold">
