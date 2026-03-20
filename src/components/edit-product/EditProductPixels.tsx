@@ -9,6 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Loader2, Settings } from "lucide-react";
 
+import pixelFacebookLogo from "@/assets/pixel-facebook.png";
+import pixelGoogleAdsLogo from "@/assets/pixel-google-ads.png";
+import pixelGoogleAnalyticsLogo from "@/assets/pixel-google-analytics.png";
+import pixelTiktokLogo from "@/assets/pixel-tiktok.png";
+
 type PixelConfigValue = string | number | boolean;
 type PixelConfig = Record<string, PixelConfigValue>;
 
@@ -33,8 +38,7 @@ interface PlatformConversionOption {
 interface PlatformConfigDef {
   id: string;
   label: string;
-  icon: string;
-  color: string;
+  logo: string;
   fields: PlatformField[];
   hasAccessToken: boolean;
   eventOptions: PlatformOption[];
@@ -56,8 +60,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "facebook",
     label: "Facebook",
-    icon: "f",
-    color: "bg-[#1877F2]",
+    logo: pixelFacebookLogo,
     fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "1293867678159457" }],
     hasAccessToken: false,
     eventOptions: [
@@ -74,8 +77,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "google_ads",
     label: "Google Ads",
-    icon: "▲",
-    color: "bg-[#4285F4]",
+    logo: pixelGoogleAdsLogo,
     fields: [
       { key: "pixel_id", label: "ID do Pixel", placeholder: "AW-123456789" },
       { key: "conversion_label", label: "Label de conversão", placeholder: "AbCdEfGh" },
@@ -89,8 +91,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "google_analytics",
     label: "Google Analytics",
-    icon: "📊",
-    color: "bg-[#E37400]",
+    logo: pixelGoogleAnalyticsLogo,
     fields: [{ key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" }],
     hasAccessToken: false,
     eventOptions: [],
@@ -101,8 +102,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "tiktok",
     label: "TikTok",
-    icon: "♪",
-    color: "bg-[#010101]",
+    logo: pixelTiktokLogo,
     fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "XXXXXXXXXXXXXXXXX" }],
     hasAccessToken: true,
     eventOptions: [
@@ -248,9 +248,7 @@ export default function EditProductPixels({ productId }: Props) {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
               }`}
             >
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded text-[0.6rem] text-white font-bold ${item.color}`}>
-                {item.icon}
-              </span>
+              <img src={item.logo} alt={item.label} className="h-5 w-5 rounded object-contain" />
               {item.label}
               {count > 0 && (
                 <Badge variant="secondary" className="text-[0.55rem] h-4 px-1.5">
