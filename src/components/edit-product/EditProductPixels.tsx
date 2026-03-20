@@ -92,7 +92,6 @@ const PLATFORMS: PlatformConfigDef[] = [
     id: "google_analytics",
     label: "Google Analytics",
     logo: pixelGoogleAnalyticsLogo,
-    color: "bg-[#E37400]",
     fields: [{ key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" }],
     hasAccessToken: false,
     eventOptions: [],
