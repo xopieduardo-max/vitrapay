@@ -224,7 +224,7 @@ export default function Finance() {
                 {totalHeld > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Lock className="h-3 w-3" /> Retido ({HOLDBACK_DAYS} dias)
+                      <Lock className="h-3 w-3" /> Retido (PIX: D+0 • Cartão: D+{HOLDBACK_DAYS_CARD})
                     </span>
                     <span className="text-sm font-medium text-warning">
                       R$ {(totalHeld / 100).toFixed(2)}
