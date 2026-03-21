@@ -172,6 +172,8 @@ export default function Dashboard() {
           alt="Banner promocional VitraPay"
           className="w-full h-auto object-cover rounded-xl"
           style={{ maxHeight: 160 }}
+          loading="lazy"
+          decoding="async"
         />
       </motion.div>
 

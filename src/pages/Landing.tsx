@@ -147,7 +147,7 @@ function GridBackground() {
 function FloatingParticles() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
+      {[...Array(8)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 rounded-full bg-primary/20"
@@ -158,10 +158,9 @@ function FloatingParticles() {
           animate={{
             y: [0, -30, 0],
             opacity: [0.2, 0.6, 0.2],
-            scale: [1, 1.5, 1],
           }}
           transition={{
-            duration: 3 + Math.random() * 4,
+            duration: 4 + Math.random() * 4,
             repeat: Infinity,
             delay: Math.random() * 3,
             ease: "easeInOut",
@@ -367,6 +366,8 @@ export default function Landing() {
                 src={dashboardPreview}
                 alt="Dashboard VitraPay com métricas de vendas em tempo real"
                 className="w-full"
+                loading="lazy"
+                decoding="async"
               />
               <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
             </motion.div>
@@ -556,6 +557,8 @@ export default function Landing() {
                   src={appMockup}
                   alt="App VitraPay"
                   className="w-full"
+                  loading="lazy"
+                  decoding="async"
                 />
               </IPhoneFrame>
             </motion.div>
