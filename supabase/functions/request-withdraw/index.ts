@@ -205,6 +205,21 @@ serve(async (req) => {
         processed_at: new Date().toISOString(),
       }).eq("id", withdrawal.id);
 
+      // Notify producer (email + push)
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/notify-withdrawal`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.id,
+            amount,
+            transfer_id: asaasData.id,
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to send withdrawal notification:", e);
+      }
+
       return new Response(JSON.stringify({
         success: true,
         auto_processed: true,
