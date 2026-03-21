@@ -126,8 +126,8 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      return new Response(JSON.stringify({ error: "Failed to create customer" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ error: "CPF/CNPJ inválido. Verifique os dados e tente novamente." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
