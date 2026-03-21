@@ -794,12 +794,38 @@ export default function Checkout() {
                   animate={{ opacity: 1, height: "auto" }}
                   className="space-y-3"
                 >
+                  {/* Card Status Feedback */}
+                  {cardStatus === "approved" && (
+                    <div className="rounded-lg p-3 flex items-center gap-2 text-sm font-semibold" style={{ background: "hsl(142,71%,45%,0.15)", color: "hsl(142,71%,45%)", border: "1px solid hsl(142,71%,45%,0.3)" }}>
+                      <CheckCircle2 className="h-4 w-4" /> Pagamento aprovado!
+                    </div>
+                  )}
+                  {cardStatus === "declined" && (
+                    <div className="rounded-lg p-3 flex items-center gap-2 text-sm font-semibold" style={{ background: "hsl(0,84%,60%,0.15)", color: "hsl(0,84%,60%)", border: "1px solid hsl(0,84%,60%,0.3)" }}>
+                      <Lock className="h-4 w-4" /> Pagamento recusado. Verifique os dados.
+                    </div>
+                  )}
+                  {cardStatus === "pending" && (
+                    <div className="rounded-lg p-3 flex items-center gap-2 text-sm font-semibold" style={{ background: "hsl(48,96%,53%,0.15)", color: "hsl(48,96%,53%)", border: "1px solid hsl(48,96%,53%,0.3)" }}>
+                      <Clock className="h-4 w-4" /> Pagamento em análise. Aguarde confirmação.
+                    </div>
+                  )}
                   <div>
                     <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Número do cartão</Label>
                     <Input
                       placeholder="0000 0000 0000 0000"
                       value={form.cardNumber}
                       onChange={(e) => updateForm("cardNumber", formatCardNumber(e.target.value))}
+                      className="mt-1 border-0 h-11"
+                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Nome no cartão</Label>
+                    <Input
+                      placeholder="Nome como aparece no cartão"
+                      value={form.cardHolder}
+                      onChange={(e) => updateForm("cardHolder", e.target.value)}
                       className="mt-1 border-0 h-11"
                       style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                     />
