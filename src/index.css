@@ -209,3 +209,40 @@
     animation: pulse-glow 3s ease-in-out infinite;
   }
 }
+
+/* Checkout Theme Variables */
+.checkout-dark {
+  --ck-bg: hsl(240, 10%, 4%);
+  --ck-fg: hsl(0, 0%, 95%);
+  --ck-card: hsl(240, 10%, 8%);
+  --ck-card-border: hsl(240, 5%, 15%);
+  --ck-input: hsl(240, 10%, 12%);
+  --ck-input-fg: hsl(0, 0%, 90%);
+  --ck-label: hsl(240, 5%, 55%);
+  --ck-muted: hsl(240, 5%, 60%);
+  --ck-subtle: hsl(240, 5%, 50%);
+  --ck-dim: hsl(240, 5%, 45%);
+  --ck-faint: hsl(240, 5%, 40%);
+  --ck-ghost: hsl(240, 5%, 35%);
+  --ck-method-inactive: hsl(240, 10%, 12%);
+  --ck-method-inactive-fg: hsl(240, 5%, 60%);
+  --ck-method-inactive-border: hsl(240, 5%, 18%);
+}
+
+.checkout-light {
+  --ck-bg: hsl(0, 0%, 96%);
+  --ck-fg: hsl(240, 10%, 10%);
+  --ck-card: hsl(0, 0%, 100%);
+  --ck-card-border: hsl(240, 5%, 88%);
+  --ck-input: hsl(240, 5%, 95%);
+  --ck-input-fg: hsl(240, 10%, 10%);
+  --ck-label: hsl(240, 5%, 40%);
+  --ck-muted: hsl(240, 5%, 35%);
+  --ck-subtle: hsl(240, 5%, 45%);
+  --ck-dim: hsl(240, 5%, 50%);
+  --ck-faint: hsl(240, 5%, 55%);
+  --ck-ghost: hsl(240, 5%, 60%);
+  --ck-method-inactive: hsl(0, 0%, 100%);
+  --ck-method-inactive-fg: hsl(240, 5%, 35%);
+  --ck-method-inactive-border: hsl(240, 5%, 85%);
+}
