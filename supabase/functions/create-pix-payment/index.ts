@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
     }
 
     // Get PIX QR Code
-    const pixRes = await fetch(`https://sandbox.asaas.com/api/v3/payments/${paymentData.id}/pixQrCode`, {
+    const pixRes = await fetch(`https://api.asaas.com/v3/payments/${paymentData.id}/pixQrCode`, {
       headers: {
         "Content-Type": "application/json",
         "access_token": ASAAS_API_KEY,
