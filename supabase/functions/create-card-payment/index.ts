@@ -251,12 +251,53 @@ Deno.serve(async (req) => {
         })
         .select().single();
 
+      let commissionAmount = 0;
       if (sale && affiliateId && product.affiliate_commission > 0) {
-        const commissionAmount = Math.round(amount * product.affiliate_commission / 100);
+        commissionAmount = Math.round(amount * product.affiliate_commission / 100);
         await supabase.from("commissions").insert({
           sale_id: sale.id, affiliate_id: affiliateId,
           amount: commissionAmount, status: "pending",
         });
+      }
+
+      // ── Record transactions (split) ──
+      if (sale) {
+        const producerNet = amount - platformFee - commissionAmount;
+        const txns: any[] = [
+          {
+            user_id: product.producer_id,
+            type: "credit",
+            category: "sale",
+            amount: producerNet,
+            balance_type: "available",
+            reference_id: sale.id,
+          },
+        ];
+
+        if (platformFee > 0) {
+          txns.push({
+            user_id: product.producer_id,
+            type: "debit",
+            category: "fee",
+            amount: platformFee,
+            balance_type: "available",
+            reference_id: sale.id,
+          });
+        }
+
+        if (affiliateId && commissionAmount > 0) {
+          txns.push({
+            user_id: affiliateId,
+            type: "credit",
+            category: "commission",
+            amount: commissionAmount,
+            balance_type: "available",
+            reference_id: sale.id,
+          });
+        }
+
+        await supabase.from("transactions").insert(txns)
+          .catch((err: any) => console.error("Transaction insert error:", err));
       }
 
       // ✅ Grant product access
