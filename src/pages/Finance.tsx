@@ -60,7 +60,7 @@ export default function Finance() {
       if (!user) return [];
       const { data } = await supabase
         .from("sales")
-        .select("amount, platform_fee, status, created_at")
+        .select("amount, platform_fee, status, created_at, payment_provider")
         .eq("producer_id", user.id)
         .eq("status", "completed");
       return data || [];
