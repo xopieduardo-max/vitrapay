@@ -156,6 +156,26 @@ serve(async (req) => {
       console.error("Failed to update withdrawal after transfer:", updateErr);
     }
 
+    // Record withdrawal + fee transactions
+    await supabase.from("transactions").insert([
+      {
+        user_id: withdrawal.user_id,
+        type: "debit",
+        category: "withdrawal",
+        amount: withdrawal.amount,
+        balance_type: "available",
+        reference_id: withdrawal_id,
+      },
+      {
+        user_id: withdrawal.user_id,
+        type: "debit",
+        category: "fee",
+        amount: 500, // R$ 5.00 withdrawal fee
+        balance_type: "available",
+        reference_id: withdrawal_id,
+      },
+    ]).catch((err: any) => console.error("Withdrawal transaction error:", err));
+
     // Notify producer (email + push)
     try {
       await fetch(`${supabaseUrl}/functions/v1/notify-withdrawal`, {
