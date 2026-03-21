@@ -145,6 +145,7 @@ export default function Checkout() {
   const [processing, setProcessing] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState<any>(null);
   const [pixData, setPixData] = useState<{ qrCode: string; copyPaste: string } | null>(null);
+  const [asaasPaymentId, setAsaasPaymentId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
@@ -235,6 +236,33 @@ export default function Checkout() {
     const interval = setInterval(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000);
     return () => clearInterval(interval);
   }, [timeLeft]);
+
+  // Polling for PIX payment confirmation
+  useEffect(() => {
+    if (!asaasPaymentId) return;
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await supabase
+          .from("pending_payments")
+          .select("status")
+          .eq("asaas_payment_id", asaasPaymentId)
+          .single();
+
+        if (data?.status === "confirmed") {
+          clearInterval(interval);
+          setPurchaseResult({
+            product_title: product?.title,
+            amount: calculateTotal(),
+            sale_id: asaasPaymentId,
+            product_type: product?.type,
+            file_url: product?.file_url,
+          });
+          toast({ title: "Pagamento confirmado!" });
+        }
+      } catch {}
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [asaasPaymentId]);
 
   const formatTime = (s: number) => ({
     min: Math.floor(s / 60).toString().padStart(2, "0"),
@@ -330,6 +358,7 @@ export default function Checkout() {
       const total = calculateTotal();
 
       if (paymentMethod === "pix") {
+        const affiliateRef = searchParams.get("ref") || null;
         // Call Asaas PIX edge function
         const { data, error } = await supabase.functions.invoke("create-pix-payment", {
           body: {
@@ -339,6 +368,7 @@ export default function Checkout() {
             buyer_cpf: form.cpf,
             amount: total,
             description: `Compra na VitraPay`,
+            affiliate_ref: affiliateRef,
           },
         });
         if (error) throw error;
@@ -349,6 +379,7 @@ export default function Checkout() {
             qrCode: data.pix_qr_code,
             copyPaste: data.pix_copy_paste,
           });
+          setAsaasPaymentId(data.asaas_payment_id || null);
           firePixelEvent(productPixels, "Purchase", total);
           toast({ title: "Pagamento gerado, finalize via PIX" });
         } else {
