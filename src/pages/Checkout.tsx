@@ -822,7 +822,7 @@ export default function Checkout() {
                 disabled={processing}
                 className="w-full h-14 text-base font-bold gap-2 rounded-xl"
                 size="lg"
-                style={{ background: "hsl(48, 96%, 53%)", color: "hsl(0,0%,10%)" }}
+                style={{ background: "hsl(142, 71%, 45%)", color: "white" }}
               >
                 {processing ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
