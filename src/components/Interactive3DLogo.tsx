@@ -60,7 +60,7 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
 
         {/* Shadow layer */}
         <motion.img
-          src={logoIcon}
+          src={logoSrc}
           alt=""
           aria-hidden
           className="absolute inset-0 w-full h-full object-contain blur-lg opacity-30"
@@ -69,7 +69,7 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
 
         {/* Main logo */}
         <motion.img
-          src={logoIcon}
+          src={logoSrc}
           alt="VitraPay Logo 3D"
           className="relative w-full h-full object-contain drop-shadow-[0_0_25px_hsla(48,96%,53%,0.3)]"
           style={{ transform: "translateZ(30px)" }}
