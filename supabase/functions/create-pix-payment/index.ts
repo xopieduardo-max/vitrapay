@@ -11,8 +11,8 @@ Deno.serve(async (req) => {
   try {
     const { product_id, buyer_name, buyer_email, buyer_cpf, amount, description } = await req.json();
 
-    if (!product_id || !amount) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+    if (!product_id || !amount || !buyer_cpf) {
+      return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount, buyer_cpf)" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
