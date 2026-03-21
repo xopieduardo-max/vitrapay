@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN allow_affiliates boolean NOT NULL DEFAULT true;
