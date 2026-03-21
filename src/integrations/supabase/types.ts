@@ -673,6 +673,7 @@ export type Database = {
           allow_affiliates: boolean
           checkout_banner_url: string | null
           checkout_headline: string | null
+          checkout_theme: string
           checkout_timer_minutes: number | null
           cover_url: string | null
           created_at: string
@@ -691,6 +692,7 @@ export type Database = {
           allow_affiliates?: boolean
           checkout_banner_url?: string | null
           checkout_headline?: string | null
+          checkout_theme?: string
           checkout_timer_minutes?: number | null
           cover_url?: string | null
           created_at?: string
@@ -709,6 +711,7 @@ export type Database = {
           allow_affiliates?: boolean
           checkout_banner_url?: string | null
           checkout_headline?: string | null
+          checkout_theme?: string
           checkout_timer_minutes?: number | null
           cover_url?: string | null
           created_at?: string

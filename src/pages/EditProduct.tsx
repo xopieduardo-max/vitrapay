@@ -68,6 +68,7 @@ export default function EditProduct() {
       checkout_headline: product.checkout_headline || "",
       checkout_timer_minutes: product.checkout_timer_minutes || 0,
       checkout_banner_url: product.checkout_banner_url || "",
+      checkout_theme: product.checkout_theme || "dark",
     });
   }
 
@@ -104,6 +105,7 @@ export default function EditProduct() {
           checkout_headline: form.checkout_headline,
           checkout_timer_minutes: form.checkout_timer_minutes,
           checkout_banner_url: form.checkout_banner_url,
+          checkout_theme: form.checkout_theme || "dark",
         })
         .eq("id", product.id);
       if (error) throw error;

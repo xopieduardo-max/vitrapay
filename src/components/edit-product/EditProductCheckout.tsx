@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush } from "lucide-react";
+import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon } from "lucide-react";
 
 interface Props {
   productId: string;
@@ -99,8 +99,39 @@ export default function EditProductCheckout({ productId, form, updateField, chec
           </Button>
         </div>
       </div>
+      {/* Tema do Checkout */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-sm font-bold">Tema do Checkout</h3>
+        <p className="text-xs text-muted-foreground">Escolha se o checkout será exibido no modo claro ou escuro para seus compradores.</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => updateField("checkout_theme", "dark")}
+            className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all"
+            style={{
+              background: (form.checkout_theme || "dark") === "dark" ? "hsl(48, 96%, 53%)" : "hsl(var(--muted))",
+              color: (form.checkout_theme || "dark") === "dark" ? "hsl(0,0%,10%)" : "hsl(var(--muted-foreground))",
+              border: (form.checkout_theme || "dark") === "dark" ? "2px solid hsl(48, 96%, 48%)" : "2px solid hsl(var(--border))",
+            }}
+          >
+            <Moon className="h-4 w-4" />
+            Modo Escuro
+          </button>
+          <button
+            onClick={() => updateField("checkout_theme", "light")}
+            className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all"
+            style={{
+              background: form.checkout_theme === "light" ? "hsl(48, 96%, 53%)" : "hsl(var(--muted))",
+              color: form.checkout_theme === "light" ? "hsl(0,0%,10%)" : "hsl(var(--muted-foreground))",
+              border: form.checkout_theme === "light" ? "2px solid hsl(48, 96%, 48%)" : "2px solid hsl(var(--border))",
+            }}
+          >
+            <Sun className="h-4 w-4" />
+            Modo Claro
+          </button>
+        </div>
+      </div>
 
-      {/* Customização do Checkout */}
+
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <h3 className="text-sm font-bold">Personalizar Checkout</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
