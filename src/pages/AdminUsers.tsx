@@ -57,6 +57,7 @@ export default function AdminUsers() {
   const [feeFixed, setFeeFixed] = useState("");
   const [savingFee, setSavingFee] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users-list"],
