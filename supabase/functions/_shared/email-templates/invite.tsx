@@ -9,6 +9,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Text,
@@ -20,31 +21,32 @@ interface InviteEmailProps {
   confirmationUrl: string
 }
 
+const logoUrl = 'https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png'
+
 export const InviteEmail = ({
   siteName,
   siteUrl,
   confirmationUrl,
 }: InviteEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
+    <Preview>Você foi convidado para a VitraPay</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>You've been invited</Heading>
+        <Img src={logoUrl} alt="VitraPay" width="160" height="auto" style={logo} />
+        <Heading style={h1}>Você foi convidado!</Heading>
         <Text style={text}>
-          You've been invited to join{' '}
+          Você recebeu um convite para a{' '}
           <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
+            <strong>VitraPay</strong>
           </Link>
-          . Click the button below to accept the invitation and create your
-          account.
+          . Clique no botão abaixo para aceitar o convite e criar sua conta.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Accept Invitation
+          🎉 Aceitar Convite
         </Button>
         <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this
-          email.
+          Se você não esperava este convite, pode ignorar este e-mail com segurança.
         </Text>
       </Container>
     </Body>
@@ -53,27 +55,29 @@ export const InviteEmail = ({
 
 export default InviteEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Instrument Sans', Arial, sans-serif" }
+const container = { padding: '30px 25px' }
+const logo = { margin: '0 0 24px' }
 const h1 = {
-  fontSize: '22px',
+  fontSize: '24px',
   fontWeight: 'bold' as const,
-  color: '#000000',
+  color: '#0a0a0a',
   margin: '0 0 20px',
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
+  fontSize: '15px',
+  color: '#6b7280',
+  lineHeight: '1.6',
   margin: '0 0 25px',
 }
-const link = { color: 'inherit', textDecoration: 'underline' }
+const link = { color: '#0a0a0a', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  backgroundColor: 'hsl(48, 96%, 53%)',
+  color: '#1a1a1a',
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
+  borderRadius: '12px',
+  padding: '14px 24px',
   textDecoration: 'none',
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
