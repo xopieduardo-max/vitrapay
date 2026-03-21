@@ -10,7 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy } from "lucide-react";
 import {
   ShieldCheck,
   Clock,
@@ -26,6 +25,7 @@ import {
   Mail,
   Phone,
   FileText,
+  Copy,
 } from "lucide-react";
 
 type PaymentMethod = "card" | "pix";
