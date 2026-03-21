@@ -1,0 +1,1 @@
+UPDATE public.profiles SET onboarding_completed = true WHERE onboarding_completed = false OR onboarding_completed IS NULL;

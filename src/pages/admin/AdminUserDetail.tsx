@@ -187,6 +187,49 @@ export default function AdminUserDetail() {
         </Select>
       </div>
 
+      {/* Onboarding survey info */}
+      {profile.onboarding_completed && (
+        <Card className="border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Perfil de Cadastro</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+              {profile.account_type && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Tipo</p>
+                  <p className="font-medium">{profile.account_type === "producer" ? "Produtor" : "Comprador"}</p>
+                </div>
+              )}
+              {profile.already_sells !== null && profile.already_sells !== undefined && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Já vendia?</p>
+                  <p className="font-medium">{profile.already_sells ? "Sim" : "Não"}</p>
+                </div>
+              )}
+              {profile.monthly_revenue && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Faturamento</p>
+                  <p className="font-medium">{profile.monthly_revenue}</p>
+                </div>
+              )}
+              {profile.current_platform && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Plataforma anterior</p>
+                  <p className="font-medium">{profile.current_platform}</p>
+                </div>
+              )}
+              {profile.referral_source && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Como conheceu</p>
+                  <p className="font-medium">{profile.referral_source}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Fee info */}
       {(profile.custom_fee_percentage != null || profile.custom_fee_fixed != null) && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm flex items-center gap-2">

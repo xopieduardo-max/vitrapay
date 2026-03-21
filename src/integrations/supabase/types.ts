@@ -858,37 +858,55 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string | null
+          already_sells: boolean | null
           avatar_url: string | null
           bio: string | null
           created_at: string
+          current_platform: string | null
           custom_fee_fixed: number | null
           custom_fee_percentage: number | null
           display_name: string | null
           id: string
+          monthly_revenue: string | null
+          onboarding_completed: boolean | null
+          referral_source: string | null
           terms_accepted_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          account_type?: string | null
+          already_sells?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          current_platform?: string | null
           custom_fee_fixed?: number | null
           custom_fee_percentage?: number | null
           display_name?: string | null
           id?: string
+          monthly_revenue?: string | null
+          onboarding_completed?: boolean | null
+          referral_source?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          account_type?: string | null
+          already_sells?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          current_platform?: string | null
           custom_fee_fixed?: number | null
           custom_fee_percentage?: number | null
           display_name?: string | null
           id?: string
+          monthly_revenue?: string | null
+          onboarding_completed?: boolean | null
+          referral_source?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
           user_id?: string
