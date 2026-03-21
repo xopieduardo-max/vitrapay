@@ -345,7 +345,7 @@ export default function Finance() {
           </h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Vendas liberadas (após {HOLDBACK_DAYS} dias)</span>
+              <span className="text-muted-foreground">Vendas liberadas</span>
               <span className="font-medium text-primary">+ R$ {(totalAvailableSales / 100).toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
