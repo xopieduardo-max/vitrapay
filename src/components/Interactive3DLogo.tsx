@@ -1,18 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import logoIcon from "@/assets/logo-vitrapay-icon.png";
 
 export function Interactive3DLogo({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
-
-  useEffect(() => {
-    const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains("dark")));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const logoSrc = isDark ? logoDark : logoLight;
 
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
