@@ -486,7 +486,7 @@ export default function Checkout() {
           >
             <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border: "2px solid hsl(48,96%,53%,0.3)" }}>
               <img
-                src="https://media.giphy.com/media/g9582DNuQppxC/giphy.gif"
+                src="/leonardo-dicaprio-celebration.gif"
                 alt="Celebração"
                 className="w-48 h-auto"
               />
