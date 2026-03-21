@@ -28,9 +28,14 @@ import {
 } from "lucide-react";
 
 // ── Platform constants ──
-const HOLDBACK_DAYS = 3;        // Days before sale balance is available
+const HOLDBACK_DAYS_CARD = 2;   // Credit card: D+2
+const HOLDBACK_DAYS_PIX = 0;    // PIX: D+0 (instant)
 const MIN_WITHDRAWAL = 1000;    // R$ 10.00 in cents
 const WITHDRAWAL_FEE = 500;     // R$ 5.00 in cents
+
+function getHoldbackDays(provider: string | null) {
+  return provider === "pix" ? HOLDBACK_DAYS_PIX : HOLDBACK_DAYS_CARD;
+}
 
 function addDays(date: string, days: number) {
   const d = new Date(date);
@@ -55,7 +60,7 @@ export default function Finance() {
       if (!user) return [];
       const { data } = await supabase
         .from("sales")
-        .select("amount, platform_fee, status, created_at")
+        .select("amount, platform_fee, status, created_at, payment_provider")
         .eq("producer_id", user.id)
         .eq("status", "completed");
       return data || [];
@@ -98,7 +103,8 @@ export default function Finance() {
   // Split sales into available vs held back
   const salesNet = sales.map((s) => ({
     net: s.amount - (s.platform_fee || 0),
-    availableAt: addDays(s.created_at, HOLDBACK_DAYS),
+    availableAt: addDays(s.created_at, getHoldbackDays(s.payment_provider)),
+    provider: s.payment_provider,
   }));
 
   const totalAvailableSales = salesNet
@@ -109,10 +115,10 @@ export default function Finance() {
     .filter((s) => s.availableAt > now)
     .reduce((acc, s) => acc + s.net, 0);
 
-  // Commissions — also apply holdback
+  // Commissions — apply card holdback (conservative)
   const commissionsNet = commissions.map((c) => ({
     amount: c.amount,
-    availableAt: addDays(c.created_at, HOLDBACK_DAYS),
+    availableAt: addDays(c.created_at, HOLDBACK_DAYS_CARD),
   }));
 
   const totalAvailableCommissions = commissionsNet
@@ -218,7 +224,7 @@ export default function Finance() {
                 {totalHeld > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Lock className="h-3 w-3" /> Retido ({HOLDBACK_DAYS} dias)
+                      <Lock className="h-3 w-3" /> Retido (PIX: D+0 • Cartão: D+{HOLDBACK_DAYS_CARD})
                     </span>
                     <span className="text-sm font-medium text-warning">
                       R$ {(totalHeld / 100).toFixed(2)}
@@ -239,7 +245,7 @@ export default function Finance() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Clock className="h-3.5 w-3.5 shrink-0" />
-                  <span>Carência: <strong className="text-foreground">{HOLDBACK_DAYS} dias</strong> após venda confirmada</span>
+                  <span>Carência: <strong className="text-foreground">PIX: imediato • Cartão: {HOLDBACK_DAYS_CARD} dias</strong></span>
                 </div>
               </div>
 
@@ -299,7 +305,7 @@ export default function Finance() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque", clickAction: "available" as const },
-          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Liberado em ${HOLDBACK_DAYS} dias`, clickAction: "held" as const },
+          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Cartão: D+${HOLDBACK_DAYS_CARD}`, clickAction: "held" as const },
           { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões", clickAction: null },
           { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido", clickAction: null },
         ].map((stat, i) => (
@@ -339,7 +345,7 @@ export default function Finance() {
           </h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Vendas liberadas (após {HOLDBACK_DAYS} dias)</span>
+              <span className="text-muted-foreground">Vendas liberadas</span>
               <span className="font-medium text-primary">+ R$ {(totalAvailableSales / 100).toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
