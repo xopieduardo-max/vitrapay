@@ -77,13 +77,18 @@ export function ProductDrawer({ product, open, onClose }: ProductDrawerProps) {
     }
     setAffiliating(true);
     try {
-      const affiliateLink = `${window.location.origin}/checkout/${product.id}?ref=${user.id.slice(0, 8)}`;
-      const { error } = await supabase.from("affiliates").insert({
+      // Insert and get the record ID to use as ref
+      const { data: newAff, error } = await supabase.from("affiliates").insert({
         product_id: product.id,
         user_id: user.id,
-        affiliate_link: affiliateLink,
-      });
+        affiliate_link: "", // placeholder
+      }).select("id").single();
       if (error) throw error;
+
+      // Use the affiliate record ID as the ref parameter
+      const affiliateLink = `${window.location.origin}/checkout/${product.id}?ref=${newAff.id}`;
+      await supabase.from("affiliates").update({ affiliate_link: affiliateLink }).eq("id", newAff.id);
+
       toast({
         title: "✅ Solicitação enviada!",
         description: "Aguardando a aprovação do produtor.",
