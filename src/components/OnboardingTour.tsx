@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Package, BarChart3, Users, Settings, Rocket, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const STEPS = [
   {
@@ -37,24 +38,40 @@ const STEPS = [
   },
 ];
 
-const STORAGE_KEY = "vitrapay_onboarding_done";
+const STORAGE_PREFIX = "vitrapay_onboarding_seen";
+
+function getStorageKey(userId?: string) {
+  return `${STORAGE_PREFIX}:${userId ?? "guest"}`;
+}
 
 export function OnboardingTour() {
   const [step, setStep] = useState(0);
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const storageKey = getStorageKey(user?.id);
 
   useEffect(() => {
-    const done = localStorage.getItem(STORAGE_KEY);
-    if (!done) {
-      const timer = setTimeout(() => setVisible(true), 1500);
-      return () => clearTimeout(timer);
+    if (loading || !user) return;
+
+    const alreadySeen = localStorage.getItem(storageKey);
+    if (alreadySeen) {
+      setVisible(false);
+      return;
     }
-  }, []);
+
+    const timer = setTimeout(() => {
+      localStorage.setItem(storageKey, "true");
+      setVisible(true);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [loading, storageKey, user]);
 
   const finish = () => {
-    localStorage.setItem(STORAGE_KEY, "true");
+    localStorage.setItem(storageKey, "true");
     setVisible(false);
+    setStep(0);
   };
 
   const next = () => {
@@ -66,10 +83,10 @@ export function OnboardingTour() {
   };
 
   const goToAction = () => {
-    const s = STEPS[step];
-    if (s.action) {
+    const currentStep = STEPS[step];
+    if (currentStep.action) {
       finish();
-      navigate(s.action);
+      navigate(currentStep.action);
     }
   };
 
@@ -111,7 +128,6 @@ export function OnboardingTour() {
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{current.description}</p>
             </div>
 
-            {/* Step dots */}
             <div className="flex gap-1.5">
               {STEPS.map((_, i) => (
                 <div
