@@ -253,7 +253,7 @@ export default function AdminUsers() {
                     <Percent className="h-3.5 w-3.5 mr-2" />
                     Editar Taxas
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-sm">Ver perfil</DropdownMenuItem>
+                  <DropdownMenuItem className="text-sm" onClick={() => navigate(`/admin/users/${user.id}`)}>Ver perfil</DropdownMenuItem>
                   <DropdownMenuItem className="text-sm text-destructive">Suspender</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
