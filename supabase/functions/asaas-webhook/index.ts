@@ -168,7 +168,21 @@ Deno.serve(async (req) => {
       if (aff) affiliateUserId = aff.user_id;
     }
 
-    // Insert sale (PIX has 0% platform fee)
+    // Calculate PIX platform fee (check for custom overrides)
+    let pixFeePercentage = 0; // PIX default: 0%
+    let pixFeeFixed = 0;
+    const { data: producerProfile } = await supabase
+      .from("profiles")
+      .select("custom_fee_percentage, custom_fee_fixed")
+      .eq("user_id", product.producer_id)
+      .single();
+    if (producerProfile) {
+      if (producerProfile.custom_fee_percentage != null) pixFeePercentage = producerProfile.custom_fee_percentage / 100;
+      if (producerProfile.custom_fee_fixed != null) pixFeeFixed = producerProfile.custom_fee_fixed;
+    }
+    const pixPlatformFee = (pixFeePercentage > 0 || pixFeeFixed > 0) ? Math.round(pending.amount * pixFeePercentage + pixFeeFixed) : 0;
+
+    // Insert sale
     const { data: sale, error: saleErr } = await supabase
       .from("sales")
       .insert({
@@ -177,7 +191,7 @@ Deno.serve(async (req) => {
         buyer_id: null,
         affiliate_id: affiliateUserId,
         amount: pending.amount,
-        platform_fee: 0,
+        platform_fee: pixPlatformFee,
         payment_provider: "pix",
         payment_id: asaasPaymentId,
         status: "completed",

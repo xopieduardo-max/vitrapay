@@ -241,7 +241,19 @@ Deno.serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      const platformFee = Math.round(amount * 0.0389 + 249);
+      // Check for custom fee overrides for this producer
+      let feePercentage = 0.0389;
+      let feeFixed = 249;
+      const { data: producerProfile } = await supabase
+        .from("profiles")
+        .select("custom_fee_percentage, custom_fee_fixed")
+        .eq("user_id", product.producer_id)
+        .single();
+      if (producerProfile) {
+        if (producerProfile.custom_fee_percentage != null) feePercentage = producerProfile.custom_fee_percentage / 100;
+        if (producerProfile.custom_fee_fixed != null) feeFixed = producerProfile.custom_fee_fixed;
+      }
+      const platformFee = Math.round(amount * feePercentage + feeFixed);
       let affiliateId: string | null = null;
       if (affiliate_ref) {
         const { data: aff } = await supabase

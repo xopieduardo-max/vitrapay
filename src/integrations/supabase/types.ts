@@ -771,6 +771,8 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          custom_fee_fixed: number | null
+          custom_fee_percentage: number | null
           display_name: string | null
           id: string
           terms_accepted_at: string | null
@@ -781,6 +783,8 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          custom_fee_fixed?: number | null
+          custom_fee_percentage?: number | null
           display_name?: string | null
           id?: string
           terms_accepted_at?: string | null
@@ -791,6 +795,8 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          custom_fee_fixed?: number | null
+          custom_fee_percentage?: number | null
           display_name?: string | null
           id?: string
           terms_accepted_at?: string | null
