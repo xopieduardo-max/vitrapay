@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     
     if (buyer_name && buyer_email) {
       const searchRes = await fetch(
-        `https://sandbox.asaas.com/api/v3/customers?cpfCnpj=${cpfClean}`,
+        `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`,
         {
           headers: {
             "Content-Type": "application/json",
