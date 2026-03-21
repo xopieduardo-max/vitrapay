@@ -271,10 +271,10 @@ export default function Dashboard() {
             <p className="text-lg font-bold">{fmt(availableBalance)}</p>
             <Button
               size="sm"
-              className="w-full h-8 text-xs gap-1"
+              className="w-full h-8 text-xs gap-1.5"
               onClick={() => navigate("/finance")}
             >
-              <ArrowDownToLine className="h-3 w-3" /> Sacar
+              <ArrowDownToLine className="h-3.5 w-3.5" /> Sacar
             </Button>
           </motion.div>
           <motion.div
