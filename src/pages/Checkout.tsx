@@ -25,6 +25,7 @@ import {
   Mail,
   Phone,
   FileText,
+  Copy,
 } from "lucide-react";
 
 type PaymentMethod = "card" | "pix";
@@ -143,6 +144,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState<any>(null);
+  const [pixData, setPixData] = useState<{ qrCode: string; copyPaste: string } | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
@@ -322,20 +324,49 @@ export default function Checkout() {
     try {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
-      const { data, error } = await supabase.functions.invoke("process-purchase", {
-        body: {
-          product_id: id,
-          buyer_email: form.email,
-          buyer_name: form.name,
-          amount: total,
-          payment_method: paymentMethod,
-          affiliate_ref: affiliateRef,
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setPurchaseResult(data);
-      firePixelEvent(productPixels, "Purchase", total);
+
+      if (paymentMethod === "pix") {
+        // Call Asaas PIX edge function
+        const { data, error } = await supabase.functions.invoke("create-pix-payment", {
+          body: {
+            product_id: id,
+            buyer_name: form.name,
+            buyer_email: form.email,
+            buyer_cpf: form.cpf,
+            amount: total,
+            description: `Compra na VitraPay`,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        if (data?.pix_qr_code && data?.pix_copy_paste) {
+          setPixData({
+            qrCode: data.pix_qr_code,
+            copyPaste: data.pix_copy_paste,
+          });
+          firePixelEvent(productPixels, "Purchase", total);
+          toast({ title: "Pagamento gerado, finalize via PIX" });
+        } else {
+          throw new Error("QR Code PIX não disponível");
+        }
+      } else {
+        // Card payment (existing flow)
+        const { data, error } = await supabase.functions.invoke("process-purchase", {
+          body: {
+            product_id: id,
+            buyer_email: form.email,
+            buyer_name: form.name,
+            amount: total,
+            payment_method: paymentMethod,
+            affiliate_ref: affiliateRef,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setPurchaseResult(data);
+        firePixelEvent(productPixels, "Purchase", total);
+      }
     } catch (err: any) {
       toast({ title: "Erro no pagamento", description: err.message, variant: "destructive" });
     } finally {
@@ -650,14 +681,54 @@ export default function Checkout() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="rounded-lg p-6 text-center space-y-2"
+                  className="rounded-lg p-6 text-center space-y-4"
                   style={{ background: "var(--ck-input)" }}
                 >
-                  <QrCode className="h-12 w-12 mx-auto text-primary" />
-                  <p className="text-sm font-medium">Pagamento via PIX</p>
-                  <p className="text-xs" style={{ color: "var(--ck-subtle)" }}>
-                    Ao clicar em "Pagar", um QR Code será gerado para pagamento instantâneo.
-                  </p>
+                  {pixData ? (
+                    <>
+                      <p className="text-sm font-bold" style={{ color: "hsl(142, 71%, 45%)" }}>
+                        Pagamento gerado, finalize via PIX
+                      </p>
+                      <div className="flex justify-center">
+                        <img
+                          src={`data:image/png;base64,${pixData.qrCode}`}
+                          alt="QR Code PIX"
+                          className="w-48 h-48 rounded-lg"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium" style={{ color: "var(--ck-subtle)" }}>
+                          Ou copie o código PIX:
+                        </p>
+                        <div className="flex gap-2 items-center">
+                          <input
+                            readOnly
+                            value={pixData.copyPaste}
+                            className="flex-1 text-xs rounded-md px-3 py-2 truncate border-0"
+                            style={{ background: "var(--ck-card)", color: "var(--ck-input-fg)" }}
+                          />
+                          <Button
+                            size="sm"
+                            className="shrink-0 bg-[hsl(142,71%,45%)] hover:bg-[hsl(142,71%,38%)] text-white"
+                            onClick={() => {
+                              navigator.clipboard.writeText(pixData.copyPaste);
+                              toast({ title: "Código PIX copiado!" });
+                            }}
+                          >
+                            <Copy className="h-4 w-4 mr-1" /> Copiar
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <QrCode className="h-12 w-12 mx-auto text-primary" />
+                      <p className="text-sm font-medium">Pagamento via PIX</p>
+                      <p className="text-xs" style={{ color: "var(--ck-subtle)" }}>
+                        Ao clicar em "Pagar", um QR Code será gerado para pagamento instantâneo.
+                      </p>
+                    </>
+                  )}
                 </motion.div>
               )}
             </div>
