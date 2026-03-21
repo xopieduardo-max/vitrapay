@@ -3,14 +3,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, TrendingUp, Shield, DollarSign, Zap } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import authBanner from "@/assets/auth-banner.png";
+import authHeroWoman from "@/assets/auth-hero-woman.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 
 type Step = "credentials" | "otp";
+
+function FloatingCard({ icon: Icon, text, className, delay }: { icon: any; text: string; className?: string; delay: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, duration: 0.6, ease: [0.2, 0, 0, 1] }}
+      className={`absolute flex items-center gap-2.5 rounded-xl bg-card/90 backdrop-blur-md border border-border/50 px-4 py-3 shadow-lg ${className}`}
+    >
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15">
+        <Icon className="h-4 w-4 text-primary" strokeWidth={2} />
+      </div>
+      <span className="text-xs font-medium text-foreground whitespace-nowrap">{text}</span>
+    </motion.div>
+  );
+}
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -110,10 +126,9 @@ export default function Auth() {
       {/* Left – Form */}
       <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-16 xl:px-24">
         <div className="mx-auto w-full max-w-md space-y-8">
-          {/* Logo */}
-          <Link to="/" className="inline-flex items-center gap-2">
-            <ThemeLogo variant="horizontal" className="h-10 object-contain" />
-            <span className="text-xl font-bold tracking-tight">VitraPay</span>
+          {/* Logo - only icon, no text */}
+          <Link to="/" className="inline-flex items-center">
+            <ThemeLogo variant="horizontal" className="h-14 object-contain" />
           </Link>
 
           <AnimatePresence mode="wait">
@@ -245,14 +260,52 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Right – Banner (hidden on mobile) */}
-      <div className="hidden lg:block lg:flex-1 relative overflow-hidden">
-        <img
-          src={authBanner}
-          alt="VitraPay — Acelerando rumo ao futuro"
-          className="absolute inset-0 h-full w-full object-cover"
+      {/* Right – Hero with woman + floating cards (Braip style) */}
+      <div className="hidden lg:flex lg:flex-1 relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5 items-end justify-center">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--primary)) 1px, transparent 0)`,
+          backgroundSize: '40px 40px',
+        }} />
+
+        {/* Gradient glow behind woman */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[120px]" />
+
+        {/* Woman image */}
+        <motion.img
+          src={authHeroWoman}
+          alt="VitraPay"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
+          className="relative z-10 h-[85%] max-h-[700px] object-contain object-bottom"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+
+        {/* Floating notification cards */}
+        <FloatingCard
+          icon={TrendingUp}
+          text="Oportunidades de negócios"
+          className="top-[18%] right-[8%] z-20"
+          delay={0.4}
+        />
+        <FloatingCard
+          icon={Shield}
+          text="Segurança nos pagamentos"
+          className="top-[45%] right-[5%] z-20"
+          delay={0.6}
+        />
+        <FloatingCard
+          icon={DollarSign}
+          text="Dinheiro para a sua conta"
+          className="bottom-[22%] left-[8%] z-20"
+          delay={0.8}
+        />
+        <FloatingCard
+          icon={Zap}
+          text="Vendas em tempo real"
+          className="top-[30%] left-[5%] z-20"
+          delay={1.0}
+        />
       </div>
     </div>
   );
