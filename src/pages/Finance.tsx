@@ -250,10 +250,14 @@ export default function Finance() {
                   <Info className="h-3.5 w-3.5 shrink-0" />
                   <span>Taxa por saque: <strong className="text-foreground">R$ {(WITHDRAWAL_FEE / 100).toFixed(2)}</strong></span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5 shrink-0" />
-                  <span>Carência: <strong className="text-foreground">PIX: imediato • Cartão: {HOLDBACK_DAYS_CARD} dias</strong></span>
-                </div>
+                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                   <Info className="h-3.5 w-3.5 shrink-0" />
+                   <span>Carência: <strong className="text-foreground">PIX: imediato • Cartão: {HOLDBACK_DAYS_CARD} dias</strong></span>
+                 </div>
+                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                   <Info className="h-3.5 w-3.5 shrink-0" />
+                   <span>Até R$ {(AUTO_APPROVE_LIMIT / 100).toFixed(0)}: <strong className="text-foreground">PIX automático</strong> • Acima: aprovação admin</span>
+                 </div>
               </div>
 
               <div className="space-y-2">
