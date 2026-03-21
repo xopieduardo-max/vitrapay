@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      const fallbackRes = await fetch("https://sandbox.asaas.com/api/v3/customers", {
+      const fallbackRes = await fetch("https://api.asaas.com/v3/customers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
