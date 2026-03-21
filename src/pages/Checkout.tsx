@@ -346,7 +346,7 @@ export default function Checkout() {
   // ── Success Screen ──
   if (purchaseResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
+      <div className={`min-h-screen flex items-center justify-center p-4 ${product?.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
