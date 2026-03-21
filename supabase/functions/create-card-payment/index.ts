@@ -109,6 +109,8 @@ Deno.serve(async (req) => {
 
     const cardNumberClean = card_number.replace(/\D/g, "");
 
+    const installmentCount = parseInt(installments || "1", 10) || 1;
+
     const paymentPayload: Record<string, unknown> = {
       customer: customerId,
       billingType: "CREDIT_CARD",
@@ -116,7 +118,6 @@ Deno.serve(async (req) => {
       dueDate,
       description: `Compra na VitraPay - ${product.title}`,
       externalReference,
-      installmentCount: parseInt(installments || "1", 10) || 1,
       creditCard: {
         holderName: card_holder_name,
         number: cardNumberClean,
@@ -134,8 +135,7 @@ Deno.serve(async (req) => {
       },
     };
 
-    // If more than 1 installment, set installmentValue
-    const installmentCount = parseInt(installments || "1", 10) || 1;
+    // Only add installment fields when more than 1
     if (installmentCount > 1) {
       paymentPayload.installmentCount = installmentCount;
       paymentPayload.installmentValue = parseFloat((valueInReais / installmentCount).toFixed(2));
