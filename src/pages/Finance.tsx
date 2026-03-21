@@ -298,17 +298,22 @@ export default function Finance() {
       {/* Stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque" },
-          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Liberado em ${HOLDBACK_DAYS} dias` },
-          { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões" },
-          { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido" },
+          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque", clickAction: "available" as const },
+          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Liberado em ${HOLDBACK_DAYS} dias`, clickAction: "held" as const },
+          { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões", clickAction: null },
+          { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido", clickAction: null },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="rounded-xl border border-border bg-card p-4 space-y-1"
+            className={`rounded-xl border bg-card p-4 space-y-1 transition-colors ${
+              stat.clickAction
+                ? "cursor-pointer hover:border-primary/40 border-border"
+                : "border-border"
+            } ${detailView === stat.clickAction ? "border-primary/50 ring-1 ring-primary/20" : ""}`}
+            onClick={() => stat.clickAction && setDetailView(detailView === stat.clickAction ? null : stat.clickAction)}
           >
             <div className="flex items-center gap-2">
               <stat.icon className={`h-4 w-4 ${stat.color}`} strokeWidth={1.5} />
