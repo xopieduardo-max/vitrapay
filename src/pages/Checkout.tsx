@@ -237,6 +237,33 @@ export default function Checkout() {
     return () => clearInterval(interval);
   }, [timeLeft]);
 
+  // Polling for PIX payment confirmation
+  useEffect(() => {
+    if (!asaasPaymentId) return;
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await supabase
+          .from("pending_payments")
+          .select("status")
+          .eq("asaas_payment_id", asaasPaymentId)
+          .single();
+
+        if (data?.status === "confirmed") {
+          clearInterval(interval);
+          setPurchaseResult({
+            product_title: product?.title,
+            amount: calculateTotal(),
+            sale_id: asaasPaymentId,
+            product_type: product?.type,
+            file_url: product?.file_url,
+          });
+          toast({ title: "Pagamento confirmado!" });
+        }
+      } catch {}
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [asaasPaymentId]);
+
   const formatTime = (s: number) => ({
     min: Math.floor(s / 60).toString().padStart(2, "0"),
     sec: (s % 60).toString().padStart(2, "0"),
