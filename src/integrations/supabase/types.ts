@@ -1070,30 +1070,36 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          paid_at: string | null
           pix_key: string | null
           pix_key_type: string | null
           processed_at: string | null
           status: string
+          transfer_id: string | null
           user_id: string
         }
         Insert: {
           amount: number
           created_at?: string
           id?: string
+          paid_at?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
           processed_at?: string | null
           status?: string
+          transfer_id?: string | null
           user_id: string
         }
         Update: {
           amount?: number
           created_at?: string
           id?: string
+          paid_at?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
           processed_at?: string | null
           status?: string
+          transfer_id?: string | null
           user_id?: string
         }
         Relationships: []
