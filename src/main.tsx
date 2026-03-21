@@ -3,20 +3,34 @@ import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
 
-// Auto-update service worker: check every 60s and reload when new version is available
+let isRefreshing = false;
+
 const updateSW = registerSW({
+  immediate: true,
   onNeedRefresh() {
-    // Automatically update without prompting
     updateSW(true);
   },
   onOfflineReady() {
     console.log("[PWA] App ready for offline use");
   },
+  onRegisteredSW(_swUrl, registration) {
+    if (!registration) return;
+    setInterval(() => {
+      registration.update();
+    }, 30 * 1000);
+  },
 });
 
-// Also check for updates periodically (every 60 seconds)
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    window.location.reload();
+  });
+}
+
 setInterval(() => {
   updateSW();
-}, 60 * 1000);
+}, 30 * 1000);
 
 createRoot(document.getElementById("root")!).render(<App />);
