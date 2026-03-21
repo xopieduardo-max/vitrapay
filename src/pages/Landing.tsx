@@ -66,8 +66,8 @@ function FloatingNotifications() {
             className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
           >
             {/* Logo icon — matches push notification */}
-            <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden">
-              <img src={logoIcon} alt="" className="h-full w-full object-cover" />
+            <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
+              <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
             </div>
             <div className="min-w-0 space-y-0.5">
               <div className="flex items-center gap-1.5">
