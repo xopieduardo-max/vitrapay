@@ -22,9 +22,9 @@ interface DaySchedule {
 }
 
 const KNOWN_USERS = [
-  { id: "e993bfd1-3253-4983-8471-f652ca2d7e92", label: "Eduardo (Admin)", email: "eduardo@xopi.com" },
-  { id: "ab4f9f40-3bbf-44c7-a998-5b2b0cdd2744", label: "ECXGestão", email: "ecxgestao@gmail.com" },
+  { id: "ab4f9f40-3bbf-44c7-a998-5b2b0cdd2744", label: "ECXGestão (Admin)", email: "ecxgestao@gmail.com" },
   { id: "31d372d2-242d-4ee3-9051-7c5a2ed0de01", label: "Xopi", email: "xopieduardo@gmail.com" },
+  { id: "6b935de0-0d62-44b6-bba2-33c37062a6fc", label: "Marcelo Rossi", email: "" },
 ];
 
 export default function AdminFakeSales() {
