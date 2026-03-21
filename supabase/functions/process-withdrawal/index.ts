@@ -156,6 +156,21 @@ serve(async (req) => {
       console.error("Failed to update withdrawal after transfer:", updateErr);
     }
 
+    // Notify producer (email + push)
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/notify-withdrawal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: withdrawal.user_id,
+          amount: withdrawal.amount,
+          transfer_id: asaasData.id,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to send withdrawal notification:", e);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
