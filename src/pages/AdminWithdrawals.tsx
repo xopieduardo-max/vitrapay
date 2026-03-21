@@ -7,15 +7,30 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
-  ArrowDownToLine, Loader2, CheckCircle2, XCircle, Clock, User,
+  ArrowDownToLine, Loader2, CheckCircle2, XCircle, User, Banknote,
 } from "lucide-react";
+
+const WITHDRAWAL_FEE = 500;
+
+const statusColors: Record<string, string> = {
+  pending: "bg-warning/10 text-warning border-warning/20",
+  processing: "bg-primary/10 text-primary border-primary/20",
+  completed: "bg-accent/10 text-accent border-accent/20",
+  rejected: "bg-destructive/10 text-destructive border-destructive/20",
+};
+
+const statusLabels: Record<string, string> = {
+  pending: "Pendente",
+  processing: "Processando",
+  completed: "Aprovado",
+  rejected: "Rejeitado",
+};
 
 export default function AdminWithdrawals() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Check admin
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin", user?.id],
     queryFn: async () => {
@@ -38,7 +53,6 @@ export default function AdminWithdrawals() {
     enabled: !!isAdmin,
   });
 
-  // Get profile names for user_ids
   const userIds = [...new Set(withdrawals.map((w) => w.user_id))];
   const { data: profiles = [] } = useQuery({
     queryKey: ["withdrawal-profiles", userIds],
@@ -73,6 +87,31 @@ export default function AdminWithdrawals() {
     },
   });
 
+  const payWithPix = useMutation({
+    mutationFn: async (withdrawalId: string) => {
+      const { data, error } = await supabase.functions.invoke("process-withdrawal", {
+        body: { withdrawal_id: withdrawalId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error + (data.details ? `: ${data.details}` : ""));
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "PIX enviado com sucesso!",
+        description: `Transfer ID: ${data.transfer_id}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin-withdrawals"] });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Erro ao enviar PIX",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   if (!isAdmin) {
     return (
       <div className="text-center py-20 text-muted-foreground">
@@ -84,22 +123,6 @@ export default function AdminWithdrawals() {
   const pending = withdrawals.filter((w) => w.status === "pending" || w.status === "processing");
   const history = withdrawals.filter((w) => w.status === "completed" || w.status === "rejected");
 
-  const statusColors: Record<string, string> = {
-    pending: "bg-warning/10 text-warning border-warning/20",
-    processing: "bg-primary/10 text-primary border-primary/20",
-    completed: "bg-accent/10 text-accent border-accent/20",
-    rejected: "bg-destructive/10 text-destructive border-destructive/20",
-  };
-
-  const statusLabels: Record<string, string> = {
-    pending: "Pendente",
-    processing: "Processando",
-    completed: "Aprovado",
-    rejected: "Rejeitado",
-  };
-
-  const WITHDRAWAL_FEE = 500;
-
   return (
     <div className="space-y-6">
       <div>
@@ -109,7 +132,6 @@ export default function AdminWithdrawals() {
         </p>
       </div>
 
-      {/* Pending */}
       {pending.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
@@ -153,11 +175,25 @@ export default function AdminWithdrawals() {
               <div className="flex items-center gap-2 sm:ml-2">
                 <Button
                   size="sm"
+                  className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  disabled={payWithPix.isPending || !w.pix_key}
+                  onClick={() => payWithPix.mutate(w.id)}
+                >
+                  {payWithPix.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Banknote className="h-3.5 w-3.5" />
+                  )}
+                  Pagar PIX
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   className="gap-1.5"
                   disabled={updateStatus.isPending}
                   onClick={() => updateStatus.mutate({ id: w.id, status: "completed" })}
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Aprovar
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Manual
                 </Button>
                 <Button
                   size="sm"
@@ -174,7 +210,6 @@ export default function AdminWithdrawals() {
         </div>
       )}
 
-      {/* History */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border">
           <h2 className="text-sm font-semibold">Histórico</h2>
@@ -205,6 +240,11 @@ export default function AdminWithdrawals() {
                       {w.processed_at
                         ? new Date(w.processed_at).toLocaleDateString("pt-BR")
                         : "—"}
+                      {(w as any).transfer_id && (
+                        <span className="ml-2 text-primary">
+                          • Transfer: {(w as any).transfer_id.substring(0, 12)}…
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
