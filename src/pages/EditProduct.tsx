@@ -97,6 +97,7 @@ export default function EditProduct() {
           price: Math.round(parseFloat(form.price) * 100),
           type: form.type,
           affiliate_commission: form.affiliate_commission,
+          allow_affiliates: form.allow_affiliates,
           is_published: form.is_published,
           cover_url: form.cover_url || null,
           file_url: form.file_url || null,

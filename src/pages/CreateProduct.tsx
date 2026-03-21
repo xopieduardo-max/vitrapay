@@ -257,27 +257,38 @@ export default function CreateProduct() {
           </div>
         </div>
 
-        {/* Affiliate Commission */}
+        {/* Affiliate Program */}
         <div className="rounded-lg border border-border bg-card p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-label text-muted-foreground">
             Programa de Afiliados
           </h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Comissão para afiliados</Label>
-              <span className="text-lg font-bold text-primary">{commission[0]}%</span>
+          <div className="flex items-center justify-between rounded-lg border border-border p-3">
+            <div>
+              <Label className="text-sm font-medium">Permitir afiliados</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Produto aparecerá nas Oportunidades para afiliados
+              </p>
             </div>
-            <Slider
-              value={commission}
-              onValueChange={setCommission}
-              max={80}
-              min={0}
-              step={5}
-            />
-            <p className="text-xs text-muted-foreground">
-              Defina a porcentagem que cada afiliado receberá por venda indicada.
-            </p>
+            <Switch checked={allowAffiliates} onCheckedChange={setAllowAffiliates} />
           </div>
+          {allowAffiliates && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Comissão para afiliados</Label>
+                <span className="text-lg font-bold text-primary">{commission[0]}%</span>
+              </div>
+              <Slider
+                value={commission}
+                onValueChange={setCommission}
+                max={80}
+                min={0}
+                step={5}
+              />
+              <p className="text-xs text-muted-foreground">
+                Defina a porcentagem que cada afiliado receberá por venda indicada.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Publish */}

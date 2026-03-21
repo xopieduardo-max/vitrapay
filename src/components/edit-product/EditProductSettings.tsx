@@ -151,21 +151,33 @@ export default function EditProductSettings({ form, updateField }: Props) {
           </label>
         </div>
 
-        {/* Commission */}
-        <div>
-          <Label className="text-xs">Comissão de afiliado: {form.affiliate_commission || 0}%</Label>
-          <Slider
-            value={[form.affiliate_commission || 0]}
-            onValueChange={([v]) => updateField("affiliate_commission", v)}
-            max={80}
-            step={5}
-            className="mt-3"
-          />
+        {/* Affiliate toggle */}
+        <div className="flex items-center justify-between rounded-lg border border-border p-3">
+          <div>
+            <Label className="text-sm font-medium">Programa de Afiliados</Label>
+            <p className="text-[0.65rem] text-muted-foreground">Aparecer nas Oportunidades para afiliados</p>
+          </div>
+          <Switch checked={form.allow_affiliates ?? true} onCheckedChange={(v) => updateField("allow_affiliates", v)} />
         </div>
+
+        {/* Commission (only if affiliates enabled) */}
+        {(form.allow_affiliates ?? true) && (
+          <div>
+            <Label className="text-xs">Comissão de afiliado: {form.affiliate_commission || 0}%</Label>
+            <Slider
+              value={[form.affiliate_commission || 0]}
+              onValueChange={([v]) => updateField("affiliate_commission", v)}
+              max={80}
+              step={5}
+              className="mt-3"
+            />
+          </div>
+        )}
+
         <div className="flex items-center justify-between rounded-lg border border-border p-3">
           <div>
             <Label className="text-sm font-medium">Publicado</Label>
-            <p className="text-[0.65rem] text-muted-foreground">Visível nas Oportunidades</p>
+            <p className="text-[0.65rem] text-muted-foreground">Visível para compradores</p>
           </div>
           <Switch checked={form.is_published || false} onCheckedChange={(v) => updateField("is_published", v)} />
         </div>
