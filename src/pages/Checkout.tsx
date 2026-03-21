@@ -159,6 +159,7 @@ export default function Checkout() {
     cardCvv: "",
     cardHolder: "",
     installments: "1",
+    cep: "",
   });
 
   const [checkoutBlocks, setCheckoutBlocks] = useState<any[]>([]);
