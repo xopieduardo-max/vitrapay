@@ -359,16 +359,16 @@ export default function Checkout() {
             </div>
           </div>
           <h1 className="text-2xl font-bold">Compra Confirmada!</h1>
-          <p className="text-sm" style={{ color: "hsl(240,5%,60%)" }}>
+          <p className="text-sm" style={{ color: "var(--ck-muted)" }}>
             Seu acesso a <strong style={{ color: "hsl(0,0%,90%)" }}>{purchaseResult.product_title}</strong> está liberado.
           </p>
           <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240,10%,6%)", border: "1px solid hsl(240,5%,12%)" }}>
             <div className="flex justify-between text-xs">
-              <span style={{ color: "hsl(240,5%,50%)" }}>Valor pago</span>
+              <span style={{ color: "var(--ck-subtle)" }}>Valor pago</span>
               <span className="font-bold">R$ {(purchaseResult.amount / 100).toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span style={{ color: "hsl(240,5%,50%)" }}>ID da venda</span>
+              <span style={{ color: "var(--ck-subtle)" }}>ID da venda</span>
               <span className="font-mono text-[0.6rem]">{purchaseResult.sale_id?.slice(0, 8)}</span>
             </div>
           </div>
@@ -478,7 +478,7 @@ export default function Checkout() {
             className="lg:col-span-3 space-y-5"
           >
             {/* Product Info Card */}
-            <div className="rounded-xl p-5" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+            <div className="rounded-xl p-5" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
               <div className="flex items-start gap-4">
                 {product.cover_url && (
                   <img src={product.cover_url} alt={product.title} className="h-16 w-16 rounded-lg object-cover shrink-0" />
@@ -487,74 +487,74 @@ export default function Checkout() {
                   <h2 className="font-bold text-lg">{product.title}</h2>
                   <p className="text-primary text-lg font-bold mt-1">
                     R$ {(product.price / 100).toFixed(2)}
-                    <span className="text-xs font-normal ml-1" style={{ color: "hsl(240,5%,50%)" }}>cash</span>
+                    <span className="text-xs font-normal ml-1" style={{ color: "var(--ck-subtle)" }}>cash</span>
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Contact Info */}
-            <div className="rounded-xl p-5 space-y-4" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+            <div className="rounded-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <User className="h-4 w-4 text-primary" />
                 Informações de Contato
               </h3>
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Nome completo</Label>
+                  <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Nome completo</Label>
                   <div className="relative mt-1">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
                     <Input
                       placeholder="Preencha seu nome completo"
                       value={form.name}
                       onChange={(e) => updateForm("name", e.target.value)}
                       className="pl-10 border-0 h-11"
-                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                     />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Email</Label>
+                  <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Email</Label>
                   <div className="relative mt-1">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
                     <Input
                       type="email"
                       placeholder="name@email.com"
                       value={form.email}
                       onChange={(e) => updateForm("email", e.target.value)}
                       className="pl-10 border-0 h-11"
-                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>CPF / CNPJ</Label>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CPF / CNPJ</Label>
                     <div className="relative mt-1">
-                      <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
+                      <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
                       <Input
                         placeholder="000.000.000-00"
                         value={form.cpf}
                         onChange={(e) => updateForm("cpf", formatCPF(e.target.value))}
                         className="pl-10 border-0 h-11"
-                        style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                        style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                       />
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Celular</Label>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Celular</Label>
                     <div className="flex gap-1.5 mt-1">
-                      <div className="flex items-center gap-1 rounded-md px-3 text-xs shrink-0 h-11" style={{ background: "hsl(240, 10%, 12%)", color: "hsl(240,5%,50%)" }}>
+                      <div className="flex items-center gap-1 rounded-md px-3 text-xs shrink-0 h-11" style={{ background: "var(--ck-input)", color: "var(--ck-subtle)" }}>
                         🇧🇷 +55
                       </div>
                       <div className="relative flex-1">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(240,5%,40%)" }} />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
                         <Input
                           placeholder="(00) 00000-0000"
                           value={form.phone}
                           onChange={(e) => updateForm("phone", formatPhone(e.target.value))}
                           className="pl-10 border-0 h-11"
-                          style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                          style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                         />
                       </div>
                     </div>
@@ -564,7 +564,7 @@ export default function Checkout() {
             </div>
 
             {/* Payment Method */}
-            <div className="rounded-xl p-5 space-y-4" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+            <div className="rounded-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-primary" />
                 Método de Pagamento
@@ -595,51 +595,51 @@ export default function Checkout() {
                   className="space-y-3"
                 >
                   <div>
-                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Número do cartão</Label>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Número do cartão</Label>
                     <Input
                       placeholder="0000 0000 0000 0000"
                       value={form.cardNumber}
                       onChange={(e) => updateForm("cardNumber", formatCardNumber(e.target.value))}
                       className="mt-1 border-0 h-11"
-                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Vencimento</Label>
+                      <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Vencimento</Label>
                       <Input
                         placeholder="MM/AA"
                         value={form.cardExpiry}
                         onChange={(e) => updateForm("cardExpiry", formatExpiry(e.target.value))}
                         className="mt-1 border-0 h-11"
-                        style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                        style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                       />
                     </div>
                     <div>
-                      <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>CVV</Label>
+                      <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CVV</Label>
                       <Input
                         placeholder="000"
                         value={form.cardCvv}
                         onChange={(e) => updateForm("cardCvv", e.target.value.replace(/\D/g, "").slice(0, 4))}
                         className="mt-1 border-0 h-11"
-                        style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                        style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                       />
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs" style={{ color: "hsl(240,5%,55%)" }}>Parcelas</Label>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Parcelas</Label>
                     <select
                       value={form.installments}
                       onChange={(e) => updateForm("installments", e.target.value)}
                       className="mt-1 flex h-11 w-full rounded-md px-3 py-2 text-sm border-0"
-                      style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                     >
                       {installmentOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: "hsl(240,5%,45%)" }}>
+                  <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--ck-dim)" }}>
                     <Lock className="h-3 w-3" />
                     Seus dados de pagamento são criptografados e processados de forma segura.
                   </div>
@@ -651,11 +651,11 @@ export default function Checkout() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="rounded-lg p-6 text-center space-y-2"
-                  style={{ background: "hsl(240, 10%, 12%)" }}
+                  style={{ background: "var(--ck-input)" }}
                 >
                   <QrCode className="h-12 w-12 mx-auto text-primary" />
                   <p className="text-sm font-medium">Pagamento via PIX</p>
-                  <p className="text-xs" style={{ color: "hsl(240,5%,50%)" }}>
+                  <p className="text-xs" style={{ color: "var(--ck-subtle)" }}>
                     Ao clicar em "Pagar", um QR Code será gerado para pagamento instantâneo.
                   </p>
                 </motion.div>
@@ -699,7 +699,7 @@ export default function Checkout() {
                             <div>
                               <p className="text-sm font-semibold">{bump.bump_product?.title}</p>
                               {bump.description && (
-                                <p className="text-xs mt-0.5" style={{ color: "hsl(240,5%,50%)" }}>{bump.description}</p>
+                                <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>{bump.description}</p>
                               )}
                             </div>
                           </div>
@@ -707,7 +707,7 @@ export default function Checkout() {
                         <div className="text-right shrink-0">
                           {bump.discount_percentage > 0 && (
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs line-through" style={{ color: "hsl(240,5%,40%)" }}>
+                              <span className="text-xs line-through" style={{ color: "var(--ck-faint)" }}>
                                 R$ {(bumpPrice / 100).toFixed(2)}
                               </span>
                               <span className="text-[0.6rem] font-bold px-1.5 py-0.5 rounded" style={{ background: "hsl(0, 84%, 60%)", color: "hsl(0,0%,10%)" }}>
@@ -727,8 +727,8 @@ export default function Checkout() {
             )}
 
             {/* Coupon */}
-            <div className="rounded-xl p-5" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
-              <Label className="text-xs flex items-center gap-1.5 mb-2" style={{ color: "hsl(240,5%,55%)" }}>
+            <div className="rounded-xl p-5" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
+              <Label className="text-xs flex items-center gap-1.5 mb-2" style={{ color: "var(--ck-label)" }}>
                 <Tag className="h-3.5 w-3.5" /> Cupom de desconto
               </Label>
               <div className="flex gap-2">
@@ -737,7 +737,7 @@ export default function Checkout() {
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   className="uppercase text-sm border-0 h-11"
-                  style={{ background: "hsl(240, 10%, 12%)", color: "hsl(0,0%,90%)" }}
+                  style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
                   disabled={!!appliedCoupon}
                 />
                 {appliedCoupon ? (
@@ -768,8 +768,8 @@ export default function Checkout() {
           >
             <div className="sticky top-6 space-y-4">
               {/* Order Summary */}
-              <div className="rounded-xl p-5 space-y-4" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
-                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "hsl(240,5%,50%)" }}>
+              <div className="rounded-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ck-subtle)" }}>
                   Resumo do pedido
                 </p>
                 <div className="flex items-center gap-3">
@@ -789,7 +789,7 @@ export default function Checkout() {
                   const dp = bp * (1 - (b.discount_percentage || 0) / 100);
                   return (
                     <div key={bId} className="flex justify-between text-sm">
-                      <span style={{ color: "hsl(240,5%,55%)" }}>{b.bump_product?.title || b.title}</span>
+                      <span style={{ color: "var(--ck-label)" }}>{b.bump_product?.title || b.title}</span>
                       <span>R$ {(dp / 100).toFixed(2)}</span>
                     </div>
                   );
@@ -806,7 +806,7 @@ export default function Checkout() {
                   </div>
                 )}
 
-                <Separator style={{ background: "hsl(240, 5%, 15%)" }} />
+                <Separator style={{ background: "var(--ck-card-border)" }} />
 
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-semibold">Total</span>
@@ -838,11 +838,11 @@ export default function Checkout() {
 
               {/* Trust badges */}
               <div className="text-center space-y-2">
-                <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "hsl(240,5%,45%)" }}>
+                <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "var(--ck-dim)" }}>
                   <ShieldCheck className="h-4 w-4 text-primary" />
                   Compra 100% segura e criptografada
                 </div>
-                <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "hsl(240,5%,45%)" }}>
+                <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "var(--ck-dim)" }}>
                   <Lock className="h-3.5 w-3.5" />
                   Dados protegidos com SSL
                 </div>
@@ -851,14 +851,14 @@ export default function Checkout() {
               {/* Testimonials */}
               {testimonials.length > 0 && (
                 <div className="space-y-3 mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: "hsl(240,5%,50%)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: "var(--ck-subtle)" }}>
                     O que dizem nossos alunos
                   </p>
                   {testimonials.map((t) => (
                     <div
                       key={t.id}
                       className="rounded-xl p-4 space-y-2"
-                      style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}
+                      style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}
                     >
                       <div className="flex items-center gap-2">
                         {t.author_avatar_url ? (
@@ -877,7 +877,7 @@ export default function Checkout() {
                           </div>
                         </div>
                       </div>
-                      <p className="text-xs leading-relaxed" style={{ color: "hsl(240,5%,60%)" }}>
+                      <p className="text-xs leading-relaxed" style={{ color: "var(--ck-muted)" }}>
                         {t.content}
                       </p>
                     </div>
@@ -886,7 +886,7 @@ export default function Checkout() {
               )}
 
               {producer && (
-                <p className="text-[0.6rem] text-center" style={{ color: "hsl(240,5%,35%)" }}>
+                <p className="text-[0.6rem] text-center" style={{ color: "var(--ck-ghost)" }}>
                   Vendido por @{producer.toLowerCase().replace(/\s+/g, "")}
                 </p>
               )}
