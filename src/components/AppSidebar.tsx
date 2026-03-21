@@ -11,6 +11,7 @@ import {
   Settings,
   Smartphone,
   Rocket,
+  Receipt,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
