@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getAppServiceWorkerRegistration } from "@/lib/serviceWorker";
 
 const VAPID_PUBLIC_KEY =
   "BMl6o6EhTPzsw80f47Dxs3_GqfrtFV0L8dHuhKTpiqfc_RL7cMbt0ahYuMwBesOIYPieW-UCihniGf7hJ-_iOvQ";
@@ -30,42 +31,46 @@ export function usePushNotifications() {
     const hasPush = "PushManager" in window;
     const hasNotif = "Notification" in window;
     const supported = hasSW && hasPush && hasNotif;
-    
+
     console.log("[Push] Support check:", { hasSW, hasPush, hasNotif, supported });
     setIsSupported(supported);
 
     if (supported) {
       setPermission(Notification.permission);
       console.log("[Push] Current permission:", Notification.permission);
-      checkExistingSubscription();
+      void checkExistingSubscription();
     }
   }, []);
 
-  // Auto-subscribe when user is logged in and push is supported
   useEffect(() => {
     if (!user || !isSupported || autoSubAttempted.current) return;
-    if (isSubscribed) return; // Already subscribed
-
-    // Only auto-subscribe if permission is already granted or default (will prompt)
-    // If denied, we can't do anything
+    if (isSubscribed) return;
     if (Notification.permission === "denied") return;
 
-    // If already granted, silently subscribe without prompting
     if (Notification.permission === "granted") {
       autoSubAttempted.current = true;
       console.log("[Push] Auto-subscribing (permission already granted)...");
-      silentSubscribe();
+      void silentSubscribe();
     } else {
-      // Permission is "default" - auto-prompt the user once
       autoSubAttempted.current = true;
       console.log("[Push] Auto-prompting for push permission...");
-      subscribe(true);
+      void subscribe(true);
     }
   }, [user, isSupported, isSubscribed]);
 
+  async function getRegistration() {
+    const registration = await getAppServiceWorkerRegistration();
+
+    if (!registration) {
+      throw new Error("Service worker indisponível nesta rota.");
+    }
+
+    return registration;
+  }
+
   async function checkExistingSubscription() {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getRegistration();
       console.log("[Push] SW ready, scope:", registration.scope);
       const subscription = await registration.pushManager.getSubscription();
       console.log("[Push] Existing subscription:", subscription ? "YES" : "NO");
@@ -75,11 +80,10 @@ export function usePushNotifications() {
     }
   }
 
-  // Subscribe without showing toasts (for auto-subscribe)
   async function silentSubscribe() {
     if (!user) return;
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getRegistration();
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
@@ -140,9 +144,9 @@ export function usePushNotifications() {
       }
 
       console.log("[Push] Waiting for SW ready...");
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getRegistration();
       console.log("[Push] SW ready. Subscribing to push...");
-      
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
@@ -151,7 +155,7 @@ export function usePushNotifications() {
 
       const subJson = subscription.toJSON();
       const keys = subJson.keys!;
-      
+
       console.log("[Push] Saving to database for user:", user.id);
 
       await supabase
@@ -177,7 +181,7 @@ export function usePushNotifications() {
 
       console.log("[Push] Saved successfully:", data);
       setIsSubscribed(true);
-      
+
       if (!isAuto) {
         toast({ title: "Notificações ativadas! 🔔", description: "Você receberá alertas de vendas no celular." });
       }
@@ -195,7 +199,7 @@ export function usePushNotifications() {
 
   async function unsubscribe() {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getRegistration();
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         await subscription.unsubscribe();
