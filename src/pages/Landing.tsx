@@ -13,36 +13,30 @@ import appMockup from "@/assets/app-mockup.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
+import logoIcon from "@/assets/logo-vitrapay-icon.webp";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
 const products = ["Copy que Vende", "Método Digital Pro", "IA Academy", "Social Media Mastery", "Renda Extra Online", "Corpo & Forma 360", "Funil Expert", "Tráfego Pago Pro"];
 const amounts = [10, 14.90, 19.90, 27, 37, 39.90, 47, 57, 67, 79.90, 87, 97, 127, 147, 197, 247, 297, 347, 497];
 
+type PayMethod = "pix" | "card" | "boleto";
+
 function generateNotification() {
+  const rand = Math.random();
+  const method: PayMethod = rand > 0.6 ? "pix" : rand > 0.25 ? "card" : "boleto";
   return {
     name: names[Math.floor(Math.random() * names.length)],
     product: products[Math.floor(Math.random() * products.length)],
     amount: `R$ ${amounts[Math.floor(Math.random() * amounts.length)].toFixed(2).replace(".", ",")}`,
-    method: (Math.random() > 0.4 ? "pix" : "card") as "pix" | "card",
+    method,
   };
 }
 
-const methodConfig = {
-  pix: {
-    label: "Venda aprovada via Pix!",
-    iconBg: "bg-emerald-500/15",
-    iconColor: "text-emerald-500",
-    borderColor: "border-emerald-500/20",
-    amountColor: "text-emerald-500",
-  },
-  card: {
-    label: "Venda aprovada via Cartão!",
-    iconBg: "bg-blue-500/15",
-    iconColor: "text-blue-500",
-    borderColor: "border-blue-500/20",
-    amountColor: "text-blue-500",
-  },
+const methodLabels: Record<PayMethod, string> = {
+  pix: "Pix",
+  card: "Cartão",
+  boleto: "Boleto",
 };
 
 function FloatingNotifications() {
@@ -62,36 +56,34 @@ function FloatingNotifications() {
   return (
     <div className="flex flex-col gap-3 w-full">
       <AnimatePresence mode="popLayout">
-        {visibleNotifs.map((notif, i) => {
-          const config = methodConfig[notif.method];
-          return (
-            <motion.div
-              key={`${notif.name}-${notif.amount}-${i}`}
-              initial={{ opacity: 0, x: -60, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -40, scale: 0.9 }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className={`flex items-center gap-3 rounded-xl border ${config.borderColor} bg-card/90 backdrop-blur-xl px-4 py-3 shadow-lg`}
-            >
-              <div className={`flex h-9 w-9 items-center justify-center rounded-full ${config.iconBg} shrink-0`}>
-                {notif.method === "pix" ? (
-                  <DollarSign className={`h-4 w-4 ${config.iconColor}`} />
-                ) : (
-                  <CreditCard className={`h-4 w-4 ${config.iconColor}`} />
-                )}
+        {visibleNotifs.map((notif, i) => (
+          <motion.div
+            key={`${notif.name}-${notif.amount}-${i}`}
+            initial={{ opacity: 0, x: -60, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -40, scale: 0.9 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
+          >
+            {/* Logo icon — matches push notification */}
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-foreground/10 shrink-0 overflow-hidden">
+              <img src={logoIcon} alt="" className="h-7 w-7 object-contain" />
+            </div>
+            <div className="min-w-0 space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-foreground truncate">
-                  {config.label}
-                </p>
-                <p className="text-[0.65rem] text-muted-foreground truncate">
-                  {notif.name} • {notif.product}
-                </p>
-                <p className={`text-xs font-bold ${config.amountColor} mt-0.5`}>{notif.amount}</p>
-              </div>
-            </motion.div>
-          );
-        })}
+              <p className="text-xs text-muted-foreground">VitraPay</p>
+              <p className="text-xs text-muted-foreground">
+                Pagamento via {methodLabels[notif.method]}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
+              </p>
+            </div>
+            <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
+          </motion.div>
+        ))}
       </AnimatePresence>
     </div>
   );
