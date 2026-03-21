@@ -341,25 +341,37 @@ Deno.serve(async (req) => {
         }
       }
 
-      // ✅ Send UTMify postback
+      // ✅ Send UTMify postback (per-producer token)
       try {
-        await fetch("https://app.utmify.com.br/api/postback", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            event: "sale",
-            transaction_id: paymentData.id,
-            amount: amount / 100,
-            email: buyer_email || "",
-            utm_source: utm_source || "",
-            utm_medium: utm_medium || "",
-            utm_campaign: utm_campaign || "",
-            utm_content: utm_content || "",
-            utm_term: utm_term || "",
-            affiliate: affiliate_ref || "",
-          }),
-        });
-        console.log("UTMify postback sent for card payment");
+        const { data: utmIntegration } = await supabase
+          .from("user_integrations")
+          .select("api_token, is_active")
+          .eq("user_id", product.producer_id)
+          .eq("platform", "utmify")
+          .maybeSingle();
+
+        if (utmIntegration?.is_active && utmIntegration?.api_token) {
+          await fetch("https://app.utmify.com.br/api/postback", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-token": utmIntegration.api_token,
+            },
+            body: JSON.stringify({
+              event: "sale",
+              transaction_id: paymentData.id,
+              amount: amount / 100,
+              email: buyer_email || "",
+              utm_source: utm_source || "",
+              utm_medium: utm_medium || "",
+              utm_campaign: utm_campaign || "",
+              utm_content: utm_content || "",
+              utm_term: utm_term || "",
+              affiliate: affiliate_ref || "",
+            }),
+          });
+          console.log("UTMify postback sent for card payment");
+        }
       } catch (utmErr) {
         console.error("UTMify postback error:", utmErr);
       }
