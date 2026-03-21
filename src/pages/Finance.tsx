@@ -43,6 +43,7 @@ export default function Finance() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [detailView, setDetailView] = useState<"available" | "held" | null>(null);
   const [amount, setAmount] = useState("");
   const [pixKey, setPixKey] = useState("");
   const [pixKeyType, setPixKeyType] = useState<string>("cpf");
