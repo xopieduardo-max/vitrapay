@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         }
       );
       const searchData = await searchRes.json();
-
+      console.log("Asaas customer search response:", JSON.stringify(searchData));
       if (searchData?.data?.length > 0) {
         customerId = searchData.data[0].id;
         await fetch(`https://sandbox.asaas.com/api/v3/customers/${customerId}`, {
@@ -121,12 +121,13 @@ Deno.serve(async (req) => {
         }),
       });
       const fallbackData = await fallbackRes.json();
+      console.log("Asaas customer fallback response:", JSON.stringify(fallbackData));
       customerId = fallbackData?.id;
     }
 
     if (!customerId) {
-      return new Response(JSON.stringify({ error: "Failed to create customer" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ error: "CPF/CNPJ inválido. Verifique os dados e tente novamente." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
