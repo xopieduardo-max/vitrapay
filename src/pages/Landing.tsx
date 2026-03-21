@@ -366,6 +366,8 @@ export default function Landing() {
                 src={dashboardPreview}
                 alt="Dashboard VitraPay com métricas de vendas em tempo real"
                 className="w-full"
+                loading="lazy"
+                decoding="async"
               />
               <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
             </motion.div>
