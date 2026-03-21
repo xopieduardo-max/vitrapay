@@ -557,6 +557,8 @@ export default function Landing() {
                   src={appMockup}
                   alt="App VitraPay"
                   className="w-full"
+                  loading="lazy"
+                  decoding="async"
                 />
               </IPhoneFrame>
             </motion.div>
