@@ -29,6 +29,7 @@ const Purchases = lazy(() => import("./pages/Purchases"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const MemberArea = lazy(() => import("./pages/MemberArea"));
 const Finance = lazy(() => import("./pages/Finance"));
+const Transactions = lazy(() => import("./pages/Transactions"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -95,6 +96,7 @@ const App = () => (
                   <Route path="/library" element={<BuyerLibrary />} />
                   <Route path="/purchases" element={<Purchases />} />
                   <Route path="/finance" element={<Finance />} />
+                  <Route path="/transactions" element={<Transactions />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>
