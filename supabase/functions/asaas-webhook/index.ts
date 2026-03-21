@@ -137,6 +137,55 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Handle TRANSFER events ──
+    if (event === "TRANSFER_CONFIRMED" || event === "TRANSFER_COMPLETED") {
+      const transferId = body?.transfer?.id || payment?.id;
+      console.log("Transfer confirmed:", transferId);
+
+      if (transferId) {
+        const { data: withdrawal, error: wErr } = await supabase
+          .from("withdrawals")
+          .update({ status: "completed", paid_at: new Date().toISOString() })
+          .eq("transfer_id", transferId)
+          .eq("status", "processing")
+          .select("id")
+          .maybeSingle();
+
+        if (withdrawal) {
+          console.log("Withdrawal marked completed via webhook:", withdrawal.id);
+        } else {
+          console.log("No matching processing withdrawal for transfer:", transferId, wErr);
+        }
+      }
+
+      return new Response(JSON.stringify({ status: "transfer_confirmed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (event === "TRANSFER_FAILED" || event === "TRANSFER_CANCELLED") {
+      const transferId = body?.transfer?.id || payment?.id;
+      console.log("Transfer failed:", transferId, event);
+
+      if (transferId) {
+        const { data: withdrawal } = await supabase
+          .from("withdrawals")
+          .update({ status: "pending" })
+          .eq("transfer_id", transferId)
+          .in("status", ["processing", "completed"])
+          .select("id")
+          .maybeSingle();
+
+        if (withdrawal) {
+          console.log("Withdrawal reverted to pending:", withdrawal.id);
+        }
+      }
+
+      return new Response(JSON.stringify({ status: "transfer_failed_handled" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ── Handle CONFIRMED / RECEIVED events ──
     if (event !== "PAYMENT_CONFIRMED" && event !== "PAYMENT_RECEIVED") {
       console.log("Ignoring event:", event);
