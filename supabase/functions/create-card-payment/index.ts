@@ -173,6 +173,28 @@ Deno.serve(async (req) => {
 
     // If payment is confirmed immediately, process the sale
     if (paymentData.status === "CONFIRMED" || paymentData.status === "RECEIVED") {
+      // Idempotency: check if sale already exists for this payment
+      const { data: existingSale } = await supabase
+        .from("sales")
+        .select("id")
+        .eq("payment_id", paymentData.id)
+        .maybeSingle();
+
+      if (existingSale) {
+        return new Response(JSON.stringify({
+          success: true,
+          status: "CONFIRMED",
+          payment_id: paymentData.id,
+          product_title: product.title,
+          product_type: product.type,
+          file_url: product.file_url,
+          amount,
+          sale_id: existingSale.id,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       // Calculate platform fee (3.89% + R$2.49)
       const platformFee = Math.round(amount * 0.0389 + 249);
 
