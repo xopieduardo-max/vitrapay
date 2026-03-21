@@ -216,7 +216,7 @@ export default function Checkout() {
       // Track affiliate click
       const ref = searchParams.get("ref");
       if (ref) {
-        supabase.rpc("increment_affiliate_clicks" as any, { affiliate_id: ref }).catch(() => {});
+        supabase.rpc("increment_affiliate_clicks" as any, { affiliate_id: ref }).then(() => {}).catch(() => {});
       }
 
       setLoading(false);
