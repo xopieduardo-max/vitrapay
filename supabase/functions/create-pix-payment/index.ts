@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
 
     // Create PIX payment
     const valueInReais = amount / 100;
-    const paymentRes = await fetch("https://sandbox.asaas.com/api/v3/payments", {
+    const paymentRes = await fetch("https://api.asaas.com/v3/payments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
