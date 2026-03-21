@@ -74,7 +74,7 @@ const App = () => (
               <Route path="/terms" element={<TermsOfUse />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/install" element={<Install />} />
-              <Route path="/success-preview" element={<SuccessPreview />} />
+              
 
               {/* Protected producer panel */}
               <Route element={<AuthGuard />}>
