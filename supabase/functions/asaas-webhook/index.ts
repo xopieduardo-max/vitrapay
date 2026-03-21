@@ -129,6 +129,38 @@ Deno.serve(async (req) => {
           .update({ status: "cancelled" })
           .eq("sale_id", sale.id);
 
+        // Record refund transaction
+        const refundTxns: any[] = [{
+          user_id: sale.producer_id,
+          type: "debit",
+          category: "refund",
+          amount: sale.amount,
+          balance_type: "available",
+          reference_id: sale.id,
+        }];
+
+        // Reverse affiliate commission if any
+        const { data: saleCommissions } = await supabase
+          .from("commissions")
+          .select("affiliate_id, amount")
+          .eq("sale_id", sale.id);
+
+        if (saleCommissions) {
+          for (const c of saleCommissions) {
+            refundTxns.push({
+              user_id: c.affiliate_id,
+              type: "debit",
+              category: "refund",
+              amount: c.amount,
+              balance_type: "available",
+              reference_id: sale.id,
+            });
+          }
+        }
+
+        await supabase.from("transactions").insert(refundTxns)
+          .catch((err: any) => console.error("Refund transaction error:", err));
+
         console.log("Sale refunded:", sale.id);
       }
 
