@@ -331,6 +331,7 @@ export default function Checkout() {
       const total = calculateTotal();
 
       if (paymentMethod === "pix") {
+        const affiliateRef = searchParams.get("ref") || null;
         // Call Asaas PIX edge function
         const { data, error } = await supabase.functions.invoke("create-pix-payment", {
           body: {
@@ -340,6 +341,7 @@ export default function Checkout() {
             buyer_cpf: form.cpf,
             amount: total,
             description: `Compra na VitraPay`,
+            affiliate_ref: affiliateRef,
           },
         });
         if (error) throw error;
@@ -350,6 +352,7 @@ export default function Checkout() {
             qrCode: data.pix_qr_code,
             copyPaste: data.pix_copy_paste,
           });
+          setAsaasPaymentId(data.asaas_payment_id || null);
           firePixelEvent(productPixels, "Purchase", total);
           toast({ title: "Pagamento gerado, finalize via PIX" });
         } else {
