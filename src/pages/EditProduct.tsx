@@ -62,6 +62,7 @@ export default function EditProduct() {
       type: product.type,
       affiliate_commission: product.affiliate_commission || 0,
       is_published: product.is_published || false,
+      allow_affiliates: product.allow_affiliates ?? true,
       cover_url: product.cover_url || "",
       file_url: product.file_url || "",
       checkout_headline: product.checkout_headline || "",
