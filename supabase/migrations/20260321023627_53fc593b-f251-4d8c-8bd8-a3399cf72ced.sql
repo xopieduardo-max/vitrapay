@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN checkout_theme text NOT NULL DEFAULT 'dark';
