@@ -1157,6 +1157,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_affiliate_clicks: {
+        Args: { affiliate_id: string }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
