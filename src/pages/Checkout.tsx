@@ -368,6 +368,8 @@ export default function Checkout() {
 
   const [cardStatus, setCardStatus] = useState<"idle" | "approved" | "declined" | "pending">("idle");
 
+  const isCardDisabled = paymentMethod === "card" && calculateTotal() < 500;
+
   const handlePurchase = async () => {
     if (!form.name || !form.email) {
       toast({ title: "Preencha seus dados", variant: "destructive" });
@@ -377,9 +379,21 @@ export default function Checkout() {
       toast({ title: "CPF/CNPJ é obrigatório", variant: "destructive" });
       return;
     }
+    if (!validateCPF(form.cpf)) {
+      toast({ title: "CPF/CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
+      return;
+    }
     if (paymentMethod === "card") {
       if (!form.cardNumber || !form.cardExpiry || !form.cardCvv || !form.cardHolder) {
         toast({ title: "Preencha todos os dados do cartão", variant: "destructive" });
+        return;
+      }
+      if (!form.cep.replace(/\D/g, "") || form.cep.replace(/\D/g, "").length < 8) {
+        toast({ title: "CEP é obrigatório para cartão", variant: "destructive" });
+        return;
+      }
+      if (calculateTotal() < 500) {
+        toast({ title: "Valor mínimo para cartão é R$ 5,00", description: "Use PIX para valores menores.", variant: "destructive" });
         return;
       }
     }
