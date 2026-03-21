@@ -42,7 +42,8 @@ Deno.serve(async (req) => {
     const {
       product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, buyer_postal_code,
       card_number, card_holder_name, card_expiry_month, card_expiry_year, card_cvv,
-      installments, amount, affiliate_ref
+      installments, amount, affiliate_ref,
+      utm_source, utm_medium, utm_campaign, utm_content, utm_term
     } = await req.json();
 
     if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
