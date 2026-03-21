@@ -360,9 +360,9 @@ export default function Checkout() {
           </div>
           <h1 className="text-2xl font-bold">Compra Confirmada!</h1>
           <p className="text-sm" style={{ color: "var(--ck-muted)" }}>
-            Seu acesso a <strong style={{ color: "hsl(0,0%,90%)" }}>{purchaseResult.product_title}</strong> está liberado.
+            Seu acesso a <strong style={{ color: "var(--ck-input-fg)" }}>{purchaseResult.product_title}</strong> está liberado.
           </p>
-          <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240,10%,6%)", border: "1px solid hsl(240,5%,12%)" }}>
+          <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
             <div className="flex justify-between text-xs">
               <span style={{ color: "var(--ck-subtle)" }}>Valor pago</span>
               <span className="font-bold">R$ {(purchaseResult.amount / 100).toFixed(2)}</span>
