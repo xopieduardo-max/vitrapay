@@ -55,6 +55,8 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [becomingProducer, setBecomingProducer] = useState(false);
   const isActive = (path: string) => location.pathname === path;
 
   const { data: totalRevenue = 0 } = useQuery({
@@ -80,6 +82,31 @@ export function AppSidebar() {
     },
     enabled: !!user,
   });
+
+  const { data: isProducer = false } = useQuery({
+    queryKey: ["is-producer-sidebar", user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "producer" });
+      return !!data;
+    },
+    enabled: !!user,
+  });
+
+  const handleBecomeProducer = async () => {
+    if (!user) return;
+    setBecomingProducer(true);
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: user.id, role: "producer" } as any);
+    if (error) {
+      toast.error("Erro ao ativar modo produtor.");
+    } else {
+      toast.success("🎉 Agora você é um produtor! Crie seu primeiro produto.");
+      queryClient.invalidateQueries({ queryKey: ["is-producer-sidebar"] });
+    }
+    setBecomingProducer(false);
+  };
 
   const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
   const fmt = (v: number) =>
