@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ export default function AdminUsers() {
   const [feeFixed, setFeeFixed] = useState("");
   const [savingFee, setSavingFee] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users-list"],
@@ -229,7 +231,8 @@ export default function AdminUsers() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="grid grid-cols-[1fr_100px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+              className="grid grid-cols-[1fr_100px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+              onClick={() => navigate(`/admin/users/${user.id}`)}
             >
               <span className="text-sm font-medium truncate">{user.name}</span>
               <Badge variant="outline" className={`text-[0.65rem] w-fit gap-1 ${rc.className}`}>
@@ -251,7 +254,7 @@ export default function AdminUsers() {
                     <Percent className="h-3.5 w-3.5 mr-2" />
                     Editar Taxas
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-sm">Ver perfil</DropdownMenuItem>
+                  <DropdownMenuItem className="text-sm" onClick={() => navigate(`/admin/users/${user.id}`)}>Ver perfil</DropdownMenuItem>
                   <DropdownMenuItem className="text-sm text-destructive">Suspender</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

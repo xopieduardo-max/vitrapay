@@ -10,14 +10,17 @@ import {
   MessageCircle,
   Settings,
   Smartphone,
+  Rocket,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import { useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -30,6 +33,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 const REVENUE_GOAL = 1000000;
 
@@ -51,6 +55,8 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [becomingProducer, setBecomingProducer] = useState(false);
   const isActive = (path: string) => location.pathname === path;
 
   const { data: totalRevenue = 0 } = useQuery({
@@ -76,6 +82,31 @@ export function AppSidebar() {
     },
     enabled: !!user,
   });
+
+  const { data: isProducer = false } = useQuery({
+    queryKey: ["is-producer-sidebar", user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "producer" });
+      return !!data;
+    },
+    enabled: !!user,
+  });
+
+  const handleBecomeProducer = async () => {
+    if (!user) return;
+    setBecomingProducer(true);
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: user.id, role: "producer" } as any);
+    if (error) {
+      toast.error("Erro ao ativar modo produtor.");
+    } else {
+      toast.success("🎉 Agora você é um produtor! Crie seu primeiro produto.");
+      queryClient.invalidateQueries({ queryKey: ["is-producer-sidebar"] });
+    }
+    setBecomingProducer(false);
+  };
 
   const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
   const fmt = (v: number) =>
@@ -155,7 +186,30 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3" />
+      <SidebarFooter className="p-3">
+        {!isProducer && !isAdmin && !collapsed && (
+          <Button
+            size="sm"
+            className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={handleBecomeProducer}
+            disabled={becomingProducer}
+          >
+            <Rocket className="h-4 w-4" />
+            Quero Vender
+          </Button>
+        )}
+        {!isProducer && !isAdmin && collapsed && (
+          <Button
+            size="icon"
+            className="w-full h-8 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={handleBecomeProducer}
+            disabled={becomingProducer}
+            title="Quero Vender"
+          >
+            <Rocket className="h-4 w-4" />
+          </Button>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }
