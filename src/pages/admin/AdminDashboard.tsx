@@ -647,6 +647,12 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+      <AdminProfitWithdrawDialog
+        open={profitDialogOpen}
+        onOpenChange={setProfitDialogOpen}
+        availableProfit={netProfit}
+      />
     </div>
   );
 }
