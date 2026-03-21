@@ -11,16 +11,47 @@ export default function BuyerLibrary() {
   const { user } = useAuth();
 
   const { data: accessItems = [], isLoading } = useQuery({
-    queryKey: ["buyer-library", user?.id],
+    queryKey: ["buyer-library", user?.id, user?.email],
     queryFn: async () => {
       if (!user) return [];
-      const { data: access } = await supabase
+
+      // Fetch access by user_id
+      const { data: accessById } = await supabase
         .from("product_access")
-        .select("id, product_id, granted_at")
+        .select("id, product_id, granted_at, sale_id")
         .eq("user_id", user.id)
         .order("granted_at", { ascending: false });
 
-      if (!access?.length) return [];
+      // Fetch access by email (for guest purchases before account creation)
+      const { data: accessByEmail } = await supabase
+        .from("product_access")
+        .select("id, product_id, granted_at, sale_id")
+        .eq("buyer_email", user.email!)
+        .order("granted_at", { ascending: false });
+
+      // Merge and deduplicate by product_id
+      const allAccess = [...(accessById || []), ...(accessByEmail || [])];
+      const seen = new Set<string>();
+      const access = allAccess.filter((a) => {
+        if (seen.has(a.product_id)) return false;
+        seen.add(a.product_id);
+        return true;
+      });
+
+      if (!access.length) return [];
+
+      // Link email-based access to user_id (one-time migration)
+      const emailOnly = (accessByEmail || []).filter(
+        (a: any) => !a.user_id || a.user_id !== user.id
+      );
+      if (emailOnly.length > 0) {
+        for (const item of emailOnly) {
+          await supabase
+            .from("product_access")
+            .update({ user_id: user.id })
+            .eq("id", item.id);
+        }
+      }
 
       const productIds = access.map((a) => a.product_id);
       const { data: products } = await supabase

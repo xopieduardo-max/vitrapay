@@ -628,25 +628,28 @@ export type Database = {
       }
       product_access: {
         Row: {
+          buyer_email: string | null
           granted_at: string
           id: string
           product_id: string
           sale_id: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
+          buyer_email?: string | null
           granted_at?: string
           id?: string
           product_id: string
           sale_id?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
+          buyer_email?: string | null
           granted_at?: string
           id?: string
           product_id?: string
           sale_id?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {

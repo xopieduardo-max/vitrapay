@@ -5,7 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Map Asaas error descriptions to user-friendly messages
 function mapAsaasError(desc: string): string {
   const lower = desc.toLowerCase();
   if (lower.includes("saldo") || lower.includes("limite")) return "Cartão sem limite disponível. Tente outro cartão.";
@@ -19,10 +18,9 @@ function mapAsaasError(desc: string): string {
   return desc;
 }
 
-// Validate CPF algorithm
 function isValidCPF(cpf: string): boolean {
   const d = cpf.replace(/\D/g, "");
-  if (d.length === 14) return true; // CNPJ
+  if (d.length === 14) return true;
   if (d.length !== 11) return false;
   if (/^(\d)\1{10}$/.test(d)) return false;
   let sum = 0;
@@ -47,7 +45,6 @@ Deno.serve(async (req) => {
       installments, amount, affiliate_ref
     } = await req.json();
 
-    // Validate required fields
     if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
       return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_cpf, buyer_name, buyer_email" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -66,7 +63,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Minimum value validation (R$ 5.00 = 500 cents)
     if (amount < 500) {
       return new Response(JSON.stringify({ error: "Valor mínimo para cartão de crédito é R$ 5,00. Use PIX para valores menores." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -74,8 +70,6 @@ Deno.serve(async (req) => {
     }
 
     const cpfClean = buyer_cpf.replace(/\D/g, "");
-
-    // CPF validation
     if (!isValidCPF(cpfClean)) {
       return new Response(JSON.stringify({ error: "CPF/CNPJ inválido. Verifique os dados e tente novamente." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -86,13 +80,10 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 
-    // Verify product
     const { data: product, error: prodErr } = await supabase
-      .from("products")
-      .select("*")
-      .eq("id", product_id)
-      .single();
+      .from("products").select("*").eq("id", product_id).single();
 
     if (prodErr || !product) {
       return new Response(JSON.stringify({ error: "Produto não encontrado" }), {
@@ -118,14 +109,13 @@ Deno.serve(async (req) => {
 
     // Create or find customer
     let customerId: string | null = null;
-
     console.log(`Looking up customer with CPF: ${cpfClean.slice(0, 3)}***`);
+
     const searchRes = await fetch(
       `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`,
       { headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY } }
     );
     const searchData = await searchRes.json();
-    console.log(`Customer search status: ${searchRes.status}, found: ${searchData?.data?.length || 0}`);
 
     if (searchData?.data?.length > 0) {
       customerId = searchData.data[0].id;
@@ -141,7 +131,6 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ name: buyer_name, email: buyer_email, cpfCnpj: cpfClean }),
       });
       const customerData = await customerRes.json();
-      console.log(`Customer create status: ${customerRes.status}, response:`, JSON.stringify(customerData));
       if (customerData?.id) {
         customerId = customerData.id;
       } else {
@@ -153,12 +142,11 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      return new Response(JSON.stringify({ error: "CPF/CNPJ inválido. Verifique os dados e tente novamente." }), {
+      return new Response(JSON.stringify({ error: "CPF/CNPJ inválido." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Build payment payload
     const valueInReais = amount / 100;
     const dueDate = new Date().toISOString().split("T")[0];
     const externalReference = `${product_id}|${affiliate_ref || ""}`;
@@ -203,11 +191,11 @@ Deno.serve(async (req) => {
     });
 
     const paymentData = await paymentRes.json();
-    console.log(`Payment response status: ${paymentRes.status}, asaas_status: ${paymentData?.status}, id: ${paymentData?.id}`);
+    console.log(`Payment status: ${paymentRes.status}, asaas_status: ${paymentData?.status}, id: ${paymentData?.id}`);
 
     if (!paymentData?.id) {
       const errorMsg = paymentData?.errors?.[0]?.description || "Falha ao processar pagamento";
-      console.error("Payment creation failed:", JSON.stringify(paymentData));
+      console.error("Payment failed:", JSON.stringify(paymentData));
       return new Response(JSON.stringify({ error: mapAsaasError(errorMsg), details: paymentData }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -216,22 +204,15 @@ Deno.serve(async (req) => {
     // Save to pending_payments
     await supabase.from("pending_payments").insert({
       asaas_payment_id: paymentData.id,
-      product_id,
-      buyer_name,
-      buyer_email,
-      buyer_cpf: cpfClean,
-      amount,
-      affiliate_ref: affiliate_ref || null,
+      product_id, buyer_name, buyer_email, buyer_cpf: cpfClean,
+      amount, affiliate_ref: affiliate_ref || null,
       status: paymentData.status === "CONFIRMED" || paymentData.status === "RECEIVED" ? "confirmed" : "pending",
     });
 
-    // If payment is confirmed immediately, process the sale
+    // If payment confirmed immediately, process sale + access + email
     if (paymentData.status === "CONFIRMED" || paymentData.status === "RECEIVED") {
       const { data: existingSale } = await supabase
-        .from("sales")
-        .select("id")
-        .eq("payment_id", paymentData.id)
-        .maybeSingle();
+        .from("sales").select("id").eq("payment_id", paymentData.id).maybeSingle();
 
       if (existingSale) {
         return new Response(JSON.stringify({
@@ -241,19 +222,18 @@ Deno.serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Check for custom fee overrides for this producer
+      // Calculate fees
       let feePercentage = 0.0389;
       let feeFixed = 249;
       const { data: producerProfile } = await supabase
-        .from("profiles")
-        .select("custom_fee_percentage, custom_fee_fixed")
-        .eq("user_id", product.producer_id)
-        .single();
+        .from("profiles").select("custom_fee_percentage, custom_fee_fixed")
+        .eq("user_id", product.producer_id).single();
       if (producerProfile) {
         if (producerProfile.custom_fee_percentage != null) feePercentage = producerProfile.custom_fee_percentage / 100;
         if (producerProfile.custom_fee_fixed != null) feeFixed = producerProfile.custom_fee_fixed;
       }
       const platformFee = Math.round(amount * feePercentage + feeFixed);
+
       let affiliateId: string | null = null;
       if (affiliate_ref) {
         const { data: aff } = await supabase
@@ -277,6 +257,41 @@ Deno.serve(async (req) => {
           sale_id: sale.id, affiliate_id: affiliateId,
           amount: commissionAmount, status: "pending",
         });
+      }
+
+      // ✅ Grant product access
+      if (sale) {
+        const accessRow: any = {
+          product_id,
+          sale_id: sale.id,
+          buyer_email,
+        };
+        const { data: existingAccess } = await supabase
+          .from("product_access").select("id")
+          .eq("product_id", product_id).eq("sale_id", sale.id).maybeSingle();
+
+        if (!existingAccess) {
+          await supabase.from("product_access").insert(accessRow);
+          console.log("Product access granted for card payment:", product_id);
+        }
+
+        // ✅ Send purchase confirmation email
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-purchase-email`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              buyer_name: buyer_name || "Cliente",
+              buyer_email,
+              product_title: product.title,
+              product_type: product.type,
+              product_id: product.id,
+              file_url: product.file_url,
+            }),
+          });
+        } catch (emailErr) {
+          console.error("Email notification error:", emailErr);
+        }
       }
 
       return new Response(JSON.stringify({
