@@ -15,6 +15,7 @@ import {
   Package,
   BarChart3,
   ArrowDownToLine,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
