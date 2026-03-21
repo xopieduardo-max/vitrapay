@@ -463,7 +463,7 @@ Deno.serve(async (req) => {
     }
 
     // ✅ Send UTMify postback
-    await sendUtmifyPostback(asaasPaymentId, pending.amount, pending.buyer_email, pending);
+    await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending);
 
     // Update pending payment status
     await supabase.from("pending_payments").update({ status: "confirmed" }).eq("id", pending.id);
