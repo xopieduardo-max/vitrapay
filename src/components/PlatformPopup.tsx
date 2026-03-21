@@ -72,7 +72,7 @@ export function PlatformPopup() {
   }, [loading, popups, storageKey]);
 
   const handleClose = () => {
-    if (currentPopup?.show_once) {
+    if (currentPopup) {
       markPopupAsSeen(storageKey, currentPopup.id);
     }
     setOpen(false);
