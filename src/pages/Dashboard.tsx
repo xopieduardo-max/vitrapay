@@ -24,6 +24,7 @@ import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
+import { OnboardingTour } from "@/components/OnboardingTour";
 import {
   Select,
   SelectContent,
@@ -152,8 +153,23 @@ export default function Dashboard() {
   const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   const chartBars = useMemo(() => {
-    return Array.from({ length: 10 }).map(() => Math.random() * 80 + 5);
-  }, []);
+    if (completedSales.length === 0) return Array.from({ length: 10 }).map(() => 5);
+    // Group sales by day (last 10 days)
+    const days: Record<string, number> = {};
+    const now = new Date();
+    for (let i = 9; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      days[d.toISOString().slice(0, 10)] = 0;
+    }
+    completedSales.forEach((s) => {
+      const key = new Date(s.created_at).toISOString().slice(0, 10);
+      if (key in days) days[key] += s.amount - (s.platform_fee || 0);
+    });
+    const vals = Object.values(days);
+    const max = Math.max(...vals, 1);
+    return vals.map((v) => Math.max((v / max) * 95, 5));
+  }, [completedSales]);
 
   // Quick links for mobile
   const quickLinks = [
@@ -165,6 +181,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
+      <OnboardingTour />
       {/* Promotional Banner */}
       <motion.div {...anim(0)} className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
         <img

@@ -9,10 +9,35 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { product_id, buyer_email, buyer_name, amount, payment_method, affiliate_ref } = await req.json();
+    const body = await req.json();
+    const { product_id, buyer_email, buyer_name, amount, payment_method, affiliate_ref } = body;
 
+    // Input validation
     if (!product_id || !buyer_email || !amount) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(buyer_email)) {
+      return new Response(JSON.stringify({ error: "Invalid email format" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate amount is positive integer
+    if (!Number.isInteger(amount) || amount <= 0 || amount > 100000000) {
+      return new Response(JSON.stringify({ error: "Invalid amount" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate payment method
+    const validMethods = ["card", "pix", "boleto", "simulated"];
+    if (payment_method && !validMethods.includes(payment_method)) {
+      return new Response(JSON.stringify({ error: "Invalid payment method" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -32,6 +57,20 @@ Deno.serve(async (req) => {
     if (prodErr || !product) {
       return new Response(JSON.stringify({ error: "Product not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify product is published
+    if (!product.is_published) {
+      return new Response(JSON.stringify({ error: "Product not available" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify amount matches product price
+    if (amount < product.price) {
+      return new Response(JSON.stringify({ error: "Amount does not match product price" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

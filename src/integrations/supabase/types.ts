@@ -670,6 +670,7 @@ export type Database = {
       products: {
         Row: {
           affiliate_commission: number | null
+          allow_affiliates: boolean
           checkout_banner_url: string | null
           checkout_headline: string | null
           checkout_timer_minutes: number | null
@@ -687,6 +688,7 @@ export type Database = {
         }
         Insert: {
           affiliate_commission?: number | null
+          allow_affiliates?: boolean
           checkout_banner_url?: string | null
           checkout_headline?: string | null
           checkout_timer_minutes?: number | null
@@ -704,6 +706,7 @@ export type Database = {
         }
         Update: {
           affiliate_commission?: number | null
+          allow_affiliates?: boolean
           checkout_banner_url?: string | null
           checkout_headline?: string | null
           checkout_timer_minutes?: number | null

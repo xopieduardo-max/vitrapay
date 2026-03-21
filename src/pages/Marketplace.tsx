@@ -36,6 +36,7 @@ export default function Marketplace() {
         .from("products")
         .select("id, title, description, price, cover_url, type, affiliate_commission, producer_id, created_at")
         .eq("is_published", true)
+        .eq("allow_affiliates", true)
         .order("created_at", { ascending: false });
 
       if (!prods?.length) return [];
