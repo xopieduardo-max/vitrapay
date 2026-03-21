@@ -43,6 +43,35 @@ async function grantProductAccess(
   }
 }
 
+async function sendUtmifyPostback(
+  transactionId: string,
+  amount: number,
+  email: string | null,
+  pending: any,
+) {
+  try {
+    const res = await fetch("https://app.utmify.com.br/api/postback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event: "sale",
+        transaction_id: transactionId,
+        amount: amount / 100,
+        email: email || "",
+        utm_source: pending?.utm_source || "",
+        utm_medium: pending?.utm_medium || "",
+        utm_campaign: pending?.utm_campaign || "",
+        utm_content: pending?.utm_content || "",
+        utm_term: pending?.utm_term || "",
+        affiliate: pending?.affiliate_ref || "",
+      }),
+    });
+    console.log("UTMify postback status:", res.status);
+  } catch (err) {
+    console.error("UTMify postback error:", err);
+  }
+}
+
 async function sendPurchaseEmailNotification(
   supabaseUrl: string,
   buyerName: string,
