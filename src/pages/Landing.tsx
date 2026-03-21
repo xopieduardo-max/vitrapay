@@ -302,7 +302,7 @@ export default function Landing() {
               transition={{ delay: 0.2, duration: 0.8, type: "spring", damping: 15 }}
               className="flex justify-center"
             >
-              <Interactive3DLogo className="w-28 h-28 md:w-36 md:h-36 cursor-grab active:cursor-grabbing" />
+              <Interactive3DLogo className="w-42 h-42 md:w-54 md:h-54 cursor-grab active:cursor-grabbing" />
             </motion.div>
 
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
