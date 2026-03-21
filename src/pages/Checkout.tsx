@@ -405,8 +405,8 @@ export default function Checkout() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[hsl(240,10%,4%)] flex items-center justify-center">
-        <p className="text-[hsl(240,5%,60%)]">Produto não encontrado.</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--ck-bg)" }}>
+        <p style={{ color: "var(--ck-muted)" }}>Produto não encontrado.</p>
       </div>
     );
   }
