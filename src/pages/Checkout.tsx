@@ -159,6 +159,7 @@ export default function Checkout() {
     cardCvv: "",
     cardHolder: "",
     installments: "1",
+    cep: "",
   });
 
   const [checkoutBlocks, setCheckoutBlocks] = useState<any[]>([]);
@@ -277,6 +278,28 @@ export default function Checkout() {
     return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
   };
 
+  const formatCEP = (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 8);
+    return d.length > 5 ? d.replace(/(\d{5})(\d{1,3})/, "$1-$2") : d;
+  };
+
+  const validateCPF = (cpf: string): boolean => {
+    const d = cpf.replace(/\D/g, "");
+    if (d.length === 14) return true; // CNPJ - basic length check
+    if (d.length !== 11) return false;
+    if (/^(\d)\1{10}$/.test(d)) return false;
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(d[i]) * (10 - i);
+    let rest = (sum * 10) % 11;
+    if (rest === 10) rest = 0;
+    if (rest !== parseInt(d[9])) return false;
+    sum = 0;
+    for (let i = 0; i < 10; i++) sum += parseInt(d[i]) * (11 - i);
+    rest = (sum * 10) % 11;
+    if (rest === 10) rest = 0;
+    return rest === parseInt(d[10]);
+  };
+
   const formatPhone = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 11);
     if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
@@ -345,6 +368,8 @@ export default function Checkout() {
 
   const [cardStatus, setCardStatus] = useState<"idle" | "approved" | "declined" | "pending">("idle");
 
+  const isCardDisabled = paymentMethod === "card" && calculateTotal() < 500;
+
   const handlePurchase = async () => {
     if (!form.name || !form.email) {
       toast({ title: "Preencha seus dados", variant: "destructive" });
@@ -354,9 +379,21 @@ export default function Checkout() {
       toast({ title: "CPF/CNPJ é obrigatório", variant: "destructive" });
       return;
     }
+    if (!validateCPF(form.cpf)) {
+      toast({ title: "CPF/CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
+      return;
+    }
     if (paymentMethod === "card") {
       if (!form.cardNumber || !form.cardExpiry || !form.cardCvv || !form.cardHolder) {
         toast({ title: "Preencha todos os dados do cartão", variant: "destructive" });
+        return;
+      }
+      if (!form.cep.replace(/\D/g, "") || form.cep.replace(/\D/g, "").length < 8) {
+        toast({ title: "CEP é obrigatório para cartão", variant: "destructive" });
+        return;
+      }
+      if (calculateTotal() < 500) {
+        toast({ title: "Valor mínimo para cartão é R$ 5,00", description: "Use PIX para valores menores.", variant: "destructive" });
         return;
       }
     }
@@ -405,6 +442,7 @@ export default function Checkout() {
             buyer_email: form.email,
             buyer_cpf: form.cpf,
             buyer_phone: form.phone,
+            buyer_postal_code: form.cep.replace(/\D/g, ""),
             card_number: form.cardNumber,
             card_holder_name: form.cardHolder || form.name,
             card_expiry_month: expiryMonth,
@@ -853,6 +891,16 @@ export default function Checkout() {
                     </div>
                   </div>
                   <div>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CEP</Label>
+                    <Input
+                      placeholder="00000-000"
+                      value={form.cep}
+                      onChange={(e) => updateForm("cep", formatCEP(e.target.value))}
+                      className="mt-1 border-0 h-11"
+                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                    />
+                  </div>
+                  <div>
                     <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Parcelas</Label>
                     <select
                       value={form.installments}
@@ -865,6 +913,11 @@ export default function Checkout() {
                       ))}
                     </select>
                   </div>
+                  {isCardDisabled && (
+                    <div className="rounded-lg p-3 flex items-center gap-2 text-xs font-medium" style={{ background: "hsl(48,96%,53%,0.15)", color: "hsl(48,96%,53%)", border: "1px solid hsl(48,96%,53%,0.3)" }}>
+                      <Clock className="h-3.5 w-3.5" /> Valor mínimo para cartão é R$ 5,00. Use PIX.
+                    </div>
+                  )}
                   <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--ck-dim)" }}>
                     <Lock className="h-3 w-3" />
                     Seus dados de pagamento são criptografados e processados de forma segura.
