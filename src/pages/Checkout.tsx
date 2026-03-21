@@ -320,6 +320,10 @@ export default function Checkout() {
       toast({ title: "Preencha seus dados", variant: "destructive" });
       return;
     }
+    if (paymentMethod === "pix" && !form.cpf.replace(/\D/g, "")) {
+      toast({ title: "CPF/CNPJ é obrigatório para pagamento via PIX", variant: "destructive" });
+      return;
+    }
     setProcessing(true);
     try {
       const affiliateRef = searchParams.get("ref") || null;

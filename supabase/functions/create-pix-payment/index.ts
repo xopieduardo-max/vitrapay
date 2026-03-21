@@ -11,8 +11,8 @@ Deno.serve(async (req) => {
   try {
     const { product_id, buyer_name, buyer_email, buyer_cpf, amount, description } = await req.json();
 
-    if (!product_id || !amount) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+    if (!product_id || !amount || !buyer_cpf) {
+      return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount, buyer_cpf)" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -61,11 +61,12 @@ Deno.serve(async (req) => {
 
     // Create customer on Asaas (or use existing)
     let customerId: string | null = null;
+    const cpfClean = buyer_cpf?.replace(/\D/g, "") || "";
     
     if (buyer_name && buyer_email) {
-      // Try to find existing customer by email
+      // Try to find existing customer by cpfCnpj first
       const searchRes = await fetch(
-        `https://sandbox.asaas.com/api/v3/customers?email=${encodeURIComponent(buyer_email)}`,
+        `https://sandbox.asaas.com/api/v3/customers?cpfCnpj=${cpfClean}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -77,6 +78,19 @@ Deno.serve(async (req) => {
 
       if (searchData?.data?.length > 0) {
         customerId = searchData.data[0].id;
+        // Update customer with latest info
+        await fetch(`https://sandbox.asaas.com/api/v3/customers/${customerId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "access_token": ASAAS_API_KEY,
+          },
+          body: JSON.stringify({
+            name: buyer_name,
+            email: buyer_email,
+            cpfCnpj: cpfClean,
+          }),
+        });
       } else {
         // Create new customer
         const customerRes = await fetch("https://sandbox.asaas.com/api/v3/customers", {
@@ -87,11 +101,12 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             name: buyer_name || "Cliente VitraPay",
-            email: buyer_email || undefined,
-            cpfCnpj: buyer_cpf?.replace(/\D/g, "") || undefined,
+            email: buyer_email,
+            cpfCnpj: cpfClean,
           }),
         });
         const customerData = await customerRes.json();
+        console.log("Customer create response:", JSON.stringify(customerData));
         if (customerData?.id) {
           customerId = customerData.id;
         }
@@ -109,6 +124,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           name: buyer_name || "Cliente VitraPay",
           email: buyer_email || "cliente@vitrapay.com",
+          cpfCnpj: cpfClean,
         }),
       });
       const fallbackData = await fallbackRes.json();
