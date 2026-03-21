@@ -66,6 +66,58 @@ export function useSalesNotifications() {
           }
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "sales",
+          filter: `producer_id=eq.${user.id}`,
+        },
+        async (payload: any) => {
+          const oldStatus = payload.old?.status;
+          const newStatus = payload.new?.status;
+
+          // Only notify on refund transitions
+          if (newStatus === "refunded" && oldStatus !== "refunded") {
+            const amount = payload.new?.amount || 0;
+            const method = payload.new?.payment_provider || "pix";
+            const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+            const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão de Crédito" : "Boleto";
+            const paymentId = payload.new?.payment_id || "";
+
+            const title = `Venda Estornada ⚠️`;
+            const description = `${methodLabel} • ${fmt} • ID: ${paymentId.slice(0, 12)}`;
+
+            toast.error(title, { description, duration: 8000 });
+
+            notifIdRef.current++;
+            const notif: SaleNotification = {
+              id: `notif-${notifIdRef.current}-${Date.now()}`,
+              title,
+              description,
+              time: new Date(),
+            };
+
+            setNotifications((prev) => [notif, ...prev].slice(0, 50));
+            setNewSalesCount((prev) => prev + 1);
+
+            // Push notification for refund
+            try {
+              await supabase.functions.invoke("send-push", {
+                body: {
+                  producer_id: user.id,
+                  title: `Venda Estornada ⚠️`,
+                  body: `${methodLabel} • Valor: ${fmt}\nID: ${paymentId.slice(0, 12)}`,
+                  url: "/sales",
+                },
+              });
+            } catch (e) {
+              console.error("Push notification error:", e);
+            }
+          }
+        }
+      )
       .subscribe();
 
     return () => {
