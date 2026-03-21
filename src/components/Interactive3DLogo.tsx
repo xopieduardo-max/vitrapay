@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import logoLight from "@/assets/logo-vitrapay-stacked.png";
-import logoDark from "@/assets/logo-vitrapay-stacked-white.png";
+import logoIcon from "@/assets/logo-vitrapay-icon.png";
 
 export function Interactive3DLogo({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
