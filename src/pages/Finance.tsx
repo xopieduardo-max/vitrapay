@@ -115,10 +115,10 @@ export default function Finance() {
     .filter((s) => s.availableAt > now)
     .reduce((acc, s) => acc + s.net, 0);
 
-  // Commissions — also apply holdback
+  // Commissions — apply card holdback (conservative)
   const commissionsNet = commissions.map((c) => ({
     amount: c.amount,
-    availableAt: addDays(c.created_at, HOLDBACK_DAYS),
+    availableAt: addDays(c.created_at, HOLDBACK_DAYS_CARD),
   }));
 
   const totalAvailableCommissions = commissionsNet
