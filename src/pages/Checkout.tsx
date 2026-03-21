@@ -343,23 +343,30 @@ export default function Checkout() {
     return Math.round(total);
   };
 
+  const [cardStatus, setCardStatus] = useState<"idle" | "approved" | "declined" | "pending">("idle");
+
   const handlePurchase = async () => {
     if (!form.name || !form.email) {
       toast({ title: "Preencha seus dados", variant: "destructive" });
       return;
     }
-    if (paymentMethod === "pix" && !form.cpf.replace(/\D/g, "")) {
-      toast({ title: "CPF/CNPJ é obrigatório para pagamento via PIX", variant: "destructive" });
+    if (!form.cpf.replace(/\D/g, "")) {
+      toast({ title: "CPF/CNPJ é obrigatório", variant: "destructive" });
       return;
     }
+    if (paymentMethod === "card") {
+      if (!form.cardNumber || !form.cardExpiry || !form.cardCvv || !form.cardHolder) {
+        toast({ title: "Preencha todos os dados do cartão", variant: "destructive" });
+        return;
+      }
+    }
     setProcessing(true);
+    setCardStatus("idle");
     try {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
 
       if (paymentMethod === "pix") {
-        const affiliateRef = searchParams.get("ref") || null;
-        // Call Asaas PIX edge function
         const { data, error } = await supabase.functions.invoke("create-pix-payment", {
           body: {
             product_id: id,
@@ -386,23 +393,46 @@ export default function Checkout() {
           throw new Error("QR Code PIX não disponível");
         }
       } else {
-        // Card payment (existing flow)
-        const { data, error } = await supabase.functions.invoke("process-purchase", {
+        // Card payment via Asaas
+        const expiryParts = form.cardExpiry.split("/");
+        const expiryMonth = expiryParts[0] || "";
+        const expiryYear = expiryParts[1] ? `20${expiryParts[1]}` : "";
+
+        const { data, error } = await supabase.functions.invoke("create-card-payment", {
           body: {
             product_id: id,
-            buyer_email: form.email,
             buyer_name: form.name,
+            buyer_email: form.email,
+            buyer_cpf: form.cpf,
+            buyer_phone: form.phone,
+            card_number: form.cardNumber,
+            card_holder_name: form.cardHolder || form.name,
+            card_expiry_month: expiryMonth,
+            card_expiry_year: expiryYear,
+            card_cvv: form.cardCvv,
+            installments: form.installments,
             amount: total,
-            payment_method: paymentMethod,
             affiliate_ref: affiliateRef,
           },
         });
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
-        setPurchaseResult(data);
-        firePixelEvent(productPixels, "Purchase", total);
+
+        if (data?.status === "CONFIRMED") {
+          setCardStatus("approved");
+          setPurchaseResult(data);
+          firePixelEvent(productPixels, "Purchase", total);
+        } else if (data?.status === "PENDING" || data?.status === "RECEIVED_IN_CASH") {
+          setCardStatus("pending");
+          setAsaasPaymentId(data.payment_id || null);
+          toast({ title: "Pagamento em análise", description: "Aguarde a confirmação." });
+        } else {
+          setCardStatus("declined");
+          toast({ title: "Pagamento recusado", description: "Verifique os dados do cartão e tente novamente.", variant: "destructive" });
+        }
       }
     } catch (err: any) {
+      setCardStatus("declined");
       toast({ title: "Erro no pagamento", description: err.message, variant: "destructive" });
     } finally {
       setProcessing(false);
