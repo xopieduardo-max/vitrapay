@@ -98,9 +98,22 @@ export default function Sales() {
     },
     enabled: sales.length > 0,
   });
+  // Extract unique products for filter
+  const uniqueProducts = useMemo(() => {
+    const map = new Map<string, string>();
+    sales.forEach((s: any) => {
+      if (s.product_id && s.products?.title) {
+        map.set(s.product_id, s.products.title);
+      }
+    });
+    return Array.from(map, ([id, title]) => ({ id, title }));
+  }, [sales]);
 
-  // Apply date filter
+  // Apply date + product filter
   const filteredSales = sales.filter((s: any) => {
+    // Product filter
+    if (productFilter !== "all" && s.product_id !== productFilter) return false;
+    // Date filter
     const startDate = getFilterDate(dateFilter);
     const endDate = getFilterEndDate(dateFilter);
     if (!startDate) return true;
