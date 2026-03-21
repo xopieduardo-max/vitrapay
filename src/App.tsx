@@ -35,6 +35,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Community = lazy(() => import("./pages/Community"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Install = lazy(() => import("./pages/Install"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 
 
 // Admin pages
