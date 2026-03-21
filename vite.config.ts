@@ -4,13 +4,8 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
-const buildVersion = new Date().toISOString();
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  define: {
-    __APP_BUILD_ID__: JSON.stringify(buildVersion),
-  },
   server: {
     host: "::",
     port: 8080,
@@ -22,13 +17,13 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
+      selfDestroying: true,
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: {
         name: "VitraPay — Vendas Digitais",
         short_name: "VitraPay",
         description: "Plataforma de infoprodutos e vendas digitais",
-        version: buildVersion,
         theme_color: "#EAB308",
         background_color: "#0a0a0a",
         display: "standalone",
@@ -44,10 +39,11 @@ export default defineConfig(({ mode }) => ({
             src: "pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
+            type: "image/png",
             purpose: "any maskable",
           },
         ],
-      } as any,
+      },
       workbox: {
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/~oauth/],
