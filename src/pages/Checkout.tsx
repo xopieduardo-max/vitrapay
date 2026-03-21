@@ -412,50 +412,154 @@ export default function Checkout() {
   // ── Success Screen ──
   if (purchaseResult) {
     return (
-      <div className={`min-h-screen flex items-center justify-center p-4 ${product?.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
+      <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${product?.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full rounded-2xl p-8 text-center space-y-5"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="max-w-lg w-full rounded-3xl p-8 text-center space-y-6 relative overflow-hidden"
           style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}
         >
-          <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(48,96%,53%,0.15)" }}>
-              <CheckCircle2 className="h-8 w-8" style={{ color: "hsl(48,96%,45%)" }} />
-            </div>
+          {/* Confetti-like decorative dots */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: Math.random() * 8 + 4,
+                  height: Math.random() * 8 + 4,
+                  background: `hsl(${48 + Math.random() * 20}, 96%, ${45 + Math.random() * 15}%)`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  opacity: 0.15 + Math.random() * 0.2,
+                }}
+                animate={{
+                  y: [0, -10, 0],
+                  opacity: [0.15, 0.35, 0.15],
+                }}
+                transition={{
+                  duration: 2 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
           </div>
-          <h1 className="text-2xl font-bold">Compra Confirmada!</h1>
-          <p className="text-sm" style={{ color: "var(--ck-muted)" }}>
-            Seu acesso a <strong style={{ color: "var(--ck-input-fg)" }}>{purchaseResult.product_title}</strong> está liberado.
-          </p>
-          <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
-            <div className="flex justify-between text-xs">
+
+          {/* Leonardo DiCaprio celebration GIF */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex justify-center relative z-10"
+          >
+            <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border: "2px solid hsl(48,96%,53%,0.3)" }}>
+              <img
+                src="https://media.giphy.com/media/g9582DNuQppxC/giphy.gif"
+                alt="Celebração"
+                className="w-48 h-auto"
+              />
+            </div>
+          </motion.div>
+
+          {/* Success badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+            className="flex justify-center relative z-10"
+          >
+            <div
+              className="h-14 w-14 rounded-full flex items-center justify-center shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, hsl(48,96%,53%), hsl(38,92%,45%))",
+                boxShadow: "0 0 30px hsl(48,96%,53%,0.4)",
+              }}
+            >
+              <CheckCircle2 className="h-7 w-7 text-black" />
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-2 relative z-10"
+          >
+            <h1 className="text-3xl font-black tracking-tight">
+              Compra Confirmada! 🎉
+            </h1>
+            <p className="text-base" style={{ color: "var(--ck-muted)" }}>
+              Parabéns! Seu acesso a <strong style={{ color: "hsl(48,96%,53%)" }}>{purchaseResult.product_title}</strong> já está liberado.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="rounded-2xl p-5 space-y-3 relative z-10"
+            style={{ background: "var(--ck-bg)", border: "1px solid var(--ck-card-border)" }}
+          >
+            <div className="flex justify-between items-center text-sm">
               <span style={{ color: "var(--ck-subtle)" }}>Valor pago</span>
-              <span className="font-bold">R$ {(purchaseResult.amount / 100).toFixed(2)}</span>
+              <span className="font-bold text-lg" style={{ color: "hsl(48,96%,53%)" }}>
+                R$ {(purchaseResult.amount / 100).toFixed(2)}
+              </span>
             </div>
-            <div className="flex justify-between text-xs">
+            <Separator className="opacity-20" />
+            <div className="flex justify-between items-center text-sm">
               <span style={{ color: "var(--ck-subtle)" }}>ID da venda</span>
-              <span className="font-mono text-[0.6rem]">{purchaseResult.sale_id?.slice(0, 8)}</span>
+              <span className="font-mono text-xs px-2 py-1 rounded-lg" style={{ background: "var(--ck-card)", color: "var(--ck-muted)" }}>
+                {purchaseResult.sale_id?.slice(0, 12)}
+              </span>
             </div>
-          </div>
-          {purchaseResult.file_url && (
-            <Button
-              className="w-full h-12 text-sm font-bold gap-2 rounded-xl"
-              style={{ background: "hsl(48,96%,53%)", color: "hsl(0,0%,10%)" }}
-              onClick={() => window.open(purchaseResult.file_url, "_blank")}
-            >
-              <ArrowDownToLine className="h-4 w-4" /> Baixar Produto
-            </Button>
-          )}
-          {purchaseResult.product_type === "lms" && (
-            <Button
-              className="w-full h-12 text-sm font-bold gap-2 rounded-xl"
-              style={{ background: "hsl(48,96%,53%)", color: "hsl(0,0%,10%)" }}
-              onClick={() => toast({ title: "Acesse com seu email", description: "Faça login para acessar a área de membros." })}
-            >
-              Acessar Área de Membros
-            </Button>
-          )}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="space-y-3 relative z-10"
+          >
+            {purchaseResult.file_url && (
+              <Button
+                className="w-full h-14 text-base font-bold gap-3 rounded-2xl shadow-lg transition-all hover:scale-[1.02]"
+                style={{
+                  background: "linear-gradient(135deg, hsl(48,96%,53%), hsl(38,92%,45%))",
+                  color: "hsl(0,0%,10%)",
+                  boxShadow: "0 4px 20px hsl(48,96%,53%,0.3)",
+                }}
+                onClick={() => window.open(purchaseResult.file_url, "_blank")}
+              >
+                <ArrowDownToLine className="h-5 w-5" /> Baixar Produto
+              </Button>
+            )}
+            {purchaseResult.product_type === "lms" && (
+              <Button
+                className="w-full h-14 text-base font-bold gap-3 rounded-2xl shadow-lg transition-all hover:scale-[1.02]"
+                style={{
+                  background: "linear-gradient(135deg, hsl(48,96%,53%), hsl(38,92%,45%))",
+                  color: "hsl(0,0%,10%)",
+                  boxShadow: "0 4px 20px hsl(48,96%,53%,0.3)",
+                }}
+                onClick={() => toast({ title: "Acesse com seu email", description: "Faça login para acessar a área de membros." })}
+              >
+                Acessar Área de Membros
+              </Button>
+            )}
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className="text-xs relative z-10"
+            style={{ color: "var(--ck-subtle)" }}
+          >
+            Um email de confirmação foi enviado para você 📧
+          </motion.p>
         </motion.div>
       </div>
     );
