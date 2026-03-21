@@ -99,6 +99,7 @@ export default function CreateProduct() {
         price: priceInCents,
         type,
         affiliate_commission: commission[0],
+        allow_affiliates: allowAffiliates,
         is_published: isPublished,
         cover_url: coverUrl,
         file_url: fileUrl,
