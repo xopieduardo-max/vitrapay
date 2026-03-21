@@ -58,7 +58,7 @@ export function PlatformPopup() {
     }
 
     const seen = getSeenPopups(storageKey);
-    const toShow = popups.find((popup: any) => !popup.show_once || !seen.includes(popup.id));
+    const toShow = popups.find((popup: any) => !seen.includes(popup.id));
 
     if (!toShow) {
       setCurrentPopup(null);
@@ -66,10 +66,7 @@ export function PlatformPopup() {
       return;
     }
 
-    if (toShow.show_once) {
-      markPopupAsSeen(storageKey, toShow.id);
-    }
-
+    markPopupAsSeen(storageKey, toShow.id);
     setCurrentPopup((prev: any) => (prev?.id === toShow.id ? prev : toShow));
     setOpen(true);
   }, [loading, popups, storageKey]);
