@@ -577,9 +577,9 @@ export default function Checkout() {
                     onClick={() => setPaymentMethod(method)}
                     className="flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-medium transition-all whitespace-nowrap"
                     style={{
-                      background: paymentMethod === method ? "hsl(142, 71%, 45%)" : "hsl(240, 10%, 12%)",
-                      color: paymentMethod === method ? "white" : "hsl(240, 5%, 60%)",
-                      border: paymentMethod === method ? "1px solid hsl(142, 71%, 40%)" : "1px solid hsl(240, 5%, 18%)",
+                      background: paymentMethod === method ? "hsl(142, 71%, 45%)" : "var(--ck-method-inactive)",
+                      color: paymentMethod === method ? "white" : "var(--ck-method-inactive-fg)",
+                      border: paymentMethod === method ? "1px solid hsl(142, 71%, 40%)" : "1px solid var(--ck-method-inactive-border)",
                     }}
                   >
                     {method === "pix" ? <QrCode className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
