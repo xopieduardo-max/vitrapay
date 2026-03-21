@@ -109,6 +109,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           name: buyer_name || "Cliente VitraPay",
           email: buyer_email || "cliente@vitrapay.com",
+          cpfCnpj: buyer_cpf?.replace(/\D/g, "") || undefined,
         }),
       });
       const fallbackData = await fallbackRes.json();
