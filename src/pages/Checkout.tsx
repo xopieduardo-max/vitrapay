@@ -397,7 +397,7 @@ export default function Checkout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[hsl(240,10%,4%)] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--ck-bg)" }}>
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
