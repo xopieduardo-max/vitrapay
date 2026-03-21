@@ -281,6 +281,15 @@ export default function AdminDashboard() {
     },
   });
 
+  // Calculate net profit (platform fees - admin withdrawals)
+  const adminWithdrawals = useMemo(() => {
+    return transactions
+      .filter((t) => t.category === "withdrawal" && t.type === "debit" && t.reference_id?.startsWith("admin"))
+      .reduce((a, t) => a + t.amount, 0);
+  }, [transactions]);
+
+  const netProfit = (stats?.totalPlatformFees ?? 0) - adminWithdrawals;
+
   // ── KPI Cards ──
   const cards = [
     {
@@ -294,6 +303,14 @@ export default function AdminDashboard() {
       value: fmt(stats?.totalPlatformFees ?? 0),
       icon: TrendingUp,
       color: "text-accent",
+    },
+    {
+      label: "Lucro líquido",
+      value: fmt(netProfit),
+      icon: Banknote,
+      color: "text-emerald-500",
+      clickable: true,
+      onClick: () => setProfitDialogOpen(true),
     },
     {
       label: "Total vendas",
