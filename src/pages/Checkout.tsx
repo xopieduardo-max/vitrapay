@@ -346,12 +346,12 @@ export default function Checkout() {
   // ── Success Screen ──
   if (purchaseResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "hsl(240,10%,4%)", color: "hsl(0,0%,95%)" }}>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-md w-full rounded-2xl p-8 text-center space-y-5"
-          style={{ background: "hsl(240,10%,8%)", border: "1px solid hsl(240,5%,15%)" }}
+          style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}
         >
           <div className="flex justify-center">
             <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "hsl(48,96%,53%,0.15)" }}>
