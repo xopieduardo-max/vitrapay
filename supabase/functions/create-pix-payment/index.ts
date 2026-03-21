@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { product_id, buyer_name, buyer_email, buyer_cpf, amount, description, affiliate_ref } = await req.json();
+    const { product_id, buyer_name, buyer_email, buyer_cpf, amount, description, affiliate_ref, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
 
     if (!product_id || !amount || !buyer_cpf) {
       return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount, buyer_cpf)" }), {
