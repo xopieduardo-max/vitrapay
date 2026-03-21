@@ -305,7 +305,7 @@ export default function Finance() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque", clickAction: "available" as const },
-          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Liberado em ${HOLDBACK_DAYS} dias`, clickAction: "held" as const },
+          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Cartão: D+${HOLDBACK_DAYS_CARD}`, clickAction: "held" as const },
           { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões", clickAction: null },
           { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido", clickAction: null },
         ].map((stat, i) => (
