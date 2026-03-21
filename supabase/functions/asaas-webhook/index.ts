@@ -148,11 +148,26 @@ Deno.serve(async (req) => {
           .update({ status: "completed", paid_at: new Date().toISOString() })
           .eq("transfer_id", transferId)
           .eq("status", "processing")
-          .select("id")
+          .select("id, user_id, amount")
           .maybeSingle();
 
         if (withdrawal) {
           console.log("Withdrawal marked completed via webhook:", withdrawal.id);
+
+          // Notify producer
+          try {
+            await fetch(`${supabaseUrl}/functions/v1/notify-withdrawal`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_id: withdrawal.user_id,
+                amount: withdrawal.amount,
+                transfer_id: transferId,
+              }),
+            });
+          } catch (e) {
+            console.error("Failed to send withdrawal notification:", e);
+          }
         } else {
           console.log("No matching processing withdrawal for transfer:", transferId, wErr);
         }
