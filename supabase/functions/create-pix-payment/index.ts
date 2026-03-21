@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
           }),
         });
       } else {
-        const customerRes = await fetch("https://sandbox.asaas.com/api/v3/customers", {
+        const customerRes = await fetch("https://api.asaas.com/v3/customers", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
