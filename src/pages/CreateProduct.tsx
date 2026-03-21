@@ -29,6 +29,7 @@ export default function CreateProduct() {
   const [price, setPrice] = useState("");
   const [type, setType] = useState<"download" | "lms">("download");
   const [commission, setCommission] = useState([30]);
+  const [allowAffiliates, setAllowAffiliates] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [productFile, setProductFile] = useState<File | null>(null);
