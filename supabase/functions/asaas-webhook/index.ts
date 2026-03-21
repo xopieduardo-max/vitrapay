@@ -44,15 +44,33 @@ async function grantProductAccess(
 }
 
 async function sendUtmifyPostback(
+  supabase: any,
+  producerId: string,
   transactionId: string,
   amount: number,
   email: string | null,
   pending: any,
 ) {
   try {
+    // Fetch producer's UTMify token
+    const { data: integration } = await supabase
+      .from("user_integrations")
+      .select("api_token, is_active")
+      .eq("user_id", producerId)
+      .eq("platform", "utmify")
+      .maybeSingle();
+
+    if (!integration || !integration.is_active || !integration.api_token) {
+      console.log("UTMify not configured or inactive for producer:", producerId);
+      return;
+    }
+
     const res = await fetch("https://app.utmify.com.br/api/postback", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-token": integration.api_token,
+      },
       body: JSON.stringify({
         event: "sale",
         transaction_id: transactionId,
@@ -445,7 +463,7 @@ Deno.serve(async (req) => {
     }
 
     // ✅ Send UTMify postback
-    await sendUtmifyPostback(asaasPaymentId, pending.amount, pending.buyer_email, pending);
+    await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending);
 
     // Update pending payment status
     await supabase.from("pending_payments").update({ status: "confirmed" }).eq("id", pending.id);
