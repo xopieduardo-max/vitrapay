@@ -10,14 +10,17 @@ import {
   MessageCircle,
   Settings,
   Smartphone,
+  Rocket,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import { useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -30,6 +33,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 const REVENUE_GOAL = 1000000;
 
