@@ -521,6 +521,45 @@ export type Database = {
           },
         ]
       }
+      pending_payments: {
+        Row: {
+          affiliate_ref: string | null
+          amount: number
+          asaas_payment_id: string
+          buyer_cpf: string | null
+          buyer_email: string | null
+          buyer_name: string | null
+          created_at: string
+          id: string
+          product_id: string
+          status: string
+        }
+        Insert: {
+          affiliate_ref?: string | null
+          amount: number
+          asaas_payment_id: string
+          buyer_cpf?: string | null
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          status?: string
+        }
+        Update: {
+          affiliate_ref?: string | null
+          amount?: number
+          asaas_payment_id?: string
+          buyer_cpf?: string | null
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       platform_banners: {
         Row: {
           created_at: string
