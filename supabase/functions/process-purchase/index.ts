@@ -60,6 +60,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify product is published
+    if (!product.is_published) {
+      return new Response(JSON.stringify({ error: "Product not available" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify amount matches product price
+    if (amount < product.price) {
+      return new Response(JSON.stringify({ error: "Amount does not match product price" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Calculate platform fee based on payment method
     // Card: 3.89% + R$2.49 | Pix: 0%
     let platformFee = 0;
