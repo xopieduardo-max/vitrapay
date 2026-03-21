@@ -103,7 +103,8 @@ export default function Finance() {
   // Split sales into available vs held back
   const salesNet = sales.map((s) => ({
     net: s.amount - (s.platform_fee || 0),
-    availableAt: addDays(s.created_at, HOLDBACK_DAYS),
+    availableAt: addDays(s.created_at, getHoldbackDays(s.payment_provider)),
+    provider: s.payment_provider,
   }));
 
   const totalAvailableSales = salesNet
