@@ -202,22 +202,36 @@ export default function Sales() {
         <ExportButton data={exportData} columns={exportColumns} filename="vendas-vitrapay" />
       </div>
 
-      {/* Date Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-        {DATE_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setDateFilter(f.value)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              dateFilter === f.value
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          {DATE_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setDateFilter(f.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                dateFilter === f.value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <Select value={productFilter} onValueChange={setProductFilter}>
+          <SelectTrigger className="w-[180px] h-8 bg-card border-border text-xs">
+            <Package className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Todos os produtos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os produtos</SelectItem>
+            {uniqueProducts.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
