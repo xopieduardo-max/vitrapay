@@ -341,6 +341,29 @@ Deno.serve(async (req) => {
         }
       }
 
+      // ✅ Send UTMify postback
+      try {
+        await fetch("https://app.utmify.com.br/api/postback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: "sale",
+            transaction_id: paymentData.id,
+            amount: amount / 100,
+            email: buyer_email || "",
+            utm_source: utm_source || "",
+            utm_medium: utm_medium || "",
+            utm_campaign: utm_campaign || "",
+            utm_content: utm_content || "",
+            utm_term: utm_term || "",
+            affiliate: affiliate_ref || "",
+          }),
+        });
+        console.log("UTMify postback sent for card payment");
+      } catch (utmErr) {
+        console.error("UTMify postback error:", utmErr);
+      }
+
       return new Response(JSON.stringify({
         success: true, status: "CONFIRMED", payment_id: paymentData.id,
         product_title: product.title, product_type: product.type,
