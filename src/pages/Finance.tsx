@@ -327,6 +327,49 @@ export default function Finance() {
         ))}
       </div>
 
+      {/* Available balance detail */}
+      {detailView === "available" && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-primary/20 bg-card p-4 space-y-3"
+        >
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-primary" /> Saldo Disponível — Detalhamento
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+              <span className="text-muted-foreground">Vendas liberadas (após {HOLDBACK_DAYS} dias)</span>
+              <span className="font-medium text-primary">+ R$ {(totalAvailableSales / 100).toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+              <span className="text-muted-foreground">Comissões liberadas</span>
+              <span className="font-medium text-primary">+ R$ {(totalAvailableCommissions / 100).toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+              <span className="text-muted-foreground">Saques concluídos</span>
+              <span className="font-medium text-destructive">- R$ {(totalWithdrawn / 100).toFixed(2)}</span>
+            </div>
+            {pendingWithdrawals > 0 && (
+              <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+                <span className="text-muted-foreground">Saques pendentes</span>
+                <span className="font-medium text-warning">- R$ {(pendingWithdrawals / 100).toFixed(2)}</span>
+              </div>
+            )}
+            {totalFeesPaid > 0 && (
+              <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+                <span className="text-muted-foreground">Taxas de saque</span>
+                <span className="font-medium text-destructive">- R$ {(totalFeesPaid / 100).toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-sm pt-1 font-bold">
+              <span>Saldo disponível</span>
+              <span className="text-primary">R$ {(Math.max(0, availableBalance) / 100).toFixed(2)}</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Pending withdrawals alert */}
       {pendingWithdrawals > 0 && (
         <div className="flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 p-4">
