@@ -317,8 +317,9 @@ Deno.serve(async (req) => {
     }
 
     // Create affiliate commission
+    let commissionAmount = 0;
     if (affiliateUserId && product.affiliate_commission > 0 && sale) {
-      const commissionAmount = Math.round(pending.amount * product.affiliate_commission / 100);
+      commissionAmount = Math.round(pending.amount * product.affiliate_commission / 100);
       await supabase.from("commissions").insert({
         sale_id: sale.id,
         affiliate_id: affiliateUserId,
@@ -326,6 +327,45 @@ Deno.serve(async (req) => {
         status: "pending",
       }).catch((err: any) => console.error("Commission insert error:", err));
     }
+
+    // ── Record transactions (split) ──
+    const producerNet = pending.amount - pixPlatformFee - commissionAmount;
+    const txns: any[] = [
+      {
+        user_id: product.producer_id,
+        type: "credit",
+        category: "sale",
+        amount: producerNet,
+        balance_type: "available",
+        reference_id: sale.id,
+      },
+    ];
+
+    if (pixPlatformFee > 0) {
+      txns.push({
+        user_id: product.producer_id,
+        type: "debit",
+        category: "fee",
+        amount: pixPlatformFee,
+        balance_type: "available",
+        reference_id: sale.id,
+      });
+    }
+
+    if (affiliateUserId && commissionAmount > 0) {
+      txns.push({
+        user_id: affiliateUserId,
+        type: "credit",
+        category: "commission",
+        amount: commissionAmount,
+        balance_type: "available",
+        reference_id: sale.id,
+      });
+    }
+
+    await supabase.from("transactions").insert(txns)
+      .then(() => console.log("Transactions recorded:", txns.length))
+      .catch((err: any) => console.error("Transaction insert error:", err));
 
     // ✅ Grant product access
     await grantProductAccess(supabase, pending.product_id, pending.buyer_email, sale.id);
