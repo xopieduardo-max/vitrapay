@@ -1,9 +1,19 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import logoIcon from "@/assets/logo-vitrapay.png";
+import logoLight from "@/assets/logo-vitrapay-stacked.png";
+import logoDark from "@/assets/logo-vitrapay-stacked-white.png";
 
 export function Interactive3DLogo({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  useEffect(() => {
+    const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains("dark")));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const logoSrc = isDark ? logoDark : logoLight;
 
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
@@ -50,7 +60,7 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
 
         {/* Shadow layer */}
         <motion.img
-          src={logoIcon}
+          src={logoSrc}
           alt=""
           aria-hidden
           className="absolute inset-0 w-full h-full object-contain blur-lg opacity-30"
@@ -59,7 +69,7 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
 
         {/* Main logo */}
         <motion.img
-          src={logoIcon}
+          src={logoSrc}
           alt="VitraPay Logo 3D"
           className="relative w-full h-full object-contain drop-shadow-[0_0_25px_hsla(48,96%,53%,0.3)]"
           style={{ transform: "translateZ(30px)" }}
