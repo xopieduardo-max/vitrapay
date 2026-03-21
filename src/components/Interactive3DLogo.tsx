@@ -50,7 +50,7 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
 
         {/* Shadow layer */}
         <motion.img
-          src={logoSrc}
+          src={logoIcon}
           alt=""
           aria-hidden
           className="absolute inset-0 w-full h-full object-contain blur-lg opacity-30"
