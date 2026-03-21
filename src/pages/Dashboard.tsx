@@ -15,6 +15,7 @@ import {
   Package,
   BarChart3,
   ArrowDownToLine,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -235,29 +236,29 @@ export default function Dashboard() {
         {/* ✨ FATURAMENTO CARD - Golden shimmer effect */}
         <motion.div
           {...anim(0.1)}
-          className="rounded-xl border-2 border-warning/40 bg-card p-5 shimmer-gold animate-pulse-glow"
+          className="rounded-xl border-2 border-primary/40 bg-card p-5 shimmer-gold animate-pulse-glow-primary"
         >
           <div className="flex items-center gap-3 relative z-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/15">
-              <Zap className="h-6 w-6 text-warning" strokeWidth={2} />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
+              <Zap className="h-6 w-6 text-primary" strokeWidth={2} />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-warning/80 font-medium">Faturamento</p>
-              <p className="text-xl font-bold text-warning tracking-tight">
+              <p className="text-xs text-primary/80 font-medium">Faturamento</p>
+              <p className="text-xl font-bold text-primary tracking-tight">
                 {fmtShort(totalRevenue)} <span className="text-sm font-normal text-muted-foreground">/ {fmtShort(REVENUE_GOAL)}</span>
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 mt-3 relative z-10">
-            <div className="flex-1 h-2 rounded-full bg-warning/15 overflow-hidden">
+            <div className="flex-1 h-2 rounded-full bg-primary/15 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${revenueProgress}%` }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
-                className="h-full rounded-full bg-gradient-to-r from-warning/70 to-warning"
+                className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
               />
             </div>
-            <span className="text-xs font-bold text-warning/70">{revenueProgress.toFixed(1)}%</span>
+            <span className="text-xs font-bold text-primary/70">{revenueProgress.toFixed(1)}%</span>
           </div>
         </motion.div>
 
@@ -271,10 +272,10 @@ export default function Dashboard() {
             <p className="text-lg font-bold">{fmt(availableBalance)}</p>
             <Button
               size="sm"
-              className="w-full h-8 text-xs gap-1"
+              className="w-full h-8 text-xs gap-1.5"
               onClick={() => navigate("/finance")}
             >
-              <ArrowDownToLine className="h-3 w-3" /> Sacar
+              <ArrowDownToLine className="h-3.5 w-3.5" /> Sacar
             </Button>
           </motion.div>
           <motion.div
@@ -286,10 +287,10 @@ export default function Dashboard() {
             <Button
               size="sm"
               variant="secondary"
-              className="w-full h-8 text-xs gap-1"
+              className="w-full h-8 text-xs gap-1.5"
               onClick={() => navigate("/sales")}
             >
-              Receitas
+              <TrendingUp className="h-3.5 w-3.5" /> Receitas
             </Button>
           </motion.div>
         </div>
