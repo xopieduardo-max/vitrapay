@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { product_id, buyer_name, buyer_email, buyer_cpf, amount, description } = await req.json();
+    const { product_id, buyer_name, buyer_email, buyer_cpf, amount, description, affiliate_ref } = await req.json();
 
     if (!product_id || !amount || !buyer_cpf) {
       return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount, buyer_cpf)" }), {
@@ -64,7 +64,6 @@ Deno.serve(async (req) => {
     const cpfClean = buyer_cpf?.replace(/\D/g, "") || "";
     
     if (buyer_name && buyer_email) {
-      // Try to find existing customer by cpfCnpj first
       const searchRes = await fetch(
         `https://sandbox.asaas.com/api/v3/customers?cpfCnpj=${cpfClean}`,
         {
@@ -78,7 +77,6 @@ Deno.serve(async (req) => {
 
       if (searchData?.data?.length > 0) {
         customerId = searchData.data[0].id;
-        // Update customer with latest info
         await fetch(`https://sandbox.asaas.com/api/v3/customers/${customerId}`, {
           method: "PUT",
           headers: {
@@ -92,7 +90,6 @@ Deno.serve(async (req) => {
           }),
         });
       } else {
-        // Create new customer
         const customerRes = await fetch("https://sandbox.asaas.com/api/v3/customers", {
           method: "POST",
           headers: {
@@ -106,15 +103,11 @@ Deno.serve(async (req) => {
           }),
         });
         const customerData = await customerRes.json();
-        console.log("Customer create response:", JSON.stringify(customerData));
-        if (customerData?.id) {
-          customerId = customerData.id;
-        }
+        if (customerData?.id) customerId = customerData.id;
       }
     }
 
     if (!customerId) {
-      // Fallback: create minimal customer
       const fallbackRes = await fetch("https://sandbox.asaas.com/api/v3/customers", {
         method: "POST",
         headers: {
@@ -137,6 +130,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Structured externalReference: "product_id|affiliate_ref"
+    const externalReference = `${product_id}|${affiliate_ref || ""}`;
+
     // Create PIX payment
     const valueInReais = amount / 100;
     const paymentRes = await fetch("https://sandbox.asaas.com/api/v3/payments", {
@@ -151,7 +147,7 @@ Deno.serve(async (req) => {
         value: valueInReais,
         dueDate: dueDateStr,
         description: description || `Compra de produto na VitraPay - ${product.title}`,
-        externalReference: product_id,
+        externalReference,
       }),
     });
 
@@ -162,6 +158,22 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Failed to create payment", details: paymentData }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Save to pending_payments
+    const { error: pendingErr } = await supabase.from("pending_payments").insert({
+      asaas_payment_id: paymentData.id,
+      product_id,
+      buyer_name: buyer_name || null,
+      buyer_email: buyer_email || null,
+      buyer_cpf: cpfClean || null,
+      amount,
+      affiliate_ref: affiliate_ref || null,
+      status: "pending",
+    });
+
+    if (pendingErr) {
+      console.error("Failed to save pending payment:", pendingErr);
     }
 
     // Get PIX QR Code
@@ -177,6 +189,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       payment_id: paymentData.id,
+      asaas_payment_id: paymentData.id,
       status: paymentData.status,
       value: paymentData.value,
       due_date: paymentData.dueDate,

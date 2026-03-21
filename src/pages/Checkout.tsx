@@ -145,6 +145,7 @@ export default function Checkout() {
   const [processing, setProcessing] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState<any>(null);
   const [pixData, setPixData] = useState<{ qrCode: string; copyPaste: string } | null>(null);
+  const [asaasPaymentId, setAsaasPaymentId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
