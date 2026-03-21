@@ -442,6 +442,7 @@ export default function Checkout() {
             buyer_email: form.email,
             buyer_cpf: form.cpf,
             buyer_phone: form.phone,
+            buyer_postal_code: form.cep.replace(/\D/g, ""),
             card_number: form.cardNumber,
             card_holder_name: form.cardHolder || form.name,
             card_expiry_month: expiryMonth,
