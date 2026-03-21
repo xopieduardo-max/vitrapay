@@ -577,9 +577,9 @@ export default function Checkout() {
                     onClick={() => setPaymentMethod(method)}
                     className="flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-medium transition-all whitespace-nowrap"
                     style={{
-                      background: paymentMethod === method ? "hsl(48, 96%, 53%)" : "hsl(240, 10%, 12%)",
+                      background: paymentMethod === method ? "hsl(142, 71%, 45%)" : "hsl(240, 10%, 12%)",
                       color: paymentMethod === method ? "white" : "hsl(240, 5%, 60%)",
-                      border: paymentMethod === method ? "1px solid hsl(48, 96%, 48%)" : "1px solid hsl(240, 5%, 18%)",
+                      border: paymentMethod === method ? "1px solid hsl(142, 71%, 40%)" : "1px solid hsl(240, 5%, 18%)",
                     }}
                   >
                     {method === "pix" ? <QrCode className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
@@ -822,7 +822,7 @@ export default function Checkout() {
                 disabled={processing}
                 className="w-full h-14 text-base font-bold gap-2 rounded-xl"
                 size="lg"
-                style={{ background: "hsl(48, 96%, 53%)", color: "hsl(0,0%,10%)" }}
+                style={{ background: "hsl(142, 71%, 45%)", color: "white" }}
               >
                 {processing ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
