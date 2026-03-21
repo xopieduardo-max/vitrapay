@@ -324,20 +324,49 @@ export default function Checkout() {
     try {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
-      const { data, error } = await supabase.functions.invoke("process-purchase", {
-        body: {
-          product_id: id,
-          buyer_email: form.email,
-          buyer_name: form.name,
-          amount: total,
-          payment_method: paymentMethod,
-          affiliate_ref: affiliateRef,
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setPurchaseResult(data);
-      firePixelEvent(productPixels, "Purchase", total);
+
+      if (paymentMethod === "pix") {
+        // Call Asaas PIX edge function
+        const { data, error } = await supabase.functions.invoke("create-pix-payment", {
+          body: {
+            product_id: id,
+            buyer_name: form.name,
+            buyer_email: form.email,
+            buyer_cpf: form.cpf,
+            amount: total,
+            description: `Compra na VitraPay`,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        if (data?.pix_qr_code && data?.pix_copy_paste) {
+          setPixData({
+            qrCode: data.pix_qr_code,
+            copyPaste: data.pix_copy_paste,
+          });
+          firePixelEvent(productPixels, "Purchase", total);
+          toast({ title: "Pagamento gerado, finalize via PIX" });
+        } else {
+          throw new Error("QR Code PIX não disponível");
+        }
+      } else {
+        // Card payment (existing flow)
+        const { data, error } = await supabase.functions.invoke("process-purchase", {
+          body: {
+            product_id: id,
+            buyer_email: form.email,
+            buyer_name: form.name,
+            amount: total,
+            payment_method: paymentMethod,
+            affiliate_ref: affiliateRef,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setPurchaseResult(data);
+        firePixelEvent(productPixels, "Purchase", total);
+      }
     } catch (err: any) {
       toast({ title: "Erro no pagamento", description: err.message, variant: "destructive" });
     } finally {
