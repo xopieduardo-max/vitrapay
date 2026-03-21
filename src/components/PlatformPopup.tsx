@@ -39,9 +39,8 @@ export function PlatformPopup() {
   useEffect(() => {
     if (!popups.length) return;
     const dismissed = getDismissed();
-    const toShow = popups.find(
-      (p: any) => !(p.show_once && dismissed.includes(p.id))
-    );
+    // Always show each popup only once per user — filter out already-seen popups
+    const toShow = popups.find((p: any) => !dismissed.includes(p.id));
     if (toShow) {
       setCurrentPopup(toShow);
       setOpen(true);
@@ -49,10 +48,12 @@ export function PlatformPopup() {
   }, [popups]);
 
   const handleClose = () => {
-    if (currentPopup?.show_once) {
+    if (currentPopup) {
       const dismissed = getDismissed();
-      dismissed.push(currentPopup.id);
-      localStorage.setItem(DISMISSED_KEY, JSON.stringify(dismissed));
+      if (!dismissed.includes(currentPopup.id)) {
+        dismissed.push(currentPopup.id);
+        localStorage.setItem(DISMISSED_KEY, JSON.stringify(dismissed));
+      }
     }
     setOpen(false);
   };
