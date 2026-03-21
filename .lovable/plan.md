@@ -1,119 +1,96 @@
 
 
-## Plano: Webhook PIX Robusto com Asaas
+# Auditoria Completa: create-card-payment (Asaas)
 
-### Resumo
-Criar a infraestrutura completa de confirmação automática de pagamento PIX: tabela `pending_payments`, edge function `asaas-webhook` com segurança e idempotência, atualização do `create-pix-payment` para salvar pagamentos pendentes, e polling no checkout.
+## Status Atual
+
+A função **está deployada e executando corretamente**. Ela responde a requisições, valida campos e se comunica com a API do Asaas. O problema de "0% success rate" NÃO é um erro de código da função em si, mas sim rejeições da API do Asaas nas chamadas reais.
 
 ---
 
-### 1. Migração — Tabela `pending_payments`
+## Resultados da Auditoria
 
-```sql
-CREATE TABLE public.pending_payments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  asaas_payment_id text UNIQUE NOT NULL,
-  product_id uuid NOT NULL,
-  buyer_name text,
-  buyer_email text,
-  buyer_cpf text,
-  amount integer NOT NULL,
-  affiliate_ref text,
-  status text NOT NULL DEFAULT 'pending',
-  created_at timestamptz NOT NULL DEFAULT now()
-);
+### 1. Execução da Função
+- **Status**: Funcionando. Responde a requisições POST.
+- **Boot time**: ~29ms (normal)
+- **Logs capturados**: A função loga corretamente o payload e as respostas do Asaas.
 
-ALTER TABLE public.pending_payments ENABLE ROW LEVEL SECURITY;
+### 2. Erros Identificados nos Logs
 
--- Anon pode ler pelo asaas_payment_id (polling do checkout)
-CREATE POLICY "Anyone can read pending payments"
-  ON public.pending_payments FOR SELECT
-  TO anon, authenticated
-  USING (true);
+O único erro capturado nos logs recentes:
 ```
-
-RLS permite SELECT público (necessário para polling sem autenticação no checkout). INSERT/UPDATE são feitos via service role nas edge functions.
-
----
-
-### 2. Atualizar `create-pix-payment`
-
-Duas mudanças:
-
-- **externalReference estruturado**: enviar `"product_id|affiliate_ref"` (ou `"product_id|"` se sem afiliado)
-- **Inserir em `pending_payments`** após criar o pagamento no Asaas, salvando `asaas_payment_id`, `product_id`, dados do comprador e `affiliate_ref`
-
-O checkout passa a receber também o `payment_id` do Asaas para usar no polling.
-
----
-
-### 3. Criar Edge Function `asaas-webhook`
-
-Endpoint público que recebe POST do Asaas. Fluxo:
-
-```text
-POST /asaas-webhook
-  │
-  ├─ Validar access_token header (ASAAS_WEBHOOK_TOKEN secret)
-  │   └─ 401 se inválido
-  │
-  ├─ Verificar evento (PAYMENT_CONFIRMED ou PAYMENT_RECEIVED)
-  │   └─ 200 "ignored" se outro evento
-  │
-  ├─ Extrair payment.id e payment.externalReference
-  │   └─ Parse "product_id|affiliate_ref"
-  │
-  ├─ Buscar pending_payments por asaas_payment_id
-  │   └─ 200 "not found" se não existe (evita retry)
-  │
-  ├─ Checar idempotência: se status já é "confirmed"
-  │   └─ 200 "already processed"
-  │
-  ├─ Inserir em sales (com payment_provider: "pix")
-  │   └─ Checar duplicata por payment_id antes
-  │
-  ├─ Se affiliate_ref, buscar afiliado e criar comissão
-  │
-  └─ Atualizar pending_payments.status → "confirmed"
-      └─ 200 "ok"
+Asaas customer create response: {"errors":[{"code":"invalid_object","description":"O CPF/CNPJ informado é inválido."}]}
 ```
+Quando o Asaas rejeita o CPF, a função retorna `customerId = null` e responde com status 400 "CPF/CNPJ inválido". A cobrança nunca chega a ser criada.
 
-Toda exceção interna é logada mas retorna 200 para não causar retry infinito do Asaas.
+### 3. Validação do Payload ao Asaas
 
-**Secret necessária**: `ASAAS_WEBHOOK_TOKEN` — token que o Asaas envia no header para validação. Será solicitada ao usuário.
+| Campo | Status | Observação |
+|---|---|---|
+| URL | OK | `https://api.asaas.com/v3/payments` |
+| billingType | OK | `"CREDIT_CARD"` |
+| customer | OK | ID do Asaas |
+| value | OK | Convertido de centavos para reais |
+| dueDate | OK | Data atual ISO |
+| creditCard.holderName | OK | |
+| creditCard.number | OK | Limpo com `replace(/\D/g, "")` |
+| creditCard.expiryMonth | OK | |
+| creditCard.expiryYear | OK | Formato `20XX` |
+| creditCard.ccv | OK | |
+| creditCardHolderInfo.name | OK | |
+| creditCardHolderInfo.email | OK | |
+| creditCardHolderInfo.cpfCnpj | OK | |
+| creditCardHolderInfo.postalCode | **HARDCODED** | `"69000000"` |
+| creditCardHolderInfo.addressNumber | **HARDCODED** | `"123"` |
+| creditCardHolderInfo.phone | OK | Fallback `"11999999999"` |
+
+### 4. API Key
+- **Header**: `access_token` (correto para Asaas)
+- **Secret ASAAS_API_KEY**: Configurada no projeto
+- A função verifica se a chave existe antes de prosseguir
+
+### 5. Dados do Cartão
+- **NÃO são salvos** no banco (correto)
+- Enviados diretamente ao Asaas na requisição
 
 ---
 
-### 4. Atualizar Checkout — Polling de Status
+## Causas Raiz dos Falhos
 
-Após exibir o QR Code PIX:
+### Causa 1: Valor mínimo do Asaas (R$ 5,00)
+O Asaas exige valor mínimo de R$ 5,00 para cartão de crédito. Produtos com preço inferior (ex: R$ 2,99) serão rejeitados. A função não valida isso antes de chamar a API.
 
-- Guardar o `asaas_payment_id` no state
-- `setInterval` a cada 5 segundos consultando `pending_payments` onde `asaas_payment_id = X`
-- Quando `status === 'confirmed'`, exibir tela de sucesso automaticamente
-- Limpar interval ao desmontar ou ao confirmar
+### Causa 2: CPF inválido
+Se o comprador digita um CPF inválido, a criação do cliente falha e a função retorna erro antes de tentar criar o pagamento. A função não valida o CPF localmente.
 
----
-
-### 5. Configuração no Asaas
-
-URL do webhook para cadastrar no painel Asaas:
-```
-https://taqseqektbipquvgfylc.supabase.co/functions/v1/asaas-webhook
-```
+### Causa 3: postalCode e addressNumber hardcoded
+O Asaas pode rejeitar pagamentos em análise antifraude quando CEP e endereço não correspondem ao titular do cartão. Isso pode causar status `PENDING` (análise) em vez de `CONFIRMED`.
 
 ---
 
-### Detalhes Técnicos
+## Plano de Correção
 
-| Componente | Arquivo |
+### Passo 1: Adicionar validação de valor mínimo
+Na edge function e no checkout, validar que o valor é >= R$ 5,00 (500 centavos) antes de tentar cartão. No checkout, desabilitar opção de cartão para valores abaixo de R$ 5,00.
+
+### Passo 2: Adicionar validação de CPF no frontend
+Implementar validação de CPF com algoritmo de dígito verificador no formulário do checkout, antes de enviar para a edge function.
+
+### Passo 3: Coletar CEP do comprador
+Adicionar campo de CEP no formulário de cartão e enviá-lo para a edge function, substituindo o valor hardcoded `"69000000"`. Isso melhora a taxa de aprovação na análise antifraude do Asaas.
+
+### Passo 4: Melhorar logs de diagnóstico
+Adicionar log do HTTP status da resposta do Asaas e log do resultado da busca de cliente, para facilitar debug futuro.
+
+### Passo 5: Tratamento de erros mais granular
+Mapear os códigos de erro do Asaas para mensagens amigáveis ao usuário (ex: "Cartão recusado pelo banco", "Saldo insuficiente", "Cartão bloqueado").
+
+---
+
+### Arquivos Afetados
+
+| Arquivo | Mudança |
 |---|---|
-| Migração | `supabase/migrations/xxx_pending_payments.sql` |
-| PIX creation | `supabase/functions/create-pix-payment/index.ts` |
-| Webhook | `supabase/functions/asaas-webhook/index.ts` (novo) |
-| Checkout polling | `src/pages/Checkout.tsx` |
-
-**Segurança**: Webhook valida token do Asaas. Idempotência por `asaas_payment_id` único. Sem exposição de dados sensíveis.
-
-**Resiliência**: Sempre retorna 200 ao Asaas. Erros são logados internamente.
+| `supabase/functions/create-card-payment/index.ts` | Validação de valor mínimo, logs melhorados, CEP dinâmico |
+| `src/pages/Checkout.tsx` | Validação CPF, campo CEP, desabilitar cartão < R$5, mensagens de erro |
 
