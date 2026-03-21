@@ -62,7 +62,9 @@ function PageLoader() {
   );
 }
 
-const App = () => (
+const App = () => {
+  const UtmCapture = lazy(() => import("@/components/UtmCapture").then(m => ({ default: m.UtmCapture })));
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
@@ -70,6 +72,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
+            <UtmCapture />
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
