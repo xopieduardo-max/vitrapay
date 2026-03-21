@@ -5,6 +5,72 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function grantProductAccess(
+  supabase: any,
+  productId: string,
+  buyerEmail: string | null,
+  saleId: string,
+  buyerId: string | null = null
+) {
+  if (!buyerEmail && !buyerId) return;
+
+  // Check for duplicates
+  let query = supabase
+    .from("product_access")
+    .select("id")
+    .eq("product_id", productId)
+    .eq("sale_id", saleId);
+
+  const { data: existing } = await query.maybeSingle();
+  if (existing) {
+    console.log("Product access already granted for sale:", saleId);
+    return;
+  }
+
+  const accessRow: any = {
+    product_id: productId,
+    sale_id: saleId,
+  };
+
+  if (buyerId) accessRow.user_id = buyerId;
+  if (buyerEmail) accessRow.buyer_email = buyerEmail;
+
+  const { error } = await supabase.from("product_access").insert(accessRow);
+  if (error) {
+    console.error("Failed to grant product access:", error);
+  } else {
+    console.log("Product access granted:", productId, "email:", buyerEmail);
+  }
+}
+
+async function sendPurchaseEmailNotification(
+  supabaseUrl: string,
+  buyerName: string,
+  buyerEmail: string,
+  productTitle: string,
+  productType: string,
+  productId: string,
+  fileUrl: string | null
+) {
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-purchase-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        buyer_name: buyerName,
+        buyer_email: buyerEmail,
+        product_title: productTitle,
+        product_type: productType,
+        product_id: productId,
+        file_url: fileUrl,
+      }),
+    });
+    console.log("Purchase email dispatch status:", res.status);
+  } catch (err) {
+    console.error("Failed to send purchase email:", err);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -16,7 +82,6 @@ Deno.serve(async (req) => {
     const payment = body?.payment;
 
     if (!payment?.id) {
-      console.log("No payment id in webhook payload");
       return new Response(JSON.stringify({ status: "no_payment_id" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -26,6 +91,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 
     const asaasPaymentId = payment.id;
 
@@ -36,15 +102,13 @@ Deno.serve(async (req) => {
       event === "PAYMENT_CHARGEBACK_DISPUTE" ||
       event === "PAYMENT_CHARGEBACK_CREATED"
     ) {
-      console.log("Processing refund/chargeback event:", event, asaasPaymentId);
+      console.log("Processing refund/chargeback:", event, asaasPaymentId);
 
-      // Update pending_payments status
       await supabase
         .from("pending_payments")
         .update({ status: "refunded" })
         .eq("asaas_payment_id", asaasPaymentId);
 
-      // Find and update the sale
       const { data: sale } = await supabase
         .from("sales")
         .select("id, product_id, buyer_id, producer_id, amount")
@@ -52,31 +116,20 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (sale) {
-        // Update sale status to refunded
-        await supabase
-          .from("sales")
-          .update({ status: "refunded" })
-          .eq("id", sale.id);
+        await supabase.from("sales").update({ status: "refunded" }).eq("id", sale.id);
 
         // Revoke product access
-        if (sale.buyer_id) {
-          await supabase
-            .from("product_access")
-            .delete()
-            .eq("product_id", sale.product_id)
-            .eq("user_id", sale.buyer_id)
-            .eq("sale_id", sale.id);
-        }
+        await supabase
+          .from("product_access")
+          .delete()
+          .eq("sale_id", sale.id);
 
-        // Update any commissions to cancelled
         await supabase
           .from("commissions")
           .update({ status: "cancelled" })
           .eq("sale_id", sale.id);
 
-        console.log("Sale refunded:", sale.id, "Event:", event);
-      } else {
-        console.log("No sale found for refund:", asaasPaymentId);
+        console.log("Sale refunded:", sale.id);
       }
 
       return new Response(JSON.stringify({ status: "refund_processed" }), {
@@ -100,13 +153,12 @@ Deno.serve(async (req) => {
       .single();
 
     if (pendingErr || !pending) {
-      console.log("Pending payment not found for:", asaasPaymentId);
+      console.log("Pending payment not found:", asaasPaymentId);
       return new Response(JSON.stringify({ status: "not_found" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Idempotency: already processed
     if (pending.status === "confirmed") {
       console.log("Already processed:", asaasPaymentId);
       return new Response(JSON.stringify({ status: "already_processed" }), {
@@ -114,7 +166,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if sale already exists with this payment_id (prevents duplicates from card flow)
+    // Check if sale already exists
     const { data: existingSale } = await supabase
       .from("sales")
       .select("id")
@@ -122,13 +174,12 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existingSale) {
-      // Sale already created by create-card-payment, just update pending status
-      await supabase
-        .from("pending_payments")
-        .update({ status: "confirmed" })
-        .eq("id", pending.id);
+      await supabase.from("pending_payments").update({ status: "confirmed" }).eq("id", pending.id);
 
-      console.log("Sale already exists (created by card flow), skipping:", asaasPaymentId);
+      // Grant access even if sale was already created by card flow
+      await grantProductAccess(supabase, pending.product_id, pending.buyer_email, existingSale.id);
+
+      console.log("Sale already exists, access granted:", asaasPaymentId);
       return new Response(JSON.stringify({ status: "already_processed" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -143,11 +194,7 @@ Deno.serve(async (req) => {
 
     if (!product) {
       console.error("Product not found:", pending.product_id);
-      await supabase
-        .from("pending_payments")
-        .update({ status: "error" })
-        .eq("id", pending.id);
-
+      await supabase.from("pending_payments").update({ status: "error" }).eq("id", pending.id);
       return new Response(JSON.stringify({ status: "product_not_found" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -155,21 +202,18 @@ Deno.serve(async (req) => {
 
     // Check affiliate
     let affiliateUserId: string | null = null;
-    const affiliateRef = pending.affiliate_ref;
-
-    if (affiliateRef) {
+    if (pending.affiliate_ref) {
       const { data: aff } = await supabase
         .from("affiliates")
         .select("user_id")
-        .eq("id", affiliateRef)
+        .eq("id", pending.affiliate_ref)
         .eq("product_id", pending.product_id)
         .maybeSingle();
-
       if (aff) affiliateUserId = aff.user_id;
     }
 
-    // Calculate PIX platform fee (check for custom overrides)
-    let pixFeePercentage = 0; // PIX default: 0%
+    // Calculate platform fee
+    let pixFeePercentage = 0;
     let pixFeeFixed = 0;
     const { data: producerProfile } = await supabase
       .from("profiles")
@@ -180,7 +224,9 @@ Deno.serve(async (req) => {
       if (producerProfile.custom_fee_percentage != null) pixFeePercentage = producerProfile.custom_fee_percentage / 100;
       if (producerProfile.custom_fee_fixed != null) pixFeeFixed = producerProfile.custom_fee_fixed;
     }
-    const pixPlatformFee = (pixFeePercentage > 0 || pixFeeFixed > 0) ? Math.round(pending.amount * pixFeePercentage + pixFeeFixed) : 0;
+    const pixPlatformFee = (pixFeePercentage > 0 || pixFeeFixed > 0)
+      ? Math.round(pending.amount * pixFeePercentage + pixFeeFixed)
+      : 0;
 
     // Insert sale
     const { data: sale, error: saleErr } = await supabase
@@ -206,7 +252,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create affiliate commission if applicable
+    // Create affiliate commission
     if (affiliateUserId && product.affiliate_commission > 0 && sale) {
       const commissionAmount = Math.round(pending.amount * product.affiliate_commission / 100);
       await supabase.from("commissions").insert({
@@ -214,16 +260,29 @@ Deno.serve(async (req) => {
         affiliate_id: affiliateUserId,
         amount: commissionAmount,
         status: "pending",
-      }).catch((err) => console.error("Commission insert error:", err));
+      }).catch((err: any) => console.error("Commission insert error:", err));
+    }
+
+    // ✅ Grant product access
+    await grantProductAccess(supabase, pending.product_id, pending.buyer_email, sale.id);
+
+    // ✅ Send purchase confirmation email
+    if (pending.buyer_email) {
+      await sendPurchaseEmailNotification(
+        supabaseUrl,
+        pending.buyer_name || "Cliente",
+        pending.buyer_email,
+        product.title,
+        product.type,
+        product.id,
+        product.file_url
+      );
     }
 
     // Update pending payment status
-    await supabase
-      .from("pending_payments")
-      .update({ status: "confirmed" })
-      .eq("id", pending.id);
+    await supabase.from("pending_payments").update({ status: "confirmed" }).eq("id", pending.id);
 
-    console.log("Payment confirmed successfully:", asaasPaymentId, "Sale:", sale?.id);
+    console.log("Payment confirmed:", asaasPaymentId, "Sale:", sale?.id);
 
     return new Response(JSON.stringify({ status: "ok", sale_id: sale?.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -231,7 +290,6 @@ Deno.serve(async (req) => {
 
   } catch (err) {
     console.error("Webhook error:", err);
-    // Always return 200 to avoid Asaas retries
     return new Response(JSON.stringify({ status: "error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
