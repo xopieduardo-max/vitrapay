@@ -286,10 +286,10 @@ export default function Dashboard() {
             <Button
               size="sm"
               variant="secondary"
-              className="w-full h-8 text-xs gap-1"
+              className="w-full h-8 text-xs gap-1.5"
               onClick={() => navigate("/sales")}
             >
-              Receitas
+              <TrendingUp className="h-3.5 w-3.5" /> Receitas
             </Button>
           </motion.div>
         </div>
