@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { StatCard } from "@/components/StatCard";
 import { ExportButton } from "@/components/ExportButton";
-import { DollarSign, ShoppingCart, Percent, TrendingUp, Loader2, Calendar, CreditCard, User, Mail, FileText } from "lucide-react";
+import { DollarSign, ShoppingCart, Percent, TrendingUp, Loader2, Calendar, CreditCard, User, Mail, FileText, Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DATE_FILTERS = [
   { label: "Hoje", value: "today" },
@@ -58,6 +65,7 @@ function getFilterEndDate(filter: string): Date | null {
 export default function Sales() {
   const { user } = useAuth();
   const [dateFilter, setDateFilter] = useState("all");
+  const [productFilter, setProductFilter] = useState("all");
   const [selectedSale, setSelectedSale] = useState<any>(null);
 
   const { data: sales = [], isLoading } = useQuery({
@@ -90,9 +98,22 @@ export default function Sales() {
     },
     enabled: sales.length > 0,
   });
+  // Extract unique products for filter
+  const uniqueProducts = useMemo(() => {
+    const map = new Map<string, string>();
+    sales.forEach((s: any) => {
+      if (s.product_id && s.products?.title) {
+        map.set(s.product_id, s.products.title);
+      }
+    });
+    return Array.from(map, ([id, title]) => ({ id, title }));
+  }, [sales]);
 
-  // Apply date filter
+  // Apply date + product filter
   const filteredSales = sales.filter((s: any) => {
+    // Product filter
+    if (productFilter !== "all" && s.product_id !== productFilter) return false;
+    // Date filter
     const startDate = getFilterDate(dateFilter);
     const endDate = getFilterEndDate(dateFilter);
     if (!startDate) return true;
@@ -181,22 +202,36 @@ export default function Sales() {
         <ExportButton data={exportData} columns={exportColumns} filename="vendas-vitrapay" />
       </div>
 
-      {/* Date Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-        {DATE_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setDateFilter(f.value)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              dateFilter === f.value
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          {DATE_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setDateFilter(f.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                dateFilter === f.value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <Select value={productFilter} onValueChange={setProductFilter}>
+          <SelectTrigger className="w-[180px] h-8 bg-card border-border text-xs">
+            <Package className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Todos os produtos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os produtos</SelectItem>
+            {uniqueProducts.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
