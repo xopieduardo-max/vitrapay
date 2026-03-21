@@ -378,14 +378,19 @@ export default function AdminDashboard() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {cards.map((card, i) => (
           <motion.div
             key={card.label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="rounded-xl border border-border bg-card p-4 space-y-1"
+            onClick={(card as any).onClick}
+            className={`rounded-xl border border-border bg-card p-4 space-y-1 ${
+              (card as any).clickable
+                ? "cursor-pointer hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all ring-1 ring-primary/20"
+                : ""
+            }`}
           >
             <div className="flex items-center gap-2">
               <card.icon
@@ -397,6 +402,11 @@ export default function AdminDashboard() {
               </span>
             </div>
             <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
+            {(card as any).clickable && (
+              <p className="text-[0.6rem] text-primary/70 mt-1">
+                Clique para sacar →
+              </p>
+            )}
           </motion.div>
         ))}
       </div>
