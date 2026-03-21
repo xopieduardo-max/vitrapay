@@ -409,6 +409,10 @@ export default function Checkout() {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
 
+      // Get UTM data from localStorage
+      let utmData: Record<string, string> = {};
+      try { utmData = JSON.parse(localStorage.getItem("utm_data") || "{}"); } catch {}
+
       if (paymentMethod === "pix") {
         const { data, error } = await supabase.functions.invoke("create-pix-payment", {
           body: {
@@ -419,6 +423,7 @@ export default function Checkout() {
             amount: total,
             description: `Compra na VitraPay`,
             affiliate_ref: affiliateRef,
+            ...utmData,
           },
         });
         if (error) throw error;
@@ -457,6 +462,7 @@ export default function Checkout() {
             installments: form.installments,
             amount: total,
             affiliate_ref: affiliateRef,
+            ...utmData,
           },
         });
         if (error) throw error;

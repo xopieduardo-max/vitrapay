@@ -620,6 +620,11 @@ export type Database = {
           id: string
           product_id: string
           status: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
           affiliate_ref?: string | null
@@ -632,6 +637,11 @@ export type Database = {
           id?: string
           product_id: string
           status?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
           affiliate_ref?: string | null
@@ -644,6 +654,11 @@ export type Database = {
           id?: string
           product_id?: string
           status?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }

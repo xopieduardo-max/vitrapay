@@ -42,7 +42,8 @@ Deno.serve(async (req) => {
     const {
       product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, buyer_postal_code,
       card_number, card_holder_name, card_expiry_month, card_expiry_year, card_cvv,
-      installments, amount, affiliate_ref
+      installments, amount, affiliate_ref,
+      utm_source, utm_medium, utm_campaign, utm_content, utm_term
     } = await req.json();
 
     if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
@@ -207,6 +208,11 @@ Deno.serve(async (req) => {
       product_id, buyer_name, buyer_email, buyer_cpf: cpfClean,
       amount, affiliate_ref: affiliate_ref || null,
       status: paymentData.status === "CONFIRMED" || paymentData.status === "RECEIVED" ? "confirmed" : "pending",
+      utm_source: utm_source || null,
+      utm_medium: utm_medium || null,
+      utm_campaign: utm_campaign || null,
+      utm_content: utm_content || null,
+      utm_term: utm_term || null,
     });
 
     // If payment confirmed immediately, process sale + access + email
@@ -333,6 +339,29 @@ Deno.serve(async (req) => {
         } catch (emailErr) {
           console.error("Email notification error:", emailErr);
         }
+      }
+
+      // ✅ Send UTMify postback
+      try {
+        await fetch("https://app.utmify.com.br/api/postback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: "sale",
+            transaction_id: paymentData.id,
+            amount: amount / 100,
+            email: buyer_email || "",
+            utm_source: utm_source || "",
+            utm_medium: utm_medium || "",
+            utm_campaign: utm_campaign || "",
+            utm_content: utm_content || "",
+            utm_term: utm_term || "",
+            affiliate: affiliate_ref || "",
+          }),
+        });
+        console.log("UTMify postback sent for card payment");
+      } catch (utmErr) {
+        console.error("UTMify postback error:", utmErr);
       }
 
       return new Response(JSON.stringify({
