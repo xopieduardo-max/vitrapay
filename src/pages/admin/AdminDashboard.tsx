@@ -79,6 +79,7 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const [chartPeriod, setChartPeriod] = useState<Period>("30d");
   const [txFilter, setTxFilter] = useState("all");
+  const [profitDialogOpen, setProfitDialogOpen] = useState(false);
 
   // ── Data fetching ──
   const { data: transactions = [] } = useQuery({
