@@ -121,6 +121,7 @@ Deno.serve(async (req) => {
         }),
       });
       const fallbackData = await fallbackRes.json();
+      console.log("Asaas customer fallback response:", JSON.stringify(fallbackData));
       customerId = fallbackData?.id;
     }
 
