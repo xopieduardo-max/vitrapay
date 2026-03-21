@@ -65,6 +65,7 @@ function getFilterEndDate(filter: string): Date | null {
 export default function Sales() {
   const { user } = useAuth();
   const [dateFilter, setDateFilter] = useState("all");
+  const [productFilter, setProductFilter] = useState("all");
   const [selectedSale, setSelectedSale] = useState<any>(null);
 
   const { data: sales = [], isLoading } = useQuery({
