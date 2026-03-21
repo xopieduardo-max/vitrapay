@@ -891,6 +891,16 @@ export default function Checkout() {
                     </div>
                   </div>
                   <div>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CEP</Label>
+                    <Input
+                      placeholder="00000-000"
+                      value={form.cep}
+                      onChange={(e) => updateForm("cep", formatCEP(e.target.value))}
+                      className="mt-1 border-0 h-11"
+                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                    />
+                  </div>
+                  <div>
                     <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Parcelas</Label>
                     <select
                       value={form.installments}
@@ -903,6 +913,11 @@ export default function Checkout() {
                       ))}
                     </select>
                   </div>
+                  {isCardDisabled && (
+                    <div className="rounded-lg p-3 flex items-center gap-2 text-xs font-medium" style={{ background: "hsl(48,96%,53%,0.15)", color: "hsl(48,96%,53%)", border: "1px solid hsl(48,96%,53%,0.3)" }}>
+                      <Clock className="h-3.5 w-3.5" /> Valor mínimo para cartão é R$ 5,00. Use PIX.
+                    </div>
+                  )}
                   <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--ck-dim)" }}>
                     <Lock className="h-3 w-3" />
                     Seus dados de pagamento são criptografados e processados de forma segura.
