@@ -47,6 +47,7 @@ const AdminPopups = lazy(() => import("./pages/admin/AdminPopups"));
 const AdminFakeSales = lazy(() => import("./pages/admin/AdminFakeSales"));
 const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
 const AdminPushNotifications = lazy(() => import("./pages/admin/AdminPushNotifications"));
+const AdminUserDetail = lazy(() => import("./pages/admin/AdminUserDetail"));
 
 const queryClient = new QueryClient();
 
