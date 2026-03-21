@@ -213,10 +213,16 @@ export default function Checkout() {
         .eq("is_active", true);
       if (pxs) setProductPixels(pxs);
 
+      // Track affiliate click
+      const ref = searchParams.get("ref");
+      if (ref) {
+        supabase.rpc("increment_affiliate_clicks" as any, { affiliate_id: ref }).catch(() => {});
+      }
+
       setLoading(false);
     };
     loadCheckout();
-  }, [id]);
+  }, [id, searchParams]);
 
   // Inject pixel scripts
   useCheckoutPixels(productPixels);
