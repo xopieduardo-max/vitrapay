@@ -147,7 +147,7 @@ export default function Finance() {
   const availableBalance = totalAvailable - totalWithdrawn - pendingWithdrawals - totalFeesPaid;
   const totalEarnings = totalAvailable + totalHeld;
 
-  // ── Withdrawal mutation ──
+  // ── Withdrawal mutation (uses edge function) ──
   const requestWithdrawal = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
@@ -157,16 +157,22 @@ export default function Finance() {
       if (amountCents + WITHDRAWAL_FEE > availableBalance) throw new Error("Saldo insuficiente (valor + taxa de R$ 5,00)");
       if (!pixKey.trim()) throw new Error("Informe a chave Pix");
 
-      const { error } = await supabase.from("withdrawals").insert({
-        user_id: user.id,
-        amount: amountCents,
-        pix_key: pixKey.trim(),
-        pix_key_type: pixKeyType,
+      const { data, error } = await supabase.functions.invoke("request-withdraw", {
+        body: {
+          amount: amountCents,
+          pix_key: pixKey.trim(),
+          pix_key_type: pixKeyType,
+        },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
     },
-    onSuccess: () => {
-      toast({ title: "Saque solicitado!", description: `Taxa de R$ ${(WITHDRAWAL_FEE / 100).toFixed(2)} será descontada. Processaremos em até 24h.` });
+    onSuccess: (data) => {
+      const description = data?.auto_processed
+        ? `PIX enviado automaticamente! Transfer: ${data.transfer_id?.substring(0, 12)}…`
+        : data?.message || `Saque criado. Aguardando aprovação do administrador.`;
+      toast({ title: "Saque solicitado!", description });
       setWithdrawOpen(false);
       setAmount("");
       setPixKey("");
