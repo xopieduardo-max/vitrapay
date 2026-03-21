@@ -680,8 +680,8 @@ export default function Checkout() {
                       onClick={() => toggleBump(bump.id)}
                       className="rounded-xl p-4 cursor-pointer transition-all"
                       style={{
-                        background: isSelected ? "hsl(48, 96%, 53%, 0.1)" : "hsl(240, 10%, 8%)",
-                        border: isSelected ? "2px solid hsl(48, 96%, 53%)" : "2px solid hsl(240, 5%, 15%)",
+                        background: isSelected ? "hsl(48, 96%, 53%, 0.1)" : "var(--ck-card)",
+                        border: isSelected ? "2px solid hsl(48, 96%, 53%)" : "2px solid var(--ck-card-border)",
                       }}
                     >
                       {bump.title && (
