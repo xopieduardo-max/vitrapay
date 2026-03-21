@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     
     if (buyer_name && buyer_email) {
       const searchRes = await fetch(
-        `https://sandbox.asaas.com/api/v3/customers?cpfCnpj=${cpfClean}`,
+        `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       console.log("Asaas customer search response:", JSON.stringify(searchData));
       if (searchData?.data?.length > 0) {
         customerId = searchData.data[0].id;
-        await fetch(`https://sandbox.asaas.com/api/v3/customers/${customerId}`, {
+        await fetch(`https://api.asaas.com/v3/customers/${customerId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
           }),
         });
       } else {
-        const customerRes = await fetch("https://sandbox.asaas.com/api/v3/customers", {
+        const customerRes = await fetch("https://api.asaas.com/v3/customers", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      const fallbackRes = await fetch("https://sandbox.asaas.com/api/v3/customers", {
+      const fallbackRes = await fetch("https://api.asaas.com/v3/customers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
 
     // Create PIX payment
     const valueInReais = amount / 100;
-    const paymentRes = await fetch("https://sandbox.asaas.com/api/v3/payments", {
+    const paymentRes = await fetch("https://api.asaas.com/v3/payments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
     }
 
     // Get PIX QR Code
-    const pixRes = await fetch(`https://sandbox.asaas.com/api/v3/payments/${paymentData.id}/pixQrCode`, {
+    const pixRes = await fetch(`https://api.asaas.com/v3/payments/${paymentData.id}/pixQrCode`, {
       headers: {
         "Content-Type": "application/json",
         "access_token": ASAAS_API_KEY,
