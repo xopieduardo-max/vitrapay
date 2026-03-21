@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +43,7 @@ export default function Finance() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [detailView, setDetailView] = useState<"available" | "held" | null>(null);
   const [amount, setAmount] = useState("");
   const [pixKey, setPixKey] = useState("");
   const [pixKeyType, setPixKeyType] = useState<string>("cpf");
@@ -297,17 +298,22 @@ export default function Finance() {
       {/* Stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque" },
-          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Liberado em ${HOLDBACK_DAYS} dias` },
-          { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões" },
-          { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido" },
+          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque", clickAction: "available" as const },
+          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Liberado em ${HOLDBACK_DAYS} dias`, clickAction: "held" as const },
+          { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões", clickAction: null },
+          { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido", clickAction: null },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="rounded-xl border border-border bg-card p-4 space-y-1"
+            className={`rounded-xl border bg-card p-4 space-y-1 transition-colors ${
+              stat.clickAction
+                ? "cursor-pointer hover:border-primary/40 border-border"
+                : "border-border"
+            } ${detailView === stat.clickAction ? "border-primary/50 ring-1 ring-primary/20" : ""}`}
+            onClick={() => stat.clickAction && setDetailView(detailView === stat.clickAction ? null : stat.clickAction)}
           >
             <div className="flex items-center gap-2">
               <stat.icon className={`h-4 w-4 ${stat.color}`} strokeWidth={1.5} />
@@ -320,6 +326,49 @@ export default function Finance() {
           </motion.div>
         ))}
       </div>
+
+      {/* Available balance detail */}
+      {detailView === "available" && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-primary/20 bg-card p-4 space-y-3"
+        >
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-primary" /> Saldo Disponível — Detalhamento
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+              <span className="text-muted-foreground">Vendas liberadas (após {HOLDBACK_DAYS} dias)</span>
+              <span className="font-medium text-primary">+ R$ {(totalAvailableSales / 100).toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+              <span className="text-muted-foreground">Comissões liberadas</span>
+              <span className="font-medium text-primary">+ R$ {(totalAvailableCommissions / 100).toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+              <span className="text-muted-foreground">Saques concluídos</span>
+              <span className="font-medium text-destructive">- R$ {(totalWithdrawn / 100).toFixed(2)}</span>
+            </div>
+            {pendingWithdrawals > 0 && (
+              <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+                <span className="text-muted-foreground">Saques pendentes</span>
+                <span className="font-medium text-warning">- R$ {(pendingWithdrawals / 100).toFixed(2)}</span>
+              </div>
+            )}
+            {totalFeesPaid > 0 && (
+              <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+                <span className="text-muted-foreground">Taxas de saque</span>
+                <span className="font-medium text-destructive">- R$ {(totalFeesPaid / 100).toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-sm pt-1 font-bold">
+              <span>Saldo disponível</span>
+              <span className="text-primary">R$ {(Math.max(0, availableBalance) / 100).toFixed(2)}</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Pending withdrawals alert */}
       {pendingWithdrawals > 0 && (
