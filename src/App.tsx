@@ -35,7 +35,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Community = lazy(() => import("./pages/Community"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Install = lazy(() => import("./pages/Install"));
-const SuccessPreview = lazy(() => import("./pages/SuccessPreview"));
+
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -74,7 +74,7 @@ const App = () => (
               <Route path="/terms" element={<TermsOfUse />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/install" element={<Install />} />
-              <Route path="/success-preview" element={<SuccessPreview />} />
+              
 
               {/* Protected producer panel */}
               <Route element={<AuthGuard />}>
