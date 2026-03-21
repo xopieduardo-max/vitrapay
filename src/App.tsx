@@ -36,6 +36,7 @@ const Community = lazy(() => import("./pages/Community"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Install = lazy(() => import("./pages/Install"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const MinhaConta = lazy(() => import("./pages/MinhaConta"));
 
 
 // Admin pages
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/install" element={<Install />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/minha-conta" element={<MinhaConta />} />
 
               {/* Protected producer panel */}
               <Route element={<AuthGuard />}>
