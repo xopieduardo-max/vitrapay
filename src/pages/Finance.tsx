@@ -245,7 +245,7 @@ export default function Finance() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Clock className="h-3.5 w-3.5 shrink-0" />
-                  <span>Carência: <strong className="text-foreground">{HOLDBACK_DAYS} dias</strong> após venda confirmada</span>
+                  <span>Carência: <strong className="text-foreground">PIX: imediato • Cartão: {HOLDBACK_DAYS_CARD} dias</strong></span>
                 </div>
               </div>
 
