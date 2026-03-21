@@ -208,6 +208,11 @@ Deno.serve(async (req) => {
       product_id, buyer_name, buyer_email, buyer_cpf: cpfClean,
       amount, affiliate_ref: affiliate_ref || null,
       status: paymentData.status === "CONFIRMED" || paymentData.status === "RECEIVED" ? "confirmed" : "pending",
+      utm_source: utm_source || null,
+      utm_medium: utm_medium || null,
+      utm_campaign: utm_campaign || null,
+      utm_content: utm_content || null,
+      utm_term: utm_term || null,
     });
 
     // If payment confirmed immediately, process sale + access + email

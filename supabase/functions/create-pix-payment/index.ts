@@ -171,6 +171,11 @@ Deno.serve(async (req) => {
       amount,
       affiliate_ref: affiliate_ref || null,
       status: "pending",
+      utm_source: utm_source || null,
+      utm_medium: utm_medium || null,
+      utm_campaign: utm_campaign || null,
+      utm_content: utm_content || null,
+      utm_term: utm_term || null,
     });
 
     if (pendingErr) {

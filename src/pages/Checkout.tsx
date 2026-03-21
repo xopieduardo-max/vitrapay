@@ -462,6 +462,7 @@ export default function Checkout() {
             installments: form.installments,
             amount: total,
             affiliate_ref: affiliateRef,
+            ...utmData,
           },
         });
         if (error) throw error;
