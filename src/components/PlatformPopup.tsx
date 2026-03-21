@@ -8,21 +8,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
-const DISMISSED_KEY = "vitrapay_dismissed_popups";
+const STORAGE_PREFIX = "vitrapay_seen_popups";
 
-function getDismissed(): string[] {
+function getStorageKey(userId?: string) {
+  return `${STORAGE_PREFIX}:${userId ?? "guest"}`;
+}
+
+function getSeenPopups(storageKey: string): string[] {
   try {
-    return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(storageKey) || "[]");
   } catch {
     return [];
   }
 }
 
+function markPopupAsSeen(storageKey: string, popupId: string) {
+  const seen = getSeenPopups(storageKey);
+  if (!seen.includes(popupId)) {
+    localStorage.setItem(storageKey, JSON.stringify([...seen, popupId]));
+  }
+}
+
 export function PlatformPopup() {
+  const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [currentPopup, setCurrentPopup] = useState<any>(null);
+  const storageKey = getStorageKey(user?.id);
 
   const { data: popups = [] } = useQuery({
     queryKey: ["platform-popups"],
@@ -37,23 +50,33 @@ export function PlatformPopup() {
   });
 
   useEffect(() => {
-    if (!popups.length) return;
-    const dismissed = getDismissed();
-    // Always show each popup only once per user — filter out already-seen popups
-    const toShow = popups.find((p: any) => !dismissed.includes(p.id));
-    if (toShow) {
-      setCurrentPopup(toShow);
-      setOpen(true);
+    if (loading) return;
+    if (!popups.length) {
+      setCurrentPopup(null);
+      setOpen(false);
+      return;
     }
-  }, [popups]);
+
+    const seen = getSeenPopups(storageKey);
+    const toShow = popups.find((popup: any) => !popup.show_once || !seen.includes(popup.id));
+
+    if (!toShow) {
+      setCurrentPopup(null);
+      setOpen(false);
+      return;
+    }
+
+    if (toShow.show_once) {
+      markPopupAsSeen(storageKey, toShow.id);
+    }
+
+    setCurrentPopup((prev: any) => (prev?.id === toShow.id ? prev : toShow));
+    setOpen(true);
+  }, [loading, popups, storageKey]);
 
   const handleClose = () => {
-    if (currentPopup) {
-      const dismissed = getDismissed();
-      if (!dismissed.includes(currentPopup.id)) {
-        dismissed.push(currentPopup.id);
-        localStorage.setItem(DISMISSED_KEY, JSON.stringify(dismissed));
-      }
+    if (currentPopup?.show_once) {
+      markPopupAsSeen(storageKey, currentPopup.id);
     }
     setOpen(false);
   };
@@ -61,7 +84,7 @@ export function PlatformPopup() {
   if (!currentPopup) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
+    <Dialog open={open} onOpenChange={(value) => !value && handleClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{currentPopup.title}</DialogTitle>
