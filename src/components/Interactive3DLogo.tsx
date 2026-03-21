@@ -59,7 +59,7 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
 
         {/* Main logo */}
         <motion.img
-          src={logoSrc}
+          src={logoIcon}
           alt="VitraPay Logo 3D"
           className="relative w-full h-full object-contain drop-shadow-[0_0_25px_hsla(48,96%,53%,0.3)]"
           style={{ transform: "translateZ(30px)" }}
