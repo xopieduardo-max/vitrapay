@@ -35,14 +35,14 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
     case "headline":
       return (
         <div style={{ textAlign: c.align || "center" }}>
-          <h2 className={`text-${c.size || "2xl"} ${c.bold ? "font-bold" : ""}`} style={{ color: "hsl(0,0%,95%)" }}>
+          <h2 className={`text-${c.size || "2xl"} ${c.bold ? "font-bold" : ""}`} style={{ color: "var(--ck-fg)" }}>
             {c.text || ""}
           </h2>
         </div>
       );
     case "text":
       return (
-        <p className={`text-${c.size || "base"}`} style={{ textAlign: c.align || "left", color: "hsl(240,5%,70%)" }}>
+        <p className={`text-${c.size || "base"}`} style={{ textAlign: c.align || "left", color: "var(--ck-muted)" }}>
           {c.content || ""}
         </p>
       );
@@ -54,9 +54,9 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       ) : null;
     case "benefits":
       return (
-        <div className="rounded-xl p-5 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+        <div className="rounded-xl p-5 space-y-2" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
           {(c.items || []).map((item: string, i: number) => (
-            <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "hsl(0,0%,90%)" }}>
+            <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "var(--ck-input-fg)" }}>
               <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(48, 96%, 45%)" }} />
               {item}
             </div>
@@ -87,13 +87,13 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
       );
     case "testimonial":
       return (
-        <div className="rounded-xl p-4 space-y-2" style={{ background: "hsl(240, 10%, 8%)", border: "1px solid hsl(240, 5%, 15%)" }}>
+        <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(48, 96%, 53%, 0.2)", color: "hsl(48, 96%, 45%)" }}>
               {(c.author || "A").charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "hsl(0,0%,90%)" }}>{c.author || "Autor"}</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--ck-input-fg)" }}>{c.author || "Autor"}</p>
               <div className="flex gap-0.5">
                 {Array.from({ length: c.rating || 5 }).map((_, i) => (
                   <Star key={i} className="h-3 w-3 fill-[hsl(38,92%,50%)]" style={{ color: "hsl(38, 92%, 50%)" }} />
@@ -101,7 +101,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
               </div>
             </div>
           </div>
-          <p className="text-xs leading-relaxed" style={{ color: "hsl(240,5%,60%)" }}>{c.content || ""}</p>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--ck-muted)" }}>{c.content || ""}</p>
         </div>
       );
     case "video": {
