@@ -11,7 +11,7 @@ import {
 
 const navItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Gerar Vendas", url: "/admin/fake-sales", icon: ShoppingBag },
+  { title: "GV +", url: "/admin/fake-sales", icon: ShoppingBag },
   { title: "Usuários", url: "/admin/users", icon: Users },
   { title: "Saques", url: "/admin/withdrawals", icon: ArrowDownToLine },
   { title: "Comunidade", url: "/admin/community", icon: Lightbulb },
