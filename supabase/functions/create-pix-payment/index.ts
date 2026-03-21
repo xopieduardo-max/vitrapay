@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         }
       );
       const searchData = await searchRes.json();
-
+      console.log("Asaas customer search response:", JSON.stringify(searchData));
       if (searchData?.data?.length > 0) {
         customerId = searchData.data[0].id;
         await fetch(`https://sandbox.asaas.com/api/v3/customers/${customerId}`, {
