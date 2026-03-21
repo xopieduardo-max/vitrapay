@@ -15,14 +15,6 @@ Deno.serve(async (req) => {
     const event = body?.event;
     const payment = body?.payment;
 
-    // Only process confirmed payments
-    if (event !== "PAYMENT_CONFIRMED" && event !== "PAYMENT_RECEIVED") {
-      console.log("Ignoring event:", event);
-      return new Response(JSON.stringify({ status: "ignored", event }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     if (!payment?.id) {
       console.log("No payment id in webhook payload");
       return new Response(JSON.stringify({ status: "no_payment_id" }), {
@@ -36,6 +28,69 @@ Deno.serve(async (req) => {
     );
 
     const asaasPaymentId = payment.id;
+
+    // ── Handle REFUND / CHARGEBACK events ──
+    if (
+      event === "PAYMENT_REFUNDED" ||
+      event === "PAYMENT_CHARGEBACK_REQUESTED" ||
+      event === "PAYMENT_CHARGEBACK_DISPUTE" ||
+      event === "PAYMENT_CHARGEBACK_CREATED"
+    ) {
+      console.log("Processing refund/chargeback event:", event, asaasPaymentId);
+
+      // Update pending_payments status
+      await supabase
+        .from("pending_payments")
+        .update({ status: "refunded" })
+        .eq("asaas_payment_id", asaasPaymentId);
+
+      // Find and update the sale
+      const { data: sale } = await supabase
+        .from("sales")
+        .select("id, product_id, buyer_id, producer_id, amount")
+        .eq("payment_id", asaasPaymentId)
+        .maybeSingle();
+
+      if (sale) {
+        // Update sale status to refunded
+        await supabase
+          .from("sales")
+          .update({ status: "refunded" })
+          .eq("id", sale.id);
+
+        // Revoke product access
+        if (sale.buyer_id) {
+          await supabase
+            .from("product_access")
+            .delete()
+            .eq("product_id", sale.product_id)
+            .eq("user_id", sale.buyer_id)
+            .eq("sale_id", sale.id);
+        }
+
+        // Update any commissions to cancelled
+        await supabase
+          .from("commissions")
+          .update({ status: "cancelled" })
+          .eq("sale_id", sale.id);
+
+        console.log("Sale refunded:", sale.id, "Event:", event);
+      } else {
+        console.log("No sale found for refund:", asaasPaymentId);
+      }
+
+      return new Response(JSON.stringify({ status: "refund_processed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Handle CONFIRMED / RECEIVED events ──
+    if (event !== "PAYMENT_CONFIRMED" && event !== "PAYMENT_RECEIVED") {
+      console.log("Ignoring event:", event);
+      return new Response(JSON.stringify({ status: "ignored", event }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Find pending payment
     const { data: pending, error: pendingErr } = await supabase
@@ -59,7 +114,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if sale already exists with this payment_id (double safety)
+    // Check if sale already exists with this payment_id (prevents duplicates from card flow)
     const { data: existingSale } = await supabase
       .from("sales")
       .select("id")
@@ -67,12 +122,13 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existingSale) {
-      // Sale exists, just update pending status
+      // Sale already created by create-card-payment, just update pending status
       await supabase
         .from("pending_payments")
         .update({ status: "confirmed" })
         .eq("id", pending.id);
 
+      console.log("Sale already exists (created by card flow), skipping:", asaasPaymentId);
       return new Response(JSON.stringify({ status: "already_processed" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
