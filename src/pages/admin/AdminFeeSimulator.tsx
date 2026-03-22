@@ -36,7 +36,10 @@ export default function AdminFeeSimulator() {
 
   // VitraPay only charges on card; Pix & boleto are free for the producer
   const isCard = method === "card";
-  const vitraPayFee = isCard ? Math.round(amount * (VITRAPAY.pct / 100)) + VITRAPAY.fixed : 0;
+  const parsedPct = parseFloat(vpPct) || 0;
+  const parsedFixed = Math.round((parseFloat(vpFixed) || 0) * 100);
+  const vitraPayFee = isCard ? Math.round(amount * (parsedPct / 100)) + parsedFixed : 0;
+  const vpDesc = `${parsedPct}% + ${fmt(parsedFixed)}`;
 
   const producerReceives = amount - vitraPayFee;
   const vitraPayProfit = vitraPayFee - asaasCost;
