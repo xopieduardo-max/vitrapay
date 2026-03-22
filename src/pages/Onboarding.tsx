@@ -162,8 +162,11 @@ export default function Onboarding() {
         await supabase.from("user_roles").insert({ user_id: user.id, role: "producer" });
       }
 
+      // Invalidate AuthGuard cache so it knows onboarding is done
+      await queryClient.invalidateQueries({ queryKey: ["onboarding-check", user.id] });
+
       toast({ title: "Bem-vindo à VitraPay! 🚀" });
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally {
