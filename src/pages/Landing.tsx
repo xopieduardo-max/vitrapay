@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Zap, ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
   BarChart3, Rocket, Clock, Headphones, Award, Star,
