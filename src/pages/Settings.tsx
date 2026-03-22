@@ -306,7 +306,19 @@ export default function Settings() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">CPF <span className="text-destructive">*</span></Label>
-              <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="bg-muted/50 border-transparent focus:border-border" />
+              <Input
+                value={cpf}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                  const formatted = val
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                  setCpf(formatted);
+                }}
+                placeholder="000.000.000-00"
+                className="bg-muted/50 border-transparent focus:border-border"
+              />
             </div>
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Data de nascimento</Label>
@@ -318,7 +330,21 @@ export default function Settings() {
             <Label className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
               <Phone className="h-3 w-3" /> Telefone <span className="text-destructive">*</span>
             </Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+55 11 99999-9999" className="bg-muted/50 border-transparent focus:border-border" />
+            <Input
+              value={phone}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                let formatted = val;
+                if (val.length > 7) {
+                  formatted = `(${val.slice(0, 2)}) ${val.slice(2, 7)}-${val.slice(7)}`;
+                } else if (val.length > 2) {
+                  formatted = `(${val.slice(0, 2)}) ${val.slice(2)}`;
+                }
+                setPhone(formatted);
+              }}
+              placeholder="(11) 99999-9999"
+              className="bg-muted/50 border-transparent focus:border-border"
+            />
           </div>
 
           {/* Address */}
