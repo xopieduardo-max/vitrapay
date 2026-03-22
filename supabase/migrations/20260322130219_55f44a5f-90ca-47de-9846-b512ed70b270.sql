@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS pix_key TEXT, ADD COLUMN IF NOT EXISTS pix_key_type TEXT DEFAULT 'cpf';
