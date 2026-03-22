@@ -220,6 +220,11 @@ const marqueeStats = [
   { icon: Users, text: "+30 mil usuários" },
   { icon: Rocket, text: "Saque instantâneo via Pix" },
   { icon: Shield, text: "Pagamentos 100% seguros" },
+  { icon: CreditCard, text: "Pix, Cartão e Boleto" },
+  { icon: BarChart3, text: "Métricas em tempo real" },
+  { icon: Award, text: "Premiações por faturamento" },
+  { icon: Headphones, text: "Suporte humano 24/7" },
+  { icon: Smartphone, text: "App otimizado para mobile" },
 ];
 
 /* ─── Counter Animation ─── */
