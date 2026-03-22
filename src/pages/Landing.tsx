@@ -194,11 +194,6 @@ const features = [
   { icon: BarChart3, title: "Funil de Vendas", desc: "Upsell, downsell e order bumps integrados ao seu checkout." },
 ];
 
-const paymentMethods = [
-  { name: "Pix", time: "Instantâneo", icon: "⚡" },
-  { name: "Cartão de Crédito", time: "Em até 2 dias", icon: "💳" },
-  { name: "Boleto Bancário", time: "1 dia", icon: "📄" },
-];
 
 const bigStats = [
   { value: "50+", label: "colaboradores engajados" },
@@ -531,48 +526,94 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Payment Methods */}
+      {/* Payment & Fees — Unified Section */}
       <section id="pricing" className="bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Pagamentos</span>
+            <span className="text-xs font-medium uppercase tracking-widest text-primary">Pagamentos & Taxas</span>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Receba de{" "}
-              <span className="text-gradient-primary">múltiplas formas</span>
+              A solução de pagamento com{" "}
+              <span className="text-gradient-primary">taxas imbatíveis</span>
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto text-lg">
-              Aceite Pix, cartão de crédito e boleto. Receba rápido e com as melhores taxas do mercado.
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Receba no Pix instantaneamente e no cartão em até 2 dias. Tudo com as menores taxas do mercado.
             </p>
           </motion.div>
 
-          <div className="grid gap-5 md:grid-cols-3 max-w-3xl mx-auto">
-            {paymentMethods.map((pm, i) => (
-              <motion.div
-                key={pm.name}
-                {...stagger}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -5, scale: 1.03 }}
-                className="rounded-2xl border border-border/50 bg-background p-6 text-center space-y-3 hover:border-primary/30 transition-all duration-300"
-              >
-                <span className="text-4xl">{pm.icon}</span>
-                <h3 className="font-semibold">{pm.name}</h3>
-                <p className="text-xs text-muted-foreground">
-                  Prazo de recebimento:{" "}
-                  <span className="text-primary font-medium">{pm.time}</span>
-                </p>
-              </motion.div>
-            ))}
-          </div>
+          <motion.div 
+            {...fadeUp} 
+            transition={{ delay: 0.2, duration: 0.6 }} 
+            className="max-w-5xl mx-auto rounded-3xl border border-border/50 bg-background overflow-hidden shadow-xl shadow-black/5"
+          >
+            <div className="grid md:grid-cols-[1fr_auto] items-stretch">
+              {/* Left — Prazos de Recebimento */}
+              <div className="p-8 md:p-10 space-y-6">
+                <h3 className="text-2xl md:text-3xl font-bold tracking-tight">Prazos de Recebimento</h3>
+                
+                <div className="space-y-0">
+                  {[
+                    { label: "PIX:", desc: "Instantâneo (D+0)" },
+                    { label: "Cartão de crédito:", desc: "Receba em 2 dias (D+2)" },
+                    { label: "Opção de Antecipação", desc: "de cartões em 2 dias (D+2)" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 py-5 border-b border-border/30 last:border-b-0">
+                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                      <p className="text-sm md:text-base text-muted-foreground">
+                        <span className="font-semibold text-foreground">{item.label}</span>{" "}
+                        {item.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
 
-          <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.6 }} className="mt-12 max-w-xl mx-auto text-center">
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 shimmer-gold">
-              <p className="text-sm text-muted-foreground mb-2">Taxa para cartões na plataforma</p>
-              <p className="text-4xl md:text-5xl font-bold tracking-tight text-gradient-primary">
-                3,89% + R$2,49
-              </p>
-              <p className="text-sm text-muted-foreground mt-3">
-                Pix com taxa <strong className="text-primary">0%</strong> para seus clientes
-              </p>
+                <Button size="lg" className="mt-4 h-13 px-8 text-base font-semibold gap-2 rounded-full glow-primary-strong shimmer-gold" asChild>
+                  <Link to="/auth">
+                    CRIE SUA CONTA <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Right — VitraPay Metallic Card with Fees */}
+              <div className="relative flex items-center justify-center p-8 md:p-10 md:min-w-[300px]">
+                <motion.div
+                  whileHover={{ rotateY: 5, rotateX: -3, scale: 1.03 }}
+                  transition={{ type: "spring", damping: 20, stiffness: 200 }}
+                  className="relative w-full max-w-[280px] aspect-[3/4] rounded-3xl overflow-hidden"
+                  style={{ perspective: "800px" }}
+                >
+                  {/* Card background — metallic gold gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[hsl(48,96%,60%)] via-[hsl(45,90%,50%)] to-[hsl(40,85%,40%)] shimmer-gold" />
+                  
+                  {/* Metallic sheen overlay */}
+                  <div className="absolute inset-0 opacity-25"
+                    style={{
+                      backgroundImage: `
+                        radial-gradient(ellipse at 30% 20%, hsla(0,0%,100%,0.5), transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, hsla(0,0%,100%,0.2), transparent 50%)
+                      `,
+                    }}
+                  />
+
+                  {/* Card content */}
+                  <div className="relative h-full flex flex-col items-center justify-between p-6 text-center">
+                    <p className="text-lg font-bold text-black/80 tracking-wide">Taxas</p>
+                    
+                    <div className="space-y-1">
+                      <p className="text-6xl md:text-7xl font-extrabold text-black/90 tracking-tighter leading-none">
+                        3,89%
+                      </p>
+                      <p className="text-xl md:text-2xl font-bold text-black/70">
+                        + R$ 2,49
+                      </p>
+                    </div>
+
+                    <div className="space-y-1.5 w-full">
+                      <div className="h-px bg-black/10 w-full" />
+                      <p className="text-xs font-semibold text-black/60 uppercase tracking-wider">VitraPay</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </motion.div>
         </div>
