@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,21 +12,24 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 
 type Step = "credentials" | "otp";
 
-function FloatingCard({ icon: Icon, text, className, delay }: { icon: any; text: string; className?: string; delay: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 0.6, ease: [0.2, 0, 0, 1] }}
-      className={`absolute flex items-center gap-2.5 rounded-xl bg-card/90 backdrop-blur-md border border-border/50 px-4 py-3 shadow-lg ${className}`}
-    >
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15">
-        <Icon className="h-4 w-4 text-primary" strokeWidth={2} />
-      </div>
-      <span className="text-xs font-medium text-foreground whitespace-nowrap">{text}</span>
-    </motion.div>
-  );
-}
+const FloatingCard = React.forwardRef<HTMLDivElement, { icon: any; text: string; className?: string; delay: number }>(
+  function FloatingCard({ icon: Icon, text, className, delay }, ref) {
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ delay, duration: 0.6, ease: [0.2, 0, 0, 1] }}
+        className={`absolute flex items-center gap-2.5 rounded-xl bg-card/90 backdrop-blur-md border border-border/50 px-4 py-3 shadow-lg ${className}`}
+      >
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15">
+          <Icon className="h-4 w-4 text-primary" strokeWidth={2} />
+        </div>
+        <span className="text-xs font-medium text-foreground whitespace-nowrap">{text}</span>
+      </motion.div>
+    );
+  }
+);
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -73,9 +76,12 @@ export default function Auth() {
         });
       }
     } catch (error: any) {
+      const msg = error.message === "Load failed" || error.message === "Failed to fetch"
+        ? "Erro de conexão. Verifique sua internet e tente novamente."
+        : error.message;
       toast({
         title: "Erro",
-        description: error.message,
+        description: msg,
         variant: "destructive",
       });
     } finally {
