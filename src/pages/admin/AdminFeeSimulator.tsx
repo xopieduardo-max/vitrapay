@@ -14,8 +14,8 @@ const METHODS = [
   { id: "boleto", label: "Boleto", icon: Barcode },
 ] as const;
 
-// Asaas gateway costs (what WE pay to Asaas)
-const ASAAS: Record<string, { pct: number; fixed: number; desc: string }> = {
+// Asaas gateway costs — editable local state, defaults below
+const ASAAS_DEFAULTS: Record<string, { pct: number; fixed: number; desc: string }> = {
   pix:    { pct: 0,    fixed: 199, desc: "R$ 1,99 por cobrança" },
   card:   { pct: 2.99, fixed: 49,  desc: "2,99% + R$ 0,49" },
   boleto: { pct: 0,    fixed: 199, desc: "R$ 1,99 por boleto" },
@@ -44,7 +44,7 @@ export default function AdminFeeSimulator() {
     },
   });
 
-  // Local state for editing (initialized from DB)
+  // Local state for VitraPay fees editing
   const [vpPixPct, setVpPixPct] = useState<string | null>(null);
   const [vpPixFixed, setVpPixFixed] = useState<string | null>(null);
   const [vpCardPct, setVpCardPct] = useState<string | null>(null);
@@ -52,18 +52,40 @@ export default function AdminFeeSimulator() {
   const [vpBoletoPct, setVpBoletoPct] = useState<string | null>(null);
   const [vpBoletoFixed, setVpBoletoFixed] = useState<string | null>(null);
 
-  // Effective values (local edits or DB values)
+  // Local state for Asaas gateway costs editing
+  const [asPixPct, setAsPixPct] = useState<string | null>(null);
+  const [asPixFixed, setAsPixFixed] = useState<string | null>(null);
+  const [asCardPct, setAsCardPct] = useState<string | null>(null);
+  const [asCardFixed, setAsCardFixed] = useState<string | null>(null);
+  const [asBoletoPct, setAsBoletoPct] = useState<string | null>(null);
+  const [asBoletoFixed, setAsBoletoFixed] = useState<string | null>(null);
+
+  // Effective VitraPay values
   const ePix = { pct: vpPixPct ?? String(dbFees?.pix_percentage ?? 0), fixed: vpPixFixed ?? String((dbFees?.pix_fixed ?? 0) / 100) };
   const eCard = { pct: vpCardPct ?? String(dbFees?.card_percentage ?? 3.89), fixed: vpCardFixed ?? String((dbFees?.card_fixed ?? 249) / 100) };
   const eBoleto = { pct: vpBoletoPct ?? String(dbFees?.boleto_percentage ?? 0), fixed: vpBoletoFixed ?? String((dbFees?.boleto_fixed ?? 0) / 100) };
+
+  // Effective Asaas values (local edits or defaults)
+  const eAsPix = { pct: asPixPct ?? String(ASAAS_DEFAULTS.pix.pct), fixed: asPixFixed ?? String(ASAAS_DEFAULTS.pix.fixed / 100) };
+  const eAsCard = { pct: asCardPct ?? String(ASAAS_DEFAULTS.card.pct), fixed: asCardFixed ?? String(ASAAS_DEFAULTS.card.fixed / 100) };
+  const eAsBoleto = { pct: asBoletoPct ?? String(ASAAS_DEFAULTS.boleto.pct), fixed: asBoletoFixed ?? String(ASAAS_DEFAULTS.boleto.fixed / 100) };
+
+  const asConfig: Record<string, { pct: string; fixed: string }> = {
+    pix: eAsPix, card: eAsCard, boleto: eAsBoleto,
+  };
 
   const vpConfig: Record<string, { pct: string; fixed: string }> = {
     pix: ePix, card: eCard, boleto: eBoleto,
   };
 
   const amount = Math.round((parseFloat(value) || 0) * 100);
-  const asaas = ASAAS[method];
-  const asaasCost = Math.round(amount * (asaas.pct / 100)) + asaas.fixed;
+
+  // Asaas cost from editable values
+  const currentAs = asConfig[method];
+  const asaasPct = parseFloat(currentAs.pct) || 0;
+  const asaasFixed = Math.round((parseFloat(currentAs.fixed) || 0) * 100);
+  const asaasCost = Math.round(amount * (asaasPct / 100)) + asaasFixed;
+  const asaasDesc = asaasPct > 0 && asaasFixed > 0 ? `${asaasPct}% + ${fmt(asaasFixed)}` : asaasPct > 0 ? `${asaasPct}%` : fmt(asaasFixed);
 
   const currentVp = vpConfig[method];
   const parsedPct = parseFloat(currentVp.pct) || 0;
@@ -187,7 +209,7 @@ export default function AdminFeeSimulator() {
             <div className="space-y-3">
               <SimRow label="Valor bruto da venda" value={fmt(amount)} color="text-foreground" bold />
               <ArrowDown className="h-4 w-4 text-muted-foreground mx-auto" />
-              <SimRow label="Custo Asaas (gateway)" sublabel={asaas.desc} value={`- ${fmt(asaasCost)}`} color="text-red-500" />
+              <SimRow label="Custo Asaas (gateway)" sublabel={asaasDesc} value={`- ${fmt(asaasCost)}`} color="text-red-500" />
               <ArrowDown className="h-4 w-4 text-muted-foreground mx-auto" />
               <SimRow
                 label="Taxa VitraPay (cobrada do produtor)"
@@ -232,23 +254,18 @@ export default function AdminFeeSimulator() {
         </div>
       )}
 
-      {/* Reference: Asaas */}
+      {/* Editable: Asaas gateway costs */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <h3 className="text-sm font-semibold">Tabela de custos Asaas (referência)</h3>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            { icon: QrCode, title: "Pix", fee: "R$ 1,99", note: "por cobrança recebida" },
-            { icon: CreditCard, title: "Cartão", fee: "2,99% + R$ 0,49", note: "à vista · Receb. 32 dias" },
-            { icon: Barcode, title: "Boleto", fee: "R$ 1,99", note: "por boleto pago" },
-          ].map((item) => (
-            <div key={item.title} className="space-y-1">
-              <p className="text-xs font-medium flex items-center gap-1.5">
-                <item.icon className="h-3.5 w-3.5 text-primary" /> {item.title}
-              </p>
-              <p className="text-xs text-primary font-semibold">{item.fee}</p>
-              <p className="text-[0.65rem] text-muted-foreground">{item.note}</p>
-            </div>
-          ))}
+        <div>
+          <h3 className="text-sm font-semibold">Custos Asaas (gateway)</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Edite os custos do gateway para simular cenários. Estes valores são usados apenas no cálculo acima.
+          </p>
+        </div>
+        <div className="space-y-4">
+          <FeeMethodRow icon={QrCode} label="Pix" pct={eAsPix.pct} fixed={eAsPix.fixed} onPctChange={setAsPixPct} onFixedChange={setAsPixFixed} />
+          <FeeMethodRow icon={CreditCard} label="Cartão" pct={eAsCard.pct} fixed={eAsCard.fixed} onPctChange={setAsCardPct} onFixedChange={setAsCardFixed} />
+          <FeeMethodRow icon={Barcode} label="Boleto" pct={eAsBoleto.pct} fixed={eAsBoleto.fixed} onPctChange={setAsBoletoPct} onFixedChange={setAsBoletoFixed} />
         </div>
       </div>
 
