@@ -17,8 +17,8 @@ const ASAAS: Record<string, { pct: number; fixed: number; desc: string }> = {
   boleto: { pct: 0,    fixed: 199, desc: "R$ 1,99 por boleto" },
 };
 
-// VitraPay platform fee (what WE charge the PRODUCER) — card only
-const VITRAPAY = { pct: 3.89, fixed: 249, desc: "3,89% + R$ 2,49" };
+// VitraPay platform fee defaults
+const VP_DEFAULTS = { pct: 3.89, fixed: 249 };
 
 const fmt = (c: number) =>
   `R$ ${(c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
