@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   ArrowLeft, Package, ShoppingBag, Landmark, Percent, Loader2,
-  Calendar, Eye, TrendingUp, DollarSign,
+  Calendar, Eye, TrendingUp, DollarSign, Pencil, RotateCcw,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 const fmt = (v: number) =>
@@ -31,7 +37,11 @@ function getDateRange(period: Period): Date | null {
 export default function AdminUserDetail() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [period, setPeriod] = useState<Period>("30d");
+  const [feeDialogOpen, setFeeDialogOpen] = useState(false);
+  const [customPct, setCustomPct] = useState("");
+  const [customFixed, setCustomFixed] = useState("");
 
   // Profile
   const { data: profile, isLoading: loadingProfile } = useQuery({
@@ -88,7 +98,60 @@ export default function AdminUserDetail() {
     enabled: !!userId,
   });
 
-  // Filter sales by period
+  // Platform default fees
+  const { data: platformFees } = useQuery({
+    queryKey: ["platform-fees"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("platform_fees")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      return data;
+    },
+  });
+
+  // Save custom fees
+  const saveCustomFees = useMutation({
+    mutationFn: async ({ pct, fixed }: { pct: number | null; fixed: number | null }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed })
+        .eq("user_id", userId!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-user-profile", userId] });
+      toast.success("Taxas atualizadas com sucesso!");
+      setFeeDialogOpen(false);
+    },
+    onError: () => toast.error("Erro ao salvar taxas"),
+  });
+
+  const openFeeDialog = () => {
+    setCustomPct(profile?.custom_fee_percentage != null ? String(profile.custom_fee_percentage) : "");
+    setCustomFixed(profile?.custom_fee_fixed != null ? String((profile.custom_fee_fixed / 100).toFixed(2)) : "");
+    setFeeDialogOpen(true);
+  };
+
+  const handleSaveFees = () => {
+    const pct = customPct.trim() === "" ? null : parseFloat(customPct.replace(",", "."));
+    const fixed = customFixed.trim() === "" ? null : Math.round(parseFloat(customFixed.replace(",", ".")) * 100);
+    if (pct !== null && (isNaN(pct) || pct < 0 || pct > 100)) {
+      toast.error("Porcentagem inválida (0-100)");
+      return;
+    }
+    if (fixed !== null && (isNaN(fixed) || fixed < 0)) {
+      toast.error("Valor fixo inválido");
+      return;
+    }
+    saveCustomFees.mutate({ pct, fixed });
+  };
+
+  const handleResetFees = () => {
+    saveCustomFees.mutate({ pct: null, fixed: null });
+  };
+
   const filteredSales = useMemo(() => {
     const from = getDateRange(period);
     if (!from) return sales;
@@ -231,16 +294,105 @@ export default function AdminUserDetail() {
       )}
 
       {/* Fee info */}
-      {(profile.custom_fee_percentage != null || profile.custom_fee_fixed != null) && (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm flex items-center gap-2">
-          <Percent className="h-4 w-4 text-primary" />
-          <span>
-            Taxa personalizada: <strong>
-              {profile.custom_fee_percentage ?? 3.89}% + R$ {((profile.custom_fee_fixed ?? 249) / 100).toFixed(2)}
-            </strong>
-          </span>
-        </div>
-      )}
+      <Card className="border-border">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Percent className="h-4 w-4" strokeWidth={1.5} />
+            Taxas VitraPay
+          </CardTitle>
+          <div className="flex gap-2">
+            {(profile.custom_fee_percentage != null || profile.custom_fee_fixed != null) && (
+              <Button variant="ghost" size="sm" onClick={handleResetFees} disabled={saveCustomFees.isPending}>
+                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Resetar
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={openFeeDialog}>
+              <Pencil className="h-3.5 w-3.5 mr-1" /> Editar Taxas
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {profile.custom_fee_percentage != null || profile.custom_fee_fixed != null ? (
+            <div className="space-y-2">
+              <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm flex items-center gap-2">
+                <span>
+                  🎯 Taxa personalizada: <strong>
+                    {profile.custom_fee_percentage ?? (platformFees?.card_percentage ?? 3.89)}% + R$ {((profile.custom_fee_fixed ?? (platformFees?.card_fixed ?? 249)) / 100).toFixed(2)}
+                  </strong>
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Este usuário possui taxa diferenciada que sobrepõe a taxa padrão da plataforma.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Usando taxas padrão da plataforma: <strong>{platformFees?.card_percentage ?? 3.89}% + R$ {((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}</strong> (Cartão)
+                {platformFees && (Number(platformFees.pix_percentage) > 0 || platformFees.pix_fixed > 0) && (
+                  <> · <strong>{platformFees.pix_percentage}% + R$ {(platformFees.pix_fixed / 100).toFixed(2)}</strong> (Pix)</>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Clique em "Editar Taxas" para definir uma taxa personalizada para este usuário.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Fee Dialog */}
+      <Dialog open={feeDialogOpen} onOpenChange={setFeeDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Taxas VitraPay — {profile.display_name || "Usuário"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              Defina taxas personalizadas para este produtor. Deixe em branco para usar as taxas padrão da plataforma
+              ({platformFees?.card_percentage ?? 3.89}% + R$ {((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}).
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Porcentagem (%)</Label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={String(platformFees?.card_percentage ?? 3.89)}
+                  value={customPct}
+                  onChange={(e) => setCustomPct(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Valor fixo (R$)</Label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}
+                  value={customFixed}
+                  onChange={(e) => setCustomFixed(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+              💡 Exemplo: Se o produtor vender R$ 100 com taxa de {customPct || String(platformFees?.card_percentage ?? 3.89)}% + R$ {customFixed || ((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}, 
+              a VitraPay receberá R$ {(() => {
+                const pct = parseFloat((customPct || String(platformFees?.card_percentage ?? 3.89)).replace(",", "."));
+                const fix = parseFloat((customFixed || ((platformFees?.card_fixed ?? 249) / 100).toFixed(2)).replace(",", "."));
+                if (isNaN(pct) || isNaN(fix)) return "—";
+                return ((100 * pct / 100) + fix).toFixed(2);
+              })()}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setFeeDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveFees} disabled={saveCustomFees.isPending}>
+              {saveCustomFees.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Salvar Taxas
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Metric cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
