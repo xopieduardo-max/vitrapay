@@ -13,6 +13,7 @@ import {
   Plug,
   Rocket,
   Receipt,
+  ChevronDown,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
@@ -31,27 +32,32 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarHeader,
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-
-const REVENUE_GOAL = 1000000;
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Meus Produtos", url: "/products", icon: Package },
   { title: "Marketplace", url: "/marketplace", icon: Store },
-  { title: "Minhas Vendas", url: "/sales", icon: ShoppingBag },
   { title: "Minhas Compras", url: "/purchases", icon: FileText },
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
-  { title: "Financeiro", url: "/finance", icon: Landmark },
-  { title: "Extrato", url: "/transactions", icon: Receipt },
   { title: "Comunidade", url: "/community", icon: MessageCircle },
   { title: "Integrações", url: "/integrations", icon: Plug },
   { title: "Ajustes", url: "/settings", icon: Settings },
   { title: "Baixar App", url: "/install", icon: Smartphone },
+];
+
+const salesSubItems = [
+  { title: "Minhas Vendas", url: "/sales", icon: ShoppingBag },
+  { title: "Financeiro", url: "/finance", icon: Landmark },
+  { title: "Extrato", url: "/transactions", icon: Receipt },
 ];
 
 export function AppSidebar() {
