@@ -179,7 +179,7 @@ export default function AdminFeeSimulator() {
         </div>
       )}
 
-      {/* Reference */}
+      {/* Reference: Asaas */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <h3 className="text-sm font-semibold">Tabela de custos Asaas (referência)</h3>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -197,6 +197,41 @@ export default function AdminFeeSimulator() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* VitraPay fees config */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor no cartão)</h3>
+        <p className="text-xs text-muted-foreground">
+          Altere aqui para simular diferentes taxas. Esses valores são usados no cálculo acima.
+        </p>
+        <div className="grid grid-cols-2 gap-4 max-w-sm">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Porcentagem (%)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={vpPct}
+              onChange={(e) => setVpPct(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Valor fixo (R$)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={vpFixed}
+              onChange={(e) => setVpFixed(e.target.value)}
+              className="h-9"
+            />
+          </div>
+        </div>
+        <p className="text-[0.65rem] text-muted-foreground">
+          Padrão: {VP_DEFAULTS.pct}% + {fmt(VP_DEFAULTS.fixed)} · Pix e Boleto são isentos de taxa para o produtor
+        </p>
       </div>
     </div>
   );
