@@ -1,0 +1,1 @@
+DELETE FROM sales WHERE payment_id = 'pay_test_pix_001';
