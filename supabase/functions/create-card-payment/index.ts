@@ -351,26 +351,41 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (utmIntegration?.is_active && utmIntegration?.api_token) {
-          await fetch("https://app.utmify.com.br/api/postback", {
+          const postbackBody = {
+            event: "sale",
+            transaction_id: paymentData.id,
+            amount: amount / 100,
+            email: buyer_email || "",
+            utm_source: utm_source || "",
+            utm_medium: utm_medium || "",
+            utm_campaign: utm_campaign || "",
+            utm_content: utm_content || "",
+            utm_term: utm_term || "",
+            affiliate: affiliate_ref || "",
+          };
+
+          console.log("UTMify card postback SENDING:", JSON.stringify({
+            producer: product.producer_id,
+            transaction_id: paymentData.id,
+            amount: postbackBody.amount,
+            utm_source: postbackBody.utm_source,
+            utm_medium: postbackBody.utm_medium,
+            utm_campaign: postbackBody.utm_campaign,
+            token_prefix: utmIntegration.api_token.slice(0, 6) + "...",
+          }));
+
+          const utmRes = await fetch("https://app.utmify.com.br/api/postback", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "x-api-token": utmIntegration.api_token,
             },
-            body: JSON.stringify({
-              event: "sale",
-              transaction_id: paymentData.id,
-              amount: amount / 100,
-              email: buyer_email || "",
-              utm_source: utm_source || "",
-              utm_medium: utm_medium || "",
-              utm_campaign: utm_campaign || "",
-              utm_content: utm_content || "",
-              utm_term: utm_term || "",
-              affiliate: affiliate_ref || "",
-            }),
+            body: JSON.stringify(postbackBody),
           });
-          console.log("UTMify postback sent for card payment");
+          const utmResText = await utmRes.text();
+          console.log("UTMify card postback RESPONSE:", utmRes.status, utmResText);
+        } else {
+          console.log("UTMify not configured for producer:", product.producer_id);
         }
       } catch (utmErr) {
         console.error("UTMify postback error:", utmErr);

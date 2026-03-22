@@ -65,26 +65,44 @@ async function sendUtmifyPostback(
       return;
     }
 
+    const postbackBody = {
+      event: "sale",
+      transaction_id: transactionId,
+      amount: amount / 100,
+      email: email || "",
+      utm_source: pending?.utm_source || "",
+      utm_medium: pending?.utm_medium || "",
+      utm_campaign: pending?.utm_campaign || "",
+      utm_content: pending?.utm_content || "",
+      utm_term: pending?.utm_term || "",
+      affiliate: pending?.affiliate_ref || "",
+    };
+
+    console.log("UTMify postback SENDING:", JSON.stringify({
+      producer: producerId,
+      transaction_id: transactionId,
+      amount: postbackBody.amount,
+      email: postbackBody.email,
+      utm_source: postbackBody.utm_source,
+      utm_medium: postbackBody.utm_medium,
+      utm_campaign: postbackBody.utm_campaign,
+      utm_content: postbackBody.utm_content,
+      utm_term: postbackBody.utm_term,
+      affiliate: postbackBody.affiliate,
+      token_prefix: integration.api_token.slice(0, 6) + "...",
+    }));
+
     const res = await fetch("https://app.utmify.com.br/api/postback", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-token": integration.api_token,
       },
-      body: JSON.stringify({
-        event: "sale",
-        transaction_id: transactionId,
-        amount: amount / 100,
-        email: email || "",
-        utm_source: pending?.utm_source || "",
-        utm_medium: pending?.utm_medium || "",
-        utm_campaign: pending?.utm_campaign || "",
-        utm_content: pending?.utm_content || "",
-        utm_term: pending?.utm_term || "",
-        affiliate: pending?.affiliate_ref || "",
-      }),
+      body: JSON.stringify(postbackBody),
     });
-    console.log("UTMify postback status:", res.status);
+
+    const resText = await res.text();
+    console.log("UTMify postback RESPONSE:", res.status, resText);
   } catch (err) {
     console.error("UTMify postback error:", err);
   }
