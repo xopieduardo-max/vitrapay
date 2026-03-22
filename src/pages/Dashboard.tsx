@@ -177,7 +177,7 @@ export default function Dashboard() {
     { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
     { label: "Meus Produtos", icon: Package, path: "/products" },
     { label: "Afiliados", icon: Users, path: "/affiliates" },
-    { label: "Suporte", icon: HelpCircle, path: "/admin/settings" },
+    { label: "Suporte", icon: HelpCircle, path: "/help" },
   ];
 
   return (
