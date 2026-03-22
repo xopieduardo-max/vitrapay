@@ -241,26 +241,35 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <ThemeLogo variant="horizontal" className="h-8 object-contain" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Taxas</a>
-            <a href="#testimonials" className="hover:text-foreground transition-colors">Depoimentos</a>
-            <Link to="/marketplace" className="hover:text-foreground transition-colors">Marketplace</Link>
+      {/* Header — floating pill navbar */}
+      <header className="sticky top-0 z-50 py-3 px-4">
+        <div className="container max-w-6xl mx-auto">
+          <nav className="flex items-center justify-between rounded-full border border-border/40 bg-card/90 backdrop-blur-xl px-5 py-2.5 shadow-lg shadow-black/5">
+            {/* Left: Logo + links */}
+            <div className="flex items-center gap-6">
+              <Link to="/" className="flex items-center gap-2 shrink-0">
+                <ThemeLogo variant="horizontal" className="h-7 object-contain" />
+              </Link>
+              <div className="hidden md:block w-px h-5 bg-border/60" />
+              <div className="hidden md:flex items-center gap-5 text-sm text-muted-foreground">
+                <a href="#features" className="hover:text-foreground transition-colors">Sobre nós</a>
+                <a href="#pricing" className="hover:text-foreground transition-colors">Taxas</a>
+                <a href="#testimonials" className="hover:text-foreground transition-colors">Depoimentos</a>
+                <Link to="/marketplace" className="hover:text-foreground transition-colors">Marketplace</Link>
+              </div>
+            </div>
+
+            {/* Right: Country selector + auth */}
+            <div className="flex items-center gap-3">
+              <CountrySelector />
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex font-semibold tracking-wide text-xs uppercase">
+                <Link to="/auth">Log in</Link>
+              </Button>
+              <Button size="sm" asChild className="font-semibold tracking-wide text-xs uppercase rounded-full px-5">
+                <Link to="/auth">Começar agora</Link>
+              </Button>
+            </div>
           </nav>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to="/auth">Login</Link>
-            </Button>
-            <Button size="sm" asChild className="glow-primary">
-              <Link to="/auth">Criar minha conta</Link>
-            </Button>
-          </div>
         </div>
       </header>
 
