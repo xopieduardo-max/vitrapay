@@ -763,6 +763,39 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_fees: {
+        Row: {
+          boleto_fixed: number
+          boleto_percentage: number
+          card_fixed: number
+          card_percentage: number
+          id: number
+          pix_fixed: number
+          pix_percentage: number
+          updated_at: string
+        }
+        Insert: {
+          boleto_fixed?: number
+          boleto_percentage?: number
+          card_fixed?: number
+          card_percentage?: number
+          id?: number
+          pix_fixed?: number
+          pix_percentage?: number
+          updated_at?: string
+        }
+        Update: {
+          boleto_fixed?: number
+          boleto_percentage?: number
+          card_fixed?: number
+          card_percentage?: number
+          id?: number
+          pix_fixed?: number
+          pix_percentage?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_popups: {
         Row: {
           button_text: string | null
