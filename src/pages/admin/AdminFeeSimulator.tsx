@@ -56,8 +56,11 @@ export default function AdminFeeSimulator() {
   const vitraPayFee = Math.round(amount * (parsedPct / 100)) + parsedFixed;
   const vpDesc = parsedPct > 0 || parsedFixed > 0 ? `${parsedPct}% + ${fmt(parsedFixed)}` : "Sem taxa";
 
-  const producerReceives = amount - vitraPayFee;
-  const vitraPayProfit = vitraPayFee - asaasCost;
+  // Producer pays BOTH: Asaas cost + VitraPay fee
+  const totalDeducted = asaasCost + vitraPayFee;
+  const producerReceives = amount - totalDeducted;
+  // VitraPay keeps its fee as clean profit
+  const vitraPayProfit = vitraPayFee;
 
   const methodInfo = METHODS.find((m) => m.id === method)!;
 
@@ -164,9 +167,7 @@ export default function AdminFeeSimulator() {
                     Produtor recebe
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {vitraPayFee > 0
-                      ? `${fmt(amount)} − ${fmt(vitraPayFee)} (taxa)`
-                      : `${fmt(amount)} (sem taxa)`}
+                    {`${fmt(amount)} − ${fmt(asaasCost)} (Asaas) − ${fmt(vitraPayFee)} (VitraPay)`}
                   </p>
                 </div>
                 <span className="text-lg font-bold text-primary">{fmt(producerReceives)}</span>
@@ -174,9 +175,9 @@ export default function AdminFeeSimulator() {
 
               <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                 <div>
-                  <p className="text-sm font-medium">Lucro VitraPay</p>
+                  <p className="text-sm font-medium">Lucro VitraPay (líquido)</p>
                   <p className="text-xs text-muted-foreground">
-                    {`${fmt(vitraPayFee)} (taxa) − ${fmt(asaasCost)} (Asaas)`}
+                    Taxa cobrada do produtor: {fmt(vitraPayFee)}
                   </p>
                 </div>
                 <span className={cn(
