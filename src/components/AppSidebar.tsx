@@ -13,6 +13,7 @@ import {
   Plug,
   Rocket,
   Receipt,
+  ChevronDown,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
@@ -31,28 +32,35 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarHeader,
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-
-const REVENUE_GOAL = 1000000;
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Meus Produtos", url: "/products", icon: Package },
   { title: "Marketplace", url: "/marketplace", icon: Store },
-  { title: "Minhas Vendas", url: "/sales", icon: ShoppingBag },
   { title: "Minhas Compras", url: "/purchases", icon: FileText },
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
-  { title: "Financeiro", url: "/finance", icon: Landmark },
-  { title: "Extrato", url: "/transactions", icon: Receipt },
   { title: "Comunidade", url: "/community", icon: MessageCircle },
   { title: "Integrações", url: "/integrations", icon: Plug },
   { title: "Ajustes", url: "/settings", icon: Settings },
   { title: "Baixar App", url: "/install", icon: Smartphone },
 ];
+
+const salesSubItems = [
+  { title: "Minhas Vendas", url: "/sales", icon: ShoppingBag },
+  { title: "Financeiro", url: "/finance", icon: Landmark },
+  { title: "Extrato", url: "/transactions", icon: Receipt },
+];
+
+const REVENUE_GOAL = 1000000;
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -167,6 +175,61 @@ export function AppSidebar() {
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
+
+                  {/* Insert "Vendas" collapsible after "Marketplace" */}
+                  {item.url === "/marketplace" && !collapsed && (
+                    <Collapsible
+                      defaultOpen={salesSubItems.some((s) => isActive(s.url))}
+                      className="mt-0.5"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton className="gap-3 text-sm transition-colors w-full justify-between">
+                            <span className="flex items-center gap-3">
+                              <ShoppingBag className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                              <span>Vendas</span>
+                            </span>
+                            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {salesSubItems.map((sub) => (
+                              <SidebarMenuSubItem key={sub.url}>
+                                <SidebarMenuSubButton asChild isActive={isActive(sub.url)}>
+                                  <NavLink
+                                    to={sub.url}
+                                    end
+                                    className="gap-3 text-sm transition-colors"
+                                    activeClassName="text-primary font-medium"
+                                  >
+                                    <sub.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+                                    <span>{sub.title}</span>
+                                  </NavLink>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  )}
+
+                  {/* Collapsed mode: show sub-items as regular items */}
+                  {item.url === "/marketplace" && collapsed && salesSubItems.map((sub) => (
+                    <SidebarMenuItem key={sub.url}>
+                      <SidebarMenuButton asChild isActive={isActive(sub.url)}>
+                        <NavLink
+                          to={sub.url}
+                          end
+                          className="gap-3 text-sm transition-colors"
+                          activeClassName="bg-primary/10 text-primary font-medium"
+                        >
+                          <sub.icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenuItem>
               ))}
 
