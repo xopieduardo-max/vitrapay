@@ -250,8 +250,28 @@ export default function Settings() {
       {/* Push Notifications Section */}
       <NotificationsSection />
 
-
-
+      {/* Pix Key Section */}
+      <PixKeySection
+        pixKey={pixKey}
+        setPixKey={setPixKey}
+        pixKeyType={pixKeyType}
+        setPixKeyType={setPixKeyType}
+        savingPix={savingPix}
+        onSave={async () => {
+          if (!user) return;
+          setSavingPix(true);
+          const { error } = await supabase
+            .from("profiles")
+            .update({ pix_key: pixKey, pix_key_type: pixKeyType } as any)
+            .eq("user_id", user.id);
+          if (error) toast.error("Erro ao salvar chave Pix.");
+          else {
+            toast.success("Chave Pix salva!");
+            queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+          }
+          setSavingPix(false);
+        }}
+      />
 
       {/* Password Section */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-6">
