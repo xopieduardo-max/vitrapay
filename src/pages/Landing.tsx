@@ -622,6 +622,29 @@ export default function Landing() {
                 </motion.div>
               </div>
             </div>
+
+            {/* Fee Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="mt-6 rounded-2xl border border-primary/20 p-8 md:p-10 text-center space-y-3"
+              style={{
+                background: `linear-gradient(135deg, 
+                  hsl(var(--card)) 0%, 
+                  hsl(20, 8%, 12%) 50%,
+                  hsl(var(--card)) 100%)`,
+              }}
+            >
+              <p className="text-sm md:text-base text-muted-foreground">Taxa para cartões na plataforma</p>
+              <p className="text-4xl md:text-5xl font-extrabold text-primary tracking-tight">
+                3,89% + R$2,49
+              </p>
+              <p className="text-sm md:text-base text-muted-foreground">
+                Pix com taxa <span className="font-bold text-primary">0%</span> para seus clientes
+              </p>
+            </motion.div>
           </motion.div>
         </div>
       </section>
