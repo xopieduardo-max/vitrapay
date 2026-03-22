@@ -134,7 +134,7 @@ export default function AdminFeeSimulator() {
               {/* Step 3: VitraPay fee */}
               <SimRow
                 label="Taxa VitraPay (cobrada do produtor)"
-                sublabel={isCard ? VITRAPAY.desc : "Isento — Pix e Boleto são grátis para o produtor"}
+                sublabel={isCard ? vpDesc : "Isento — Pix e Boleto são grátis para o produtor"}
                 value={isCard ? `- ${fmt(vitraPayFee)}` : "R$ 0,00"}
                 color={isCard ? "text-orange-500" : "text-muted-foreground"}
               />
