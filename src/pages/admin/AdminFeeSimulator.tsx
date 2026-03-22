@@ -55,7 +55,7 @@ export default function AdminFeeSimulator() {
   const setAs = (m: string, field: "pct" | "fixed", v: string) =>
     setAsState((prev) => ({ ...prev, [m]: { ...getAs(m), [field]: v } }));
 
-  // VitraPay editable state
+  // VitraPay editable state (from DB or defaults)
   const [vpState, setVpState] = useState<Record<string, { pct: string; fixed: string }>>({});
   const getVp = (m: string) => ({
     pct: vpState[m]?.pct ?? String(dbFees ? (m === "pix" ? dbFees.pix_percentage : m === "card" ? dbFees.card_percentage : dbFees.boleto_percentage) : VP_DEFAULTS[m].pct),
@@ -67,27 +67,27 @@ export default function AdminFeeSimulator() {
   const amount = Math.round((parseFloat(value) || 0) * 100);
   const isValid = amount >= 500;
 
-  // Calculate fees
+  // Asaas cost (internal, invisible to producer)
   const asCfg = getAs(method);
+  const asaasPctVal = parseFloat(asCfg.pct) || 0;
+  const asaasFixedVal = Math.round((parseFloat(asCfg.fixed) || 0) * 100);
+  const feeAsaas = Math.round(amount * (asaasPctVal / 100)) + asaasFixedVal;
+
+  // VitraPay fee (the ONLY fee the producer sees/pays)
   const vpCfg = getVp(method);
+  const vpPctVal = parseFloat(vpCfg.pct) || 0;
+  const vpFixedVal = Math.round((parseFloat(vpCfg.fixed) || 0) * 100);
+  const feePlatform = Math.round(amount * (vpPctVal / 100)) + vpFixedVal;
 
-  const asaasPct = parseFloat(asCfg.pct) || 0;
-  const asaasFixed = Math.round((parseFloat(asCfg.fixed) || 0) * 100);
-  const feeAsaas = Math.round(amount * (asaasPct / 100)) + asaasFixed;
-
-  const vpPct = parseFloat(vpCfg.pct) || 0;
-  const vpFixed = Math.round((parseFloat(vpCfg.fixed) || 0) * 100);
-  const feePlatform = Math.round(amount * (vpPct / 100)) + vpFixed;
-
-  const totalFees = feeAsaas + feePlatform;
-  const producerReceives = amount - totalFees;
+  // KEY: Producer pays ONLY feePlatform. Asaas is absorbed internally.
+  const producerReceives = amount - feePlatform;
+  // Platform profit = what VitraPay keeps after paying Asaas
   const platformProfit = feePlatform - feeAsaas;
 
-  const pctAsaas = amount > 0 ? (feeAsaas / amount) * 100 : 0;
-  const pctPlatform = amount > 0 ? (feePlatform / amount) * 100 : 0;
-  const pctTotal = amount > 0 ? (totalFees / amount) * 100 : 0;
+  const pctPlatformOnSale = amount > 0 ? (feePlatform / amount) * 100 : 0;
+  const pctAsaasOnSale = amount > 0 ? (feeAsaas / amount) * 100 : 0;
 
-  // Check for changes to save
+  // Check if values changed from DB
   const hasChanges = dbFees && (
     getVp("pix").pct !== String(dbFees.pix_percentage) ||
     getVp("pix").fixed !== String(dbFees.pix_fixed / 100) ||
@@ -134,11 +134,11 @@ export default function AdminFeeSimulator() {
           Simulador de Taxas
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Ferramenta de decisão financeira — simule, ajuste e salve as taxas da plataforma
+          Ferramenta de decisão — taxa única cobrada do produtor (já inclui gateway)
         </p>
       </div>
 
-      {/* Input section */}
+      {/* Input */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <div className="space-y-1.5">
           <Label className="text-xs font-medium">Valor da venda (R$)</Label>
@@ -185,7 +185,7 @@ export default function AdminFeeSimulator() {
             {/* Valor bruto */}
             <ResultRow
               icon={<TrendingUp className="h-4 w-4" />}
-              label="Valor da venda"
+              label="Valor bruto da venda"
               value={fmt(amount)}
               valueColor="text-foreground"
               bold
@@ -193,36 +193,14 @@ export default function AdminFeeSimulator() {
 
             <div className="border-t border-border" />
 
-            {/* Taxa Asaas */}
-            <ResultRow
-              icon={<Landmark className="h-4 w-4" />}
-              label="Taxa gateway (Asaas)"
-              sublabel={asaasPct > 0 ? `${asaasPct}% + ${fmt(asaasFixed)}` : fmt(asaasFixed)}
-              value={`- ${fmt(feeAsaas)}`}
-              badge={fmtPct(pctAsaas)}
-              valueColor="text-destructive"
-            />
-
-            {/* Taxa VitraPay */}
+            {/* Taxa VitraPay (única taxa visível pro produtor) */}
             <ResultRow
               icon={<Building2 className="h-4 w-4" />}
-              label="Taxa plataforma (VitraPay)"
-              sublabel={vpPct > 0 ? `${vpPct}% + ${fmt(vpFixed)}` : fmt(vpFixed)}
+              label="Taxa VitraPay (cobrada do produtor)"
+              sublabel={vpPctVal > 0 ? `${vpPctVal}% + ${fmt(vpFixedVal)}` : fmt(vpFixedVal)}
               value={`- ${fmt(feePlatform)}`}
-              badge={fmtPct(pctPlatform)}
+              badge={fmtPct(pctPlatformOnSale)}
               valueColor="text-destructive"
-            />
-
-            <div className="border-t border-border" />
-
-            {/* Total taxas */}
-            <ResultRow
-              icon={<Percent className="h-4 w-4" />}
-              label="Total de taxas"
-              value={`- ${fmt(totalFees)}`}
-              badge={fmtPct(pctTotal)}
-              valueColor="text-destructive"
-              bold
             />
 
             <div className="border-t border-border" />
@@ -232,8 +210,10 @@ export default function AdminFeeSimulator() {
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-primary" />
                 <div>
-                  <p className="text-sm font-semibold">Produtor recebe</p>
-                  <p className="text-xs text-muted-foreground">Valor líquido após todas as taxas</p>
+                  <p className="text-sm font-semibold">Produtor recebe (líquido)</p>
+                  <p className="text-xs text-muted-foreground">
+                    {fmt(amount)} − {fmt(feePlatform)} (taxa VitraPay)
+                  </p>
                 </div>
               </div>
               <span className={cn("text-lg font-bold", producerReceives >= 0 ? "text-primary" : "text-destructive")}>
@@ -241,16 +221,36 @@ export default function AdminFeeSimulator() {
               </span>
             </div>
 
+            <div className="border-t border-dashed border-border" />
+
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Visão interna da plataforma</p>
+
+            {/* Custo Asaas (interno) */}
+            <ResultRow
+              icon={<Landmark className="h-4 w-4" />}
+              label="Custo gateway (Asaas)"
+              sublabel={asaasPctVal > 0 ? `${asaasPctVal}% + ${fmt(asaasFixedVal)}` : fmt(asaasFixedVal)}
+              value={`- ${fmt(feeAsaas)}`}
+              badge={fmtPct(pctAsaasOnSale)}
+              valueColor="text-destructive"
+            />
+
             {/* Lucro plataforma */}
             <div className={cn(
               "flex items-center justify-between p-3 rounded-lg border",
               platformProfit >= 0 ? "bg-emerald-500/5 border-emerald-500/10" : "bg-destructive/5 border-destructive/10"
             )}>
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                {platformProfit >= 0 ? (
+                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 text-destructive" />
+                )}
                 <div>
-                  <p className="text-sm font-semibold">Lucro da plataforma</p>
-                  <p className="text-xs text-muted-foreground">Taxa VitraPay − Custo Asaas = {fmt(feePlatform)} − {fmt(feeAsaas)}</p>
+                  <p className="text-sm font-semibold">Lucro VitraPay</p>
+                  <p className="text-xs text-muted-foreground">
+                    {fmt(feePlatform)} (taxa cobrada) − {fmt(feeAsaas)} (custo Asaas)
+                  </p>
                 </div>
               </div>
               <span className={cn("text-lg font-bold", platformProfit >= 0 ? "text-emerald-500" : "text-destructive")}>
@@ -262,7 +262,7 @@ export default function AdminFeeSimulator() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <TrendingDown className="h-4 w-4 text-destructive" />
                 <p className="text-xs font-medium text-destructive">
-                  ⚠️ Atenção: a plataforma está operando no prejuízo nesta configuração!
+                  ⚠️ Prejuízo! A taxa cobrada não cobre o custo do gateway. Aumente as taxas VitraPay.
                 </p>
               </div>
             )}
@@ -275,10 +275,10 @@ export default function AdminFeeSimulator() {
         <div>
           <h3 className="text-sm font-semibold flex items-center gap-2">
             <Landmark className="h-4 w-4 text-muted-foreground" />
-            Custos Asaas (gateway)
+            Custos Asaas (gateway) — uso interno
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Edite os custos do gateway para simular cenários. Valores usados apenas no cálculo.
+            Edite para simular cenários. O produtor não vê estes valores.
           </p>
         </div>
         {METHODS.map((m) => {
@@ -302,7 +302,7 @@ export default function AdminFeeSimulator() {
               Taxas VitraPay (cobradas do produtor)
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Configure e salve. Aplicadas automaticamente em todas as vendas.
+              Taxa única que o produtor paga. Já inclui o custo do gateway internamente.
             </p>
           </div>
           <Button size="sm" className="gap-1.5" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !hasChanges}>
