@@ -167,9 +167,7 @@ export default function AdminFeeSimulator() {
                     Produtor recebe
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {vitraPayFee > 0
-                      ? `${fmt(amount)} − ${fmt(vitraPayFee)} (taxa)`
-                      : `${fmt(amount)} (sem taxa)`}
+                    {`${fmt(amount)} − ${fmt(asaasCost)} (Asaas) − ${fmt(vitraPayFee)} (VitraPay)`}
                   </p>
                 </div>
                 <span className="text-lg font-bold text-primary">{fmt(producerReceives)}</span>
