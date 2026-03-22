@@ -194,11 +194,6 @@ const features = [
   { icon: BarChart3, title: "Funil de Vendas", desc: "Upsell, downsell e order bumps integrados ao seu checkout." },
 ];
 
-const paymentMethods = [
-  { name: "Pix", time: "Instantâneo", icon: "⚡" },
-  { name: "Cartão de Crédito", time: "Em até 2 dias", icon: "💳" },
-  { name: "Boleto Bancário", time: "1 dia", icon: "📄" },
-];
 
 const bigStats = [
   { value: "50+", label: "colaboradores engajados" },
