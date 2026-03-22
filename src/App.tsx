@@ -35,6 +35,7 @@ const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Community = lazy(() => import("./pages/Community"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Integrations = lazy(() => import("./pages/Integrations"));
 const Install = lazy(() => import("./pages/Install"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
@@ -102,6 +103,7 @@ const App = () => {
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/integrations" element={<Integrations />} />
                 </Route>
               </Route>
 

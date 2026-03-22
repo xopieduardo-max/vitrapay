@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Settings,
   Smartphone,
+  Plug,
   Rocket,
   Receipt,
 } from "lucide-react";
@@ -48,6 +49,7 @@ const navItems = [
   { title: "Financeiro", url: "/finance", icon: Landmark },
   { title: "Extrato", url: "/transactions", icon: Receipt },
   { title: "Comunidade", url: "/community", icon: MessageCircle },
+  { title: "Integrações", url: "/integrations", icon: Plug },
   { title: "Ajustes", url: "/settings", icon: Settings },
   { title: "Baixar App", url: "/install", icon: Smartphone },
 ];
