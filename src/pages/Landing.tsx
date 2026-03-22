@@ -254,6 +254,33 @@ function CountrySelector() {
 /* ─── Main Landing ─── */
 export default function Landing() {
   const heroRef = useRef<HTMLElement>(null);
+
+  const { data: platformFees } = useQuery({
+    queryKey: ["platform-fees-landing"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("platform_fees").select("*").eq("id", 1).single();
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const feeDisplay = useMemo(() => {
+    if (!platformFees) return { cardText: "...", pixText: "0%" };
+    const pct = Number(platformFees.card_percentage);
+    const fixed = (platformFees.card_fixed / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+    const pixFixed = platformFees.pix_fixed > 0
+      ? `R$${(platformFees.pix_fixed / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+      : null;
+    const pixPct = Number(platformFees.pix_percentage);
+    const pixLabel = pixPct > 0 ? `${pixPct.toLocaleString("pt-BR")}%` : (pixFixed ? pixFixed : "0%");
+    return {
+      cardText: `${pct.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}% + R$${fixed}`,
+      pixText: pixPct === 0 && !pixFixed ? "0%" : pixLabel,
+      pixIsFree: pixPct === 0 && platformFees.pix_fixed === 0,
+    };
+  }, [platformFees]);
+
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
