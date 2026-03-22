@@ -17,8 +17,12 @@ const ASAAS: Record<string, { pct: number; fixed: number; desc: string }> = {
   boleto: { pct: 0,    fixed: 199, desc: "R$ 1,99 por boleto" },
 };
 
-// VitraPay platform fee defaults
-const VP_DEFAULTS = { pct: 3.89, fixed: 249 };
+// VitraPay platform fee defaults per method
+const VP_DEFAULTS: Record<string, { pct: number; fixed: number }> = {
+  pix:    { pct: 0, fixed: 0 },
+  card:   { pct: 3.89, fixed: 249 },
+  boleto: { pct: 0, fixed: 0 },
+};
 
 const fmt = (c: number) =>
   `R$ ${(c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -26,26 +30,34 @@ const fmt = (c: number) =>
 export default function AdminFeeSimulator() {
   const [value, setValue] = useState("100");
   const [method, setMethod] = useState("pix");
-  const [vpPct, setVpPct] = useState(VP_DEFAULTS.pct.toString());
-  const [vpFixed, setVpFixed] = useState((VP_DEFAULTS.fixed / 100).toFixed(2));
+
+  // VitraPay fees per method
+  const [vpPixPct, setVpPixPct] = useState("0");
+  const [vpPixFixed, setVpPixFixed] = useState("0");
+  const [vpCardPct, setVpCardPct] = useState("3.89");
+  const [vpCardFixed, setVpCardFixed] = useState("2.49");
+  const [vpBoletoPct, setVpBoletoPct] = useState("0");
+  const [vpBoletoFixed, setVpBoletoFixed] = useState("0");
+
+  const vpConfig: Record<string, { pct: string; fixed: string }> = {
+    pix:    { pct: vpPixPct, fixed: vpPixFixed },
+    card:   { pct: vpCardPct, fixed: vpCardFixed },
+    boleto: { pct: vpBoletoPct, fixed: vpBoletoFixed },
+  };
 
   const amount = Math.round((parseFloat(value) || 0) * 100);
 
   const asaas = ASAAS[method];
   const asaasCost = Math.round(amount * (asaas.pct / 100)) + asaas.fixed;
 
-  // VitraPay only charges on card; Pix & boleto are free for the producer
-  const isCard = method === "card";
-  const parsedPct = parseFloat(vpPct) || 0;
-  const parsedFixed = Math.round((parseFloat(vpFixed) || 0) * 100);
-  const vitraPayFee = isCard ? Math.round(amount * (parsedPct / 100)) + parsedFixed : 0;
-  const vpDesc = `${parsedPct}% + ${fmt(parsedFixed)}`;
+  const currentVp = vpConfig[method];
+  const parsedPct = parseFloat(currentVp.pct) || 0;
+  const parsedFixed = Math.round((parseFloat(currentVp.fixed) || 0) * 100);
+  const vitraPayFee = Math.round(amount * (parsedPct / 100)) + parsedFixed;
+  const vpDesc = parsedPct > 0 || parsedFixed > 0 ? `${parsedPct}% + ${fmt(parsedFixed)}` : "Sem taxa";
 
   const producerReceives = amount - vitraPayFee;
   const vitraPayProfit = vitraPayFee - asaasCost;
-
-  // For Pix/boleto, VitraPay absorbs the Asaas cost (no fee to producer)
-  const vitraPayProfitPix = -asaasCost;
 
   const methodInfo = METHODS.find((m) => m.id === method)!;
 
