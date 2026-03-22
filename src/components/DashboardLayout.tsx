@@ -9,6 +9,7 @@ import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
 import { useSalesNotifications } from "@/hooks/useSalesNotifications";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
 
 export function DashboardLayout() {
   const { newSalesCount, notifications, clearCount } = useSalesNotifications();
@@ -34,6 +35,7 @@ export function DashboardLayout() {
               notifications={notifications}
               onClear={clearCount}
             />
+            <UserHeaderDropdown />
           </header>
           <main className="flex-1 p-4 md:p-6">
             <Outlet />
