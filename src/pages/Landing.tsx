@@ -216,11 +216,10 @@ const marqueeText = "Transformando vidas através do digital";
 
 const marqueeStats = [
   { icon: Globe, text: "Aceito em todo o Brasil" },
-  { icon: DollarSign, text: "+300 mil vendas por ano" },
-  { icon: Users, text: "+30 mil usuários" },
+  { icon: Users, text: "Centenas de novos usuários todos os dias" },
   { icon: Rocket, text: "Saque instantâneo via Pix" },
   { icon: Shield, text: "Pagamentos 100% seguros" },
-  { icon: CreditCard, text: "Pix, Cartão e Boleto" },
+  { icon: CreditCard, text: "Pix e Cartão de Crédito" },
   { icon: BarChart3, text: "Métricas em tempo real" },
   { icon: Award, text: "Premiações por faturamento" },
   { icon: Headphones, text: "Suporte humano 24/7" },
