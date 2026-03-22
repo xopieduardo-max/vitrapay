@@ -330,7 +330,21 @@ export default function Settings() {
             <Label className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
               <Phone className="h-3 w-3" /> Telefone <span className="text-destructive">*</span>
             </Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+55 11 99999-9999" className="bg-muted/50 border-transparent focus:border-border" />
+            <Input
+              value={phone}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                let formatted = val;
+                if (val.length > 7) {
+                  formatted = `(${val.slice(0, 2)}) ${val.slice(2, 7)}-${val.slice(7)}`;
+                } else if (val.length > 2) {
+                  formatted = `(${val.slice(0, 2)}) ${val.slice(2)}`;
+                }
+                setPhone(formatted);
+              }}
+              placeholder="(11) 99999-9999"
+              className="bg-muted/50 border-transparent focus:border-border"
+            />
           </div>
 
           {/* Address */}
