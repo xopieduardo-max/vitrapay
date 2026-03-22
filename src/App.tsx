@@ -121,6 +121,7 @@ const App = () => {
                 <Route path="/admin/fake-sales" element={<AdminFakeSales />} />
                 <Route path="/admin/community" element={<AdminCommunity />} />
                 <Route path="/admin/push" element={<AdminPushNotifications />} />
+                <Route path="/admin/fee-simulator" element={<AdminFeeSimulator />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
               </Route>
 
