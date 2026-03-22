@@ -14,8 +14,8 @@ const METHODS = [
   { id: "boleto", label: "Boleto", icon: Barcode },
 ] as const;
 
-// Asaas gateway costs (what WE pay to Asaas)
-const ASAAS: Record<string, { pct: number; fixed: number; desc: string }> = {
+// Asaas gateway costs — editable local state, defaults below
+const ASAAS_DEFAULTS: Record<string, { pct: number; fixed: number; desc: string }> = {
   pix:    { pct: 0,    fixed: 199, desc: "R$ 1,99 por cobrança" },
   card:   { pct: 2.99, fixed: 49,  desc: "2,99% + R$ 0,49" },
   boleto: { pct: 0,    fixed: 199, desc: "R$ 1,99 por boleto" },
