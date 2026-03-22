@@ -78,6 +78,11 @@ async function sendUtmifyPostback(
         country: "BR",
         document: pending?.buyer_cpf || "",
       },
+      commission: {
+        totalPriceInCents: amount,
+        gatewayFeeInCents: 0,
+        userCommissionInCents: amount,
+      },
       platform: "VitraPay",
       products: [
         {
