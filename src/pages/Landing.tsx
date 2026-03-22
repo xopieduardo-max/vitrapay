@@ -671,7 +671,10 @@ export default function Landing() {
                 {feeDisplay.cardText}
               </p>
               <p className="text-sm md:text-base text-muted-foreground">
-                Pix com taxa <span className="font-bold text-primary">{feeDisplay.pixText}</span> para seus clientes
+                Pix com taxa <span className="font-bold text-primary">zero</span> para o seu cliente
+              </p>
+              <p className="text-[0.7rem] text-muted-foreground/60 mt-2">
+                *taxa de antecipação já inclusa
               </p>
             </motion.div>
           </motion.div>
