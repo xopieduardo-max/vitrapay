@@ -211,39 +211,68 @@ export default function AdminFeeSimulator() {
         </div>
       </div>
 
-      {/* VitraPay fees config */}
+      {/* VitraPay fees config per method */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor no cartão)</h3>
+        <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor)</h3>
         <p className="text-xs text-muted-foreground">
-          Altere aqui para simular diferentes taxas. Esses valores são usados no cálculo acima.
+          Configure a taxa de cada forma de pagamento. Os valores são usados no cálculo acima.
         </p>
-        <div className="grid grid-cols-2 gap-4 max-w-sm">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Porcentagem (%)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={vpPct}
-              onChange={(e) => setVpPct(e.target.value)}
-              className="h-9"
-            />
+
+        <div className="space-y-4">
+          {/* Pix */}
+          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2 min-w-[100px]">
+              <QrCode className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Pix</span>
+            </div>
+            <div className="flex gap-3 flex-1 max-w-xs">
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
+                <Input type="number" step="0.01" min="0" value={vpPixPct} onChange={(e) => setVpPixPct(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
+                <Input type="number" step="0.01" min="0" value={vpPixFixed} onChange={(e) => setVpPixFixed(e.target.value)} className="h-8 text-xs" />
+              </div>
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Valor fixo (R$)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={vpFixed}
-              onChange={(e) => setVpFixed(e.target.value)}
-              className="h-9"
-            />
+
+          {/* Cartão */}
+          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2 min-w-[100px]">
+              <CreditCard className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Cartão</span>
+            </div>
+            <div className="flex gap-3 flex-1 max-w-xs">
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
+                <Input type="number" step="0.01" min="0" value={vpCardPct} onChange={(e) => setVpCardPct(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
+                <Input type="number" step="0.01" min="0" value={vpCardFixed} onChange={(e) => setVpCardFixed(e.target.value)} className="h-8 text-xs" />
+              </div>
+            </div>
+          </div>
+
+          {/* Boleto */}
+          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2 min-w-[100px]">
+              <Barcode className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Boleto</span>
+            </div>
+            <div className="flex gap-3 flex-1 max-w-xs">
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
+                <Input type="number" step="0.01" min="0" value={vpBoletoPct} onChange={(e) => setVpBoletoPct(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
+                <Input type="number" step="0.01" min="0" value={vpBoletoFixed} onChange={(e) => setVpBoletoFixed(e.target.value)} className="h-8 text-xs" />
+              </div>
+            </div>
           </div>
         </div>
-        <p className="text-[0.65rem] text-muted-foreground">
-          Padrão: {VP_DEFAULTS.pct}% + {fmt(VP_DEFAULTS.fixed)} · Pix e Boleto são isentos de taxa para o produtor
-        </p>
       </div>
     </div>
   );
