@@ -618,7 +618,7 @@ export default function Landing() {
                   <div className="relative h-full flex flex-col justify-between p-6 md:p-8">
                     {/* Top — Logo horizontal */}
                     <div className="flex items-center">
-                      <img src={logoCard} alt="VitraPay" className="h-7 md:h-9" style={{ filter: 'brightness(0) opacity(0.55)' }} />
+                      <img src={logoCard} alt="VitraPay" className="h-10 md:h-12" style={{ filter: 'brightness(0) opacity(0.5)' }} />
                     </div>
 
                     {/* Chip */}
