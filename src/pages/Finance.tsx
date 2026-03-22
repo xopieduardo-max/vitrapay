@@ -49,10 +49,27 @@ export default function Finance() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawStep, setWithdrawStep] = useState(1);
   const [detailView, setDetailView] = useState<"available" | "held" | null>(null);
   const [amount, setAmount] = useState("");
-  const [pixKey, setPixKey] = useState("");
-  const [pixKeyType, setPixKeyType] = useState<string>("cpf");
+
+  // Get saved pix key from profile
+  const { data: profile } = useQuery({
+    queryKey: ["profile-pix", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("pix_key, pix_key_type")
+        .eq("user_id", user.id)
+        .single();
+      return data as any;
+    },
+    enabled: !!user,
+  });
+
+  const pixKey = profile?.pix_key || "";
+  const pixKeyType = profile?.pix_key_type || "cpf";
 
   // Get sales for balance calc
   const { data: sales = [] } = useQuery({
