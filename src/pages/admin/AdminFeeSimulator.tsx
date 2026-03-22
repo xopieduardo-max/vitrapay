@@ -44,7 +44,7 @@ export default function AdminFeeSimulator() {
     },
   });
 
-  // Local state for editing (initialized from DB)
+  // Local state for VitraPay fees editing
   const [vpPixPct, setVpPixPct] = useState<string | null>(null);
   const [vpPixFixed, setVpPixFixed] = useState<string | null>(null);
   const [vpCardPct, setVpCardPct] = useState<string | null>(null);
@@ -52,18 +52,40 @@ export default function AdminFeeSimulator() {
   const [vpBoletoPct, setVpBoletoPct] = useState<string | null>(null);
   const [vpBoletoFixed, setVpBoletoFixed] = useState<string | null>(null);
 
-  // Effective values (local edits or DB values)
+  // Local state for Asaas gateway costs editing
+  const [asPixPct, setAsPixPct] = useState<string | null>(null);
+  const [asPixFixed, setAsPixFixed] = useState<string | null>(null);
+  const [asCardPct, setAsCardPct] = useState<string | null>(null);
+  const [asCardFixed, setAsCardFixed] = useState<string | null>(null);
+  const [asBoletoPct, setAsBoletoPct] = useState<string | null>(null);
+  const [asBoletoFixed, setAsBoletoFixed] = useState<string | null>(null);
+
+  // Effective VitraPay values
   const ePix = { pct: vpPixPct ?? String(dbFees?.pix_percentage ?? 0), fixed: vpPixFixed ?? String((dbFees?.pix_fixed ?? 0) / 100) };
   const eCard = { pct: vpCardPct ?? String(dbFees?.card_percentage ?? 3.89), fixed: vpCardFixed ?? String((dbFees?.card_fixed ?? 249) / 100) };
   const eBoleto = { pct: vpBoletoPct ?? String(dbFees?.boleto_percentage ?? 0), fixed: vpBoletoFixed ?? String((dbFees?.boleto_fixed ?? 0) / 100) };
+
+  // Effective Asaas values (local edits or defaults)
+  const eAsPix = { pct: asPixPct ?? String(ASAAS_DEFAULTS.pix.pct), fixed: asPixFixed ?? String(ASAAS_DEFAULTS.pix.fixed / 100) };
+  const eAsCard = { pct: asCardPct ?? String(ASAAS_DEFAULTS.card.pct), fixed: asCardFixed ?? String(ASAAS_DEFAULTS.card.fixed / 100) };
+  const eAsBoleto = { pct: asBoletoPct ?? String(ASAAS_DEFAULTS.boleto.pct), fixed: asBoletoFixed ?? String(ASAAS_DEFAULTS.boleto.fixed / 100) };
+
+  const asConfig: Record<string, { pct: string; fixed: string }> = {
+    pix: eAsPix, card: eAsCard, boleto: eAsBoleto,
+  };
 
   const vpConfig: Record<string, { pct: string; fixed: string }> = {
     pix: ePix, card: eCard, boleto: eBoleto,
   };
 
   const amount = Math.round((parseFloat(value) || 0) * 100);
-  const asaas = ASAAS[method];
-  const asaasCost = Math.round(amount * (asaas.pct / 100)) + asaas.fixed;
+
+  // Asaas cost from editable values
+  const currentAs = asConfig[method];
+  const asaasPct = parseFloat(currentAs.pct) || 0;
+  const asaasFixed = Math.round((parseFloat(currentAs.fixed) || 0) * 100);
+  const asaasCost = Math.round(amount * (asaasPct / 100)) + asaasFixed;
+  const asaasDesc = asaasPct > 0 && asaasFixed > 0 ? `${asaasPct}% + ${fmt(asaasFixed)}` : asaasPct > 0 ? `${asaasPct}%` : fmt(asaasFixed);
 
   const currentVp = vpConfig[method];
   const parsedPct = parseFloat(currentVp.pct) || 0;
