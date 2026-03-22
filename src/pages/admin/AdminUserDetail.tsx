@@ -37,7 +37,11 @@ function getDateRange(period: Period): Date | null {
 export default function AdminUserDetail() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [period, setPeriod] = useState<Period>("30d");
+  const [feeDialogOpen, setFeeDialogOpen] = useState(false);
+  const [customPct, setCustomPct] = useState("");
+  const [customFixed, setCustomFixed] = useState("");
 
   // Profile
   const { data: profile, isLoading: loadingProfile } = useQuery({
