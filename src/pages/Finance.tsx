@@ -7,13 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -24,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   Wallet, ArrowDownToLine, ArrowUpRight, TrendingUp, Clock, Loader2, DollarSign,
-  AlertCircle, Lock, Info,
+  AlertCircle, Lock, Info, ShieldCheck, ArrowLeft, ArrowRight, CheckCircle2,
 } from "lucide-react";
 
 // ── Platform constants ──
@@ -49,10 +42,27 @@ export default function Finance() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawStep, setWithdrawStep] = useState(1);
   const [detailView, setDetailView] = useState<"available" | "held" | null>(null);
   const [amount, setAmount] = useState("");
-  const [pixKey, setPixKey] = useState("");
-  const [pixKeyType, setPixKeyType] = useState<string>("cpf");
+
+  // Get saved pix key from profile
+  const { data: profile } = useQuery({
+    queryKey: ["profile-pix", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("pix_key, pix_key_type")
+        .eq("user_id", user.id)
+        .single();
+      return data as any;
+    },
+    enabled: !!user,
+  });
+
+  const pixKey = profile?.pix_key || "";
+  const pixKeyType = profile?.pix_key_type || "cpf";
 
   // Get sales for balance calc
   const { data: sales = [] } = useQuery({
@@ -155,7 +165,7 @@ export default function Finance() {
       if (isNaN(amountCents) || amountCents <= 0) throw new Error("Valor inválido");
       if (amountCents < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
       if (amountCents + WITHDRAWAL_FEE > availableBalance) throw new Error("Saldo insuficiente (valor + taxa de R$ 5,00)");
-      if (!pixKey.trim()) throw new Error("Informe a chave Pix");
+      if (!pixKey.trim()) throw new Error("Configure sua chave Pix em Ajustes");
 
       const { data, error } = await supabase.functions.invoke("request-withdraw", {
         body: {
@@ -175,7 +185,7 @@ export default function Finance() {
       toast({ title: "Saque solicitado!", description });
       setWithdrawOpen(false);
       setAmount("");
-      setPixKey("");
+      setWithdrawStep(1);
       queryClient.invalidateQueries({ queryKey: ["withdrawals"] });
     },
     onError: (err: any) => {
@@ -208,106 +218,153 @@ export default function Finance() {
           <h1 className="text-2xl font-bold tracking-tight">Financeiro</h1>
           <p className="text-sm text-muted-foreground mt-1">Gerencie seus ganhos e saques</p>
         </div>
-        <Dialog open={withdrawOpen} onOpenChange={setWithdrawOpen}>
+        <Dialog open={withdrawOpen} onOpenChange={(open) => {
+          setWithdrawOpen(open);
+          if (!open) { setWithdrawStep(1); setAmount(""); }
+        }}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <ArrowDownToLine className="h-4 w-4" strokeWidth={1.5} />
               Solicitar Saque
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Solicitar Saque via Pix</DialogTitle>
+              <DialogTitle>Solicitar saque</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                {withdrawStep === 1
+                  ? "Quase lá! Informe o valor e siga para a próxima etapa."
+                  : 'Se estiver tudo certo, clique em "Solicitar saque" para concluir.'}
+              </p>
             </DialogHeader>
-            <div className="space-y-4 pt-2">
-              {/* Balance info */}
-              <div className="rounded-lg bg-muted/30 p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Saldo disponível</span>
-                  <span className="text-lg font-bold text-primary">
-                    R$ {(Math.max(0, availableBalance) / 100).toFixed(2)}
+
+            {/* Progress bar */}
+            <div className="flex items-center gap-3 pt-1">
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: withdrawStep === 1 ? "50%" : "100%" }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">{withdrawStep} de 2</span>
+            </div>
+
+            {withdrawStep === 1 ? (
+              /* ── Step 1: Amount ── */
+              <div className="space-y-6 pt-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Quanto você quer sacar? <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="flex items-center rounded-md border border-input bg-background overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+                    <span className="px-3 text-sm text-muted-foreground font-medium bg-muted/50 h-10 flex items-center border-r border-input">
+                      R$
+                    </span>
+                    <Input
+                      placeholder="100,00"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                  </div>
+                </div>
+
+                {/* Balance info at bottom */}
+                <div className="rounded-lg border border-border p-4 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Saldo disponível</span>
+                  <span className="text-sm font-bold">
+                    R$ {(Math.max(0, availableBalance) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                {totalHeld > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Lock className="h-3 w-3" /> Retido (PIX: D+0 • Cartão: D+{HOLDBACK_DAYS_CARD})
-                    </span>
-                    <span className="text-sm font-medium text-warning">
-                      R$ {(totalHeld / 100).toFixed(2)}
-                    </span>
+
+                {!pixKey && (
+                  <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      Você ainda não configurou sua chave Pix. Vá em <strong>Ajustes</strong> para cadastrar.
+                    </p>
                   </div>
                 )}
-              </div>
 
-              {/* Rules info */}
-              <div className="rounded-lg border border-border p-3 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Info className="h-3.5 w-3.5 shrink-0" />
-                  <span>Saque mínimo: <strong className="text-foreground">R$ {(MIN_WITHDRAWAL / 100).toFixed(2)}</strong></span>
+                <div className="flex items-center gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setWithdrawOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="flex-1 gap-2"
+                    disabled={parsedAmount < MIN_WITHDRAWAL || !pixKey}
+                    onClick={() => setWithdrawStep(2)}
+                  >
+                    Prosseguir
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Info className="h-3.5 w-3.5 shrink-0" />
-                  <span>Taxa por saque: <strong className="text-foreground">R$ {(WITHDRAWAL_FEE / 100).toFixed(2)}</strong></span>
-                </div>
-                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                   <Info className="h-3.5 w-3.5 shrink-0" />
-                   <span>Carência: <strong className="text-foreground">PIX: imediato • Cartão: {HOLDBACK_DAYS_CARD} dias</strong></span>
-                 </div>
-                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                   <Info className="h-3.5 w-3.5 shrink-0" />
-                   <span>Até R$ {(AUTO_APPROVE_LIMIT / 100).toFixed(0)}: <strong className="text-foreground">PIX automático</strong> • Acima: aprovação admin</span>
-                 </div>
               </div>
+            ) : (
+              /* ── Step 2: Confirmation ── */
+              <div className="space-y-6 pt-2">
+                <div className="rounded-lg border border-border divide-y divide-border">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-muted-foreground">Chave Pix</span>
+                    <span className="text-sm font-medium">{pixKey}</span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-muted-foreground">Valor a sacar</span>
+                    <span className="text-sm font-medium">
+                      R$ {(parsedAmount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-muted-foreground">Taxa</span>
+                    <span className="text-sm font-medium">
+                      R$ {(WITHDRAWAL_FEE / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-muted-foreground">Valor a receber</span>
+                    <span className="text-sm font-bold text-primary">
+                      R$ {(netAfterFee / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <Label>Valor do saque (R$)</Label>
-                <Input
-                  placeholder="100,00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-                {parsedAmount > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Você recebe: <strong>R$ {(netAfterFee / 100).toFixed(2)}</strong> • 
-                    Total debitado: <strong>R$ {(totalDeducted / 100).toFixed(2)}</strong> (inclui taxa de R$ {(WITHDRAWAL_FEE / 100).toFixed(2)})
-                  </p>
-                )}
+                <div className="rounded-lg bg-muted/30 p-3 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-muted-foreground">
+                    A VitraPay prioriza a segurança e analisa seu saque
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 gap-2"
+                    onClick={() => setWithdrawStep(1)}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Voltar
+                  </Button>
+                  <Button
+                    className="flex-1 gap-2"
+                    disabled={requestWithdrawal.isPending}
+                    onClick={() => requestWithdrawal.mutate()}
+                  >
+                    {requestWithdrawal.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Confirmar
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Tipo de chave Pix</Label>
-                <Select value={pixKeyType} onValueChange={setPixKeyType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cpf">CPF</SelectItem>
-                    <SelectItem value="email">E-mail</SelectItem>
-                    <SelectItem value="phone">Telefone</SelectItem>
-                    <SelectItem value="random">Chave aleatória</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Chave Pix</Label>
-                <Input
-                  placeholder="Sua chave Pix"
-                  value={pixKey}
-                  onChange={(e) => setPixKey(e.target.value)}
-                />
-              </div>
-              <Button
-                className="w-full"
-                disabled={requestWithdrawal.isPending || parsedAmount < MIN_WITHDRAWAL}
-                onClick={() => requestWithdrawal.mutate()}
-              >
-                {requestWithdrawal.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Confirmar Saque"
-                )}
-              </Button>
-            </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>

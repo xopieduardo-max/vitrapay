@@ -885,6 +885,8 @@ export type Database = {
           id: string
           monthly_revenue: string | null
           onboarding_completed: boolean | null
+          pix_key: string | null
+          pix_key_type: string | null
           referral_source: string | null
           terms_accepted_at: string | null
           updated_at: string
@@ -903,6 +905,8 @@ export type Database = {
           id?: string
           monthly_revenue?: string | null
           onboarding_completed?: boolean | null
+          pix_key?: string | null
+          pix_key_type?: string | null
           referral_source?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
@@ -921,6 +925,8 @@ export type Database = {
           id?: string
           monthly_revenue?: string | null
           onboarding_completed?: boolean | null
+          pix_key?: string | null
+          pix_key_type?: string | null
           referral_source?: string | null
           terms_accepted_at?: string | null
           updated_at?: string

@@ -8,8 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette, Bell, BellOff } from "lucide-react";
+import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette, Bell, BellOff, Landmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -22,7 +29,10 @@ export default function Settings() {
 
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
+  const [pixKey, setPixKey] = useState("");
+  const [pixKeyType, setPixKeyType] = useState("cpf");
   const [saving, setSaving] = useState(false);
+  const [savingPix, setSavingPix] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
@@ -41,6 +51,8 @@ export default function Settings() {
       if (data) {
         setDisplayName(data.display_name || "");
         setBio(data.bio || "");
+        setPixKey((data as any).pix_key || "");
+        setPixKeyType((data as any).pix_key_type || "cpf");
       }
       return data;
     },
@@ -235,8 +247,28 @@ export default function Settings() {
       {/* Push Notifications Section */}
       <NotificationsSection />
 
-
-
+      {/* Pix Key Section */}
+      <PixKeySection
+        pixKey={pixKey}
+        setPixKey={setPixKey}
+        pixKeyType={pixKeyType}
+        setPixKeyType={setPixKeyType}
+        savingPix={savingPix}
+        onSave={async () => {
+          if (!user) return;
+          setSavingPix(true);
+          const { error } = await supabase
+            .from("profiles")
+            .update({ pix_key: pixKey, pix_key_type: pixKeyType } as any)
+            .eq("user_id", user.id);
+          if (error) toast.error("Erro ao salvar chave Pix.");
+          else {
+            toast.success("Chave Pix salva!");
+            queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+          }
+          setSavingPix(false);
+        }}
+      />
 
       {/* Password Section */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-6">
@@ -341,6 +373,65 @@ function NotificationsSection() {
           Notificações bloqueadas pelo navegador. Vá nas configurações do navegador para permitir.
         </p>
       )}
+    </div>
+  );
+}
+
+function PixKeySection({
+  pixKey,
+  setPixKey,
+  pixKeyType,
+  setPixKeyType,
+  savingPix,
+  onSave,
+}: {
+  pixKey: string;
+  setPixKey: (v: string) => void;
+  pixKeyType: string;
+  setPixKeyType: (v: string) => void;
+  savingPix: boolean;
+  onSave: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Landmark className="h-4 w-4 text-primary" />
+        Chave Pix para Saques
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Configure sua chave Pix para receber saques. Ela será usada automaticamente ao solicitar um saque.
+      </p>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground">Tipo de chave</Label>
+          <Select value={pixKeyType} onValueChange={setPixKeyType}>
+            <SelectTrigger className="bg-muted/50 border-transparent focus:border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cpf">CPF</SelectItem>
+              <SelectItem value="email">E-mail</SelectItem>
+              <SelectItem value="phone">Telefone</SelectItem>
+              <SelectItem value="random">Chave aleatória</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground">Chave Pix</Label>
+          <Input
+            value={pixKey}
+            onChange={(e) => setPixKey(e.target.value)}
+            placeholder="Sua chave Pix"
+            className="bg-muted/50 border-transparent focus:border-border"
+          />
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={onSave} disabled={savingPix || !pixKey.trim()} size="sm">
+            {savingPix ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+            Salvar Chave Pix
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
