@@ -668,10 +668,10 @@ export default function Landing() {
             >
               <p className="text-sm md:text-base text-muted-foreground">Taxa para cartões na plataforma</p>
               <p className="text-4xl md:text-5xl font-extrabold text-primary tracking-tight">
-                3,89% + R$2,49
+                {feeDisplay.cardText}
               </p>
               <p className="text-sm md:text-base text-muted-foreground">
-                Pix com taxa <span className="font-bold text-primary">0%</span> para seus clientes
+                Pix com taxa <span className="font-bold text-primary">{feeDisplay.pixText}</span> para seus clientes
               </p>
             </motion.div>
           </motion.div>
