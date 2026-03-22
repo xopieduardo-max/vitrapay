@@ -175,9 +175,9 @@ export default function AdminFeeSimulator() {
 
               <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                 <div>
-                  <p className="text-sm font-medium">Lucro VitraPay</p>
+                  <p className="text-sm font-medium">Lucro VitraPay (líquido)</p>
                   <p className="text-xs text-muted-foreground">
-                    {`${fmt(vitraPayFee)} (taxa) − ${fmt(asaasCost)} (Asaas)`}
+                    Taxa cobrada do produtor: {fmt(vitraPayFee)}
                   </p>
                 </div>
                 <span className={cn(
