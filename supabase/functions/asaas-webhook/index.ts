@@ -412,9 +412,19 @@ Deno.serve(async (req) => {
       if (aff) affiliateUserId = aff.user_id;
     }
 
-    // Calculate platform fee
+    // Calculate platform fee - read platform defaults from DB, then check producer overrides
     let pixFeePercentage = 0;
     let pixFeeFixed = 0;
+
+    // Read platform-level fees for pix
+    const { data: platformFees } = await supabase
+      .from("platform_fees").select("pix_percentage, pix_fixed").eq("id", 1).single();
+    if (platformFees) {
+      pixFeePercentage = Number(platformFees.pix_percentage) / 100;
+      pixFeeFixed = platformFees.pix_fixed;
+    }
+
+    // Producer custom overrides take priority
     const { data: producerProfile } = await supabase
       .from("profiles")
       .select("custom_fee_percentage, custom_fee_fixed")
@@ -424,9 +434,7 @@ Deno.serve(async (req) => {
       if (producerProfile.custom_fee_percentage != null) pixFeePercentage = producerProfile.custom_fee_percentage / 100;
       if (producerProfile.custom_fee_fixed != null) pixFeeFixed = producerProfile.custom_fee_fixed;
     }
-    const pixPlatformFee = (pixFeePercentage > 0 || pixFeeFixed > 0)
-      ? Math.round(pending.amount * pixFeePercentage + pixFeeFixed)
-      : 0;
+    const pixPlatformFee = Math.round(pending.amount * pixFeePercentage + pixFeeFixed);
 
     // Insert sale
     const { data: sale, error: saleErr } = await supabase

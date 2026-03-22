@@ -228,9 +228,19 @@ Deno.serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Calculate fees
+      // Calculate fees - read platform defaults from DB, then check producer overrides
       let feePercentage = 0.0389;
       let feeFixed = 249;
+
+      // Read platform-level fees
+      const { data: platformFees } = await supabase
+        .from("platform_fees").select("card_percentage, card_fixed").eq("id", 1).single();
+      if (platformFees) {
+        feePercentage = Number(platformFees.card_percentage) / 100;
+        feeFixed = platformFees.card_fixed;
+      }
+
+      // Producer custom overrides take priority
       const { data: producerProfile } = await supabase
         .from("profiles").select("custom_fee_percentage, custom_fee_fixed")
         .eq("user_id", product.producer_id).single();
