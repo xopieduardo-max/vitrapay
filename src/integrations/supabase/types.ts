@@ -874,9 +874,18 @@ export type Database = {
       profiles: {
         Row: {
           account_type: string | null
+          address_cep: string | null
+          address_city: string | null
+          address_complement: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_state: string | null
+          address_street: string | null
           already_sells: boolean | null
           avatar_url: string | null
           bio: string | null
+          birth_date: string | null
+          cpf: string | null
           created_at: string
           current_platform: string | null
           custom_fee_fixed: number | null
@@ -885,8 +894,10 @@ export type Database = {
           id: string
           monthly_revenue: string | null
           onboarding_completed: boolean | null
+          phone: string | null
           pix_key: string | null
           pix_key_type: string | null
+          profile_verified: boolean | null
           referral_source: string | null
           terms_accepted_at: string | null
           updated_at: string
@@ -894,9 +905,18 @@ export type Database = {
         }
         Insert: {
           account_type?: string | null
+          address_cep?: string | null
+          address_city?: string | null
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
           already_sells?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
+          cpf?: string | null
           created_at?: string
           current_platform?: string | null
           custom_fee_fixed?: number | null
@@ -905,8 +925,10 @@ export type Database = {
           id?: string
           monthly_revenue?: string | null
           onboarding_completed?: boolean | null
+          phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          profile_verified?: boolean | null
           referral_source?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
@@ -914,9 +936,18 @@ export type Database = {
         }
         Update: {
           account_type?: string | null
+          address_cep?: string | null
+          address_city?: string | null
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
           already_sells?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
+          cpf?: string | null
           created_at?: string
           current_platform?: string | null
           custom_fee_fixed?: number | null
@@ -925,8 +956,10 @@ export type Database = {
           id?: string
           monthly_revenue?: string | null
           onboarding_completed?: boolean | null
+          phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          profile_verified?: boolean | null
           referral_source?: string | null
           terms_accepted_at?: string | null
           updated_at?: string

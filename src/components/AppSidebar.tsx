@@ -50,7 +50,6 @@ const navItems = [
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
   { title: "Comunidade", url: "/community", icon: MessageCircle },
   { title: "Integrações", url: "/integrations", icon: Plug },
-  { title: "Ajustes", url: "/settings", icon: Settings },
   { title: "Baixar App", url: "/install", icon: Smartphone },
 ];
 

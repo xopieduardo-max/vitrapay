@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -16,14 +15,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette, Bell, BellOff, Landmark } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import {
+  Camera, Loader2, Save, KeyRound, User, Bell, BellOff, Landmark,
+  ShieldCheck, MapPin, Phone,
+} from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Badge } from "@/components/ui/badge";
 
 export default function Settings() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -39,6 +39,19 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
 
+  // Verification fields
+  const [cpf, setCpf] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [addressCep, setAddressCep] = useState("");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressNumber, setAddressNumber] = useState("");
+  const [addressComplement, setAddressComplement] = useState("");
+  const [addressNeighborhood, setAddressNeighborhood] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [savingVerification, setSavingVerification] = useState(false);
+
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
@@ -51,13 +64,25 @@ export default function Settings() {
       if (data) {
         setDisplayName(data.display_name || "");
         setBio(data.bio || "");
-        setPixKey((data as any).pix_key || "");
-        setPixKeyType((data as any).pix_key_type || "cpf");
+        setPixKey(data.pix_key || "");
+        setPixKeyType(data.pix_key_type || "cpf");
+        setCpf((data as any).cpf || "");
+        setPhone((data as any).phone || "");
+        setBirthDate((data as any).birth_date || "");
+        setAddressCep((data as any).address_cep || "");
+        setAddressStreet((data as any).address_street || "");
+        setAddressNumber((data as any).address_number || "");
+        setAddressComplement((data as any).address_complement || "");
+        setAddressNeighborhood((data as any).address_neighborhood || "");
+        setAddressCity((data as any).address_city || "");
+        setAddressState((data as any).address_state || "");
       }
       return data;
     },
     enabled: !!user,
   });
+
+  const isVerified = !!(profile as any)?.profile_verified;
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,6 +114,7 @@ export default function Settings() {
     } else {
       toast.success("Foto atualizada!");
       queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["profile-header", user.id] });
     }
     setUploading(false);
   };
@@ -107,8 +133,45 @@ export default function Settings() {
     } else {
       toast.success("Perfil atualizado!");
       queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["profile-header", user.id] });
     }
     setSaving(false);
+  };
+
+  const handleSaveVerification = async () => {
+    if (!user) return;
+    if (!cpf.trim() || !phone.trim() || !addressCep.trim() || !addressStreet.trim() || !addressNumber.trim() || !addressCity.trim() || !addressState.trim()) {
+      toast.error("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    setSavingVerification(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        cpf,
+        phone,
+        birth_date: birthDate || null,
+        address_cep: addressCep,
+        address_street: addressStreet,
+        address_number: addressNumber,
+        address_complement: addressComplement,
+        address_neighborhood: addressNeighborhood,
+        address_city: addressCity,
+        address_state: addressState,
+        profile_verified: true,
+        pix_key: pixKey,
+        pix_key_type: pixKeyType,
+      } as any)
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast.error("Erro ao salvar dados.");
+    } else {
+      toast.success("Dados verificados com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+    }
+    setSavingVerification(false);
   };
 
   const handleChangePassword = async () => {
@@ -134,17 +197,17 @@ export default function Settings() {
     setChangingPassword(false);
   };
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate("/");
-  };
-
   const initials = (displayName || user?.email || "U")
     .split(" ")
     .map((w) => w[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const ESTADOS = [
+    "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA",
+    "PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
+  ];
 
   if (isLoading) {
     return (
@@ -156,16 +219,27 @@ export default function Settings() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Ajustes</h1>
-        <p className="text-sm text-muted-foreground mt-1">Gerencie seu perfil e configurações da conta</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Perfil</h1>
+          <p className="text-sm text-muted-foreground mt-1">Gerencie seus dados e configurações</p>
+        </div>
+        {isVerified ? (
+          <Badge className="gap-1.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10">
+            <ShieldCheck className="h-3.5 w-3.5" /> Verificado
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="gap-1.5 text-amber-500 border-amber-500/30">
+            Pendente de verificação
+          </Badge>
+        )}
       </div>
 
       {/* Profile Section */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-6">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <User className="h-4 w-4 text-primary" />
-          Perfil
+          Dados do Perfil
         </div>
 
         <div className="flex items-center gap-5">
@@ -193,7 +267,6 @@ export default function Settings() {
               className="hidden"
             />
           </div>
-
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{displayName || "Sem nome"}</p>
             <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
@@ -203,22 +276,11 @@ export default function Settings() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Nome de exibição</Label>
-            <Input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Seu nome"
-              className="bg-muted/50 border-transparent focus:border-border"
-            />
+            <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Seu nome" className="bg-muted/50 border-transparent focus:border-border" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Bio</Label>
-            <Textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Conte um pouco sobre você..."
-              className="bg-muted/50 border-transparent focus:border-border resize-none"
-              rows={3}
-            />
+            <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Conte um pouco sobre você..." className="bg-muted/50 border-transparent focus:border-border resize-none" rows={3} />
           </div>
           <div className="flex justify-end">
             <Button onClick={handleSaveProfile} disabled={saving} size="sm">
@@ -229,46 +291,133 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Theme Section */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+      {/* Verification Section */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-6">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <Palette className="h-4 w-4 text-primary" />
-          Aparência
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          Verificação de Identidade
+          {!isVerified && (
+            <span className="text-xs text-amber-500 font-normal ml-auto">Obrigatório para vender</span>
+          )}
         </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm">Tema da interface</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Alterne entre modo claro e escuro</p>
+
+        <div className="space-y-4">
+          {/* Identification */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">CPF <span className="text-destructive">*</span></Label>
+              <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="bg-muted/50 border-transparent focus:border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Data de nascimento</Label>
+              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-muted/50 border-transparent focus:border-border" />
+            </div>
           </div>
-          <ThemeToggle />
+
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+              <Phone className="h-3 w-3" /> Telefone <span className="text-destructive">*</span>
+            </Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+55 11 99999-9999" className="bg-muted/50 border-transparent focus:border-border" />
+          </div>
+
+          {/* Address */}
+          <div className="pt-2">
+            <div className="flex items-center gap-2 text-sm font-semibold mb-4">
+              <MapPin className="h-4 w-4 text-primary" />
+              Endereço
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">CEP <span className="text-destructive">*</span></Label>
+                <Input value={addressCep} onChange={(e) => setAddressCep(e.target.value)} placeholder="00000-000" className="bg-muted/50 border-transparent focus:border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Estado <span className="text-destructive">*</span></Label>
+                <Select value={addressState} onValueChange={setAddressState}>
+                  <SelectTrigger className="bg-muted/50 border-transparent focus:border-border">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESTADOS.map((uf) => (
+                      <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Rua <span className="text-destructive">*</span></Label>
+                <Input value={addressStreet} onChange={(e) => setAddressStreet(e.target.value)} placeholder="Rua, Avenida, Alameda" className="bg-muted/50 border-transparent focus:border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Número <span className="text-destructive">*</span></Label>
+                <Input value={addressNumber} onChange={(e) => setAddressNumber(e.target.value)} placeholder="Nº" className="bg-muted/50 border-transparent focus:border-border" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Complemento</Label>
+                <Input value={addressComplement} onChange={(e) => setAddressComplement(e.target.value)} placeholder="Ap, Bloco" className="bg-muted/50 border-transparent focus:border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Bairro</Label>
+                <Input value={addressNeighborhood} onChange={(e) => setAddressNeighborhood(e.target.value)} placeholder="Bairro" className="bg-muted/50 border-transparent focus:border-border" />
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-4">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Cidade <span className="text-destructive">*</span></Label>
+              <Input value={addressCity} onChange={(e) => setAddressCity(e.target.value)} placeholder="Cidade" className="bg-muted/50 border-transparent focus:border-border" />
+            </div>
+          </div>
+
+          {/* Pix Key inside verification */}
+          <div className="pt-2">
+            <div className="flex items-center gap-2 text-sm font-semibold mb-4">
+              <Landmark className="h-4 w-4 text-primary" />
+              Chave Pix para Saques
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              A chave Pix deve estar vinculada ao seu CPF. Ela será usada para receber seus saques.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Tipo de chave</Label>
+                <Select value={pixKeyType} onValueChange={setPixKeyType}>
+                  <SelectTrigger className="bg-muted/50 border-transparent focus:border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cpf">CPF</SelectItem>
+                    <SelectItem value="email">E-mail</SelectItem>
+                    <SelectItem value="phone">Telefone</SelectItem>
+                    <SelectItem value="random">Chave aleatória</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Chave Pix</Label>
+                <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Sua chave Pix" className="bg-muted/50 border-transparent focus:border-border" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSaveVerification} disabled={savingVerification} size="sm">
+              {savingVerification ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+              {isVerified ? "Atualizar Dados" : "Verificar e Salvar"}
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Push Notifications Section */}
       <NotificationsSection />
-
-      {/* Pix Key Section */}
-      <PixKeySection
-        pixKey={pixKey}
-        setPixKey={setPixKey}
-        pixKeyType={pixKeyType}
-        setPixKeyType={setPixKeyType}
-        savingPix={savingPix}
-        onSave={async () => {
-          if (!user) return;
-          setSavingPix(true);
-          const { error } = await supabase
-            .from("profiles")
-            .update({ pix_key: pixKey, pix_key_type: pixKeyType } as any)
-            .eq("user_id", user.id);
-          if (error) toast.error("Erro ao salvar chave Pix.");
-          else {
-            toast.success("Chave Pix salva!");
-            queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
-          }
-          setSavingPix(false);
-        }}
-      />
 
       {/* Password Section */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-6">
@@ -276,27 +425,14 @@ export default function Settings() {
           <KeyRound className="h-4 w-4 text-primary" />
           Alterar Senha
         </div>
-
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Nova senha</Label>
-            <Input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
-              className="bg-muted/50 border-transparent focus:border-border"
-            />
+            <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="bg-muted/50 border-transparent focus:border-border" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Confirmar nova senha</Label>
-            <Input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repita a nova senha"
-              className="bg-muted/50 border-transparent focus:border-border"
-            />
+            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita a nova senha" className="bg-muted/50 border-transparent focus:border-border" />
           </div>
           <div className="flex justify-end">
             <Button onClick={handleChangePassword} disabled={changingPassword || !newPassword} size="sm" variant="outline">
@@ -304,20 +440,6 @@ export default function Settings() {
               Alterar Senha
             </Button>
           </div>
-        </div>
-      </div>
-
-      {/* Logout */}
-      <div className="rounded-xl border border-destructive/30 bg-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold">Sair da conta</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Você será desconectado da plataforma</p>
-          </div>
-          <Button variant="destructive" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
         </div>
       </div>
     </div>
@@ -373,65 +495,6 @@ function NotificationsSection() {
           Notificações bloqueadas pelo navegador. Vá nas configurações do navegador para permitir.
         </p>
       )}
-    </div>
-  );
-}
-
-function PixKeySection({
-  pixKey,
-  setPixKey,
-  pixKeyType,
-  setPixKeyType,
-  savingPix,
-  onSave,
-}: {
-  pixKey: string;
-  setPixKey: (v: string) => void;
-  pixKeyType: string;
-  setPixKeyType: (v: string) => void;
-  savingPix: boolean;
-  onSave: () => void;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <Landmark className="h-4 w-4 text-primary" />
-        Chave Pix para Saques
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Configure sua chave Pix para receber saques. Ela será usada automaticamente ao solicitar um saque.
-      </p>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-xs uppercase tracking-widest text-muted-foreground">Tipo de chave</Label>
-          <Select value={pixKeyType} onValueChange={setPixKeyType}>
-            <SelectTrigger className="bg-muted/50 border-transparent focus:border-border">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cpf">CPF</SelectItem>
-              <SelectItem value="email">E-mail</SelectItem>
-              <SelectItem value="phone">Telefone</SelectItem>
-              <SelectItem value="random">Chave aleatória</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label className="text-xs uppercase tracking-widest text-muted-foreground">Chave Pix</Label>
-          <Input
-            value={pixKey}
-            onChange={(e) => setPixKey(e.target.value)}
-            placeholder="Sua chave Pix"
-            className="bg-muted/50 border-transparent focus:border-border"
-          />
-        </div>
-        <div className="flex justify-end">
-          <Button onClick={onSave} disabled={savingPix || !pixKey.trim()} size="sm">
-            {savingPix ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-            Salvar Chave Pix
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
