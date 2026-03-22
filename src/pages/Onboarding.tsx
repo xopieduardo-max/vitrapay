@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { useToast } from "@/hooks/use-toast";
@@ -110,6 +111,7 @@ const stepVariants = {
 export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -160,8 +162,11 @@ export default function Onboarding() {
         await supabase.from("user_roles").insert({ user_id: user.id, role: "producer" });
       }
 
+      // Invalidate AuthGuard cache so it knows onboarding is done
+      await queryClient.invalidateQueries({ queryKey: ["onboarding-check", user.id] });
+
       toast({ title: "Bem-vindo à VitraPay! 🚀" });
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally {
