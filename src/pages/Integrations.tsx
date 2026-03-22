@@ -7,21 +7,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Save, Plug, Eye, EyeOff, ChevronDown, ExternalLink } from "lucide-react";
+import { Loader2, Save, Eye, EyeOff, ChevronDown, ExternalLink } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
+import utmifyLogo from "@/assets/integrations/utmify-logo.png";
+import facebookLogo from "@/assets/integrations/facebook-logo.png";
+import googleAdsLogo from "@/assets/integrations/google-ads-logo.png";
+import tiktokLogo from "@/assets/integrations/tiktok-logo.png";
 
 function IntegrationCard({
   title,
   description,
-  icon,
-  color,
+  logo,
   tutorialSteps,
   children,
 }: {
   title: string;
   description: string;
-  icon: string;
-  color: string;
+  logo: string;
   tutorialSteps: { step: string; detail: string }[];
   children?: React.ReactNode;
 }) {
@@ -30,9 +33,7 @@ function IntegrationCard({
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
       <div className="flex items-center gap-3">
-        <div className={`h-10 w-10 rounded-lg flex items-center justify-center text-lg font-bold text-white ${color}`}>
-          {icon}
-        </div>
+        <img src={logo} alt={title} className="h-10 w-10 rounded-lg object-contain" />
         <div>
           <h3 className="text-sm font-semibold">{title}</h3>
           <p className="text-xs text-muted-foreground">{description}</p>
@@ -192,8 +193,7 @@ export default function Integrations() {
       <IntegrationCard
         title="UTMify"
         description="Rastreamento de vendas e campanhas de tráfego pago"
-        icon="U"
-        color="bg-violet-600"
+        logo={utmifyLogo}
         tutorialSteps={[
           { step: "Crie sua conta no UTMify", detail: "Acesse app.utmify.com.br e crie sua conta gratuita." },
           { step: "Acesse Integrações → Credenciais de API", detail: "No painel do UTMify, vá em Integrações e copie seu token de API." },
@@ -208,8 +208,7 @@ export default function Integrations() {
       <IntegrationCard
         title="Facebook Ads (Meta Pixel)"
         description="Rastreie conversões e otimize suas campanhas no Facebook e Instagram"
-        icon="f"
-        color="bg-blue-600"
+        logo={facebookLogo}
         tutorialSteps={[
           { step: "Acesse o Gerenciador de Eventos do Facebook", detail: "Vá em business.facebook.com → Gerenciador de Eventos → Fontes de Dados." },
           { step: "Copie o ID do Pixel", detail: "Selecione seu Pixel e copie o ID (número de 15-16 dígitos)." },
@@ -229,8 +228,7 @@ export default function Integrations() {
       <IntegrationCard
         title="Google Ads"
         description="Rastreie conversões de vendas nas campanhas do Google Ads"
-        icon="G"
-        color="bg-green-600"
+        logo={googleAdsLogo}
         tutorialSteps={[
           { step: "Acesse o Google Ads", detail: "Vá em ads.google.com → Ferramentas e Configurações → Medição → Conversões." },
           { step: "Crie uma ação de conversão", detail: "Clique em '+ Nova ação de conversão' → Website → Configure o nome e valor." },
@@ -251,8 +249,7 @@ export default function Integrations() {
       <IntegrationCard
         title="TikTok Ads"
         description="Rastreie conversões e otimize campanhas no TikTok"
-        icon="T"
-        color="bg-black"
+        logo={tiktokLogo}
         tutorialSteps={[
           { step: "Acesse o TikTok Ads Manager", detail: "Vá em ads.tiktok.com → Assets → Events → Web Events." },
           { step: "Crie um Pixel", detail: "Clique em 'Create Pixel' → Escolha 'Manually Install Pixel Code' → Copie o Pixel ID." },
