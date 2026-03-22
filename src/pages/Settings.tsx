@@ -54,6 +54,8 @@ export default function Settings() {
       if (data) {
         setDisplayName(data.display_name || "");
         setBio(data.bio || "");
+        setPixKey((data as any).pix_key || "");
+        setPixKeyType((data as any).pix_key_type || "cpf");
       }
       return data;
     },
