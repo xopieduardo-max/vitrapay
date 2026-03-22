@@ -5,6 +5,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 async function grantProductAccess(
   supabase: any,
   productId: string,
@@ -179,6 +186,19 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const expectedWebhookToken = Deno.env.get("ASAAS_WEBHOOK_TOKEN");
+    const receivedWebhookToken = req.headers.get("asaas-access-token");
+
+    if (!expectedWebhookToken) {
+      console.error("ASAAS_WEBHOOK_TOKEN is not configured");
+      return jsonResponse({ status: "webhook_token_not_configured" }, 500);
+    }
+
+    if (receivedWebhookToken !== expectedWebhookToken) {
+      console.warn("Unauthorized Asaas webhook request blocked");
+      return jsonResponse({ status: "unauthorized" }, 401);
+    }
+
     const body = await req.json();
     console.log("Webhook received:", JSON.stringify(body));
 

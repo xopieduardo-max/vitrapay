@@ -67,13 +67,30 @@ serve(async (req) => {
 
     const { data: sales } = await supabase
       .from("sales")
-      .select("amount, platform_fee, created_at, payment_provider")
+      .select("amount, platform_fee, created_at, payment_provider, payment_id")
       .eq("producer_id", user.id)
       .eq("status", "completed");
 
+    const paymentIds = [...new Set((sales || []).map((sale) => sale.payment_id).filter(Boolean))];
+    const { data: confirmedPayments } = paymentIds.length > 0
+      ? await supabase
+          .from("pending_payments")
+          .select("asaas_payment_id")
+          .in("asaas_payment_id", paymentIds)
+          .eq("status", "confirmed")
+      : { data: [] };
+
+    const confirmedPaymentIds = new Set(
+      (confirmedPayments || []).map((payment) => payment.asaas_payment_id).filter(Boolean)
+    );
+
+    const verifiedSales = (sales || []).filter(
+      (sale) => !!sale.payment_id && confirmedPaymentIds.has(sale.payment_id)
+    );
+
     const { data: commissions } = await supabase
       .from("commissions")
-      .select("amount, created_at")
+      .select("amount, created_at, status")
       .eq("affiliate_id", user.id);
 
     const { data: withdrawals } = await supabase
@@ -82,7 +99,7 @@ serve(async (req) => {
       .eq("user_id", user.id);
 
     // Available sales (past holdback period)
-    const totalAvailableSales = (sales || []).reduce((acc, s) => {
+    const totalAvailableSales = verifiedSales.reduce((acc, s) => {
       const holdDays = s.payment_provider === "pix" ? HOLDBACK_DAYS_PIX : HOLDBACK_DAYS_CARD;
       const availAt = new Date(s.created_at);
       availAt.setDate(availAt.getDate() + holdDays);
@@ -94,6 +111,7 @@ serve(async (req) => {
 
     // Available commissions (D+2 conservative)
     const totalAvailableCommissions = (commissions || []).reduce((acc, c) => {
+      if (c.status === "cancelled") return acc;
       const availAt = new Date(c.created_at);
       availAt.setDate(availAt.getDate() + HOLDBACK_DAYS_CARD);
       if (availAt <= now) return acc + c.amount;

@@ -8,6 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 export function RecentSalesTable() {
   const { user } = useAuth();
 
+  const statusMap: Record<string, { label: string; className: string }> = {
+    completed: { label: "Pago", className: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+    pending: { label: "Pendente", className: "" },
+    refunded: { label: "Estornada", className: "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20" },
+  };
+
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["recent-sales", user?.id],
     queryFn: async () => {
@@ -49,42 +55,39 @@ export function RecentSalesTable() {
         </div>
       ) : (
         <div className="divide-y divide-border">
-          {sales.map((sale: any, i: number) => (
-            <motion.div
-              key={sale.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {sale.products?.title || "Produto removido"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {sale.id.slice(0, 8).toUpperCase()}
-                </p>
-              </div>
-              <div className="flex items-center gap-3 ml-4">
-                <Badge
-                  variant={sale.status === "completed" ? "default" : "secondary"}
-                  className={`text-[0.6rem] ${
-                    sale.status === "completed"
-                      ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-                      : ""
-                  }`}
-                >
-                  {sale.status === "completed" ? "Pago" : "Pendente"}
-                </Badge>
-                <span className="text-sm font-semibold stat-value min-w-[80px] text-right">
-                  R$ {(sale.amount / 100).toFixed(2)}
-                </span>
-                <span className="text-[0.65rem] text-muted-foreground min-w-[60px] text-right">
-                  {timeAgo(sale.created_at)}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+          {sales.map((sale: any, i: number) => {
+            const status = statusMap[sale.status] || statusMap.pending;
+
+            return (
+              <motion.div
+                key={sale.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+                className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {sale.products?.title || "Produto removido"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {sale.id.slice(0, 8).toUpperCase()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 ml-4">
+                  <Badge variant="secondary" className={`text-[0.6rem] ${status.className}`}>
+                    {status.label}
+                  </Badge>
+                  <span className="text-sm font-semibold stat-value min-w-[80px] text-right">
+                    R$ {(sale.amount / 100).toFixed(2)}
+                  </span>
+                  <span className="text-[0.65rem] text-muted-foreground min-w-[60px] text-right">
+                    {timeAgo(sale.created_at)}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>
