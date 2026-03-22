@@ -17,8 +17,12 @@ const ASAAS: Record<string, { pct: number; fixed: number; desc: string }> = {
   boleto: { pct: 0,    fixed: 199, desc: "R$ 1,99 por boleto" },
 };
 
-// VitraPay platform fee defaults
-const VP_DEFAULTS = { pct: 3.89, fixed: 249 };
+// VitraPay platform fee defaults per method
+const VP_DEFAULTS: Record<string, { pct: number; fixed: number }> = {
+  pix:    { pct: 0, fixed: 0 },
+  card:   { pct: 3.89, fixed: 249 },
+  boleto: { pct: 0, fixed: 0 },
+};
 
 const fmt = (c: number) =>
   `R$ ${(c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -26,26 +30,34 @@ const fmt = (c: number) =>
 export default function AdminFeeSimulator() {
   const [value, setValue] = useState("100");
   const [method, setMethod] = useState("pix");
-  const [vpPct, setVpPct] = useState(VP_DEFAULTS.pct.toString());
-  const [vpFixed, setVpFixed] = useState((VP_DEFAULTS.fixed / 100).toFixed(2));
+
+  // VitraPay fees per method
+  const [vpPixPct, setVpPixPct] = useState("0");
+  const [vpPixFixed, setVpPixFixed] = useState("0");
+  const [vpCardPct, setVpCardPct] = useState("3.89");
+  const [vpCardFixed, setVpCardFixed] = useState("2.49");
+  const [vpBoletoPct, setVpBoletoPct] = useState("0");
+  const [vpBoletoFixed, setVpBoletoFixed] = useState("0");
+
+  const vpConfig: Record<string, { pct: string; fixed: string }> = {
+    pix:    { pct: vpPixPct, fixed: vpPixFixed },
+    card:   { pct: vpCardPct, fixed: vpCardFixed },
+    boleto: { pct: vpBoletoPct, fixed: vpBoletoFixed },
+  };
 
   const amount = Math.round((parseFloat(value) || 0) * 100);
 
   const asaas = ASAAS[method];
   const asaasCost = Math.round(amount * (asaas.pct / 100)) + asaas.fixed;
 
-  // VitraPay only charges on card; Pix & boleto are free for the producer
-  const isCard = method === "card";
-  const parsedPct = parseFloat(vpPct) || 0;
-  const parsedFixed = Math.round((parseFloat(vpFixed) || 0) * 100);
-  const vitraPayFee = isCard ? Math.round(amount * (parsedPct / 100)) + parsedFixed : 0;
-  const vpDesc = `${parsedPct}% + ${fmt(parsedFixed)}`;
+  const currentVp = vpConfig[method];
+  const parsedPct = parseFloat(currentVp.pct) || 0;
+  const parsedFixed = Math.round((parseFloat(currentVp.fixed) || 0) * 100);
+  const vitraPayFee = Math.round(amount * (parsedPct / 100)) + parsedFixed;
+  const vpDesc = parsedPct > 0 || parsedFixed > 0 ? `${parsedPct}% + ${fmt(parsedFixed)}` : "Sem taxa";
 
   const producerReceives = amount - vitraPayFee;
   const vitraPayProfit = vitraPayFee - asaasCost;
-
-  // For Pix/boleto, VitraPay absorbs the Asaas cost (no fee to producer)
-  const vitraPayProfitPix = -asaasCost;
 
   const methodInfo = METHODS.find((m) => m.id === method)!;
 
@@ -134,9 +146,9 @@ export default function AdminFeeSimulator() {
               {/* Step 3: VitraPay fee */}
               <SimRow
                 label="Taxa VitraPay (cobrada do produtor)"
-                sublabel={isCard ? vpDesc : "Isento — Pix e Boleto são grátis para o produtor"}
-                value={isCard ? `- ${fmt(vitraPayFee)}` : "R$ 0,00"}
-                color={isCard ? "text-orange-500" : "text-muted-foreground"}
+                sublabel={vpDesc}
+                value={vitraPayFee > 0 ? `- ${fmt(vitraPayFee)}` : "R$ 0,00"}
+                color={vitraPayFee > 0 ? "text-orange-500" : "text-muted-foreground"}
               />
             </div>
 
@@ -152,7 +164,9 @@ export default function AdminFeeSimulator() {
                     Produtor recebe
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {isCard ? `${fmt(amount)} − ${fmt(vitraPayFee)} (taxa)` : `${fmt(amount)} (sem taxa)`}
+                    {vitraPayFee > 0
+                      ? `${fmt(amount)} − ${fmt(vitraPayFee)} (taxa)`
+                      : `${fmt(amount)} (sem taxa)`}
                   </p>
                 </div>
                 <span className="text-lg font-bold text-primary">{fmt(producerReceives)}</span>
@@ -162,16 +176,14 @@ export default function AdminFeeSimulator() {
                 <div>
                   <p className="text-sm font-medium">Lucro VitraPay</p>
                   <p className="text-xs text-muted-foreground">
-                    {isCard
-                      ? `${fmt(vitraPayFee)} (taxa) − ${fmt(asaasCost)} (Asaas)`
-                      : `R$ 0,00 (taxa) − ${fmt(asaasCost)} (Asaas) = prejuízo`}
+                    {`${fmt(vitraPayFee)} (taxa) − ${fmt(asaasCost)} (Asaas)`}
                   </p>
                 </div>
                 <span className={cn(
                   "text-sm font-bold",
-                  (isCard ? vitraPayProfit : vitraPayProfitPix) >= 0 ? "text-emerald-500" : "text-red-500"
+                  vitraPayProfit >= 0 ? "text-emerald-500" : "text-red-500"
                 )}>
-                  {fmt(isCard ? vitraPayProfit : vitraPayProfitPix)}
+                  {fmt(vitraPayProfit)}
                 </span>
               </div>
             </div>
@@ -199,39 +211,68 @@ export default function AdminFeeSimulator() {
         </div>
       </div>
 
-      {/* VitraPay fees config */}
+      {/* VitraPay fees config per method */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor no cartão)</h3>
+        <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor)</h3>
         <p className="text-xs text-muted-foreground">
-          Altere aqui para simular diferentes taxas. Esses valores são usados no cálculo acima.
+          Configure a taxa de cada forma de pagamento. Os valores são usados no cálculo acima.
         </p>
-        <div className="grid grid-cols-2 gap-4 max-w-sm">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Porcentagem (%)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={vpPct}
-              onChange={(e) => setVpPct(e.target.value)}
-              className="h-9"
-            />
+
+        <div className="space-y-4">
+          {/* Pix */}
+          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2 min-w-[100px]">
+              <QrCode className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Pix</span>
+            </div>
+            <div className="flex gap-3 flex-1 max-w-xs">
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
+                <Input type="number" step="0.01" min="0" value={vpPixPct} onChange={(e) => setVpPixPct(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
+                <Input type="number" step="0.01" min="0" value={vpPixFixed} onChange={(e) => setVpPixFixed(e.target.value)} className="h-8 text-xs" />
+              </div>
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Valor fixo (R$)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={vpFixed}
-              onChange={(e) => setVpFixed(e.target.value)}
-              className="h-9"
-            />
+
+          {/* Cartão */}
+          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2 min-w-[100px]">
+              <CreditCard className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Cartão</span>
+            </div>
+            <div className="flex gap-3 flex-1 max-w-xs">
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
+                <Input type="number" step="0.01" min="0" value={vpCardPct} onChange={(e) => setVpCardPct(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
+                <Input type="number" step="0.01" min="0" value={vpCardFixed} onChange={(e) => setVpCardFixed(e.target.value)} className="h-8 text-xs" />
+              </div>
+            </div>
+          </div>
+
+          {/* Boleto */}
+          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2 min-w-[100px]">
+              <Barcode className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Boleto</span>
+            </div>
+            <div className="flex gap-3 flex-1 max-w-xs">
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
+                <Input type="number" step="0.01" min="0" value={vpBoletoPct} onChange={(e) => setVpBoletoPct(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
+                <Input type="number" step="0.01" min="0" value={vpBoletoFixed} onChange={(e) => setVpBoletoFixed(e.target.value)} className="h-8 text-xs" />
+              </div>
+            </div>
           </div>
         </div>
-        <p className="text-[0.65rem] text-muted-foreground">
-          Padrão: {VP_DEFAULTS.pct}% + {fmt(VP_DEFAULTS.fixed)} · Pix e Boleto são isentos de taxa para o produtor
-        </p>
       </div>
     </div>
   );
