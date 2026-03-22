@@ -68,7 +68,7 @@ export default function EditProduct() {
       checkout_headline: product.checkout_headline || "",
       checkout_timer_minutes: product.checkout_timer_minutes || 0,
       checkout_banner_url: product.checkout_banner_url || "",
-      checkout_theme: product.checkout_theme || "dark",
+      checkout_theme: product.checkout_theme || "light",
     });
   }
 
