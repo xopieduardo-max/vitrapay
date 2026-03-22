@@ -20,9 +20,6 @@ import { Camera, LogOut, Loader2, Save, KeyRound, User, Palette, Bell, BellOff, 
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { useNavigate } from "react-router-dom";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
