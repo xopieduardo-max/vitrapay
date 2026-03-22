@@ -98,7 +98,60 @@ export default function AdminUserDetail() {
     enabled: !!userId,
   });
 
-  // Filter sales by period
+  // Platform default fees
+  const { data: platformFees } = useQuery({
+    queryKey: ["platform-fees"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("platform_fees")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      return data;
+    },
+  });
+
+  // Save custom fees
+  const saveCustomFees = useMutation({
+    mutationFn: async ({ pct, fixed }: { pct: number | null; fixed: number | null }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed })
+        .eq("user_id", userId!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-user-profile", userId] });
+      toast.success("Taxas atualizadas com sucesso!");
+      setFeeDialogOpen(false);
+    },
+    onError: () => toast.error("Erro ao salvar taxas"),
+  });
+
+  const openFeeDialog = () => {
+    setCustomPct(profile?.custom_fee_percentage != null ? String(profile.custom_fee_percentage) : "");
+    setCustomFixed(profile?.custom_fee_fixed != null ? String((profile.custom_fee_fixed / 100).toFixed(2)) : "");
+    setFeeDialogOpen(true);
+  };
+
+  const handleSaveFees = () => {
+    const pct = customPct.trim() === "" ? null : parseFloat(customPct.replace(",", "."));
+    const fixed = customFixed.trim() === "" ? null : Math.round(parseFloat(customFixed.replace(",", ".")) * 100);
+    if (pct !== null && (isNaN(pct) || pct < 0 || pct > 100)) {
+      toast.error("Porcentagem inválida (0-100)");
+      return;
+    }
+    if (fixed !== null && (isNaN(fixed) || fixed < 0)) {
+      toast.error("Valor fixo inválido");
+      return;
+    }
+    saveCustomFees.mutate({ pct, fixed });
+  };
+
+  const handleResetFees = () => {
+    saveCustomFees.mutate({ pct: null, fixed: null });
+  };
+
   const filteredSales = useMemo(() => {
     const from = getDateRange(period);
     if (!from) return sales;
