@@ -29,7 +29,7 @@ export default function HelpCenter() {
         .select("*")
         .eq("is_active", true)
         .order("position");
-      return (data || []) as Category[];
+      return (data || []) as unknown as Category[];
     },
   });
 
