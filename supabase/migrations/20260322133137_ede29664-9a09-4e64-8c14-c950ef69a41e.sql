@@ -1,0 +1,1 @@
+UPDATE public.products SET checkout_theme = 'light' WHERE checkout_theme = 'dark' OR checkout_theme IS NULL;
