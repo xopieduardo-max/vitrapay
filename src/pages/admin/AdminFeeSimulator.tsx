@@ -56,8 +56,11 @@ export default function AdminFeeSimulator() {
   const vitraPayFee = Math.round(amount * (parsedPct / 100)) + parsedFixed;
   const vpDesc = parsedPct > 0 || parsedFixed > 0 ? `${parsedPct}% + ${fmt(parsedFixed)}` : "Sem taxa";
 
-  const producerReceives = amount - vitraPayFee;
-  const vitraPayProfit = vitraPayFee - asaasCost;
+  // Producer pays BOTH: Asaas cost + VitraPay fee
+  const totalDeducted = asaasCost + vitraPayFee;
+  const producerReceives = amount - totalDeducted;
+  // VitraPay keeps its fee as clean profit
+  const vitraPayProfit = vitraPayFee;
 
   const methodInfo = METHODS.find((m) => m.id === method)!;
 
