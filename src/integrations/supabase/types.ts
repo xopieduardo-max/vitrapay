@@ -440,6 +440,77 @@ export type Database = {
           },
         ]
       }
+      help_articles: {
+        Row: {
+          category_id: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          position: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "help_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      help_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          position: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       lesson_progress: {
         Row: {
           completed: boolean | null
