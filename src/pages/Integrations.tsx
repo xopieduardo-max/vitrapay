@@ -193,8 +193,7 @@ export default function Integrations() {
       <IntegrationCard
         title="UTMify"
         description="Rastreamento de vendas e campanhas de tráfego pago"
-        icon="U"
-        color="bg-violet-600"
+        logo={utmifyLogo}
         tutorialSteps={[
           { step: "Crie sua conta no UTMify", detail: "Acesse app.utmify.com.br e crie sua conta gratuita." },
           { step: "Acesse Integrações → Credenciais de API", detail: "No painel do UTMify, vá em Integrações e copie seu token de API." },
