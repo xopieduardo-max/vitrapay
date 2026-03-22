@@ -60,6 +60,8 @@ const salesSubItems = [
   { title: "Extrato", url: "/transactions", icon: Receipt },
 ];
 
+const REVENUE_GOAL = 1000000;
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
