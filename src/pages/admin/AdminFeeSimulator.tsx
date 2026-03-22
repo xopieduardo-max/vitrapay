@@ -209,7 +209,7 @@ export default function AdminFeeSimulator() {
             <div className="space-y-3">
               <SimRow label="Valor bruto da venda" value={fmt(amount)} color="text-foreground" bold />
               <ArrowDown className="h-4 w-4 text-muted-foreground mx-auto" />
-              <SimRow label="Custo Asaas (gateway)" sublabel={asaas.desc} value={`- ${fmt(asaasCost)}`} color="text-red-500" />
+              <SimRow label="Custo Asaas (gateway)" sublabel={asaasDesc} value={`- ${fmt(asaasCost)}`} color="text-red-500" />
               <ArrowDown className="h-4 w-4 text-muted-foreground mx-auto" />
               <SimRow
                 label="Taxa VitraPay (cobrada do produtor)"
