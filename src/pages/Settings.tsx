@@ -32,7 +32,10 @@ export default function Settings() {
 
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
+  const [pixKey, setPixKey] = useState("");
+  const [pixKeyType, setPixKeyType] = useState("cpf");
   const [saving, setSaving] = useState(false);
+  const [savingPix, setSavingPix] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
