@@ -173,6 +173,61 @@ export function AppSidebar() {
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
+
+                  {/* Insert "Vendas" collapsible after "Marketplace" */}
+                  {item.url === "/marketplace" && !collapsed && (
+                    <Collapsible
+                      defaultOpen={salesSubItems.some((s) => isActive(s.url))}
+                      className="mt-0.5"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton className="gap-3 text-sm transition-colors w-full justify-between">
+                            <span className="flex items-center gap-3">
+                              <ShoppingBag className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                              <span>Vendas</span>
+                            </span>
+                            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {salesSubItems.map((sub) => (
+                              <SidebarMenuSubItem key={sub.url}>
+                                <SidebarMenuSubButton asChild isActive={isActive(sub.url)}>
+                                  <NavLink
+                                    to={sub.url}
+                                    end
+                                    className="gap-3 text-sm transition-colors"
+                                    activeClassName="text-primary font-medium"
+                                  >
+                                    <sub.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+                                    <span>{sub.title}</span>
+                                  </NavLink>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  )}
+
+                  {/* Collapsed mode: show sub-items as regular items */}
+                  {item.url === "/marketplace" && collapsed && salesSubItems.map((sub) => (
+                    <SidebarMenuItem key={sub.url}>
+                      <SidebarMenuButton asChild isActive={isActive(sub.url)}>
+                        <NavLink
+                          to={sub.url}
+                          end
+                          className="gap-3 text-sm transition-colors"
+                          activeClassName="bg-primary/10 text-primary font-medium"
+                        >
+                          <sub.icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenuItem>
               ))}
 
