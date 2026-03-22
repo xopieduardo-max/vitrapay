@@ -17,8 +17,8 @@ const ASAAS: Record<string, { pct: number; fixed: number; desc: string }> = {
   boleto: { pct: 0,    fixed: 199, desc: "R$ 1,99 por boleto" },
 };
 
-// VitraPay platform fee (what WE charge the PRODUCER) — card only
-const VITRAPAY = { pct: 3.89, fixed: 249, desc: "3,89% + R$ 2,49" };
+// VitraPay platform fee defaults
+const VP_DEFAULTS = { pct: 3.89, fixed: 249 };
 
 const fmt = (c: number) =>
   `R$ ${(c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -26,6 +26,8 @@ const fmt = (c: number) =>
 export default function AdminFeeSimulator() {
   const [value, setValue] = useState("100");
   const [method, setMethod] = useState("pix");
+  const [vpPct, setVpPct] = useState(VP_DEFAULTS.pct.toString());
+  const [vpFixed, setVpFixed] = useState((VP_DEFAULTS.fixed / 100).toFixed(2));
 
   const amount = Math.round((parseFloat(value) || 0) * 100);
 
@@ -34,7 +36,10 @@ export default function AdminFeeSimulator() {
 
   // VitraPay only charges on card; Pix & boleto are free for the producer
   const isCard = method === "card";
-  const vitraPayFee = isCard ? Math.round(amount * (VITRAPAY.pct / 100)) + VITRAPAY.fixed : 0;
+  const parsedPct = parseFloat(vpPct) || 0;
+  const parsedFixed = Math.round((parseFloat(vpFixed) || 0) * 100);
+  const vitraPayFee = isCard ? Math.round(amount * (parsedPct / 100)) + parsedFixed : 0;
+  const vpDesc = `${parsedPct}% + ${fmt(parsedFixed)}`;
 
   const producerReceives = amount - vitraPayFee;
   const vitraPayProfit = vitraPayFee - asaasCost;
@@ -129,7 +134,7 @@ export default function AdminFeeSimulator() {
               {/* Step 3: VitraPay fee */}
               <SimRow
                 label="Taxa VitraPay (cobrada do produtor)"
-                sublabel={isCard ? VITRAPAY.desc : "Isento — Pix e Boleto são grátis para o produtor"}
+                sublabel={isCard ? vpDesc : "Isento — Pix e Boleto são grátis para o produtor"}
                 value={isCard ? `- ${fmt(vitraPayFee)}` : "R$ 0,00"}
                 color={isCard ? "text-orange-500" : "text-muted-foreground"}
               />
@@ -174,7 +179,7 @@ export default function AdminFeeSimulator() {
         </div>
       )}
 
-      {/* Reference */}
+      {/* Reference: Asaas */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <h3 className="text-sm font-semibold">Tabela de custos Asaas (referência)</h3>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -192,6 +197,41 @@ export default function AdminFeeSimulator() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* VitraPay fees config */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor no cartão)</h3>
+        <p className="text-xs text-muted-foreground">
+          Altere aqui para simular diferentes taxas. Esses valores são usados no cálculo acima.
+        </p>
+        <div className="grid grid-cols-2 gap-4 max-w-sm">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Porcentagem (%)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={vpPct}
+              onChange={(e) => setVpPct(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Valor fixo (R$)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={vpFixed}
+              onChange={(e) => setVpFixed(e.target.value)}
+              className="h-9"
+            />
+          </div>
+        </div>
+        <p className="text-[0.65rem] text-muted-foreground">
+          Padrão: {VP_DEFAULTS.pct}% + {fmt(VP_DEFAULTS.fixed)} · Pix e Boleto são isentos de taxa para o produtor
+        </p>
       </div>
     </div>
   );
