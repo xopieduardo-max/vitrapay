@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Settings,
   Smartphone,
+  Plug,
   Rocket,
   Receipt,
 } from "lucide-react";

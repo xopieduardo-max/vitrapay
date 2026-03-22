@@ -103,6 +103,7 @@ const App = () => {
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/integrations" element={<Integrations />} />
                 </Route>
               </Route>
 
