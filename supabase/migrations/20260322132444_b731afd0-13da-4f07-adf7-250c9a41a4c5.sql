@@ -1,0 +1,1 @@
+ALTER TABLE public.products ALTER COLUMN checkout_theme SET DEFAULT 'light';
