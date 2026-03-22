@@ -181,16 +181,6 @@ function UtmifySection() {
 }
 
 export default function Integrations() {
-  const { isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
