@@ -113,7 +113,24 @@ export default function Dashboard() {
   const pendingSales = salesData.filter((s) => s.status === "pending").reduce((acc, s) => acc + s.amount, 0);
   const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((acc, w) => acc + w.amount, 0);
   const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount, 0);
-  const availableBalance = totalRevenue - totalWithdrawn - pendingWithdrawals;
+
+  // Calculate available balance using same holdback logic as Finance page
+  const HOLDBACK_DAYS_CARD = 2;
+  const HOLDBACK_DAYS_PIX = 0;
+  const WITHDRAWAL_FEE = 500;
+  const now = new Date();
+
+  const totalAvailableSales = completedSales
+    .filter((s) => {
+      const holdDays = s.payment_provider === "pix" ? HOLDBACK_DAYS_PIX : HOLDBACK_DAYS_CARD;
+      const availableAt = new Date(s.created_at);
+      availableAt.setDate(availableAt.getDate() + holdDays);
+      return availableAt <= now;
+    })
+    .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+
+  const totalFeesPaid = withdrawals.filter((w) => w.status !== "rejected").length * WITHDRAWAL_FEE;
+  const availableBalance = totalAvailableSales - totalWithdrawn - pendingWithdrawals - totalFeesPaid;
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = salesData.filter((s) => s.status === "refunded");
   const refundRate = salesData.length > 0 ? ((refundedSales.length / salesData.length) * 100).toFixed(1) : "0";
