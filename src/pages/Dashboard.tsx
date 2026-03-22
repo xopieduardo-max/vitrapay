@@ -468,7 +468,7 @@ export default function Dashboard() {
 
           <motion.div {...anim(0.38)}
             className="rounded-xl border border-border bg-card p-5 space-y-2 cursor-pointer hover:border-primary/30 transition-colors"
-            onClick={() => navigate("/admin/settings")}
+            onClick={() => navigate("/help")}
           >
             <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Tire dúvidas</p>
             <div className="flex items-center gap-2">
