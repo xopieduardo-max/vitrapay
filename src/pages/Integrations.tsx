@@ -33,7 +33,9 @@ function IntegrationCard({
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
       <div className="flex items-center gap-3">
-        <img src={logo} alt={title} className="h-10 w-10 rounded-lg object-contain" />
+        <div className="h-10 w-10 rounded-xl overflow-hidden shrink-0 bg-muted/50">
+          <img src={logo} alt={title} className="h-full w-full object-cover" />
+        </div>
         <div>
           <h3 className="text-sm font-semibold">{title}</h3>
           <p className="text-xs text-muted-foreground">{description}</p>
