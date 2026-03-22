@@ -25,6 +25,20 @@ export default function CreateProduct() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const { data: profileVerified, isLoading: checkingVerification } = useQuery({
+    queryKey: ["profile-verified", user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase
+        .from("profiles")
+        .select("profile_verified")
+        .eq("user_id", user.id)
+        .single();
+      return !!(data as any)?.profile_verified;
+    },
+    enabled: !!user,
+  });
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -36,6 +50,31 @@ export default function CreateProduct() {
   const [productFile, setProductFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  if (checkingVerification) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!profileVerified) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 max-w-md mx-auto">
+        <div className="h-16 w-16 rounded-full bg-amber-500/10 flex items-center justify-center">
+          <ShieldAlert className="h-8 w-8 text-amber-500" />
+        </div>
+        <h2 className="text-xl font-bold">Verificação necessária</h2>
+        <p className="text-sm text-muted-foreground">
+          Para criar e vender produtos na VitraPay, você precisa primeiro verificar seus dados pessoais e cadastrar sua chave Pix.
+        </p>
+        <Button onClick={() => navigate("/settings")} className="gap-2">
+          Verificar meus dados
+        </Button>
+      </div>
+    );
+  }
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
