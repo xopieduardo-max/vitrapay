@@ -111,32 +111,32 @@ const GridBackground = React.memo(function GridBackground() {
   );
 });
 /* ─── Floating Particles ─── */
-function FloatingParticles() {
+const FloatingParticles = React.memo(function FloatingParticles() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(8)].map((_, i) => (
+      {[...Array(6)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 rounded-full bg-primary/20"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
+            left: `${15 + i * 15}%`,
+            top: `${10 + i * 12}%`,
           }}
           animate={{
             y: [0, -30, 0],
             opacity: [0.2, 0.6, 0.2],
           }}
           transition={{
-            duration: 4 + Math.random() * 4,
+            duration: 5 + i,
             repeat: Infinity,
-            delay: Math.random() * 3,
+            delay: i * 0.5,
             ease: "easeInOut",
           }}
         />
       ))}
     </div>
   );
-}
+});
 
 /* ─── Data ─── */
 const fadeUp = {
