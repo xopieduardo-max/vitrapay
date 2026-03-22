@@ -578,66 +578,71 @@ export default function Landing() {
                 <motion.div
                   whileHover={{ rotateY: 6, rotateX: -4, scale: 1.04 }}
                   transition={{ type: "spring", damping: 20, stiffness: 200 }}
-                  className="relative w-full max-w-[380px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl"
+                  className="relative w-full max-w-[420px] aspect-[1.586/1] rounded-2xl overflow-hidden"
                   style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
                 >
-                  {/* Card background — metallic gold */}
-                  <div className="absolute inset-0 shimmer-gold" style={{
-                    background: `linear-gradient(135deg, 
-                      hsl(48, 96%, 65%) 0%, 
-                      hsl(45, 90%, 55%) 25%, 
-                      hsl(42, 85%, 48%) 50%, 
-                      hsl(45, 90%, 55%) 75%, 
-                      hsl(48, 96%, 60%) 100%)`
+                  {/* Metallic gold base — clean gradient like reference */}
+                  <div className="absolute inset-0" style={{
+                    background: `linear-gradient(145deg, 
+                      hsl(48, 80%, 78%) 0%, 
+                      hsl(45, 75%, 68%) 20%, 
+                      hsl(43, 70%, 62%) 40%, 
+                      hsl(46, 80%, 72%) 60%, 
+                      hsl(48, 85%, 76%) 80%, 
+                      hsl(44, 70%, 65%) 100%)`
                   }} />
                   
-                  {/* Metallic sheen */}
-                  <div className="absolute inset-0 opacity-30" style={{
+                  {/* Metallic sheen — subtle reflections */}
+                  <div className="absolute inset-0" style={{
                     backgroundImage: `
-                      radial-gradient(ellipse at 25% 15%, hsla(0,0%,100%,0.6), transparent 45%),
-                      radial-gradient(ellipse at 75% 85%, hsla(0,0%,100%,0.15), transparent 50%),
-                      linear-gradient(135deg, transparent 40%, hsla(0,0%,100%,0.15) 50%, transparent 60%)
+                      radial-gradient(ellipse at 30% 20%, hsla(0,0%,100%,0.45), transparent 50%),
+                      radial-gradient(ellipse at 80% 80%, hsla(0,0%,100%,0.1), transparent 40%),
+                      linear-gradient(160deg, transparent 35%, hsla(0,0%,100%,0.2) 48%, hsla(0,0%,100%,0.08) 52%, transparent 65%)
                     `,
                   }} />
 
-                  {/* Card content — credit card layout */}
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 shimmer-gold" />
+
+                  {/* Card content */}
                   <div className="relative h-full flex flex-col justify-between p-5 md:p-6">
-                    {/* Top row — Logo + Badge */}
+                    {/* Top — Logo left, badge right */}
                     <div className="flex items-start justify-between">
-                      <img src={logoIcon} alt="VitraPay" className="h-7 md:h-8 rounded-md opacity-90" />
-                      <span className="text-[10px] md:text-xs font-bold text-black/50 uppercase tracking-widest">Premium</span>
+                      <img src={logoIcon} alt="VitraPay" className="h-6 md:h-7 rounded-sm" style={{ filter: 'brightness(0) opacity(0.5)' }} />
+                      <span className="text-base md:text-lg font-black tracking-tight italic" style={{ color: 'hsla(40, 30%, 35%, 0.55)' }}>VISA</span>
                     </div>
 
-                    {/* Chip */}
-                    <div className="flex items-center gap-4 -mt-1">
-                      <div className="w-10 h-7 md:w-12 md:h-8 rounded-md overflow-hidden" style={{
+                    {/* Chip — realistic EMV */}
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-8 md:w-12 md:h-9 rounded-md" style={{
                         background: `linear-gradient(135deg, 
-                          hsl(280, 60%, 60%) 0%, 
-                          hsl(200, 80%, 60%) 50%, 
-                          hsl(320, 60%, 60%) 100%)`,
-                        boxShadow: 'inset 0 0 0 1px hsla(0,0%,80%,0.5)'
+                          hsl(45, 30%, 72%) 0%, 
+                          hsl(43, 25%, 65%) 40%, 
+                          hsl(46, 35%, 75%) 70%, 
+                          hsl(44, 28%, 68%) 100%)`,
+                        boxShadow: 'inset 0 0 0 0.5px hsla(40, 20%, 50%, 0.4), 0 1px 3px hsla(0,0%,0%,0.1)'
                       }}>
-                        <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-px p-px opacity-40">
+                        <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-[1px] p-[3px]">
                           {[...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-white/30 rounded-[1px]" />
+                            <div key={i} className="rounded-[1px]" style={{ background: 'hsla(40, 20%, 55%, 0.35)' }} />
                           ))}
                         </div>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-semibold text-black/50 uppercase tracking-wider">Pix</span>
-                        <span className="text-sm md:text-base font-extrabold text-black/80 leading-none">0% taxa</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'hsla(40, 30%, 30%, 0.5)' }}>Pix</span>
+                        <span className="text-sm md:text-base font-extrabold leading-none" style={{ color: 'hsla(40, 30%, 25%, 0.7)' }}>0% taxa</span>
                       </div>
                     </div>
 
-                    {/* Bottom row — Fees + Brand */}
+                    {/* Bottom — fees + cardholder */}
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-[10px] text-black/40 uppercase tracking-wider font-semibold">Cartão de crédito</p>
-                        <p className="text-lg md:text-xl font-extrabold text-black/80 leading-tight tracking-tight">
-                          3,89% <span className="text-sm font-bold text-black/50">+ R$ 2,49</span>
+                        <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'hsla(40, 25%, 35%, 0.45)' }}>Cartão de crédito</p>
+                        <p className="text-lg md:text-xl font-extrabold leading-tight tracking-tight" style={{ color: 'hsla(40, 30%, 25%, 0.7)' }}>
+                          3,89% <span className="text-sm font-bold" style={{ color: 'hsla(40, 25%, 35%, 0.5)' }}>+ R$ 2,49</span>
                         </p>
                       </div>
-                      <p className="text-lg md:text-xl font-black text-black/40 tracking-tight italic">VitraPay</p>
+                      <p className="text-sm font-medium tracking-wide" style={{ color: 'hsla(40, 25%, 35%, 0.5)' }}>Seu nome</p>
                     </div>
                   </div>
                 </motion.div>
