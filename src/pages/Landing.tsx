@@ -244,7 +244,7 @@ function CountrySelector() {
           </motion.div>
         )}
       </AnimatePresence>
-      {open && <div className="fixed inset-0 z-[-1]" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
     </div>
   );
 }
