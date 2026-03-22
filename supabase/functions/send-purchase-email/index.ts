@@ -146,6 +146,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         message_id: messageId,
+        idempotency_key: `purchase-confirm-${messageId}`,
         to: buyer_email,
         from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
