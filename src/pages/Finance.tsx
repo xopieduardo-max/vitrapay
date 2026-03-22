@@ -172,7 +172,7 @@ export default function Finance() {
       if (isNaN(amountCents) || amountCents <= 0) throw new Error("Valor inválido");
       if (amountCents < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
       if (amountCents + WITHDRAWAL_FEE > availableBalance) throw new Error("Saldo insuficiente (valor + taxa de R$ 5,00)");
-      if (!pixKey.trim()) throw new Error("Informe a chave Pix");
+      if (!pixKey.trim()) throw new Error("Configure sua chave Pix em Ajustes");
 
       const { data, error } = await supabase.functions.invoke("request-withdraw", {
         body: {
@@ -192,7 +192,7 @@ export default function Finance() {
       toast({ title: "Saque solicitado!", description });
       setWithdrawOpen(false);
       setAmount("");
-      setPixKey("");
+      setWithdrawStep(1);
       queryClient.invalidateQueries({ queryKey: ["withdrawals"] });
     },
     onError: (err: any) => {
