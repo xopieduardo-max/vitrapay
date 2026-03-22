@@ -306,7 +306,19 @@ export default function Settings() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">CPF <span className="text-destructive">*</span></Label>
-              <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="bg-muted/50 border-transparent focus:border-border" />
+              <Input
+                value={cpf}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                  const formatted = val
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                  setCpf(formatted);
+                }}
+                placeholder="000.000.000-00"
+                className="bg-muted/50 border-transparent focus:border-border"
+              />
             </div>
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Data de nascimento</Label>
