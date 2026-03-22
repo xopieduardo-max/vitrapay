@@ -376,3 +376,62 @@ function NotificationsSection() {
     </div>
   );
 }
+
+function PixKeySection({
+  pixKey,
+  setPixKey,
+  pixKeyType,
+  setPixKeyType,
+  savingPix,
+  onSave,
+}: {
+  pixKey: string;
+  setPixKey: (v: string) => void;
+  pixKeyType: string;
+  setPixKeyType: (v: string) => void;
+  savingPix: boolean;
+  onSave: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Landmark className="h-4 w-4 text-primary" />
+        Chave Pix para Saques
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Configure sua chave Pix para receber saques. Ela será usada automaticamente ao solicitar um saque.
+      </p>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground">Tipo de chave</Label>
+          <Select value={pixKeyType} onValueChange={setPixKeyType}>
+            <SelectTrigger className="bg-muted/50 border-transparent focus:border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cpf">CPF</SelectItem>
+              <SelectItem value="email">E-mail</SelectItem>
+              <SelectItem value="phone">Telefone</SelectItem>
+              <SelectItem value="random">Chave aleatória</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground">Chave Pix</Label>
+          <Input
+            value={pixKey}
+            onChange={(e) => setPixKey(e.target.value)}
+            placeholder="Sua chave Pix"
+            className="bg-muted/50 border-transparent focus:border-border"
+          />
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={onSave} disabled={savingPix || !pixKey.trim()} size="sm">
+            {savingPix ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+            Salvar Chave Pix
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
