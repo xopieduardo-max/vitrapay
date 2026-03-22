@@ -208,8 +208,7 @@ export default function Integrations() {
       <IntegrationCard
         title="Facebook Ads (Meta Pixel)"
         description="Rastreie conversões e otimize suas campanhas no Facebook e Instagram"
-        icon="f"
-        color="bg-blue-600"
+        logo={facebookLogo}
         tutorialSteps={[
           { step: "Acesse o Gerenciador de Eventos do Facebook", detail: "Vá em business.facebook.com → Gerenciador de Eventos → Fontes de Dados." },
           { step: "Copie o ID do Pixel", detail: "Selecione seu Pixel e copie o ID (número de 15-16 dígitos)." },
