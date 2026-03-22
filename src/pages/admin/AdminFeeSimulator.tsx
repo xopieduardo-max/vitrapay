@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calculator, CreditCard, QrCode, Barcode, ArrowRight, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Calculator, CreditCard, QrCode, Barcode, ArrowRight, ArrowDown, Save, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const METHODS = [
@@ -17,36 +21,47 @@ const ASAAS: Record<string, { pct: number; fixed: number; desc: string }> = {
   boleto: { pct: 0,    fixed: 199, desc: "R$ 1,99 por boleto" },
 };
 
-// VitraPay platform fee defaults per method
-const VP_DEFAULTS: Record<string, { pct: number; fixed: number }> = {
-  pix:    { pct: 0, fixed: 0 },
-  card:   { pct: 3.89, fixed: 249 },
-  boleto: { pct: 0, fixed: 0 },
-};
-
 const fmt = (c: number) =>
   `R$ ${(c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function AdminFeeSimulator() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [value, setValue] = useState("100");
   const [method, setMethod] = useState("pix");
 
-  // VitraPay fees per method
-  const [vpPixPct, setVpPixPct] = useState("0");
-  const [vpPixFixed, setVpPixFixed] = useState("0");
-  const [vpCardPct, setVpCardPct] = useState("3.89");
-  const [vpCardFixed, setVpCardFixed] = useState("2.49");
-  const [vpBoletoPct, setVpBoletoPct] = useState("0");
-  const [vpBoletoFixed, setVpBoletoFixed] = useState("0");
+  // Load fees from DB
+  const { data: dbFees, isLoading } = useQuery({
+    queryKey: ["platform-fees"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("platform_fees")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Local state for editing (initialized from DB)
+  const [vpPixPct, setVpPixPct] = useState<string | null>(null);
+  const [vpPixFixed, setVpPixFixed] = useState<string | null>(null);
+  const [vpCardPct, setVpCardPct] = useState<string | null>(null);
+  const [vpCardFixed, setVpCardFixed] = useState<string | null>(null);
+  const [vpBoletoPct, setVpBoletoPct] = useState<string | null>(null);
+  const [vpBoletoFixed, setVpBoletoFixed] = useState<string | null>(null);
+
+  // Effective values (local edits or DB values)
+  const ePix = { pct: vpPixPct ?? String(dbFees?.pix_percentage ?? 0), fixed: vpPixFixed ?? String((dbFees?.pix_fixed ?? 0) / 100) };
+  const eCard = { pct: vpCardPct ?? String(dbFees?.card_percentage ?? 3.89), fixed: vpCardFixed ?? String((dbFees?.card_fixed ?? 249) / 100) };
+  const eBoleto = { pct: vpBoletoPct ?? String(dbFees?.boleto_percentage ?? 0), fixed: vpBoletoFixed ?? String((dbFees?.boleto_fixed ?? 0) / 100) };
 
   const vpConfig: Record<string, { pct: string; fixed: string }> = {
-    pix:    { pct: vpPixPct, fixed: vpPixFixed },
-    card:   { pct: vpCardPct, fixed: vpCardFixed },
-    boleto: { pct: vpBoletoPct, fixed: vpBoletoFixed },
+    pix: ePix, card: eCard, boleto: eBoleto,
   };
 
   const amount = Math.round((parseFloat(value) || 0) * 100);
-
   const asaas = ASAAS[method];
   const asaasCost = Math.round(amount * (asaas.pct / 100)) + asaas.fixed;
 
@@ -64,6 +79,51 @@ export default function AdminFeeSimulator() {
 
   const methodInfo = METHODS.find((m) => m.id === method)!;
 
+  // Check if values changed from DB
+  const hasChanges = dbFees && (
+    String(dbFees.pix_percentage) !== ePix.pct ||
+    String((dbFees.pix_fixed) / 100) !== ePix.fixed ||
+    String(dbFees.card_percentage) !== eCard.pct ||
+    String((dbFees.card_fixed) / 100) !== eCard.fixed ||
+    String(dbFees.boleto_percentage) !== eBoleto.pct ||
+    String((dbFees.boleto_fixed) / 100) !== eBoleto.fixed
+  );
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("platform_fees")
+        .update({
+          pix_percentage: parseFloat(ePix.pct) || 0,
+          pix_fixed: Math.round((parseFloat(ePix.fixed) || 0) * 100),
+          card_percentage: parseFloat(eCard.pct) || 0,
+          card_fixed: Math.round((parseFloat(eCard.fixed) || 0) * 100),
+          boleto_percentage: parseFloat(eBoleto.pct) || 0,
+          boleto_fixed: Math.round((parseFloat(eBoleto.fixed) || 0) * 100),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", 1);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "✅ Taxas salvas com sucesso!" });
+      // Reset local edits so they come from DB on next render
+      setVpPixPct(null); setVpPixFixed(null);
+      setVpCardPct(null); setVpCardFixed(null);
+      setVpBoletoPct(null); setVpBoletoFixed(null);
+      queryClient.invalidateQueries({ queryKey: ["platform-fees"] });
+    },
+    onError: (err: any) => toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" }),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -72,7 +132,7 @@ export default function AdminFeeSimulator() {
           Simulador de Taxas
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Simule quanto cada parte recebe em uma venda
+          Simule quanto cada parte recebe e configure as taxas da plataforma
         </p>
       </div>
 
@@ -124,29 +184,11 @@ export default function AdminFeeSimulator() {
           </div>
 
           <div className="p-5 space-y-4">
-            {/* Flow visual */}
             <div className="space-y-3">
-              {/* Step 1: Sale amount */}
-              <SimRow
-                label="Valor bruto da venda"
-                value={fmt(amount)}
-                color="text-foreground"
-                bold
-              />
-
+              <SimRow label="Valor bruto da venda" value={fmt(amount)} color="text-foreground" bold />
               <ArrowDown className="h-4 w-4 text-muted-foreground mx-auto" />
-
-              {/* Step 2: Asaas cost */}
-              <SimRow
-                label="Custo Asaas (gateway)"
-                sublabel={asaas.desc}
-                value={`- ${fmt(asaasCost)}`}
-                color="text-red-500"
-              />
-
+              <SimRow label="Custo Asaas (gateway)" sublabel={asaas.desc} value={`- ${fmt(asaasCost)}`} color="text-red-500" />
               <ArrowDown className="h-4 w-4 text-muted-foreground mx-auto" />
-
-              {/* Step 3: VitraPay fee */}
               <SimRow
                 label="Taxa VitraPay (cobrada do produtor)"
                 sublabel={vpDesc}
@@ -155,10 +197,8 @@ export default function AdminFeeSimulator() {
               />
             </div>
 
-            {/* Divider */}
             <div className="border-t border-border" />
 
-            {/* Results */}
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
                 <div>
@@ -214,65 +254,52 @@ export default function AdminFeeSimulator() {
 
       {/* VitraPay fees config per method */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor)</h3>
-        <p className="text-xs text-muted-foreground">
-          Configure a taxa de cada forma de pagamento. Os valores são usados no cálculo acima.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold">Taxas VitraPay (cobradas do produtor)</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Configure e salve as taxas. Elas serão aplicadas automaticamente em todas as vendas.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending || !hasChanges}
+          >
+            {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            Salvar taxas
+          </Button>
+        </div>
 
         <div className="space-y-4">
-          {/* Pix */}
-          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
-            <div className="flex items-center gap-2 min-w-[100px]">
-              <QrCode className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Pix</span>
-            </div>
-            <div className="flex gap-3 flex-1 max-w-xs">
-              <div className="space-y-1 flex-1">
-                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
-                <Input type="number" step="0.01" min="0" value={vpPixPct} onChange={(e) => setVpPixPct(e.target.value)} className="h-8 text-xs" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={vpPixFixed} onChange={(e) => setVpPixFixed(e.target.value)} className="h-8 text-xs" />
-              </div>
-            </div>
-          </div>
+          <FeeMethodRow icon={QrCode} label="Pix" pct={ePix.pct} fixed={ePix.fixed} onPctChange={setVpPixPct} onFixedChange={setVpPixFixed} />
+          <FeeMethodRow icon={CreditCard} label="Cartão" pct={eCard.pct} fixed={eCard.fixed} onPctChange={setVpCardPct} onFixedChange={setVpCardFixed} />
+          <FeeMethodRow icon={Barcode} label="Boleto" pct={eBoleto.pct} fixed={eBoleto.fixed} onPctChange={setVpBoletoPct} onFixedChange={setVpBoletoFixed} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          {/* Cartão */}
-          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
-            <div className="flex items-center gap-2 min-w-[100px]">
-              <CreditCard className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Cartão</span>
-            </div>
-            <div className="flex gap-3 flex-1 max-w-xs">
-              <div className="space-y-1 flex-1">
-                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
-                <Input type="number" step="0.01" min="0" value={vpCardPct} onChange={(e) => setVpCardPct(e.target.value)} className="h-8 text-xs" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={vpCardFixed} onChange={(e) => setVpCardFixed(e.target.value)} className="h-8 text-xs" />
-              </div>
-            </div>
-          </div>
-
-          {/* Boleto */}
-          <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
-            <div className="flex items-center gap-2 min-w-[100px]">
-              <Barcode className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Boleto</span>
-            </div>
-            <div className="flex gap-3 flex-1 max-w-xs">
-              <div className="space-y-1 flex-1">
-                <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
-                <Input type="number" step="0.01" min="0" value={vpBoletoPct} onChange={(e) => setVpBoletoPct(e.target.value)} className="h-8 text-xs" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={vpBoletoFixed} onChange={(e) => setVpBoletoFixed(e.target.value)} className="h-8 text-xs" />
-              </div>
-            </div>
-          </div>
+function FeeMethodRow({ icon: Icon, label, pct, fixed, onPctChange, onFixedChange }: {
+  icon: any; label: string; pct: string; fixed: string;
+  onPctChange: (v: string) => void; onFixedChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+      <div className="flex items-center gap-2 min-w-[100px]">
+        <Icon className="h-4 w-4 text-primary" />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <div className="flex gap-3 flex-1 max-w-xs">
+        <div className="space-y-1 flex-1">
+          <Label className="text-[0.65rem] text-muted-foreground">% sobre venda</Label>
+          <Input type="number" step="0.01" min="0" value={pct} onChange={(e) => onPctChange(e.target.value)} className="h-8 text-xs" />
+        </div>
+        <div className="space-y-1 flex-1">
+          <Label className="text-[0.65rem] text-muted-foreground">Fixo (R$)</Label>
+          <Input type="number" step="0.01" min="0" value={fixed} onChange={(e) => onFixedChange(e.target.value)} className="h-8 text-xs" />
         </div>
       </div>
     </div>
@@ -280,11 +307,7 @@ export default function AdminFeeSimulator() {
 }
 
 function SimRow({ label, sublabel, value, color, bold }: {
-  label: string;
-  sublabel?: string;
-  value: string;
-  color: string;
-  bold?: boolean;
+  label: string; sublabel?: string; value: string; color: string; bold?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between">
