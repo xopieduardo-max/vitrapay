@@ -7,8 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Save, Plug, Eye, EyeOff, ChevronDown, ExternalLink } from "lucide-react";
+import { Loader2, Save, Eye, EyeOff, ChevronDown, ExternalLink } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
+import utmifyLogo from "@/assets/integrations/utmify-logo.png";
+import facebookLogo from "@/assets/integrations/facebook-logo.png";
+import googleAdsLogo from "@/assets/integrations/google-ads-logo.png";
+import tiktokLogo from "@/assets/integrations/tiktok-logo.png";
 
 function IntegrationCard({
   title,
