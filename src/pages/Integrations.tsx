@@ -249,8 +249,7 @@ export default function Integrations() {
       <IntegrationCard
         title="TikTok Ads"
         description="Rastreie conversões e otimize campanhas no TikTok"
-        icon="T"
-        color="bg-black"
+        logo={tiktokLogo}
         tutorialSteps={[
           { step: "Acesse o TikTok Ads Manager", detail: "Vá em ads.tiktok.com → Assets → Events → Web Events." },
           { step: "Crie um Pixel", detail: "Clique em 'Create Pixel' → Escolha 'Manually Install Pixel Code' → Copie o Pixel ID." },
