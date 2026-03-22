@@ -176,16 +176,14 @@ export default function AdminFeeSimulator() {
                 <div>
                   <p className="text-sm font-medium">Lucro VitraPay</p>
                   <p className="text-xs text-muted-foreground">
-                    {isCard
-                      ? `${fmt(vitraPayFee)} (taxa) − ${fmt(asaasCost)} (Asaas)`
-                      : `R$ 0,00 (taxa) − ${fmt(asaasCost)} (Asaas) = prejuízo`}
+                    {`${fmt(vitraPayFee)} (taxa) − ${fmt(asaasCost)} (Asaas)`}
                   </p>
                 </div>
                 <span className={cn(
                   "text-sm font-bold",
-                  (isCard ? vitraPayProfit : vitraPayProfitPix) >= 0 ? "text-emerald-500" : "text-red-500"
+                  vitraPayProfit >= 0 ? "text-emerald-500" : "text-red-500"
                 )}>
-                  {fmt(isCard ? vitraPayProfit : vitraPayProfitPix)}
+                  {fmt(vitraPayProfit)}
                 </span>
               </div>
             </div>
