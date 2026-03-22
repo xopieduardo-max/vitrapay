@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, ArrowLeft, ShoppingBag, Lightbulb, Bell,
+  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, ArrowLeft, ShoppingBag, Lightbulb, Bell, Calculator,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
@@ -18,6 +18,7 @@ const navItems = [
   { title: "Pop-ups", url: "/admin/popups", icon: MessageSquareMore },
   { title: "Notificações Push", url: "/admin/push", icon: Bell },
   { title: "GV +", url: "/admin/fake-sales", icon: ShoppingBag },
+  { title: "Simulador de Taxas", url: "/admin/fee-simulator", icon: Calculator },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
 ];
 
