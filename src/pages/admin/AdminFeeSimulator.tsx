@@ -26,6 +26,8 @@ const fmt = (c: number) =>
 export default function AdminFeeSimulator() {
   const [value, setValue] = useState("100");
   const [method, setMethod] = useState("pix");
+  const [vpPct, setVpPct] = useState(VP_DEFAULTS.pct.toString());
+  const [vpFixed, setVpFixed] = useState((VP_DEFAULTS.fixed / 100).toFixed(2));
 
   const amount = Math.round((parseFloat(value) || 0) * 100);
 
