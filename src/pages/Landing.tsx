@@ -574,14 +574,22 @@ export default function Landing() {
               </div>
 
               {/* Right — VitraPay Metallic Credit Card */}
-              <div className="relative flex items-center justify-center p-4 md:p-10 md:min-w-[340px]">
+              <div className="relative flex items-center justify-center p-4 md:p-10 md:min-w-[400px]">
                 <motion.div
-                  whileHover={{ rotateY: 6, rotateX: -4, scale: 1.04 }}
-                  transition={{ type: "spring", damping: 20, stiffness: 200 }}
-                  className="relative w-full max-w-[420px] aspect-[1.586/1] rounded-2xl overflow-hidden"
+                  animate={{
+                    y: [0, -12, 0],
+                    rotateY: [0, 3, 0, -3, 0],
+                    rotateX: [0, -2, 0, 2, 0],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="relative w-full max-w-[480px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl"
                   style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
                 >
-                  {/* Metallic gold base — clean gradient like reference */}
+                  {/* Metallic gold base */}
                   <div className="absolute inset-0" style={{
                     background: `linear-gradient(145deg, 
                       hsl(48, 80%, 78%) 0%, 
@@ -592,7 +600,7 @@ export default function Landing() {
                       hsl(44, 70%, 65%) 100%)`
                   }} />
                   
-                  {/* Metallic sheen — subtle reflections */}
+                  {/* Metallic sheen */}
                   <div className="absolute inset-0" style={{
                     backgroundImage: `
                       radial-gradient(ellipse at 30% 20%, hsla(0,0%,100%,0.45), transparent 50%),
@@ -605,16 +613,15 @@ export default function Landing() {
                   <div className="absolute inset-0 shimmer-gold" />
 
                   {/* Card content */}
-                  <div className="relative h-full flex flex-col justify-between p-5 md:p-6">
-                    {/* Top — Logo left, badge right */}
+                  <div className="relative h-full flex flex-col justify-between p-6 md:p-7">
+                    {/* Top — Logo */}
                     <div className="flex items-start justify-between">
-                      <img src={logoIcon} alt="VitraPay" className="h-6 md:h-7 rounded-sm" style={{ filter: 'brightness(0) opacity(0.5)' }} />
-                      <span className="text-base md:text-lg font-black tracking-tight italic" style={{ color: 'hsla(40, 30%, 35%, 0.55)' }}>VISA</span>
+                      <img src={logoIcon} alt="VitraPay" className="h-7 md:h-9 rounded-sm" style={{ filter: 'brightness(0) opacity(0.5)' }} />
                     </div>
 
-                    {/* Chip — realistic EMV */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-11 h-8 md:w-12 md:h-9 rounded-md" style={{
+                    {/* Chip */}
+                    <div className="flex items-center">
+                      <div className="w-12 h-9 md:w-14 md:h-10 rounded-md" style={{
                         background: `linear-gradient(135deg, 
                           hsl(45, 30%, 72%) 0%, 
                           hsl(43, 25%, 65%) 40%, 
@@ -628,21 +635,12 @@ export default function Landing() {
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'hsla(40, 30%, 30%, 0.5)' }}>Pix</span>
-                        <span className="text-sm md:text-base font-extrabold leading-none" style={{ color: 'hsla(40, 30%, 25%, 0.7)' }}>0% taxa</span>
-                      </div>
                     </div>
 
-                    {/* Bottom — fees + cardholder */}
+                    {/* Bottom — Name + Brand */}
                     <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'hsla(40, 25%, 35%, 0.45)' }}>Cartão de crédito</p>
-                        <p className="text-lg md:text-xl font-extrabold leading-tight tracking-tight" style={{ color: 'hsla(40, 30%, 25%, 0.7)' }}>
-                          3,89% <span className="text-sm font-bold" style={{ color: 'hsla(40, 25%, 35%, 0.5)' }}>+ R$ 2,49</span>
-                        </p>
-                      </div>
-                      <p className="text-sm font-medium tracking-wide" style={{ color: 'hsla(40, 25%, 35%, 0.5)' }}>Seu nome</p>
+                      <p className="text-sm md:text-base font-semibold tracking-widest uppercase" style={{ color: 'hsla(40, 25%, 30%, 0.55)' }}>Seu nome</p>
+                      <span className="text-xl md:text-2xl font-black tracking-tight italic" style={{ color: 'hsla(40, 30%, 30%, 0.5)' }}>VISA</span>
                     </div>
                   </div>
                 </motion.div>
