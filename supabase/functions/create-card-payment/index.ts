@@ -351,39 +351,70 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (utmIntegration?.is_active && utmIntegration?.api_token) {
+          const now = new Date().toISOString();
           const postbackBody = {
-            event: "sale",
-            transaction_id: paymentData.id,
-            amount: amount / 100,
-            email: buyer_email || "",
-            utm_source: utm_source || "",
-            utm_medium: utm_medium || "",
-            utm_campaign: utm_campaign || "",
-            utm_content: utm_content || "",
-            utm_term: utm_term || "",
-            affiliate: affiliate_ref || "",
+            isTest: false,
+            status: "paid",
+            orderId: paymentData.id,
+            customer: {
+              name: buyer_name || "Cliente",
+              email: buyer_email || "",
+              phone: buyer_phone || "",
+              country: "BR",
+              document: buyer_cpf || "",
+            },
+            platform: "VitraPay",
+            products: [
+              {
+                id: product.id,
+                name: product.title,
+                planId: product.id,
+                planName: product.title,
+                quantity: 1,
+                priceInCents: amount,
+              },
+            ],
+            createdAt: now,
+            approvedDate: now,
+            paymentMethod: "credit_card",
+            trackingParameters: {
+              utm_source: utm_source || "",
+              utm_medium: utm_medium || "",
+              utm_campaign: utm_campaign || "",
+              utm_content: utm_content || "",
+              utm_term: utm_term || "",
+            },
           };
 
           console.log("UTMify card postback SENDING:", JSON.stringify({
             producer: product.producer_id,
-            transaction_id: paymentData.id,
-            amount: postbackBody.amount,
-            utm_source: postbackBody.utm_source,
-            utm_medium: postbackBody.utm_medium,
-            utm_campaign: postbackBody.utm_campaign,
+            orderId: paymentData.id,
+            amount,
             token_prefix: utmIntegration.api_token.slice(0, 6) + "...",
           }));
 
-          const utmRes = await fetch("https://app.utmify.com.br/api/postback", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-token": utmIntegration.api_token,
-            },
-            body: JSON.stringify(postbackBody),
-          });
-          const utmResText = await utmRes.text();
-          console.log("UTMify card postback RESPONSE:", utmRes.status, utmResText);
+          let lastError: any = null;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              const utmRes = await fetch("https://api.utmify.com.br/api-credentials/orders", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-token": utmIntegration.api_token,
+                },
+                body: JSON.stringify(postbackBody),
+              });
+              const utmResText = await utmRes.text();
+              console.log(`UTMify card postback RESPONSE (attempt ${attempt}):`, utmRes.status, utmResText);
+              if (utmRes.ok || utmRes.status < 500) break;
+              lastError = `status ${utmRes.status}: ${utmResText}`;
+            } catch (fetchErr) {
+              lastError = fetchErr;
+              console.error(`UTMify card postback attempt ${attempt} failed:`, fetchErr);
+            }
+            if (attempt < 3) await new Promise((r) => setTimeout(r, 1000 * attempt));
+          }
+          if (lastError) console.error("UTMify card postback FAILED after retries:", lastError);
         } else {
           console.log("UTMify not configured for producer:", product.producer_id);
         }

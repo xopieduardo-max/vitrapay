@@ -50,9 +50,10 @@ async function sendUtmifyPostback(
   amount: number,
   email: string | null,
   pending: any,
+  product: any,
+  paymentMethod: string = "pix",
 ) {
   try {
-    // Fetch producer's UTMify token
     const { data: integration } = await supabase
       .from("user_integrations")
       .select("api_token, is_active")
@@ -65,44 +66,77 @@ async function sendUtmifyPostback(
       return;
     }
 
+    const now = new Date().toISOString();
     const postbackBody = {
-      event: "sale",
-      transaction_id: transactionId,
-      amount: amount / 100,
-      email: email || "",
-      utm_source: pending?.utm_source || "",
-      utm_medium: pending?.utm_medium || "",
-      utm_campaign: pending?.utm_campaign || "",
-      utm_content: pending?.utm_content || "",
-      utm_term: pending?.utm_term || "",
-      affiliate: pending?.affiliate_ref || "",
+      isTest: false,
+      status: "paid",
+      orderId: transactionId,
+      customer: {
+        name: pending?.buyer_name || "Cliente",
+        email: email || "",
+        phone: "",
+        country: "BR",
+        document: pending?.buyer_cpf || "",
+      },
+      platform: "VitraPay",
+      products: [
+        {
+          id: product?.id || pending?.product_id || "",
+          name: product?.title || "",
+          planId: product?.id || pending?.product_id || "",
+          planName: product?.title || "",
+          quantity: 1,
+          priceInCents: amount,
+        },
+      ],
+      createdAt: pending?.created_at || now,
+      approvedDate: now,
+      paymentMethod: paymentMethod,
+      trackingParameters: {
+        utm_source: pending?.utm_source || "",
+        utm_medium: pending?.utm_medium || "",
+        utm_campaign: pending?.utm_campaign || "",
+        utm_content: pending?.utm_content || "",
+        utm_term: pending?.utm_term || "",
+      },
     };
 
     console.log("UTMify postback SENDING:", JSON.stringify({
       producer: producerId,
-      transaction_id: transactionId,
-      amount: postbackBody.amount,
-      email: postbackBody.email,
-      utm_source: postbackBody.utm_source,
-      utm_medium: postbackBody.utm_medium,
-      utm_campaign: postbackBody.utm_campaign,
-      utm_content: postbackBody.utm_content,
-      utm_term: postbackBody.utm_term,
-      affiliate: postbackBody.affiliate,
+      orderId: transactionId,
+      amount,
+      email: email || "",
+      paymentMethod,
+      utm_source: pending?.utm_source || "",
       token_prefix: integration.api_token.slice(0, 6) + "...",
     }));
 
-    const res = await fetch("https://app.utmify.com.br/api/postback", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-token": integration.api_token,
-      },
-      body: JSON.stringify(postbackBody),
-    });
+    let lastError: any = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch("https://api.utmify.com.br/api-credentials/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-token": integration.api_token,
+          },
+          body: JSON.stringify(postbackBody),
+        });
 
-    const resText = await res.text();
-    console.log("UTMify postback RESPONSE:", res.status, resText);
+        const resText = await res.text();
+        console.log(`UTMify postback RESPONSE (attempt ${attempt}):`, res.status, resText);
+
+        if (res.ok || res.status < 500) return;
+        lastError = `status ${res.status}: ${resText}`;
+      } catch (fetchErr) {
+        lastError = fetchErr;
+        console.error(`UTMify postback attempt ${attempt} failed:`, fetchErr);
+      }
+
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 1000 * attempt));
+    }
+
+    console.error("UTMify postback FAILED after 3 attempts:", lastError);
   } catch (err) {
     console.error("UTMify postback error:", err);
   }
