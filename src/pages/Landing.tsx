@@ -91,24 +91,10 @@ function FloatingNotifications() {
 }
 
 /* ─── Interactive Grid Background ─── */
-function GridBackground() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { damping: 25, stiffness: 150 });
-  const springY = useSpring(mouseY, { damping: 25, stiffness: 150 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
-
+const GridBackground = React.memo(function GridBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Animated grid lines */}
+      {/* Static grid lines */}
       <div className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `
@@ -118,24 +104,12 @@ function GridBackground() {
           backgroundSize: "60px 60px",
         }}
       />
-      {/* Radial glow that follows mouse */}
-      <motion.div
-        className="absolute w-[600px] h-[600px] rounded-full"
-        style={{
-          x: springX,
-          y: springY,
-          translateX: "-50%",
-          translateY: "-50%",
-          background: "radial-gradient(circle, hsla(48, 96%, 53%, 0.08) 0%, transparent 70%)",
-        }}
-      />
       {/* Fixed ambient glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px]" />
     </div>
   );
-}
-
+});
 /* ─── Floating Particles ─── */
 function FloatingParticles() {
   return (
