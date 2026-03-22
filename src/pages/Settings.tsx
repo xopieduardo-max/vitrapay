@@ -331,7 +331,29 @@ export default function Settings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">CEP <span className="text-destructive">*</span></Label>
-                <Input value={addressCep} onChange={(e) => setAddressCep(e.target.value)} placeholder="00000-000" className="bg-muted/50 border-transparent focus:border-border" />
+                <Input
+                  value={addressCep}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 8);
+                    const formatted = val.length > 5 ? `${val.slice(0, 5)}-${val.slice(5)}` : val;
+                    setAddressCep(formatted);
+                    if (val.length === 8) {
+                      fetch(`https://viacep.com.br/ws/${val}/json/`)
+                        .then((r) => r.json())
+                        .then((d) => {
+                          if (!d.erro) {
+                            setAddressStreet(d.logradouro || "");
+                            setAddressNeighborhood(d.bairro || "");
+                            setAddressCity(d.localidade || "");
+                            setAddressState(d.uf || "");
+                          }
+                        })
+                        .catch(() => {});
+                    }
+                  }}
+                  placeholder="00000-000"
+                  className="bg-muted/50 border-transparent focus:border-border"
+                />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Estado <span className="text-destructive">*</span></Label>
