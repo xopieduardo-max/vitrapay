@@ -597,7 +597,7 @@ export default function Landing() {
 
                     {/* Chip */}
                     <div className="flex items-center">
-                      <div className="w-13 h-10 md:w-14 md:h-11 rounded-md" style={{
+                      <div className="w-12 h-10 md:w-14 md:h-11 rounded-md" style={{
                         background: `linear-gradient(135deg, 
                           hsl(45, 30%, 72%) 0%, 
                           hsl(43, 25%, 65%) 40%, 
