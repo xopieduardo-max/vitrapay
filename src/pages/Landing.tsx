@@ -214,6 +214,14 @@ const testimonials = [
 
 const marqueeText = "Transformando vidas através do digital";
 
+const marqueeStats = [
+  { icon: Globe, text: "Aceito em todo o Brasil" },
+  { icon: DollarSign, text: "+300 mil vendas por ano" },
+  { icon: Users, text: "+30 mil usuários" },
+  { icon: Rocket, text: "Saque instantâneo via Pix" },
+  { icon: Shield, text: "Pagamentos 100% seguros" },
+];
+
 /* ─── Counter Animation ─── */
 function AnimatedCounter({ value, suffix = "" }: { value: string; suffix?: string }) {
   return (
@@ -435,10 +443,23 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Marquee */}
-      <section className="relative border-y border-border/50 bg-primary/5 py-5 overflow-hidden">
+      {/* Marquee — dual row */}
+      <section className="relative border-y border-border/50 bg-card/30 py-6 overflow-hidden space-y-4">
+        {/* Row 1: Stats pills */}
         <div className="flex whitespace-nowrap animate-marquee">
-          {[...Array(12)].map((_, i) => (
+          {[...Array(3)].map((_, rep) =>
+            marqueeStats.map((item, i) => (
+              <span key={`${rep}-${i}`} className="mx-3 inline-flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/40 px-5 py-2.5 text-sm font-medium text-muted-foreground">
+                <item.icon className="h-4 w-4 text-primary/70" />
+                {item.text}
+                <Sparkles className="h-3 w-3 text-primary/50 ml-1" />
+              </span>
+            ))
+          )}
+        </div>
+        {/* Row 2: Brand phrase */}
+        <div className="flex whitespace-nowrap animate-marquee-reverse">
+          {[...Array(10)].map((_, i) => (
             <span key={i} className="mx-8 text-lg md:text-xl font-bold text-primary/80 flex items-center gap-3">
               <Zap className="h-4 w-4" /> {marqueeText}
             </span>
