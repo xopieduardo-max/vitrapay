@@ -18,15 +18,13 @@ import tiktokLogo from "@/assets/integrations/tiktok-logo.png";
 function IntegrationCard({
   title,
   description,
-  icon,
-  color,
+  logo,
   tutorialSteps,
   children,
 }: {
   title: string;
   description: string;
-  icon: string;
-  color: string;
+  logo: string;
   tutorialSteps: { step: string; detail: string }[];
   children?: React.ReactNode;
 }) {
@@ -35,9 +33,7 @@ function IntegrationCard({
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
       <div className="flex items-center gap-3">
-        <div className={`h-10 w-10 rounded-lg flex items-center justify-center text-lg font-bold text-white ${color}`}>
-          {icon}
-        </div>
+        <img src={logo} alt={title} className="h-10 w-10 rounded-lg object-contain" />
         <div>
           <h3 className="text-sm font-semibold">{title}</h3>
           <p className="text-xs text-muted-foreground">{description}</p>
