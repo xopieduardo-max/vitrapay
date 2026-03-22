@@ -616,10 +616,9 @@ export default function Landing() {
 
                   {/* Card content */}
                   <div className="relative h-full flex flex-col justify-between p-6 md:p-8">
-                    {/* Top — Logo + VitraPay text */}
-                    <div className="flex items-center gap-2">
-                      <img src={logoIcon} alt="VitraPay" className="h-8 md:h-10 rounded-sm" style={{ filter: 'brightness(0) opacity(0.5)' }} />
-                      <span className="text-lg md:text-xl font-bold tracking-tight" style={{ color: 'hsla(40, 30%, 25%, 0.55)' }}>VitraPay</span>
+                    {/* Top — Logo horizontal */}
+                    <div className="flex items-center">
+                      <img src={logoCard} alt="VitraPay" className="h-7 md:h-9" style={{ filter: 'brightness(0) opacity(0.55)' }} />
                     </div>
 
                     {/* Chip */}
