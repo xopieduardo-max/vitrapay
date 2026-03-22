@@ -206,24 +206,28 @@ serve(async (req) => {
       }).eq("id", withdrawal.id);
 
       // Record withdrawal + fee transactions
-      await supabase.from("transactions").insert([
-        {
-          user_id: user.id,
-          type: "debit",
-          category: "withdrawal",
-          amount,
-          balance_type: "available",
-          reference_id: withdrawal.id,
-        },
-        {
-          user_id: user.id,
-          type: "debit",
-          category: "fee",
-          amount: 500, // R$ 5.00
-          balance_type: "available",
-          reference_id: withdrawal.id,
-        },
-      ]).catch((err: any) => console.error("Auto-withdraw transaction error:", err));
+      try {
+        await supabase.from("transactions").insert([
+          {
+            user_id: user.id,
+            type: "debit",
+            category: "withdrawal",
+            amount,
+            balance_type: "available",
+            reference_id: withdrawal.id,
+          },
+          {
+            user_id: user.id,
+            type: "debit",
+            category: "fee",
+            amount: 500, // R$ 5.00
+            balance_type: "available",
+            reference_id: withdrawal.id,
+          },
+        ]);
+      } catch (txErr) {
+        console.error("Auto-withdraw transaction error:", txErr);
+      }
 
       // Notify producer (email + push)
       try {
