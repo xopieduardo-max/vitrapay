@@ -254,23 +254,18 @@ export default function AdminFeeSimulator() {
         </div>
       )}
 
-      {/* Reference: Asaas */}
+      {/* Editable: Asaas gateway costs */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <h3 className="text-sm font-semibold">Tabela de custos Asaas (referência)</h3>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            { icon: QrCode, title: "Pix", fee: "R$ 1,99", note: "por cobrança recebida" },
-            { icon: CreditCard, title: "Cartão", fee: "2,99% + R$ 0,49", note: "à vista · Receb. 32 dias" },
-            { icon: Barcode, title: "Boleto", fee: "R$ 1,99", note: "por boleto pago" },
-          ].map((item) => (
-            <div key={item.title} className="space-y-1">
-              <p className="text-xs font-medium flex items-center gap-1.5">
-                <item.icon className="h-3.5 w-3.5 text-primary" /> {item.title}
-              </p>
-              <p className="text-xs text-primary font-semibold">{item.fee}</p>
-              <p className="text-[0.65rem] text-muted-foreground">{item.note}</p>
-            </div>
-          ))}
+        <div>
+          <h3 className="text-sm font-semibold">Custos Asaas (gateway)</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Edite os custos do gateway para simular cenários. Estes valores são usados apenas no cálculo acima.
+          </p>
+        </div>
+        <div className="space-y-4">
+          <FeeMethodRow icon={QrCode} label="Pix" pct={eAsPix.pct} fixed={eAsPix.fixed} onPctChange={setAsPixPct} onFixedChange={setAsPixFixed} />
+          <FeeMethodRow icon={CreditCard} label="Cartão" pct={eAsCard.pct} fixed={eAsCard.fixed} onPctChange={setAsCardPct} onFixedChange={setAsCardFixed} />
+          <FeeMethodRow icon={Barcode} label="Boleto" pct={eAsBoleto.pct} fixed={eAsBoleto.fixed} onPctChange={setAsBoletoPct} onFixedChange={setAsBoletoFixed} />
         </div>
       </div>
 
