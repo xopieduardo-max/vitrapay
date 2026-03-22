@@ -228,8 +228,7 @@ export default function Integrations() {
       <IntegrationCard
         title="Google Ads"
         description="Rastreie conversões de vendas nas campanhas do Google Ads"
-        icon="G"
-        color="bg-green-600"
+        logo={googleAdsLogo}
         tutorialSteps={[
           { step: "Acesse o Google Ads", detail: "Vá em ads.google.com → Ferramentas e Configurações → Medição → Conversões." },
           { step: "Crie uma ação de conversão", detail: "Clique em '+ Nova ação de conversão' → Website → Configure o nome e valor." },
