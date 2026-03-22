@@ -573,43 +573,71 @@ export default function Landing() {
                 </Button>
               </div>
 
-              {/* Right — VitraPay Metallic Card with Fees */}
-              <div className="relative flex items-center justify-center p-8 md:p-10 md:min-w-[300px]">
+              {/* Right — VitraPay Metallic Credit Card */}
+              <div className="relative flex items-center justify-center p-4 md:p-10 md:min-w-[340px]">
                 <motion.div
-                  whileHover={{ rotateY: 5, rotateX: -3, scale: 1.03 }}
+                  whileHover={{ rotateY: 6, rotateX: -4, scale: 1.04 }}
                   transition={{ type: "spring", damping: 20, stiffness: 200 }}
-                  className="relative w-full max-w-[280px] aspect-[3/4] rounded-3xl overflow-hidden"
-                  style={{ perspective: "800px" }}
+                  className="relative w-full max-w-[380px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl"
+                  style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
                 >
-                  {/* Card background — metallic gold gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[hsl(48,96%,60%)] via-[hsl(45,90%,50%)] to-[hsl(40,85%,40%)] shimmer-gold" />
+                  {/* Card background — metallic gold */}
+                  <div className="absolute inset-0 shimmer-gold" style={{
+                    background: `linear-gradient(135deg, 
+                      hsl(48, 96%, 65%) 0%, 
+                      hsl(45, 90%, 55%) 25%, 
+                      hsl(42, 85%, 48%) 50%, 
+                      hsl(45, 90%, 55%) 75%, 
+                      hsl(48, 96%, 60%) 100%)`
+                  }} />
                   
-                  {/* Metallic sheen overlay */}
-                  <div className="absolute inset-0 opacity-25"
-                    style={{
-                      backgroundImage: `
-                        radial-gradient(ellipse at 30% 20%, hsla(0,0%,100%,0.5), transparent 50%),
-                        radial-gradient(ellipse at 70% 80%, hsla(0,0%,100%,0.2), transparent 50%)
-                      `,
-                    }}
-                  />
+                  {/* Metallic sheen */}
+                  <div className="absolute inset-0 opacity-30" style={{
+                    backgroundImage: `
+                      radial-gradient(ellipse at 25% 15%, hsla(0,0%,100%,0.6), transparent 45%),
+                      radial-gradient(ellipse at 75% 85%, hsla(0,0%,100%,0.15), transparent 50%),
+                      linear-gradient(135deg, transparent 40%, hsla(0,0%,100%,0.15) 50%, transparent 60%)
+                    `,
+                  }} />
 
-                  {/* Card content */}
-                  <div className="relative h-full flex flex-col items-center justify-between p-6 text-center">
-                    <p className="text-lg font-bold text-black/80 tracking-wide">Taxas</p>
-                    
-                    <div className="space-y-1">
-                      <p className="text-6xl md:text-7xl font-extrabold text-black/90 tracking-tighter leading-none">
-                        3,89%
-                      </p>
-                      <p className="text-xl md:text-2xl font-bold text-black/70">
-                        + R$ 2,49
-                      </p>
+                  {/* Card content — credit card layout */}
+                  <div className="relative h-full flex flex-col justify-between p-5 md:p-6">
+                    {/* Top row — Logo + Badge */}
+                    <div className="flex items-start justify-between">
+                      <img src={logoIcon} alt="VitraPay" className="h-7 md:h-8 rounded-md opacity-90" />
+                      <span className="text-[10px] md:text-xs font-bold text-black/50 uppercase tracking-widest">Premium</span>
                     </div>
 
-                    <div className="space-y-1.5 w-full">
-                      <div className="h-px bg-black/10 w-full" />
-                      <p className="text-xs font-semibold text-black/60 uppercase tracking-wider">VitraPay</p>
+                    {/* Chip */}
+                    <div className="flex items-center gap-4 -mt-1">
+                      <div className="w-10 h-7 md:w-12 md:h-8 rounded-md overflow-hidden" style={{
+                        background: `linear-gradient(135deg, 
+                          hsl(280, 60%, 60%) 0%, 
+                          hsl(200, 80%, 60%) 50%, 
+                          hsl(320, 60%, 60%) 100%)`,
+                        boxShadow: 'inset 0 0 0 1px hsla(0,0%,80%,0.5)'
+                      }}>
+                        <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-px p-px opacity-40">
+                          {[...Array(6)].map((_, i) => (
+                            <div key={i} className="bg-white/30 rounded-[1px]" />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-semibold text-black/50 uppercase tracking-wider">Pix</span>
+                        <span className="text-sm md:text-base font-extrabold text-black/80 leading-none">0% taxa</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom row — Fees + Brand */}
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-[10px] text-black/40 uppercase tracking-wider font-semibold">Cartão de crédito</p>
+                        <p className="text-lg md:text-xl font-extrabold text-black/80 leading-tight tracking-tight">
+                          3,89% <span className="text-sm font-bold text-black/50">+ R$ 2,49</span>
+                        </p>
+                      </div>
+                      <p className="text-lg md:text-xl font-black text-black/40 tracking-tight italic">VitraPay</p>
                     </div>
                   </div>
                 </motion.div>
