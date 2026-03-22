@@ -577,17 +577,18 @@ export default function Landing() {
               <div className="relative flex items-center justify-center p-4 md:p-10 md:min-w-[400px]">
                 <motion.div
                   animate={{
-                    y: [0, -12, 0],
-                    rotateY: [0, 3, 0, -3, 0],
-                    rotateX: [0, -2, 0, 2, 0],
+                    y: [0, -14, 0],
+                    rotateY: [0, 4, 0, -4, 0],
+                    rotateX: [0, -3, 0, 3, 0],
+                    rotate: [-3, -2, -3],
                   }}
                   transition={{
                     duration: 6,
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
-                  className="relative w-full max-w-[480px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl"
-                  style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
+                  className="relative w-full max-w-[520px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl"
+                  style={{ perspective: "1000px", transformStyle: "preserve-3d", transform: "rotate(-3deg)" }}
                 >
                   {/* Metallic gold base */}
                   <div className="absolute inset-0" style={{
@@ -613,15 +614,16 @@ export default function Landing() {
                   <div className="absolute inset-0 shimmer-gold" />
 
                   {/* Card content */}
-                  <div className="relative h-full flex flex-col justify-between p-6 md:p-7">
-                    {/* Top — Logo */}
-                    <div className="flex items-start justify-between">
-                      <img src={logoIcon} alt="VitraPay" className="h-7 md:h-9 rounded-sm" style={{ filter: 'brightness(0) opacity(0.5)' }} />
+                  <div className="relative h-full flex flex-col justify-between p-6 md:p-8">
+                    {/* Top — Logo + VitraPay text */}
+                    <div className="flex items-center gap-2">
+                      <img src={logoIcon} alt="VitraPay" className="h-8 md:h-10 rounded-sm" style={{ filter: 'brightness(0) opacity(0.5)' }} />
+                      <span className="text-lg md:text-xl font-bold tracking-tight" style={{ color: 'hsla(40, 30%, 25%, 0.55)' }}>VitraPay</span>
                     </div>
 
                     {/* Chip */}
                     <div className="flex items-center">
-                      <div className="w-12 h-9 md:w-14 md:h-10 rounded-md" style={{
+                      <div className="w-13 h-10 md:w-14 md:h-11 rounded-md" style={{
                         background: `linear-gradient(135deg, 
                           hsl(45, 30%, 72%) 0%, 
                           hsl(43, 25%, 65%) 40%, 
