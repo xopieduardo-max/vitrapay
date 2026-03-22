@@ -229,6 +229,44 @@ function AnimatedCounter({ value, suffix = "" }: { value: string; suffix?: strin
   );
 }
 
+/* ─── Country Selector ─── */
+function CountrySelector() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-muted/50 transition-colors text-sm"
+      >
+        <span className="text-lg leading-none">🇧🇷</span>
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -5, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -5, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card shadow-xl p-3 space-y-2"
+          >
+            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg bg-primary/10">
+              <span className="text-lg">🇧🇷</span>
+              <span className="text-sm font-medium text-foreground">Brasil</span>
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary ml-auto" />
+            </div>
+            <div className="border-t border-border/50" />
+            <p className="text-xs text-muted-foreground text-center py-1">
+              🌎 Em breve, novos países
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {open && <div className="fixed inset-0 z-[-1]" onClick={() => setOpen(false)} />}
+    </div>
+  );
+}
+
 /* ─── Main Landing ─── */
 export default function Landing() {
   const heroRef = useRef<HTMLElement>(null);
