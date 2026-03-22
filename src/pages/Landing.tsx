@@ -364,15 +364,10 @@ export default function Landing() {
               Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="h-14 px-10 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200" asChild>
+            <div className="flex items-center justify-center pt-4">
+              <Button size="lg" className="relative h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shimmer-gold animate-pulse-glow-primary" asChild>
                 <Link to="/auth">
                   Criar minha conta grátis <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-10 text-base gap-2 border-border/50" asChild>
-                <Link to="/marketplace">
-                  <Play className="h-4 w-4" /> Ver Marketplace
                 </Link>
               </Button>
             </div>
