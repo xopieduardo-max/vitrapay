@@ -105,28 +105,28 @@ export default function EditProductCheckout({ productId, form, updateField, chec
         <p className="text-xs text-muted-foreground">Escolha se o checkout será exibido no modo claro ou escuro para seus compradores.</p>
         <div className="flex gap-3">
           <button
-            onClick={() => updateField("checkout_theme", "dark")}
-            className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all"
-            style={{
-              background: (form.checkout_theme || "dark") === "dark" ? "hsl(48, 96%, 53%)" : "hsl(var(--muted))",
-              color: (form.checkout_theme || "dark") === "dark" ? "hsl(0,0%,10%)" : "hsl(var(--muted-foreground))",
-              border: (form.checkout_theme || "dark") === "dark" ? "2px solid hsl(48, 96%, 48%)" : "2px solid hsl(var(--border))",
-            }}
-          >
-            <Moon className="h-4 w-4" />
-            Modo Escuro
-          </button>
-          <button
             onClick={() => updateField("checkout_theme", "light")}
             className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all"
             style={{
-              background: form.checkout_theme === "light" ? "hsl(48, 96%, 53%)" : "hsl(var(--muted))",
-              color: form.checkout_theme === "light" ? "hsl(0,0%,10%)" : "hsl(var(--muted-foreground))",
-              border: form.checkout_theme === "light" ? "2px solid hsl(48, 96%, 48%)" : "2px solid hsl(var(--border))",
+              background: (form.checkout_theme || "light") === "light" ? "hsl(48, 96%, 53%)" : "hsl(var(--muted))",
+              color: (form.checkout_theme || "light") === "light" ? "hsl(0,0%,10%)" : "hsl(var(--muted-foreground))",
+              border: (form.checkout_theme || "light") === "light" ? "2px solid hsl(48, 96%, 48%)" : "2px solid hsl(var(--border))",
             }}
           >
             <Sun className="h-4 w-4" />
             Modo Claro
+          </button>
+          <button
+            onClick={() => updateField("checkout_theme", "dark")}
+            className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all"
+            style={{
+              background: form.checkout_theme === "dark" ? "hsl(48, 96%, 53%)" : "hsl(var(--muted))",
+              color: form.checkout_theme === "dark" ? "hsl(0,0%,10%)" : "hsl(var(--muted-foreground))",
+              border: form.checkout_theme === "dark" ? "2px solid hsl(48, 96%, 48%)" : "2px solid hsl(var(--border))",
+            }}
+          >
+            <Moon className="h-4 w-4" />
+            Modo Escuro
           </button>
         </div>
       </div>
