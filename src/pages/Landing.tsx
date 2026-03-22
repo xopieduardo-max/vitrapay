@@ -14,6 +14,7 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
+import logoCard from "@/assets/logo-vitrapay-card.png";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
@@ -615,10 +616,9 @@ export default function Landing() {
 
                   {/* Card content */}
                   <div className="relative h-full flex flex-col justify-between p-6 md:p-8">
-                    {/* Top — Logo + VitraPay text */}
-                    <div className="flex items-center gap-2">
-                      <img src={logoIcon} alt="VitraPay" className="h-8 md:h-10 rounded-sm" style={{ filter: 'brightness(0) opacity(0.5)' }} />
-                      <span className="text-lg md:text-xl font-bold tracking-tight" style={{ color: 'hsla(40, 30%, 25%, 0.55)' }}>VitraPay</span>
+                    {/* Top — Logo horizontal */}
+                    <div className="flex items-center">
+                      <img src={logoCard} alt="VitraPay" className="h-7 md:h-9" style={{ filter: 'brightness(0) opacity(0.55)' }} />
                     </div>
 
                     {/* Chip */}
