@@ -76,9 +76,12 @@ export default function Auth() {
         });
       }
     } catch (error: any) {
+      const msg = error.message === "Load failed" || error.message === "Failed to fetch"
+        ? "Erro de conexão. Verifique sua internet e tente novamente."
+        : error.message;
       toast({
         title: "Erro",
-        description: error.message,
+        description: msg,
         variant: "destructive",
       });
     } finally {
