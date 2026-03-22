@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Zap, ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
   BarChart3, Rocket, Clock, Headphones, Award, Star,
@@ -252,6 +254,33 @@ function CountrySelector() {
 /* ─── Main Landing ─── */
 export default function Landing() {
   const heroRef = useRef<HTMLElement>(null);
+
+  const { data: platformFees } = useQuery({
+    queryKey: ["platform-fees-landing"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("platform_fees").select("*").eq("id", 1).single();
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const feeDisplay = useMemo(() => {
+    if (!platformFees) return { cardText: "...", pixText: "0%" };
+    const pct = Number(platformFees.card_percentage);
+    const fixed = (platformFees.card_fixed / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+    const pixFixed = platformFees.pix_fixed > 0
+      ? `R$${(platformFees.pix_fixed / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+      : null;
+    const pixPct = Number(platformFees.pix_percentage);
+    const pixLabel = pixPct > 0 ? `${pixPct.toLocaleString("pt-BR")}%` : (pixFixed ? pixFixed : "0%");
+    return {
+      cardText: `${pct.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}% + R$${fixed}`,
+      pixText: pixPct === 0 && !pixFixed ? "0%" : pixLabel,
+      pixIsFree: pixPct === 0 && platformFees.pix_fixed === 0,
+    };
+  }, [platformFees]);
+
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -639,10 +668,10 @@ export default function Landing() {
             >
               <p className="text-sm md:text-base text-muted-foreground">Taxa para cartões na plataforma</p>
               <p className="text-4xl md:text-5xl font-extrabold text-primary tracking-tight">
-                3,89% + R$2,49
+                {feeDisplay.cardText}
               </p>
               <p className="text-sm md:text-base text-muted-foreground">
-                Pix com taxa <span className="font-bold text-primary">0%</span> para seus clientes
+                Pix com taxa <span className="font-bold text-primary">{feeDisplay.pixText}</span> para seus clientes
               </p>
             </motion.div>
           </motion.div>
