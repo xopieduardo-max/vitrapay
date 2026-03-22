@@ -41,7 +41,7 @@ export default function HelpCenter() {
         .select("*")
         .eq("is_active", true)
         .order("position");
-      return (data || []) as Article[];
+      return (data || []) as unknown as Article[];
     },
   });
 
