@@ -129,6 +129,24 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Get or create unsubscribe token for buyer
+    const { data: existingToken } = await supabase
+      .from("email_unsubscribe_tokens")
+      .select("token")
+      .eq("email", buyer_email)
+      .maybeSingle();
+
+    let unsubscribeToken: string;
+    if (existingToken?.token) {
+      unsubscribeToken = existingToken.token;
+    } else {
+      unsubscribeToken = crypto.randomUUID();
+      await supabase.from("email_unsubscribe_tokens").insert({
+        email: buyer_email,
+        token: unsubscribeToken,
+      });
+    }
+
     const html = buildPurchaseEmailHtml(params);
     const text = buildPlainText(params);
     const messageId = crypto.randomUUID();
@@ -147,6 +165,7 @@ Deno.serve(async (req) => {
       payload: {
         message_id: messageId,
         idempotency_key: `purchase-confirm-${messageId}`,
+        unsubscribe_token: unsubscribeToken,
         to: buyer_email,
         from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
