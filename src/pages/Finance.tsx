@@ -71,13 +71,37 @@ export default function Finance() {
       if (!user) return [];
       const { data } = await supabase
         .from("sales")
-        .select("amount, platform_fee, status, created_at, payment_provider")
+        .select("amount, platform_fee, status, created_at, payment_provider, payment_id")
         .eq("producer_id", user.id)
         .eq("status", "completed");
       return data || [];
     },
     enabled: !!user,
   });
+
+  const paymentIds = useMemo(
+    () => [...new Set(sales.map((sale: any) => sale.payment_id).filter(Boolean))],
+    [sales]
+  );
+
+  const { data: confirmedPaymentIds = [] } = useQuery({
+    queryKey: ["confirmed-sales", paymentIds],
+    queryFn: async () => {
+      if (paymentIds.length === 0) return [];
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("asaas_payment_id")
+        .in("asaas_payment_id", paymentIds)
+        .eq("status", "confirmed");
+      return (data || []).map((payment: any) => payment.asaas_payment_id);
+    },
+    enabled: paymentIds.length > 0,
+  });
+
+  const verifiedSales = useMemo(() => {
+    const validIds = new Set(confirmedPaymentIds);
+    return sales.filter((sale: any) => sale.payment_id && validIds.has(sale.payment_id));
+  }, [sales, confirmedPaymentIds]);
 
   // Get commissions earned as affiliate
   const { data: commissions = [] } = useQuery({
@@ -112,7 +136,7 @@ export default function Finance() {
   const now = new Date();
 
   // Split sales into available vs held back
-  const salesNet = sales.map((s) => ({
+  const salesNet = verifiedSales.map((s: any) => ({
     net: s.amount - (s.platform_fee || 0),
     availableAt: addDays(s.created_at, getHoldbackDays(s.payment_provider)),
     provider: s.payment_provider,
@@ -127,10 +151,12 @@ export default function Finance() {
     .reduce((acc, s) => acc + s.net, 0);
 
   // Commissions — apply card holdback (conservative)
-  const commissionsNet = commissions.map((c) => ({
-    amount: c.amount,
-    availableAt: addDays(c.created_at, HOLDBACK_DAYS_CARD),
-  }));
+  const commissionsNet = commissions
+    .filter((c: any) => c.status !== "cancelled")
+    .map((c: any) => ({
+      amount: c.amount,
+      availableAt: addDays(c.created_at, HOLDBACK_DAYS_CARD),
+    }));
 
   const totalAvailableCommissions = commissionsNet
     .filter((c) => c.availableAt <= now)

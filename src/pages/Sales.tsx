@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/StatCard";
 import { ExportButton } from "@/components/ExportButton";
-import { DollarSign, ShoppingCart, Percent, TrendingUp, Loader2, Calendar, CreditCard, User, Mail, FileText, Package } from "lucide-react";
+import { DollarSign, ShoppingCart, TrendingUp, Loader2, Calendar, CreditCard, User, Mail, FileText, Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -123,8 +123,10 @@ export default function Sales() {
   });
 
   const completed = filteredSales.filter((s: any) => s.status === "completed");
+  const refunded = filteredSales.filter((s: any) => s.status === "refunded");
   const totalRevenue = completed.reduce((acc: number, s: any) => acc + s.amount, 0);
   const avgTicket = completed.length > 0 ? totalRevenue / completed.length : 0;
+  const refundedVolume = refunded.reduce((acc: number, s: any) => acc + s.amount, 0);
 
   const salesStats = [
     {
@@ -135,18 +137,20 @@ export default function Sales() {
       icon: DollarSign,
     },
     {
-      title: "Total de Vendas",
-      value: filteredSales.length.toString(),
-      change: "Todas as vendas",
+      title: "Vendas Aprovadas",
+      value: completed.length.toString(),
+      change: "Geram saldo e saque",
       changeType: "positive" as const,
       icon: ShoppingCart,
     },
     {
-      title: "Taxa de Conversão",
-      value: filteredSales.length > 0 ? `${((completed.length / filteredSales.length) * 100).toFixed(1)}%` : "0%",
-      change: "Vendas concluídas / total",
+      title: "Vendas Estornadas",
+      value: refunded.length.toString(),
+      change: refunded.length > 0
+        ? `R$ ${(refundedVolume / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} estornado`
+        : "Sem impacto no saldo",
       changeType: "neutral" as const,
-      icon: Percent,
+      icon: CreditCard,
     },
     {
       title: "Ticket Médio",
