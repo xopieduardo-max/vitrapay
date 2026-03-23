@@ -246,6 +246,8 @@
   --ck-method-inactive: hsl(240, 10%, 12%);
   --ck-method-inactive-fg: hsl(240, 5%, 60%);
   --ck-method-inactive-border: hsl(240, 5%, 18%);
+  --ck-accent: hsl(48, 96%, 53%);
+  --ck-accent-fg: hsl(0, 0%, 10%);
 }
 
 .checkout-light {
@@ -264,4 +266,17 @@
   --ck-method-inactive: hsl(0, 0%, 100%);
   --ck-method-inactive-fg: hsl(240, 5%, 35%);
   --ck-method-inactive-border: hsl(240, 5%, 85%);
+  --ck-accent: hsl(48, 96%, 53%);
+  --ck-accent-fg: hsl(0, 0%, 10%);
 }
+
+/* Color Theme Accents */
+.checkout-theme-classic { --ck-accent: hsl(48, 96%, 53%); --ck-accent-fg: hsl(0, 0%, 10%); }
+.checkout-theme-cyan { --ck-accent: hsl(180, 70%, 50%); --ck-accent-fg: hsl(0, 0%, 10%); }
+.checkout-theme-emerald { --ck-accent: hsl(142, 71%, 45%); --ck-accent-fg: hsl(0, 0%, 100%); }
+.checkout-theme-ocean { --ck-accent: hsl(210, 100%, 50%); --ck-accent-fg: hsl(0, 0%, 100%); }
+.checkout-theme-violet { --ck-accent: hsl(262, 83%, 58%); --ck-accent-fg: hsl(0, 0%, 100%); }
+.checkout-theme-floral { --ck-accent: hsl(330, 80%, 55%); --ck-accent-fg: hsl(0, 0%, 100%); }
+.checkout-theme-coral { --ck-accent: hsl(0, 84%, 55%); --ck-accent-fg: hsl(0, 0%, 100%); }
+.checkout-theme-amber { --ck-accent: hsl(25, 95%, 53%); --ck-accent-fg: hsl(0, 0%, 10%); }
+.checkout-theme-solar { --ck-accent: hsl(45, 93%, 47%); --ck-accent-fg: hsl(0, 0%, 10%); }
