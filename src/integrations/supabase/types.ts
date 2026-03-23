@@ -920,7 +920,10 @@ export type Database = {
           affiliate_commission: number | null
           allow_affiliates: boolean
           checkout_banner_url: string | null
+          checkout_color_theme: string
           checkout_headline: string | null
+          checkout_social_proof: boolean
+          checkout_social_proof_interval: number
           checkout_theme: string
           checkout_timer_minutes: number | null
           cover_url: string | null
@@ -939,7 +942,10 @@ export type Database = {
           affiliate_commission?: number | null
           allow_affiliates?: boolean
           checkout_banner_url?: string | null
+          checkout_color_theme?: string
           checkout_headline?: string | null
+          checkout_social_proof?: boolean
+          checkout_social_proof_interval?: number
           checkout_theme?: string
           checkout_timer_minutes?: number | null
           cover_url?: string | null
@@ -958,7 +964,10 @@ export type Database = {
           affiliate_commission?: number | null
           allow_affiliates?: boolean
           checkout_banner_url?: string | null
+          checkout_color_theme?: string
           checkout_headline?: string | null
+          checkout_social_proof?: boolean
+          checkout_social_proof_interval?: number
           checkout_theme?: string
           checkout_timer_minutes?: number | null
           cover_url?: string | null
