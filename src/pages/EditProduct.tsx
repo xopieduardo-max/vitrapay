@@ -224,7 +224,7 @@ export default function EditProduct() {
         </TabsContent>
 
         <TabsContent value="coupons" className="mt-6">
-          <EditProductCoupons userId={user?.id} />
+          <EditProductCoupons userId={user?.id} productId={id} />
         </TabsContent>
 
         <TabsContent value="links" className="mt-6">
