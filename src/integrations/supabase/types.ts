@@ -927,6 +927,7 @@ export type Database = {
           checkout_social_proof_interval: number
           checkout_theme: string
           checkout_timer_minutes: number | null
+          coupons_enabled: boolean
           cover_url: string | null
           created_at: string
           description: string | null
@@ -950,6 +951,7 @@ export type Database = {
           checkout_social_proof_interval?: number
           checkout_theme?: string
           checkout_timer_minutes?: number | null
+          coupons_enabled?: boolean
           cover_url?: string | null
           created_at?: string
           description?: string | null
@@ -973,6 +975,7 @@ export type Database = {
           checkout_social_proof_interval?: number
           checkout_theme?: string
           checkout_timer_minutes?: number | null
+          coupons_enabled?: boolean
           cover_url?: string | null
           created_at?: string
           description?: string | null
