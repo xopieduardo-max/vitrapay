@@ -304,7 +304,16 @@ export default function Finance() {
                   </span>
                 </div>
 
-                {!pixKey && (
+                {profileIncomplete && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2">
+                    <Lock className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      Para solicitar saques, complete seu cadastro (nome, CPF e telefone) em <strong>Ajustes</strong>.
+                    </p>
+                  </div>
+                )}
+
+                {!profileIncomplete && !pixKey && (
                   <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 flex items-start gap-2">
                     <AlertCircle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                     <p className="text-xs text-muted-foreground">
