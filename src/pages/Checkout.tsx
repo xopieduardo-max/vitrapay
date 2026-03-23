@@ -873,10 +873,10 @@ export default function Checkout() {
             transition={{ duration: 0.5 }}
             className="lg:col-span-3 space-y-5"
           >
-            {/* Cover image - Cakto style */}
-            {product.cover_url && (
+            {/* Checkout banner image - Cakto style */}
+            {product.checkout_banner_url && (
               <div className="rounded-xl overflow-hidden">
-                <img src={product.cover_url} alt={product.title} className="w-full max-h-[320px] object-cover" />
+                <img src={product.checkout_banner_url} alt={product.title} className="w-full max-h-[400px] object-cover" />
               </div>
             )}
 
