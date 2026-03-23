@@ -313,6 +313,19 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Vendas Pendentes */}
+        {pendingCheckoutsCount > 0 && (
+          <motion.div {...anim(0.2)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
+              <Clock className="h-5 w-5 text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-medium text-warning">Vendas Pendentes</p>
+              <p className="text-sm font-bold">{pendingCheckoutsCount} checkout(s) • {fmt(pendingCheckoutsValue)}</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Quick Links - Cakto style */}
         <div className="space-y-2">
           {quickLinks.map((link, i) => (
