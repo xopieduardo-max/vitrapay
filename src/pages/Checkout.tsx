@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import logoHorizontal from "@/assets/logo-vitrapay-horizontal.png";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCheckoutPixels, firePixelEvent } from "@/components/checkout/CheckoutPixels";
