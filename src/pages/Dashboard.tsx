@@ -25,7 +25,7 @@ import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
-import { OnboardingTour } from "@/components/OnboardingTour";
+
 import {
   Select,
   SelectContent,
@@ -199,7 +199,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
-      <OnboardingTour />
+      
       {/* Promotional Banner */}
       <motion.div {...anim(0)} className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
         <img
