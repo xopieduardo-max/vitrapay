@@ -1361,7 +1361,7 @@ export default function Checkout() {
               {/* Sidebar vertical banner */}
               {(product as any).checkout_sidebar_banner_url && (
                 <div className="rounded-xl overflow-hidden">
-                  <img src={(product as any).checkout_sidebar_banner_url} alt="Banner" className="w-full h-auto object-contain rounded-xl" />
+                  <img src={(product as any).checkout_sidebar_banner_url} alt="Banner" loading="lazy" className="w-full h-auto object-contain rounded-xl" />
                 </div>
               )}
 
