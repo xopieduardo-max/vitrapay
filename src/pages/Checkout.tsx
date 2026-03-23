@@ -1,16 +1,13 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import logoHorizontal from "@/assets/logo-vitrapay-horizontal.png";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCheckoutPixels, firePixelEvent } from "@/components/checkout/CheckoutPixels";
-import { SocialProofNotification } from "@/components/checkout/SocialProofNotification";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
   Clock,
@@ -28,6 +25,9 @@ import {
   FileText,
   Copy,
 } from "lucide-react";
+
+// Lazy load heavy components
+const SocialProofNotification = lazy(() => import("@/components/checkout/SocialProofNotification").then(m => ({ default: m.SocialProofNotification })));
 
 type PaymentMethod = "card" | "pix";
 
