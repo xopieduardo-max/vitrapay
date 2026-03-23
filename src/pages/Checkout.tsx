@@ -524,7 +524,7 @@ export default function Checkout() {
               className="text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full"
               style={{
                 background: isUpsell ? "hsl(142,71%,45%,0.15)" : "hsl(25,95%,53%,0.15)",
-                color: isUpsell ? "hsl(142,71%,45%)" : "hsl(25,95%,53%)",
+                color: isUpsell ? "hsl(145,63%,32%)" : "hsl(25,95%,53%)",
               }}
             >
               {isUpsell ? "⬆️ Oferta Especial" : "⬇️ Última Chance"}
@@ -583,7 +583,7 @@ export default function Checkout() {
               onClick={handleAcceptOffer}
               className="w-full h-14 text-base font-bold gap-2 rounded-2xl shadow-lg transition-all hover:scale-[1.02]"
               style={{
-                background: "hsl(142,71%,45%)",
+                background: "hsl(145,63%,32%)",
                 color: "white",
                 boxShadow: "0 4px 20px hsl(142,71%,45%,0.3)",
               }}
@@ -950,9 +950,9 @@ export default function Checkout() {
                     onClick={() => setPaymentMethod(method)}
                     className="flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-medium transition-all whitespace-nowrap"
                     style={{
-                      background: paymentMethod === method ? "hsl(142, 71%, 45%)" : "var(--ck-method-inactive)",
+                      background: paymentMethod === method ? "hsl(145, 63%, 32%)" : "var(--ck-method-inactive)",
                       color: paymentMethod === method ? "white" : "var(--ck-method-inactive-fg)",
-                      border: paymentMethod === method ? "1px solid hsl(142, 71%, 40%)" : "1px solid var(--ck-method-inactive-border)",
+                      border: paymentMethod === method ? "1px solid hsl(145, 63%, 28%)" : "1px solid var(--ck-method-inactive-border)",
                     }}
                   >
                     {method === "pix" ? <QrCode className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
@@ -969,7 +969,7 @@ export default function Checkout() {
                 >
                   {/* Card Status Feedback */}
                   {cardStatus === "approved" && (
-                    <div className="rounded-lg p-3 flex items-center gap-2 text-sm font-semibold" style={{ background: "hsl(142,71%,45%,0.15)", color: "hsl(142,71%,45%)", border: "1px solid hsl(142,71%,45%,0.3)" }}>
+                    <div className="rounded-lg p-3 flex items-center gap-2 text-sm font-semibold" style={{ background: "hsl(142,71%,45%,0.15)", color: "hsl(145,63%,32%)", border: "1px solid hsl(142,71%,45%,0.3)" }}>
                       <CheckCircle2 className="h-4 w-4" /> Pagamento aprovado!
                     </div>
                   )}
@@ -1069,7 +1069,7 @@ export default function Checkout() {
                 >
                   {pixData ? (
                     <>
-                      <p className="text-sm font-bold" style={{ color: "hsl(142, 71%, 45%)" }}>
+                      <p className="text-sm font-bold" style={{ color: "hsl(145, 63%, 32%)" }}>
                         Pagamento gerado, finalize via PIX
                       </p>
                       <div className="flex justify-center">
@@ -1092,7 +1092,7 @@ export default function Checkout() {
                           />
                           <Button
                             size="sm"
-                            className="shrink-0 bg-[hsl(142,71%,45%)] hover:bg-[hsl(142,71%,38%)] text-white"
+                            className="shrink-0 bg-[hsl(145,63%,32%)] hover:bg-[hsl(145,63%,26%)] text-white"
                             onClick={() => {
                               navigator.clipboard.writeText(pixData.copyPaste);
                               toast({ title: "Código PIX copiado!" });
@@ -1324,7 +1324,7 @@ export default function Checkout() {
               <Button
                 onClick={handlePurchase}
                 disabled={processing}
-                className="w-full h-14 text-base font-bold gap-2 rounded-xl bg-[hsl(142,71%,45%)] hover:bg-[hsl(142,71%,38%)] text-white border-0"
+                className="w-full h-14 text-base font-bold gap-2 rounded-xl bg-[hsl(145,63%,32%)] hover:bg-[hsl(145,63%,26%)] text-white border-0"
                 size="lg"
               >
                 {processing ? (
