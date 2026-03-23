@@ -623,17 +623,17 @@ export default function Checkout() {
   if (purchaseResult) {
     return (
       <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${product?.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+        <div
+          
+          
+          
           className="max-w-lg w-full rounded-3xl p-8 text-center space-y-6 relative overflow-hidden"
           style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}
         >
           {/* Confetti-like decorative dots */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {[...Array(12)].map((_, i) => (
-              <motion.div
+              <div
                 key={i}
                 className="absolute rounded-full"
                 style={{
@@ -658,10 +658,10 @@ export default function Checkout() {
           </div>
 
           {/* Leonardo DiCaprio celebration GIF */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+          <div
+            
+            
+            
             className="flex justify-center relative z-10"
           >
             <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border: "2px solid hsl(48,96%,53%,0.3)" }}>
@@ -671,13 +671,13 @@ export default function Checkout() {
                 className="w-48 h-auto"
               />
             </div>
-          </motion.div>
+          </div>
 
           {/* Success badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+          <div
+            
+            
+            
             className="flex justify-center relative z-10"
           >
             <div
@@ -689,12 +689,12 @@ export default function Checkout() {
             >
               <CheckCircle2 className="h-7 w-7 text-black" />
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+          <div
+            
+            
+            
             className="space-y-2 relative z-10"
           >
             <h1 className="text-3xl font-black tracking-tight">
@@ -703,12 +703,12 @@ export default function Checkout() {
             <p className="text-base" style={{ color: "var(--ck-muted)" }}>
               Parabéns! Seu acesso a <strong style={{ color: "hsl(48,96%,53%)" }}>{purchaseResult.product_title}</strong> já está liberado.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+          <div
+            
+            
+            
             className="rounded-2xl p-5 space-y-3 relative z-10"
             style={{ background: "var(--ck-bg)", border: "1px solid var(--ck-card-border)" }}
           >
@@ -725,12 +725,12 @@ export default function Checkout() {
                 {purchaseResult.sale_id?.slice(0, 12)}
               </span>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
+          <div
+            
+            
+            
             className="space-y-3 relative z-10"
           >
             {purchaseResult.file_url && (
@@ -759,18 +759,18 @@ export default function Checkout() {
                 Acessar Área de Membros
               </Button>
             )}
-          </motion.div>
+          </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
+          <p
+            
+            
+            
             className="text-xs relative z-10"
             style={{ color: "var(--ck-subtle)" }}
           >
             Um email de confirmação foi enviado para você 📧
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
       </div>
     );
   }
@@ -969,9 +969,9 @@ export default function Checkout() {
               </div>
 
               {paymentMethod === "card" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
+                <div
+                  
+                  
                   className="space-y-3"
                 >
                   {/* Card Status Feedback */}
@@ -1064,13 +1064,13 @@ export default function Checkout() {
                     <Lock className="h-3 w-3" />
                     Seus dados de pagamento são criptografados e processados de forma segura.
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {paymentMethod === "pix" && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                <div
+                  
+                  
                   className="rounded-lg p-6 text-center space-y-4"
                   style={{ background: "var(--ck-input)" }}
                 >
@@ -1119,7 +1119,7 @@ export default function Checkout() {
                       </p>
                     </>
                   )}
-                </motion.div>
+                </div>
               )}
             </div>
 
@@ -1138,9 +1138,9 @@ export default function Checkout() {
                   const isSelected = selectedBumps.has(bump.id);
 
                   return (
-                    <motion.div
+                    <div
                       key={bump.id}
-                      whileTap={{ scale: 0.98 }}
+                      
                       className="rounded-xl overflow-hidden cursor-pointer transition-all"
                       style={{
                         border: isSelected ? "2px solid var(--ck-accent)" : "2px solid var(--ck-card-border)",
@@ -1191,7 +1191,7 @@ export default function Checkout() {
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -1302,7 +1302,7 @@ export default function Checkout() {
                   {/* Logo + processing info */}
                   <div className="text-center space-y-1.5">
                     <img
-                      src={logoHorizontal}
+                      src="/logo-vitrapay-horizontal.png"
                       alt="VitraPay"
                       className="h-6 mx-auto"
                     />
