@@ -854,6 +854,44 @@ export default function Checkout() {
       )}
 
       {/* ── Dynamic Blocks ── */}
+      {checkoutBlocks.length > 0 && (
+        <div className="container max-w-5xl px-4 py-4 space-y-4">
+          {checkoutBlocks.map((block: any) => (
+            <CheckoutBlockRenderer key={block.id} block={block} />
+          ))}
+        </div>
+      )}
+
+      {/* ── Main Content ── */}
+      <div className="container max-w-5xl py-8 px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+          {/* LEFT COLUMN - Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-3 space-y-5"
+          >
+            {/* Cover image - Cakto style */}
+            {product.cover_url && (
+              <div className="rounded-xl overflow-hidden">
+                <img src={product.cover_url} alt={product.title} className="w-full max-h-[320px] object-cover" />
+              </div>
+            )}
+
+            {/* Product Info Card */}
+            <div className="rounded-xl p-5" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
+              <h2 className="font-bold text-xl" style={{ color: "var(--ck-fg)" }}>{product.title}</h2>
+              <p className="font-bold mt-1" style={{ color: "var(--ck-accent)" }}>
+                <span className="text-lg">R$ {(product.price / 100).toFixed(2)}</span>
+                <span className="text-xs font-normal ml-2" style={{ color: "var(--ck-subtle)" }}>
+                  ou R$ {(product.price / 100).toFixed(2)} à vista
+                </span>
+              </p>
+            </div>
+
+            {/* Contact Info */}
             <div className="rounded-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <User className="h-4 w-4 text-primary" />
