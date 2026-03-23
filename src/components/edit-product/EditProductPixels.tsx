@@ -35,7 +35,7 @@ const PLATFORMS: PlatformConfigDef[] = [
   {
     id: "facebook", label: "Facebook", logo: pixelFacebookLogo,
     fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "1293867678159457" }],
-    hasAccessToken: false,
+    hasAccessToken: true,
     eventOptions: [
       { key: "fire_on_pix", label: 'Disparar evento "Purchase" ao gerar um pix?', default: true },
       { key: "fire_on_boleto", label: 'Disparar evento "Purchase" ao gerar um boleto?', default: true },
