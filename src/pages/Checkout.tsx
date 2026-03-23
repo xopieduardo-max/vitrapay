@@ -172,64 +172,49 @@ export default function Checkout() {
   useEffect(() => {
     if (!id) return;
     const loadCheckout = async () => {
-      const { data: prod } = await supabase.from("products").select("*").eq("id", id).single();
+      // ── PARALLEL: Fire all queries at once instead of sequential waterfall ──
+      const [
+        { data: prod },
+        { data: bumps },
+        { data: fSteps },
+        { data: testis },
+        { data: blocks },
+        { data: pxs },
+      ] = await Promise.all([
+        supabase.from("products").select("*").eq("id", id).single(),
+        supabase.from("order_bumps").select("*, bump_product:bump_product_id(*)").eq("product_id", id).eq("is_active", true),
+        supabase.from("funnel_steps").select("*, offer_product:offer_product_id(id, title, price, cover_url, description, file_url, type)").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
+        supabase.from("checkout_testimonials").select("*").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
+        supabase.from("checkout_blocks").select("*").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
+        supabase.from("product_pixels").select("*").eq("product_id", id).eq("is_active", true),
+      ]);
+
       if (prod) {
         setProduct(prod);
         if (prod.checkout_timer_minutes && prod.checkout_timer_minutes > 0) {
           setTimeLeft(prod.checkout_timer_minutes * 60);
         }
-        const { data: profile } = await supabase
+        // Producer name fetch — non-blocking, runs in background
+        supabase
           .from("profiles")
           .select("display_name")
           .eq("user_id", prod.producer_id)
-          .maybeSingle();
-        setProducer(profile?.display_name || "");
+          .maybeSingle()
+          .then(({ data: profile }) => {
+            setProducer(profile?.display_name || "");
+          });
       }
 
-      const { data: bumps } = await supabase
-        .from("order_bumps")
-        .select("*, bump_product:bump_product_id(*)")
-        .eq("product_id", id)
-        .eq("is_active", true);
       if (bumps) setOrderBumps(bumps);
-
-      // Load funnel steps (upsell/downsell)
-      const { data: fSteps } = await supabase
-        .from("funnel_steps")
-        .select("*, offer_product:offer_product_id(id, title, price, cover_url, description, file_url, type)")
-        .eq("product_id", id)
-        .eq("is_active", true)
-        .order("position", { ascending: true });
       if (fSteps) setFunnelSteps(fSteps);
-
-      const { data: testis } = await supabase
-        .from("checkout_testimonials")
-        .select("*")
-        .eq("product_id", id)
-        .eq("is_active", true)
-        .order("position", { ascending: true });
       if (testis) setTestimonials(testis);
-
-      const { data: blocks } = await supabase
-        .from("checkout_blocks")
-        .select("*")
-        .eq("product_id", id)
-        .eq("is_active", true)
-        .order("position", { ascending: true });
       if (blocks) setCheckoutBlocks(blocks);
-
-      // Load pixels
-      const { data: pxs } = await supabase
-        .from("product_pixels")
-        .select("*")
-        .eq("product_id", id)
-        .eq("is_active", true);
       if (pxs) setProductPixels(pxs);
 
-      // Track affiliate click
+      // Track affiliate click — non-blocking
       const ref = searchParams.get("ref");
       if (ref) {
-        try { await supabase.rpc("increment_affiliate_clicks" as any, { affiliate_id: ref }); } catch {}
+        supabase.rpc("increment_affiliate_clicks" as any, { affiliate_id: ref }).catch(() => {});
       }
 
       setLoading(false);
