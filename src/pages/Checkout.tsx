@@ -513,12 +513,9 @@ export default function Checkout() {
 
     return (
       <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${product?.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
-        <motion.div
+        <div
           key={activeFunnelStep.id}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-lg w-full rounded-3xl p-8 space-y-6 relative overflow-hidden"
+          className="max-w-lg w-full rounded-3xl p-8 space-y-6 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500"
           style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}
         >
           {/* Badge */}
@@ -617,7 +614,7 @@ export default function Checkout() {
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     );
   }
