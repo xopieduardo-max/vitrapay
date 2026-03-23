@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Tag } from "lucide-react";
 
 interface Props {
   userId?: string;
@@ -15,6 +16,7 @@ interface Props {
 export default function EditProductCoupons({ userId }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [enabled, setEnabled] = useState(false);
   const [newCoupon, setNewCoupon] = useState({ code: "", discount_value: "", discount_type: "percentage", max_uses: "" });
   const [creating, setCreating] = useState(false);
 
@@ -27,6 +29,7 @@ export default function EditProductCoupons({ userId }: Props) {
         .select("*")
         .eq("producer_id", userId)
         .order("created_at", { ascending: false });
+      if (data && data.length > 0) setEnabled(true);
       return data || [];
     },
     enabled: !!userId,
@@ -56,53 +59,68 @@ export default function EditProductCoupons({ userId }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <h3 className="text-sm font-bold">Criar novo cupom</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="flex items-center justify-between rounded-lg border border-border p-4">
+        <div className="flex items-center gap-3">
+          <Tag className="h-4 w-4 text-muted-foreground" />
           <div>
-            <Label className="text-xs">Código</Label>
-            <Input placeholder="DESCONTO10" value={newCoupon.code} onChange={(e) => setNewCoupon((c) => ({ ...c, code: e.target.value.toUpperCase() }))} className="mt-1 uppercase" />
-          </div>
-          <div>
-            <Label className="text-xs">Valor</Label>
-            <Input type="number" placeholder="10" value={newCoupon.discount_value} onChange={(e) => setNewCoupon((c) => ({ ...c, discount_value: e.target.value }))} className="mt-1" />
-          </div>
-          <div>
-            <Label className="text-xs">Tipo</Label>
-            <select value={newCoupon.discount_type} onChange={(e) => setNewCoupon((c) => ({ ...c, discount_type: e.target.value }))} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-              <option value="percentage">Percentual (%)</option>
-              <option value="fixed">Fixo (centavos)</option>
-            </select>
-          </div>
-          <div>
-            <Label className="text-xs">Máx. usos</Label>
-            <Input type="number" placeholder="Ilimitado" value={newCoupon.max_uses} onChange={(e) => setNewCoupon((c) => ({ ...c, max_uses: e.target.value }))} className="mt-1" />
+            <Label className="text-sm font-medium">Cupons de desconto</Label>
+            <p className="text-[0.65rem] text-muted-foreground">Ative para criar e gerenciar cupons de desconto</p>
           </div>
         </div>
-        <Button size="sm" className="gap-1.5" onClick={handleCreate} disabled={creating}>
-          {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-          Criar Cupom
-        </Button>
+        <Switch checked={enabled} onCheckedChange={setEnabled} />
       </div>
 
-      {coupons.length > 0 && (
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="grid grid-cols-[1fr_100px_80px_80px] gap-3 px-4 py-3 border-b border-border text-[0.6rem] uppercase tracking-widest text-muted-foreground font-medium">
-            <span>Código</span><span>Desconto</span><span>Usos</span><span>Status</span>
-          </div>
-          {coupons.map((coupon: any) => (
-            <div key={coupon.id} className="grid grid-cols-[1fr_100px_80px_80px] gap-3 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-              <span className="text-sm font-mono font-bold">{coupon.code}</span>
-              <span className="text-sm">
-                {coupon.discount_type === "percentage" ? `${coupon.discount_value}%` : `R$ ${(coupon.discount_value / 100).toFixed(2)}`}
-              </span>
-              <span className="text-sm text-muted-foreground">{coupon.uses || 0}{coupon.max_uses ? `/${coupon.max_uses}` : ""}</span>
-              <Badge variant={coupon.is_active ? "default" : "secondary"} className="text-[0.6rem] w-fit">
-                {coupon.is_active ? "Ativo" : "Inativo"}
-              </Badge>
+      {enabled && (
+        <>
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h3 className="text-sm font-bold">Criar novo cupom</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <Label className="text-xs">Código</Label>
+                <Input placeholder="DESCONTO10" value={newCoupon.code} onChange={(e) => setNewCoupon((c) => ({ ...c, code: e.target.value.toUpperCase() }))} className="mt-1 uppercase" />
+              </div>
+              <div>
+                <Label className="text-xs">Valor</Label>
+                <Input type="number" placeholder="10" value={newCoupon.discount_value} onChange={(e) => setNewCoupon((c) => ({ ...c, discount_value: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Tipo</Label>
+                <select value={newCoupon.discount_type} onChange={(e) => setNewCoupon((c) => ({ ...c, discount_type: e.target.value }))} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  <option value="percentage">Percentual (%)</option>
+                  <option value="fixed">Fixo (centavos)</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-xs">Máx. usos</Label>
+                <Input type="number" placeholder="Ilimitado" value={newCoupon.max_uses} onChange={(e) => setNewCoupon((c) => ({ ...c, max_uses: e.target.value }))} className="mt-1" />
+              </div>
             </div>
-          ))}
-        </div>
+            <Button size="sm" className="gap-1.5" onClick={handleCreate} disabled={creating}>
+              {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+              Criar Cupom
+            </Button>
+          </div>
+
+          {coupons.length > 0 && (
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="grid grid-cols-[1fr_100px_80px_80px] gap-3 px-4 py-3 border-b border-border text-[0.6rem] uppercase tracking-widest text-muted-foreground font-medium">
+                <span>Código</span><span>Desconto</span><span>Usos</span><span>Status</span>
+              </div>
+              {coupons.map((coupon: any) => (
+                <div key={coupon.id} className="grid grid-cols-[1fr_100px_80px_80px] gap-3 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                  <span className="text-sm font-mono font-bold">{coupon.code}</span>
+                  <span className="text-sm">
+                    {coupon.discount_type === "percentage" ? `${coupon.discount_value}%` : `R$ ${(coupon.discount_value / 100).toFixed(2)}`}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{coupon.uses || 0}{coupon.max_uses ? `/${coupon.max_uses}` : ""}</span>
+                  <Badge variant={coupon.is_active ? "default" : "secondary"} className="text-[0.6rem] w-fit">
+                    {coupon.is_active ? "Ativo" : "Inativo"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
