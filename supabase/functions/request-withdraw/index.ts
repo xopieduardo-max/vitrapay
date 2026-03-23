@@ -62,6 +62,20 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Check profile completeness before allowing withdrawal
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("cpf, phone, display_name")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!profileData?.cpf || !profileData?.phone || !profileData?.display_name) {
+      return new Response(JSON.stringify({ error: "Complete seu cadastro (nome, CPF e telefone) em Ajustes antes de solicitar saque" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Calculate available balance (same logic as frontend)
     const now = new Date();
 
