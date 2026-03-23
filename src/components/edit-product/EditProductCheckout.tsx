@@ -6,8 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon } from "lucide-react";
+import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon, Bell, Palette } from "lucide-react";
+
+const COLOR_THEMES = [
+  { id: "classic", label: "Clássico", color: "hsl(0, 0%, 15%)" },
+  { id: "cyan", label: "Ciano", color: "hsl(180, 70%, 50%)" },
+  { id: "emerald", label: "Esmeralda", color: "hsl(142, 71%, 45%)" },
+  { id: "ocean", label: "Ocean", color: "hsl(210, 100%, 50%)" },
+  { id: "violet", label: "Violeta", color: "hsl(262, 83%, 58%)" },
+  { id: "floral", label: "Floral", color: "hsl(330, 80%, 55%)" },
+  { id: "coral", label: "Coral", color: "hsl(0, 84%, 55%)" },
+  { id: "amber", label: "Âmbar", color: "hsl(25, 95%, 53%)" },
+  { id: "solar", label: "Solar", color: "hsl(45, 93%, 47%)" },
+];
 
 interface Props {
   productId: string;
@@ -99,10 +112,11 @@ export default function EditProductCheckout({ productId, form, updateField, chec
           </Button>
         </div>
       </div>
-      {/* Tema do Checkout */}
+
+      {/* Tema do Checkout (Claro/Escuro) */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <h3 className="text-sm font-bold">Tema do Checkout</h3>
-        <p className="text-xs text-muted-foreground">Escolha se o checkout será exibido no modo claro ou escuro para seus compradores.</p>
+        <h3 className="text-sm font-bold">Plano de Fundo</h3>
+        <p className="text-xs text-muted-foreground">Escolha se o checkout será exibido no modo claro ou escuro.</p>
         <div className="flex gap-3">
           <button
             onClick={() => updateField("checkout_theme", "light")}
@@ -114,7 +128,7 @@ export default function EditProductCheckout({ productId, form, updateField, chec
             }}
           >
             <Sun className="h-4 w-4" />
-            Modo Claro
+            Claro
           </button>
           <button
             onClick={() => updateField("checkout_theme", "dark")}
@@ -126,12 +140,42 @@ export default function EditProductCheckout({ productId, form, updateField, chec
             }}
           >
             <Moon className="h-4 w-4" />
-            Modo Escuro
+            Escuro
           </button>
         </div>
       </div>
 
+      {/* Color Theme Selector */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-sm font-bold flex items-center gap-1.5">
+          <Palette className="h-4 w-4" /> Tema de Cores
+        </h3>
+        <p className="text-xs text-muted-foreground">Escolha a cor de destaque do checkout (botões, badges, detalhes).</p>
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          {COLOR_THEMES.map((theme) => {
+            const isSelected = (form.checkout_color_theme || "classic") === theme.id;
+            return (
+              <button
+                key={theme.id}
+                onClick={() => updateField("checkout_color_theme", theme.id)}
+                className="flex flex-col items-center gap-1.5 rounded-lg p-3 transition-all"
+                style={{
+                  border: isSelected ? `2px solid ${theme.color}` : "2px solid hsl(var(--border))",
+                  background: isSelected ? `${theme.color}10` : "transparent",
+                }}
+              >
+                <div
+                  className="h-8 w-full rounded-md"
+                  style={{ background: theme.color }}
+                />
+                <span className="text-[0.65rem] font-medium">{theme.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
+      {/* Personalizar Checkout */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <h3 className="text-sm font-bold">Personalizar Checkout</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -168,6 +212,55 @@ export default function EditProductCheckout({ productId, form, updateField, chec
             )}
           </div>
         </div>
+      </div>
+
+      {/* Gatilhos - Social Proof */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold flex items-center gap-1.5">
+            <Bell className="h-4 w-4" /> Notificações de Vendas
+          </h3>
+          <Switch
+            checked={form.checkout_social_proof || false}
+            onCheckedChange={(checked) => updateField("checkout_social_proof", checked)}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Exibe notificações de vendas fictícias no checkout para criar prova social e urgência.
+        </p>
+
+        {form.checkout_social_proof && (
+          <div className="space-y-3 pt-2">
+            <div>
+              <Label className="text-xs">Intervalo entre as notificações</Label>
+              <div className="flex gap-2 mt-2">
+                {[15, 30, 45, 60].map((sec) => (
+                  <button
+                    key={sec}
+                    onClick={() => updateField("checkout_social_proof_interval", sec)}
+                    className="flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all"
+                    style={{
+                      background: (form.checkout_social_proof_interval || 30) === sec ? "hsl(var(--primary))" : "hsl(var(--muted))",
+                      color: (form.checkout_social_proof_interval || 30) === sec ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                      border: (form.checkout_social_proof_interval || 30) === sec ? "1px solid hsl(var(--primary))" : "1px solid hsl(var(--border))",
+                    }}
+                  >
+                    {sec < 60 ? `${sec} seg` : "1 min"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-lg border border-dashed border-border p-3 space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Mensagens que serão exibidas:</p>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                <li>• "XX pessoas estão comprando o {`{produto}`} agora."</li>
+                <li>• "XX pessoas compraram o {`{produto}`} agora mesmo."</li>
+                <li>• "Maria de São Paulo acabou de comprar o {`{produto}`}!"</li>
+                <li>• "XX pessoas compraram nos últimos 30 minutos."</li>
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Depoimentos */}
