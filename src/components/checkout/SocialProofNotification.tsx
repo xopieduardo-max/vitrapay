@@ -76,11 +76,8 @@ export function SocialProofNotification({ enabled, interval, productName }: Prop
               boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
             }}
           >
-            <div
-              className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: "hsl(142, 71%, 45%, 0.15)" }}
-            >
-              <ShoppingCart className="h-4 w-4" style={{ color: "hsl(142, 71%, 45%)" }} />
+            <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-background">
+              <img src={logoIcon} alt="VitraPay" className="h-6 w-6 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium leading-snug" style={{ color: "var(--ck-fg)" }}>
