@@ -502,6 +502,137 @@ export default function Checkout() {
     }
   };
 
+  // ── Upsell/Downsell Screen ──
+  const activeFunnelStep = funnelSteps[currentFunnelStep];
+  const showFunnel = purchaseResult && funnelSteps.length > 0 && currentFunnelStep < funnelSteps.length;
+
+  if (showFunnel && activeFunnelStep) {
+    const offerProduct = activeFunnelStep.offer_product;
+    const originalPrice = offerProduct?.price || 0;
+    const discountedPrice = originalPrice * (1 - (activeFunnelStep.discount_percentage || 0) / 100);
+    const isUpsell = activeFunnelStep.step_type === "upsell";
+
+    const handleAcceptOffer = () => {
+      setFunnelAccepted((prev) => new Set(prev).add(activeFunnelStep.id));
+      toast({ title: "Oferta aceita! 🎉", description: `${offerProduct?.title} adicionado.` });
+      setCurrentFunnelStep((s) => s + 1);
+    };
+
+    const handleDeclineOffer = () => {
+      setCurrentFunnelStep((s) => s + 1);
+    };
+
+    return (
+      <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${product?.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
+        <motion.div
+          key={activeFunnelStep.id}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-lg w-full rounded-3xl p-8 space-y-6 relative overflow-hidden"
+          style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}
+        >
+          {/* Badge */}
+          <div className="flex justify-center">
+            <span
+              className="text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full"
+              style={{
+                background: isUpsell ? "hsl(142,71%,45%,0.15)" : "hsl(25,95%,53%,0.15)",
+                color: isUpsell ? "hsl(142,71%,45%)" : "hsl(25,95%,53%)",
+              }}
+            >
+              {isUpsell ? "⬆️ Oferta Especial" : "⬇️ Última Chance"}
+            </span>
+          </div>
+
+          {/* Title */}
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-black tracking-tight">
+              {activeFunnelStep.title}
+            </h1>
+            {activeFunnelStep.description && (
+              <p className="text-sm" style={{ color: "var(--ck-muted)" }}>
+                {activeFunnelStep.description}
+              </p>
+            )}
+          </div>
+
+          {/* Product card */}
+          {offerProduct && (
+            <div className="rounded-2xl p-5 space-y-3" style={{ background: "var(--ck-bg)", border: "1px solid var(--ck-card-border)" }}>
+              <div className="flex items-center gap-3">
+                {offerProduct.cover_url && (
+                  <img src={offerProduct.cover_url} alt="" className="h-16 w-16 rounded-lg object-cover shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold">{offerProduct.title}</p>
+                  {offerProduct.description && (
+                    <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--ck-subtle)" }}>
+                      {offerProduct.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                {activeFunnelStep.discount_percentage > 0 && (
+                  <span className="text-sm line-through" style={{ color: "var(--ck-faint)" }}>
+                    R$ {(originalPrice / 100).toFixed(2)}
+                  </span>
+                )}
+                <span className="text-2xl font-black" style={{ color: "var(--ck-accent)" }}>
+                  R$ {(discountedPrice / 100).toFixed(2)}
+                </span>
+                {activeFunnelStep.discount_percentage > 0 && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: "hsl(0,84%,60%)", color: "white" }}>
+                    {activeFunnelStep.discount_percentage}% OFF
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="space-y-3">
+            <Button
+              onClick={handleAcceptOffer}
+              className="w-full h-14 text-base font-bold gap-2 rounded-2xl shadow-lg transition-all hover:scale-[1.02]"
+              style={{
+                background: "hsl(142,71%,45%)",
+                color: "white",
+                boxShadow: "0 4px 20px hsl(142,71%,45%,0.3)",
+              }}
+            >
+              Sim, eu quero! 🚀
+            </Button>
+            <button
+              onClick={handleDeclineOffer}
+              className="w-full text-center text-xs py-2 transition-colors"
+              style={{ color: "var(--ck-dim)" }}
+            >
+              Não, obrigado. Continuar sem esta oferta →
+            </button>
+          </div>
+
+          {/* Step indicator */}
+          {funnelSteps.length > 1 && (
+            <div className="flex justify-center gap-1.5">
+              {funnelSteps.map((_, idx) => (
+                <div
+                  key={idx}
+                  className="h-1.5 rounded-full transition-all"
+                  style={{
+                    width: idx === currentFunnelStep ? 24 : 8,
+                    background: idx === currentFunnelStep ? "var(--ck-accent)" : "var(--ck-card-border)",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
+
   // ── Success Screen ──
   if (purchaseResult) {
     return (
