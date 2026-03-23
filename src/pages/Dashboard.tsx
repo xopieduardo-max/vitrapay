@@ -108,6 +108,25 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+
+  const productIds = products.map(p => p.id);
+  const { data: pendingCheckouts = [] } = useQuery({
+    queryKey: ["dashboard-pending-checkouts", user?.id, productIds],
+    queryFn: async () => {
+      if (!user || productIds.length === 0) return [];
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("amount")
+        .in("product_id", productIds)
+        .eq("status", "pending");
+      return data || [];
+    },
+    enabled: !!user && productIds.length > 0,
+    refetchInterval: 30000,
+  });
+
+  const pendingCheckoutsCount = pendingCheckouts.length;
+  const pendingCheckoutsValue = pendingCheckouts.reduce((acc, p) => acc + p.amount, 0);
   const completedSales = salesData.filter((s) => s.status === "completed");
   const totalRevenue = completedSales.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
   const salesCount = completedSales.length;
