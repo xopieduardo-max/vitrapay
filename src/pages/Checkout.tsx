@@ -879,20 +879,15 @@ export default function Checkout() {
             transition={{ duration: 0.5 }}
             className="lg:col-span-3 space-y-5"
           >
-            {/* Product Info Card */}
+            {/* Product Info Card - Cakto style */}
             <div className="rounded-xl p-5" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
-              <div className="flex items-start gap-4">
-                {product.cover_url && (
-                  <img src={product.cover_url} alt={product.title} className="h-16 w-16 rounded-lg object-cover shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-bold text-lg">{product.title}</h2>
-                  <p className="text-primary text-lg font-bold mt-1">
-                    R$ {(product.price / 100).toFixed(2)}
-                    <span className="text-xs font-normal ml-1" style={{ color: "var(--ck-subtle)" }}>cash</span>
-                  </p>
-                </div>
-              </div>
+              <h2 className="font-bold text-xl" style={{ color: "var(--ck-fg)" }}>{product.title}</h2>
+              <p className="font-bold mt-1" style={{ color: "var(--ck-accent)" }}>
+                <span className="text-lg">R$ {(product.price / 100).toFixed(2)}</span>
+                <span className="text-xs font-normal ml-2" style={{ color: "var(--ck-subtle)" }}>
+                  ou R$ {(product.price / 100).toFixed(2)} à vista
+                </span>
+              </p>
             </div>
 
             {/* Contact Info */}
