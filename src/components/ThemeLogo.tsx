@@ -1,6 +1,6 @@
 import logoHorizontalBlack from "@/assets/logo-vitrapay-horizontal.png";
 import logoHorizontalWhite from "@/assets/logo-vitrapay-horizontal-white.png";
-import logoIconBlack from "@/assets/logo-vitrapay.png";
+import logoIconBlack from "@/assets/logo-vitrapay-icon-square.png";
 import logoIconWhite from "@/assets/logo-vitrapay-stacked-white.png";
 import { useEffect, useState } from "react";
 

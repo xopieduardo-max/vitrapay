@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoIcon from "@/assets/logo-vitrapay.png";
+import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
 
 const MESSAGES = [
   "{count} pessoas estão comprando o {product} agora.",
