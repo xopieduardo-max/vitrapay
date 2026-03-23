@@ -32,6 +32,7 @@ const Finance = lazy(() => import("./pages/Finance"));
 const Transactions = lazy(() => import("./pages/Transactions"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
+const PurchaseTerms = lazy(() => import("./pages/PurchaseTerms"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Community = lazy(() => import("./pages/Community"));
 const Settings = lazy(() => import("./pages/Settings"));
