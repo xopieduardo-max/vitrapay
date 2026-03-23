@@ -1379,7 +1379,7 @@ export default function Checkout() {
                     >
                       <div className="flex items-center gap-2">
                         {t.author_avatar_url ? (
-                          <img src={t.author_avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                          <img src={t.author_avatar_url} alt="" loading="lazy" className="h-8 w-8 rounded-full object-cover" />
                         ) : (
                           <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(48, 96%, 53%, 0.2)", color: "hsl(48, 96%, 45%)" }}>
                             {t.author_name?.charAt(0)?.toUpperCase()}
