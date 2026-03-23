@@ -550,6 +550,26 @@ Deno.serve(async (req) => {
     // ✅ Send UTMify postback
     await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending, product, "pix");
 
+    // ✅ Send Facebook Conversion API (CAPI) Purchase event
+    try {
+      const capiRes = await fetch(`${supabaseUrl}/functions/v1/send-facebook-capi`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: pending.product_id,
+          payment_id: asaasPaymentId,
+          amount: pending.amount,
+          buyer_email: pending.buyer_email || null,
+          buyer_name: pending.buyer_name || null,
+          buyer_phone: null,
+          buyer_cpf: pending.buyer_cpf || null,
+        }),
+      });
+      console.log("Facebook CAPI dispatch status:", capiRes.status);
+    } catch (capiErr) {
+      console.error("Facebook CAPI dispatch failed:", capiErr);
+    }
+
     // Update pending payment status
     await supabase.from("pending_payments").update({ status: "confirmed" }).eq("id", pending.id);
 
