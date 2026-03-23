@@ -854,8 +854,8 @@ export default function Checkout() {
 
       {/* ── Banner Images ── */}
       {product.checkout_banner_url && (
-        <div className="w-full">
-          <img src={product.checkout_banner_url} alt="Banner" className="w-full max-h-[320px] object-cover" />
+        <div className="container max-w-5xl px-4 pt-4">
+          <img src={product.checkout_banner_url} alt="Banner" className="w-full max-h-[280px] object-cover rounded-xl" />
         </div>
       )}
 
