@@ -635,7 +635,7 @@ export default function Checkout() {
             {[...Array(12)].map((_, i) => (
               <div
                 key={i}
-                className="absolute rounded-full"
+                className="absolute rounded-full animate-pulse"
                 style={{
                   width: Math.random() * 8 + 4,
                   height: Math.random() * 8 + 4,
@@ -643,15 +643,6 @@ export default function Checkout() {
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
                   opacity: 0.15 + Math.random() * 0.2,
-                }}
-                animate={{
-                  y: [0, -10, 0],
-                  opacity: [0.15, 0.35, 0.15],
-                }}
-                transition={{
-                  duration: 2 + Math.random() * 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
                 }}
               />
             ))}
