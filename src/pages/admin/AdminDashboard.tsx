@@ -231,6 +231,21 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: adminPendingCheckouts = [] } = useQuery({
+    queryKey: ["admin-pending-checkouts"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("amount")
+        .eq("status", "pending");
+      return data || [];
+    },
+    refetchInterval: 30000,
+  });
+
+  const adminPendingCheckoutsCount = adminPendingCheckouts.length;
+  const adminPendingCheckoutsValue = adminPendingCheckouts.reduce((acc: number, p: any) => acc + p.amount, 0);
+
   const { data: profiles = [] } = useQuery({
     queryKey: ["admin-profiles-map"],
     queryFn: async () => {
