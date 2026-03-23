@@ -53,7 +53,7 @@ export default function Finance() {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("pix_key, pix_key_type")
+        .select("pix_key, pix_key_type, cpf, phone, display_name, address_cep")
         .eq("user_id", user.id)
         .single();
       return data as any;
@@ -63,6 +63,7 @@ export default function Finance() {
 
   const pixKey = profile?.pix_key || "";
   const pixKeyType = profile?.pix_key_type || "cpf";
+  const profileIncomplete = !profile?.cpf || !profile?.phone || !profile?.display_name;
 
   // Get sales for balance calc
   const { data: sales = [] } = useQuery({
