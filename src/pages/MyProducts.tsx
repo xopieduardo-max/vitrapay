@@ -122,9 +122,16 @@ export default function MyProducts() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="grid grid-cols-[1fr_120px_100px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+              className="grid grid-cols-[auto_1fr_120px_100px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
               onClick={() => navigate(`/products/${product.id}/edit`)}
             >
+              <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted shrink-0">
+                {product.cover_url ? (
+                  <img src={product.cover_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">📦</div>
+                )}
+              </div>
               <div>
                 <p className="text-sm font-medium">{product.title}</p>
                 <p className="text-xs text-muted-foreground">{product.type === "lms" ? "Área de Membros" : "Download"}</p>
