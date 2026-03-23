@@ -715,33 +715,15 @@ export default function Landing() {
               whileHover={{ scale: 1.03 }}
               className="flex justify-center"
             >
-              <div className="relative w-[280px] md:w-[340px]">
-                <img
-                  src={iphoneMockup3d}
-                  alt="App VitraPay no iPhone"
-                  className="w-full drop-shadow-2xl"
-                  loading="lazy"
-                  decoding="async"
-                />
-                {/* App screenshot overlaid on the phone screen */}
+              <IPhoneFrame className="w-[280px] md:w-[340px]">
                 <img
                   src={appMockup}
                   alt="Dashboard VitraPay"
-                  className="absolute"
-                  style={{
-                    top: '3.5%',
-                    left: '5.5%',
-                    width: '89%',
-                    height: '90%',
-                    objectFit: 'cover',
-                    objectPosition: 'top',
-                    borderRadius: '2.5rem',
-                    clipPath: 'inset(0 round 2.5rem)',
-                  }}
+                  className="w-full"
                   loading="lazy"
                   decoding="async"
                 />
-              </div>
+              </IPhoneFrame>
             </motion.div>
           </div>
         </div>
