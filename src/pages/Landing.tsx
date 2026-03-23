@@ -715,7 +715,7 @@ export default function Landing() {
               whileHover={{ scale: 1.03 }}
               className="flex justify-center"
             >
-              <div className="relative w-[280px] md:w-[340px]" style={{ perspective: '1000px' }}>
+              <div className="relative w-[280px] md:w-[340px]">
                 <img
                   src={iphoneMockup3d}
                   alt="App VitraPay no iPhone"
@@ -729,15 +729,14 @@ export default function Landing() {
                   alt="Dashboard VitraPay"
                   className="absolute"
                   style={{
-                    top: '5.8%',
-                    left: '14.5%',
-                    width: '60%',
-                    height: '82%',
+                    top: '3.5%',
+                    left: '5.5%',
+                    width: '89%',
+                    height: '90%',
                     objectFit: 'cover',
                     objectPosition: 'top',
-                    borderRadius: '1.2rem',
-                    clipPath: 'inset(0 round 1.2rem)',
-                    transform: 'perspective(800px) rotateY(-8deg) rotateX(2deg) rotateZ(3deg)',
+                    borderRadius: '2.5rem',
+                    clipPath: 'inset(0 round 2.5rem)',
                   }}
                   loading="lazy"
                   decoding="async"
