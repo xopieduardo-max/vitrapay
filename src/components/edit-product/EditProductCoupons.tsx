@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,42 @@ import { Plus, Loader2, Tag } from "lucide-react";
 
 interface Props {
   userId?: string;
+  productId?: string;
 }
 
-export default function EditProductCoupons({ userId }: Props) {
+export default function EditProductCoupons({ userId, productId }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [enabled, setEnabled] = useState(false);
+  const [loadedFlag, setLoadedFlag] = useState(false);
   const [newCoupon, setNewCoupon] = useState({ code: "", discount_value: "", discount_type: "percentage", max_uses: "" });
   const [creating, setCreating] = useState(false);
+
+  // Load coupons_enabled from product
+  const { data: productData } = useQuery({
+    queryKey: ["product-coupons-flag", productId],
+    queryFn: async () => {
+      if (!productId) return null;
+      const { data } = await supabase.from("products").select("coupons_enabled").eq("id", productId).single();
+      return data;
+    },
+    enabled: !!productId,
+  });
+
+  useEffect(() => {
+    if (productData && !loadedFlag) {
+      setEnabled((productData as any)?.coupons_enabled ?? false);
+      setLoadedFlag(true);
+    }
+  }, [productData, loadedFlag]);
+
+  const handleToggle = async (v: boolean) => {
+    setEnabled(v);
+    if (productId) {
+      await supabase.from("products").update({ coupons_enabled: v } as any).eq("id", productId);
+      queryClient.invalidateQueries({ queryKey: ["product-coupons-flag", productId] });
+    }
+  };
 
   const { data: coupons = [] } = useQuery({
     queryKey: ["product-coupons", userId],
@@ -29,7 +57,6 @@ export default function EditProductCoupons({ userId }: Props) {
         .select("*")
         .eq("producer_id", userId)
         .order("created_at", { ascending: false });
-      if (data && data.length > 0) setEnabled(true);
       return data || [];
     },
     enabled: !!userId,
@@ -64,10 +91,10 @@ export default function EditProductCoupons({ userId }: Props) {
           <Tag className="h-4 w-4 text-muted-foreground" />
           <div>
             <Label className="text-sm font-medium">Cupons de desconto</Label>
-            <p className="text-[0.65rem] text-muted-foreground">Ative para criar e gerenciar cupons de desconto</p>
+            <p className="text-[0.65rem] text-muted-foreground">Ative para exibir o campo de cupom no checkout</p>
           </div>
         </div>
-        <Switch checked={enabled} onCheckedChange={setEnabled} />
+        <Switch checked={enabled} onCheckedChange={handleToggle} />
       </div>
 
       {enabled && (

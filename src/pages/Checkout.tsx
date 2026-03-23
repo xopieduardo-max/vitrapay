@@ -1215,7 +1215,8 @@ export default function Checkout() {
               </div>
             )}
 
-            {/* Coupon */}
+            {/* Coupon — only if producer enabled */}
+            {(product as any)?.coupons_enabled && (
             <div className="rounded-xl p-5" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
               <Label className="text-xs flex items-center gap-1.5 mb-2" style={{ color: "var(--ck-label)" }}>
                 <Tag className="h-3.5 w-3.5" /> Cupom de desconto
@@ -1246,6 +1247,7 @@ export default function Checkout() {
                 </p>
               )}
             </div>
+            )}
           </motion.div>
 
           {/* RIGHT COLUMN - Cakto style sidebar */}
