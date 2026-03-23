@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { forwardRef, useCallback, useMemo, useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,50 +17,23 @@ import pixelTiktokLogo from "@/assets/pixel-tiktok.png";
 type PixelConfigValue = string | number | boolean;
 type PixelConfig = Record<string, PixelConfigValue>;
 
-interface PlatformField {
-  key: string;
-  label: string;
-  placeholder: string;
-}
-
-interface PlatformOption {
-  key: string;
-  label: string;
-  default?: boolean;
-}
-
-interface PlatformConversionOption {
-  key: string;
-  label: string;
-  default: number;
-}
-
+interface PlatformField { key: string; label: string; placeholder: string; }
+interface PlatformOption { key: string; label: string; default?: boolean; }
+interface PlatformConversionOption { key: string; label: string; default: number; }
 interface PlatformConfigDef {
-  id: string;
-  label: string;
-  logo: string;
-  fields: PlatformField[];
-  hasAccessToken: boolean;
-  eventOptions: PlatformOption[];
-  conversionOptions: PlatformConversionOption[];
-  extraOptions: PlatformOption[];
+  id: string; label: string; logo: string; fields: PlatformField[];
+  hasAccessToken: boolean; eventOptions: PlatformOption[];
+  conversionOptions: PlatformConversionOption[]; extraOptions: PlatformOption[];
   maxPixels: number;
 }
-
 interface ProductPixel {
-  id: string;
-  product_id: string;
-  platform: string;
-  pixel_id: string;
-  access_token: string | null;
-  config: PixelConfig | null;
+  id: string; product_id: string; platform: string; pixel_id: string;
+  access_token: string | null; config: PixelConfig | null;
 }
 
 const PLATFORMS: PlatformConfigDef[] = [
   {
-    id: "facebook",
-    label: "Facebook",
-    logo: pixelFacebookLogo,
+    id: "facebook", label: "Facebook", logo: pixelFacebookLogo,
     fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "1293867678159457" }],
     hasAccessToken: false,
     eventOptions: [
@@ -75,34 +48,22 @@ const PLATFORMS: PlatformConfigDef[] = [
     maxPixels: 50,
   },
   {
-    id: "google_ads",
-    label: "Google Ads",
-    logo: pixelGoogleAdsLogo,
+    id: "google_ads", label: "Google Ads", logo: pixelGoogleAdsLogo,
     fields: [
       { key: "pixel_id", label: "ID do Pixel", placeholder: "AW-123456789" },
       { key: "conversion_label", label: "Label de conversão", placeholder: "AbCdEfGh" },
     ],
-    hasAccessToken: false,
-    eventOptions: [],
-    conversionOptions: [],
+    hasAccessToken: false, eventOptions: [], conversionOptions: [],
     extraOptions: [{ key: "disable_bump_events", label: "Desativar eventos de order bumps?" }],
     maxPixels: 5,
   },
   {
-    id: "google_analytics",
-    label: "Google Analytics",
-    logo: pixelGoogleAnalyticsLogo,
+    id: "google_analytics", label: "Google Analytics", logo: pixelGoogleAnalyticsLogo,
     fields: [{ key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" }],
-    hasAccessToken: false,
-    eventOptions: [],
-    conversionOptions: [],
-    extraOptions: [],
-    maxPixels: 5,
+    hasAccessToken: false, eventOptions: [], conversionOptions: [], extraOptions: [], maxPixels: 5,
   },
   {
-    id: "tiktok",
-    label: "TikTok",
-    logo: pixelTiktokLogo,
+    id: "tiktok", label: "TikTok", logo: pixelTiktokLogo,
     fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "XXXXXXXXXXXXXXXXX" }],
     hasAccessToken: true,
     eventOptions: [
@@ -118,11 +79,37 @@ const PLATFORMS: PlatformConfigDef[] = [
   },
 ];
 
-interface Props {
-  productId: string;
+interface Props { productId: string; }
+
+// Debounced input that only saves on blur
+function DebouncedInput({ value: initialValue, onSave, ...props }: {
+  value: string; onSave: (val: string) => void;
+} & Omit<React.ComponentProps<typeof Input>, "value" | "onChange">) {
+  const [value, setValue] = useState(initialValue);
+  const savedRef = useRef(initialValue);
+
+  // Sync if external value changes (e.g. after refetch)
+  if (initialValue !== savedRef.current) {
+    savedRef.current = initialValue;
+    setValue(initialValue);
+  }
+
+  return (
+    <Input
+      {...props}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={() => {
+        if (value !== savedRef.current) {
+          savedRef.current = value;
+          onSave(value);
+        }
+      }}
+    />
+  );
 }
 
-export default function EditProductPixels({ productId }: Props) {
+const EditProductPixels = forwardRef<HTMLDivElement, Props>(({ productId }, ref) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("facebook");
@@ -135,7 +122,6 @@ export default function EditProductPixels({ productId }: Props) {
         .select("*")
         .eq("product_id", productId)
         .order("created_at", { ascending: true });
-
       if (error) throw error;
       return (data as ProductPixel[]) || [];
     },
@@ -144,27 +130,13 @@ export default function EditProductPixels({ productId }: Props) {
   const addPixel = useMutation({
     mutationFn: async (platform: string) => {
       const { error } = await supabase.from("product_pixels").insert({
-        product_id: productId,
-        platform,
-        pixel_id: "",
-        config: {
-          fire_on_pix: true,
-          fire_on_boleto: true,
-          pix_conversion_value: 100,
-          boleto_conversion_value: 100,
-          disable_bump_events: false,
-          conversion_label: "",
-        },
+        product_id: productId, platform, pixel_id: "",
+        config: { fire_on_pix: true, fire_on_boleto: true, pix_conversion_value: 100, boleto_conversion_value: 100, disable_bump_events: false, conversion_label: "" },
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] });
-      toast({ title: "Pixel adicionado" });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Erro ao adicionar pixel", description: error.message, variant: "destructive" });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] }); toast({ title: "Pixel adicionado" }); },
+    onError: (error: Error) => { toast({ title: "Erro ao adicionar pixel", description: error.message, variant: "destructive" }); },
   });
 
   const updatePixel = useMutation({
@@ -172,12 +144,8 @@ export default function EditProductPixels({ productId }: Props) {
       const { error } = await supabase.from("product_pixels").update(updates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Erro ao atualizar pixel", description: error.message, variant: "destructive" });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] }); },
+    onError: (error: Error) => { toast({ title: "Erro ao atualizar pixel", description: error.message, variant: "destructive" }); },
   });
 
   const deletePixel = useMutation({
@@ -185,13 +153,8 @@ export default function EditProductPixels({ productId }: Props) {
       const { error } = await supabase.from("product_pixels").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] });
-      toast({ title: "Pixel removido" });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Erro ao remover pixel", description: error.message, variant: "destructive" });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["product-pixels", productId] }); toast({ title: "Pixel removido" }); },
+    onError: (error: Error) => { toast({ title: "Erro ao remover pixel", description: error.message, variant: "destructive" }); },
   });
 
   const platform = PLATFORMS.find((item) => item.id === activeTab) ?? PLATFORMS[0];
@@ -199,11 +162,7 @@ export default function EditProductPixels({ productId }: Props) {
 
   const gridTemplateColumns = useMemo(() => {
     const columns = [...platform.fields.map(() => "minmax(0,1fr)")];
-
-    if (platform.hasAccessToken) {
-      columns.push("minmax(0,1fr)");
-    }
-
+    if (platform.hasAccessToken) columns.push("minmax(0,1fr)");
     columns.push("40px", "40px");
     return columns.join(" ");
   }, [platform]);
@@ -216,25 +175,13 @@ export default function EditProductPixels({ productId }: Props) {
     return String(getPixelConfig(pixel)[key] ?? "");
   };
 
-  const buildFieldUpdate = (pixel: ProductPixel, key: string, value: string) => {
-    if (key === "pixel_id" || key === "access_token") {
-      return { [key]: value };
-    }
-
-    return {
-      config: {
-        ...getPixelConfig(pixel),
-        [key]: value,
-      },
-    };
-  };
-
-  const savePixels = async () => {
-    toast({ title: "Pixels salvos!" });
-  };
+  const buildFieldUpdate = useCallback((pixel: ProductPixel, key: string, value: string) => {
+    if (key === "pixel_id" || key === "access_token") return { [key]: value };
+    return { config: { ...getPixelConfig(pixel), [key]: value } };
+  }, []);
 
   return (
-    <div className="space-y-6">
+    <div ref={ref} className="space-y-6">
       <div className="flex items-center gap-1 overflow-x-auto">
         {PLATFORMS.map((item) => {
           const count = pixels.filter((pixel) => pixel.platform === item.id).length;
@@ -251,9 +198,9 @@ export default function EditProductPixels({ productId }: Props) {
               <img src={item.logo} alt={item.label} className="h-5 w-5 rounded object-contain" />
               {item.label}
               {count > 0 && (
-                <Badge variant="secondary" className="text-[0.55rem] h-4 px-1.5">
+                <span className="text-[0.55rem] h-4 px-1.5 rounded-full bg-muted text-muted-foreground font-medium inline-flex items-center">
                   {count}
-                </Badge>
+                </span>
               )}
             </button>
           );
@@ -265,12 +212,9 @@ export default function EditProductPixels({ productId }: Props) {
           className="grid gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-widest text-muted-foreground"
           style={{ gridTemplateColumns }}
         >
-          {platform.fields.map((field) => (
-            <span key={field.key}>{field.label}</span>
-          ))}
+          {platform.fields.map((field) => <span key={field.key}>{field.label}</span>)}
           {platform.hasAccessToken && <span>API Access Token</span>}
-          <span></span>
-          <span></span>
+          <span></span><span></span>
         </div>
 
         {isLoading ? (
@@ -278,54 +222,29 @@ export default function EditProductPixels({ productId }: Props) {
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : platformPixels.length === 0 ? (
-          <div className="py-6 text-center text-sm text-muted-foreground">
-            Nenhum pixel adicionado
-          </div>
+          <div className="py-6 text-center text-sm text-muted-foreground">Nenhum pixel adicionado</div>
         ) : (
           platformPixels.map((pixel) => (
-            <div
-              key={pixel.id}
-              className="grid gap-4 px-4 py-3 border-b border-border last:border-0 items-center"
-              style={{ gridTemplateColumns }}
-            >
+            <div key={pixel.id} className="grid gap-4 px-4 py-3 border-b border-border last:border-0 items-center" style={{ gridTemplateColumns }}>
               {platform.fields.map((field) => (
-                <Input
+                <DebouncedInput
                   key={field.key}
                   value={getFieldValue(pixel, field.key)}
                   placeholder={field.placeholder}
-                  onChange={(event) =>
-                    updatePixel.mutate({
-                      id: pixel.id,
-                      updates: buildFieldUpdate(pixel, field.key, event.target.value),
-                    })
-                  }
+                  onSave={(val) => updatePixel.mutate({ id: pixel.id, updates: buildFieldUpdate(pixel, field.key, val) })}
                   className="h-9 bg-muted/30 border-transparent text-sm font-mono"
                 />
               ))}
-
               {platform.hasAccessToken && (
-                <Input
+                <DebouncedInput
                   value={getFieldValue(pixel, "access_token")}
                   placeholder="Access Token"
-                  onChange={(event) =>
-                    updatePixel.mutate({
-                      id: pixel.id,
-                      updates: buildFieldUpdate(pixel, "access_token", event.target.value),
-                    })
-                  }
+                  onSave={(val) => updatePixel.mutate({ id: pixel.id, updates: buildFieldUpdate(pixel, "access_token", val) })}
                   className="h-9 bg-muted/30 border-transparent text-sm font-mono"
                 />
               )}
-
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive"
-                onClick={() => deletePixel.mutate(pixel.id)}
-              >
+              <Button variant="ghost" size="icon" className="h-8 w-8"><Settings className="h-3.5 w-3.5" /></Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deletePixel.mutate(pixel.id)}>
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -333,18 +252,10 @@ export default function EditProductPixels({ productId }: Props) {
         )}
 
         <div className="px-4 py-3 flex items-center gap-3">
-          <Button
-            size="sm"
-            variant="outline"
-            className="gap-1.5 text-xs"
-            disabled={platformPixels.length >= platform.maxPixels || addPixel.isPending}
-            onClick={() => addPixel.mutate(activeTab)}
-          >
+          <Button size="sm" variant="outline" className="gap-1.5 text-xs" disabled={platformPixels.length >= platform.maxPixels || addPixel.isPending} onClick={() => addPixel.mutate(activeTab)}>
             <Plus className="h-3 w-3" /> Adicionar
           </Button>
-          <span className="text-xs text-muted-foreground">
-            {platformPixels.length} / {platform.maxPixels}
-          </span>
+          <span className="text-xs text-muted-foreground">{platformPixels.length} / {platform.maxPixels}</span>
         </div>
       </div>
 
@@ -355,41 +266,26 @@ export default function EditProductPixels({ productId }: Props) {
               <div className="flex items-center gap-3">
                 <Switch
                   checked={Boolean(getPixelConfig(platformPixels[0])[option.key] ?? option.default)}
-                  onCheckedChange={(value) =>
-                    updatePixel.mutate({
-                      id: platformPixels[0].id,
-                      updates: {
-                        config: {
-                          ...getPixelConfig(platformPixels[0]),
-                          [option.key]: value,
-                        },
-                      },
-                    })
-                  }
+                  onCheckedChange={(value) => updatePixel.mutate({
+                    id: platformPixels[0].id,
+                    updates: { config: { ...getPixelConfig(platformPixels[0]), [option.key]: value } },
+                  })}
                 />
                 <Label className="text-sm">{option.label}</Label>
               </div>
-
               {platform.conversionOptions
-                .filter((conversion) => conversion.key.includes(option.key.replace("fire_on_", "")))
+                .filter((c) => c.key.includes(option.key.replace("fire_on_", "")))
                 .map((conversion) => (
                   <div key={conversion.key} className="ml-12 space-y-1">
                     <Label className="text-xs text-primary">{conversion.label}</Label>
                     <div className="flex items-center gap-2 w-32">
-                      <Input
+                      <DebouncedInput
                         type="number"
-                        value={Number(getPixelConfig(platformPixels[0])[conversion.key] ?? conversion.default)}
-                        onChange={(event) =>
-                          updatePixel.mutate({
-                            id: platformPixels[0].id,
-                            updates: {
-                              config: {
-                                ...getPixelConfig(platformPixels[0]),
-                                [conversion.key]: Number(event.target.value),
-                              },
-                            },
-                          })
-                        }
+                        value={String(getPixelConfig(platformPixels[0])[conversion.key] ?? conversion.default)}
+                        onSave={(val) => updatePixel.mutate({
+                          id: platformPixels[0].id,
+                          updates: { config: { ...getPixelConfig(platformPixels[0]), [conversion.key]: Number(val) } },
+                        })}
                         className="h-8 w-20 bg-muted/30 border-transparent text-sm"
                       />
                       <span className="text-sm text-muted-foreground">%</span>
@@ -403,29 +299,19 @@ export default function EditProductPixels({ productId }: Props) {
             <div key={option.key} className="flex items-center gap-3">
               <Switch
                 checked={Boolean(getPixelConfig(platformPixels[0])[option.key] ?? false)}
-                onCheckedChange={(value) =>
-                  updatePixel.mutate({
-                    id: platformPixels[0].id,
-                    updates: {
-                      config: {
-                        ...getPixelConfig(platformPixels[0]),
-                        [option.key]: value,
-                      },
-                    },
-                  })
-                }
+                onCheckedChange={(value) => updatePixel.mutate({
+                  id: platformPixels[0].id,
+                  updates: { config: { ...getPixelConfig(platformPixels[0]), [option.key]: value } },
+                })}
               />
               <Label className="text-sm">{option.label}</Label>
             </div>
           ))}
-
-          <div className="flex justify-end">
-            <Button size="sm" onClick={savePixels}>
-              Salvar
-            </Button>
-          </div>
         </div>
       )}
     </div>
   );
-}
+});
+
+EditProductPixels.displayName = "EditProductPixels";
+export default EditProductPixels;
