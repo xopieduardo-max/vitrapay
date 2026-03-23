@@ -138,6 +138,9 @@ export default function Checkout() {
   const [product, setProduct] = useState<any>(null);
   const [producer, setProducer] = useState<string>("");
   const [orderBumps, setOrderBumps] = useState<any[]>([]);
+  const [funnelSteps, setFunnelSteps] = useState<any[]>([]);
+  const [currentFunnelStep, setCurrentFunnelStep] = useState(0);
+  const [funnelAccepted, setFunnelAccepted] = useState<Set<string>>(new Set());
   const [selectedBumps, setSelectedBumps] = useState<Set<string>>(new Set());
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [couponCode, setCouponCode] = useState("");
