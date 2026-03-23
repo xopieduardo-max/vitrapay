@@ -13,6 +13,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 import iphoneMockup3d from "@/assets/iphone-mockup-3d.png";
+import iphone3dMockup from "@/assets/iphone-3d-mockup.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
