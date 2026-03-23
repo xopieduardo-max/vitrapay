@@ -116,8 +116,10 @@ export function useCheckoutPixels(pixels: Pixel[]) {
         scripts.push(script);
       }
     });
+    }); // end scheduleLoad
 
     return () => {
+      cancelled = true;
       scripts.forEach((script) => script.remove());
     };
   }, [pixels]);
