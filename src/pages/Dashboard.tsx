@@ -16,6 +16,7 @@ import {
   BarChart3,
   ArrowDownToLine,
   TrendingUp,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -107,6 +108,25 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+
+  const productIds = products.map(p => p.id);
+  const { data: pendingCheckouts = [] } = useQuery({
+    queryKey: ["dashboard-pending-checkouts", user?.id, productIds],
+    queryFn: async () => {
+      if (!user || productIds.length === 0) return [];
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("amount")
+        .in("product_id", productIds)
+        .eq("status", "pending");
+      return data || [];
+    },
+    enabled: !!user && productIds.length > 0,
+    refetchInterval: 30000,
+  });
+
+  const pendingCheckoutsCount = pendingCheckouts.length;
+  const pendingCheckoutsValue = pendingCheckouts.reduce((acc, p) => acc + p.amount, 0);
   const completedSales = salesData.filter((s) => s.status === "completed");
   const totalRevenue = completedSales.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
   const salesCount = completedSales.length;
@@ -312,6 +332,19 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Vendas Pendentes */}
+        {pendingCheckoutsCount > 0 && (
+          <motion.div {...anim(0.2)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
+              <Clock className="h-5 w-5 text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-medium text-warning">Vendas Pendentes</p>
+              <p className="text-sm font-bold">{pendingCheckoutsCount} checkout(s) • {fmt(pendingCheckoutsValue)}</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Quick Links - Cakto style */}
         <div className="space-y-2">
           {quickLinks.map((link, i) => (
@@ -405,6 +438,19 @@ export default function Dashboard() {
             </p>
           </motion.div>
         </div>
+
+        {/* Vendas Pendentes (Desktop) */}
+        {pendingCheckoutsCount > 0 && (
+          <motion.div {...anim(0.22)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
+              <Clock className="h-5 w-5 text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-medium text-warning">Vendas Pendentes</p>
+              <p className="text-sm font-bold">{pendingCheckoutsCount} checkout(s) aguardando pagamento • {fmt(pendingCheckoutsValue)}</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Revenue Chart + Conversion by Payment */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
