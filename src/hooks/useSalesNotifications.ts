@@ -56,8 +56,8 @@ export function useSalesNotifications() {
             await supabase.functions.invoke("send-push", {
               body: {
                 producer_id: user.id,
-                title: `VitraPay`,
-                body: `Venda Aprovada! 🚀\nPagamento via ${methodLabel} • Valor: ${fmt}`,
+                title: `Venda Aprovada! 🚀`,
+                body: `Pagamento via ${methodLabel} • Valor: ${fmt}`,
                 url: "/sales",
               },
             });
@@ -107,8 +107,8 @@ export function useSalesNotifications() {
               await supabase.functions.invoke("send-push", {
                 body: {
                   producer_id: user.id,
-                  title: `VitraPay`,
-                  body: `Venda Estornada ⚠️\n${methodLabel} • Valor: ${fmt} • ID: ${paymentId.slice(0, 12)}`,
+                  title: `Venda Estornada ⚠️`,
+                  body: `${methodLabel} • Valor: ${fmt} • ID: ${paymentId.slice(0, 12)}`,
                   url: "/sales",
                 },
               });
