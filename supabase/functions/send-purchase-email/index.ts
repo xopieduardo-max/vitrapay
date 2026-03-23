@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
         to: buyer_email,
         from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
-        subject: "🎉 Sua compra foi confirmada!",
+        subject: "Sua compra foi confirmada - VitraPay",
         html,
         text,
         purpose: "transactional",
