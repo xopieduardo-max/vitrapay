@@ -247,9 +247,13 @@ export default function Checkout() {
     }
   }, [productPixels]);
 
+  // Pre-fill email from Supabase session (non-blocking)
   useEffect(() => {
-    if (user?.email) setForm((f) => ({ ...f, email: user.email || "" }));
-  }, [user]);
+    supabase.auth.getSession().then(({ data }) => {
+      const email = data?.session?.user?.email;
+      if (email) setForm((f) => ({ ...f, email }));
+    });
+  }, []);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
