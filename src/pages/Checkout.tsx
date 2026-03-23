@@ -1167,7 +1167,7 @@ export default function Checkout() {
                       <div className="p-4" style={{ background: "var(--ck-card)" }}>
                         <div className="flex items-start gap-3">
                           {bump.bump_product?.cover_url && (
-                            <img src={bump.bump_product.cover_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
+                            <img src={bump.bump_product.cover_url} alt="" loading="lazy" className="h-12 w-12 rounded-lg object-cover shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold" style={{ color: "var(--ck-fg)" }}>
