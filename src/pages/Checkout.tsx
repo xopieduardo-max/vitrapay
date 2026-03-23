@@ -449,7 +449,7 @@ export default function Checkout() {
             copyPaste: data.pix_copy_paste,
           });
           setAsaasPaymentId(data.asaas_payment_id || null);
-          firePixelEvent(productPixels, "Purchase", total);
+          firePixelEvent(productPixels, "Purchase", total, "BRL", data.asaas_payment_id || undefined);
           toast({ title: "Pagamento gerado, finalize via PIX" });
         } else {
           throw new Error("QR Code PIX não disponível");
