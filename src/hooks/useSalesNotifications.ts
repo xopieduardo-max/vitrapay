@@ -35,7 +35,7 @@ export function useSalesNotifications() {
           const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
           const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão de Crédito" : "Boleto";
 
-          const title = `Venda Aprovada!`;
+          const title = `Venda Aprovada! 🚀`;
           const description = `Pagamento via ${methodLabel} • Valor: ${fmt}`;
 
           toast.success(title, { description });
