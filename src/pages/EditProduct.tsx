@@ -115,6 +115,7 @@ export default function EditProduct() {
           checkout_color_theme: form.checkout_color_theme || "classic",
           checkout_social_proof: form.checkout_social_proof || false,
           checkout_social_proof_interval: form.checkout_social_proof_interval || 30,
+          checkout_sidebar_banner_url: form.checkout_sidebar_banner_url || null,
         } as any)
         .eq("id", product.id);
       if (error) throw error;
