@@ -1,4 +1,4 @@
-import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2, BarChart3, Radio } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2, BarChart3, Radio, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
