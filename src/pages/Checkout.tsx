@@ -193,6 +193,15 @@ export default function Checkout() {
         .eq("is_active", true);
       if (bumps) setOrderBumps(bumps);
 
+      // Load funnel steps (upsell/downsell)
+      const { data: fSteps } = await supabase
+        .from("funnel_steps")
+        .select("*, offer_product:offer_product_id(id, title, price, cover_url, description, file_url, type)")
+        .eq("product_id", id)
+        .eq("is_active", true)
+        .order("position", { ascending: true });
+      if (fSteps) setFunnelSteps(fSteps);
+
       const { data: testis } = await supabase
         .from("checkout_testimonials")
         .select("*")
