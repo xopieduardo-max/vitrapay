@@ -1247,7 +1247,7 @@ export default function Checkout() {
             </div>
           </motion.div>
 
-          {/* RIGHT COLUMN - Summary + Testimonials */}
+          {/* RIGHT COLUMN - Cakto style sidebar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1255,52 +1255,83 @@ export default function Checkout() {
             className="lg:col-span-2"
           >
             <div className="sticky top-6 space-y-4">
-              {/* Order Summary */}
-              <div className="rounded-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
-                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ck-subtle)" }}>
-                  Resumo do pedido
-                </p>
-                <div className="flex items-center gap-3">
-                  {product.cover_url && (
-                    <img src={product.cover_url} alt={product.title} className="h-12 w-12 rounded-lg object-cover shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold truncate">{product.title}</h4>
-                  </div>
-                  <span className="text-sm font-bold">R$ {(product.price / 100).toFixed(2)}</span>
+              {/* Compra Segura header */}
+              <div className="rounded-t-xl overflow-hidden">
+                <div
+                  className="py-3 px-5 text-center font-bold text-sm tracking-wide rounded-t-xl"
+                  style={{ background: "var(--ck-accent)", color: "var(--ck-accent-fg)" }}
+                >
+                  <ShieldCheck className="h-4 w-4 inline-block mr-1.5 -mt-0.5" />
+                  Compra segura
                 </div>
 
-                {Array.from(selectedBumps).map((bId) => {
-                  const b = orderBumps.find((ob) => ob.id === bId);
-                  if (!b) return null;
-                  const bp = b.bump_product?.price || 0;
-                  const dp = bp * (1 - (b.discount_percentage || 0) / 100);
-                  return (
-                    <div key={bId} className="flex justify-between text-sm">
-                      <span style={{ color: "var(--ck-label)" }}>{b.bump_product?.title || b.title}</span>
-                      <span>R$ {(dp / 100).toFixed(2)}</span>
-                    </div>
-                  );
-                })}
-
-                {appliedCoupon && (
-                  <div className="flex justify-between text-sm text-primary">
-                    <span>Desconto</span>
-                    <span>
-                      -{appliedCoupon.discount_type === "percentage"
-                        ? `${appliedCoupon.discount_value}%`
-                        : `R$ ${(appliedCoupon.discount_value / 100).toFixed(2)}`}
-                    </span>
+                <div className="rounded-b-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)", borderTop: "none" }}>
+                  {/* Product name + help */}
+                  <div>
+                    <h4 className="font-bold text-base" style={{ color: "var(--ck-fg)" }}>{product.title}</h4>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>Precisa de ajuda?</p>
+                    {producer && (
+                      <p className="text-xs mt-0.5" style={{ color: "var(--ck-accent)" }}>
+                        Veja o contato do vendedor
+                      </p>
+                    )}
                   </div>
-                )}
 
-                <Separator style={{ background: "var(--ck-card-border)" }} />
+                  {/* Order bumps in summary */}
+                  {Array.from(selectedBumps).map((bId) => {
+                    const b = orderBumps.find((ob) => ob.id === bId);
+                    if (!b) return null;
+                    const bp = b.bump_product?.price || 0;
+                    const dp = bp * (1 - (b.discount_percentage || 0) / 100);
+                    return (
+                      <div key={bId} className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
+                        <span className="truncate mr-2">{b.bump_product?.title || b.title}</span>
+                        <span className="shrink-0">+ R$ {(dp / 100).toFixed(2)}</span>
+                      </div>
+                    );
+                  })}
 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold">Total</span>
-                  <span className="text-xl font-black text-primary">
-                    R$ {(total / 100).toFixed(2)}
-                  </span>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-xs" style={{ color: "var(--ck-accent)" }}>
+                      <span>Desconto</span>
+                      <span>
+                        -{appliedCoupon.discount_type === "percentage"
+                          ? `${appliedCoupon.discount_value}%`
+                          : `R$ ${(appliedCoupon.discount_value / 100).toFixed(2)}`}
+                      </span>
+                    </div>
+                  )}
+
+                  <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
+
+                  {/* Total */}
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "var(--ck-fg)" }}>Total</p>
+                    <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
+                      R$ {(total / 100).toFixed(2)}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
+                      ou R$ {(total / 100).toFixed(2)} à vista
+                    </p>
+                  </div>
+
+                  <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
+
+                  {/* Logo + processing info */}
+                  <div className="text-center space-y-1.5">
+                    <img
+                      src={logoHorizontal}
+                      alt="VitraPay"
+                      className="h-6 mx-auto"
+                    />
+                    <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
+                      VitraPay está processando este pagamento
+                      {producer && <><br />para o vendedor <strong>{producer}</strong></>}
+                    </p>
+                    <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
+                      Este site é protegido e seus dados estão seguros.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1327,14 +1358,17 @@ export default function Checkout() {
               {/* Trust badges */}
               <div className="text-center space-y-2">
                 <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "var(--ck-dim)" }}>
-                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  <Lock className="h-3.5 w-3.5" />
                   Compra 100% segura e criptografada
                 </div>
-                <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "var(--ck-dim)" }}>
-                  <Lock className="h-3.5 w-3.5" />
-                  Dados protegidos com SSL
-                </div>
               </div>
+
+              {/* Sidebar banner slot */}
+              {product.checkout_banner_url && (
+                <div className="rounded-xl overflow-hidden">
+                  <img src={product.checkout_banner_url} alt="Banner" className="w-full object-cover rounded-xl" />
+                </div>
+              )}
 
               {/* Testimonials */}
               {testimonials.length > 0 && (
@@ -1371,12 +1405,6 @@ export default function Checkout() {
                     </div>
                   ))}
                 </div>
-              )}
-
-              {producer && (
-                <p className="text-[0.6rem] text-center" style={{ color: "var(--ck-ghost)" }}>
-                  Vendido por @{producer.toLowerCase().replace(/\s+/g, "")}
-                </p>
               )}
             </div>
           </motion.div>
