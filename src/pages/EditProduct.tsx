@@ -185,6 +185,7 @@ export default function EditProduct() {
           {[
             { value: "settings", icon: Settings, label: "Geral" },
             { value: "checkout", icon: ShoppingCart, label: "Checkout" },
+            { value: "funnel", icon: Zap, label: "Upsell / Downsell" },
             { value: "pixels", icon: BarChart3, label: "Pixels" },
             { value: "coupons", icon: Tag, label: "Cupons" },
             { value: "links", icon: Link2, label: "Afiliados" },
@@ -210,6 +211,10 @@ export default function EditProduct() {
             updateField={updateField}
             checkoutUrl={checkoutUrl}
           />
+        </TabsContent>
+
+        <TabsContent value="funnel" className="mt-6">
+          <EditProductFunnel productId={id!} producerId={user?.id || ""} />
         </TabsContent>
 
         <TabsContent value="pixels" className="mt-6">
