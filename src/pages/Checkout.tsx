@@ -551,7 +551,7 @@ export default function Checkout() {
             <div className="rounded-2xl p-5 space-y-3" style={{ background: "var(--ck-bg)", border: "1px solid var(--ck-card-border)" }}>
               <div className="flex items-center gap-3">
                 {offerProduct.cover_url && (
-                  <img src={offerProduct.cover_url} alt="" className="h-16 w-16 rounded-lg object-cover shrink-0" />
+                  <img src={offerProduct.cover_url} alt="" loading="lazy" className="h-16 w-16 rounded-lg object-cover shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-bold">{offerProduct.title}</p>
