@@ -25,7 +25,7 @@ import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
-import { OnboardingTour } from "@/components/OnboardingTour";
+
 import {
   Select,
   SelectContent,
