@@ -107,10 +107,11 @@ export default function MyProducts() {
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="grid grid-cols-[1fr_120px_100px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
+          <div className="grid grid-cols-[1fr_120px_100px_80px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
             <span>Produto</span>
             <span>Preço</span>
             <span>Status</span>
+            <span>Vendas</span>
             <span>Pixels</span>
             <span></span>
           </div>
