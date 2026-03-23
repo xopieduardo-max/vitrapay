@@ -19,11 +19,18 @@ export default function EditProductFunnel({ productId, producerId }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [adding, setAdding] = useState(false);
+  const [addingBump, setAddingBump] = useState(false);
   const [newStep, setNewStep] = useState({
     step_type: "upsell" as string,
     title: "",
     description: "",
     offer_product_id: "",
+    discount_percentage: 0,
+  });
+  const [newBump, setNewBump] = useState({
+    title: "9 A CADA 10 COMPRAM JUNTO...",
+    description: "",
+    bump_product_id: "",
     discount_percentage: 0,
   });
 
@@ -51,6 +58,18 @@ export default function EditProductFunnel({ productId, producerId }: Props) {
       return data || [];
     },
     enabled: !!producerId,
+  });
+
+  const { data: orderBumps = [] } = useQuery({
+    queryKey: ["order-bumps", productId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("order_bumps")
+        .select("*, bump_product:bump_product_id(id, title, price, cover_url)")
+        .eq("product_id", productId);
+      return data || [];
+    },
+    enabled: !!productId,
   });
 
   const handleAdd = async () => {
@@ -92,6 +111,53 @@ export default function EditProductFunnel({ productId, producerId }: Props) {
     queryClient.invalidateQueries({ queryKey: ["funnel-steps", productId] });
   };
 
+  const handleAddBump = async () => {
+    if (!newBump.bump_product_id) {
+      toast({ title: "Selecione o produto do order bump", variant: "destructive" });
+      return;
+    }
+
+    setAddingBump(true);
+    try {
+      const selectedProduct = availableProducts.find((product: any) => product.id === newBump.bump_product_id);
+
+      const { error } = await supabase.from("order_bumps").insert({
+        product_id: productId,
+        title: newBump.title,
+        description: newBump.description || null,
+        bump_product_id: newBump.bump_product_id,
+        discount_percentage: newBump.discount_percentage,
+        is_active: true,
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Order bump adicionado!" });
+      setNewBump({
+        title: `Adicione ${selectedProduct?.title || "este complemento"}`,
+        description: "",
+        bump_product_id: "",
+        discount_percentage: 0,
+      });
+      queryClient.invalidateQueries({ queryKey: ["order-bumps", productId] });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    } finally {
+      setAddingBump(false);
+    }
+  };
+
+  const handleDeleteBump = async (id: string) => {
+    await supabase.from("order_bumps").delete().eq("id", id);
+    queryClient.invalidateQueries({ queryKey: ["order-bumps", productId] });
+    toast({ title: "Order bump removido" });
+  };
+
+  const handleToggleBump = async (id: string, isActive: boolean) => {
+    await supabase.from("order_bumps").update({ is_active: !isActive }).eq("id", id);
+    queryClient.invalidateQueries({ queryKey: ["order-bumps", productId] });
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-10">
@@ -102,6 +168,13 @@ export default function EditProductFunnel({ productId, producerId }: Props) {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+        <h3 className="text-sm font-bold">Como funciona hoje</h3>
+        <p className="text-xs text-muted-foreground">
+          <strong>Upsell e Downsell</strong> aparecem somente <strong>depois do pagamento aprovado</strong>. Para oferta <strong>antes do pagamento</strong>, use o <strong>Order Bump</strong> abaixo.
+        </p>
+      </div>
+
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -235,6 +308,114 @@ export default function EditProductFunnel({ productId, producerId }: Props) {
           <Button size="sm" className="gap-1.5" onClick={handleAdd} disabled={adding}>
             {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
             Adicionar Etapa
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold">Order Bump (antes do pagamento)</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Esse bloco aparece dentro do checkout, antes do cliente finalizar a compra.
+            </p>
+          </div>
+          <span className="text-xs text-muted-foreground">{orderBumps.length} bump(s)</span>
+        </div>
+
+        {orderBumps.length > 0 && (
+          <div className="space-y-2">
+            {orderBumps.map((bump: any) => (
+              <div
+                key={bump.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 hover:bg-muted/30 transition-colors"
+                style={{ opacity: bump.is_active ? 1 : 0.5 }}
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {bump.bump_product?.cover_url ? (
+                    <img src={bump.bump_product.cover_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="h-12 w-12 rounded-lg bg-muted shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate">{bump.title || bump.bump_product?.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {bump.bump_product?.title || "Produto"}
+                      {bump.discount_percentage > 0 && ` • ${bump.discount_percentage}% OFF`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Switch
+                    checked={bump.is_active}
+                    onCheckedChange={() => handleToggleBump(bump.id, bump.is_active)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:text-destructive"
+                    onClick={() => handleDeleteBump(bump.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
+          <p className="text-xs font-bold text-muted-foreground">Adicionar novo order bump</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">Título do bloco</Label>
+              <Input
+                value={newBump.title}
+                onChange={(e) => setNewBump((s) => ({ ...s, title: e.target.value }))}
+                placeholder="Ex: 9 a cada 10 compram junto"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Produto do bump</Label>
+              <Select value={newBump.bump_product_id} onValueChange={(v) => setNewBump((s) => ({ ...s, bump_product_id: v }))}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Selecione um produto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableProducts.map((p: any) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.title} - R$ {(p.price / 100).toFixed(2)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Desconto (%)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={newBump.discount_percentage}
+                onChange={(e) => setNewBump((s) => ({ ...s, discount_percentage: parseInt(e.target.value) || 0 }))}
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Descrição (opcional)</Label>
+            <Textarea
+              value={newBump.description}
+              onChange={(e) => setNewBump((s) => ({ ...s, description: e.target.value }))}
+              placeholder="Texto curto que aparece no card do order bump"
+              rows={2}
+              className="mt-1"
+            />
+          </div>
+          <Button size="sm" className="gap-1.5" onClick={handleAddBump} disabled={addingBump}>
+            {addingBump ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+            Adicionar Order Bump
           </Button>
         </div>
       </div>

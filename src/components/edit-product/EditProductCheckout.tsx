@@ -198,76 +198,24 @@ export default function EditProductCheckout({ productId, form, updateField, chec
             />
           </div>
           <div className="md:col-span-2">
-            <Label className="text-xs">Imagem do Checkout (Banner horizontal)</Label>
-            <p className="text-[0.65rem] text-muted-foreground mb-1">Proporção recomendada: 21:9 (1200×514). Aparece no topo do checkout.</p>
-            <Input
-              value={form.checkout_banner_url || ""}
-              onChange={(e) => updateField("checkout_banner_url", e.target.value)}
-              placeholder="Cole a URL ou faça upload abaixo"
-              className="mt-1"
-            />
-            <div className="flex items-center gap-2 mt-2">
-              <label className="cursor-pointer text-xs font-medium text-primary hover:underline">
-                📁 Fazer upload
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const ext = file.name.split(".").pop();
-                    const path = `checkout-banners/${productId}-banner.${ext}`;
-                    const { error } = await supabase.storage.from("checkout-images").upload(path, file, { upsert: true });
-                    if (error) { toast({ title: "Erro no upload", description: error.message, variant: "destructive" }); return; }
-                    const { data: pub } = supabase.storage.from("checkout-images").getPublicUrl(path);
-                    updateField("checkout_banner_url", pub.publicUrl);
-                    toast({ title: "Banner enviado!" });
-                  }}
-                />
-              </label>
-            </div>
-            {form.checkout_banner_url && (
-              <div className="mt-2 rounded-lg overflow-hidden max-h-32">
-                <img src={form.checkout_banner_url} alt="Preview" className="w-full h-full object-cover" />
+            <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <Label className="text-xs">Imagens do checkout</Label>
+                  <p className="text-[0.65rem] text-muted-foreground mt-1">
+                    A imagem horizontal e a imagem vertical agora ficam dentro de <strong>Editar Checkout</strong>, com as dimensões corretas e preview visual.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 shrink-0"
+                  onClick={() => navigate(`/products/${productId}/checkout-builder`)}
+                >
+                  <Paintbrush className="h-3.5 w-3.5" /> Abrir editor
+                </Button>
               </div>
-            )}
-          </div>
-          <div className="md:col-span-2">
-            <Label className="text-xs">Banner Vertical (sidebar)</Label>
-            <p className="text-[0.65rem] text-muted-foreground mb-1">Proporção recomendada: 3:4 (400×533). Aparece na lateral do checkout (desktop) ou abaixo de tudo (mobile).</p>
-            <Input
-              value={form.checkout_sidebar_banner_url || ""}
-              onChange={(e) => updateField("checkout_sidebar_banner_url", e.target.value)}
-              placeholder="Cole a URL ou faça upload abaixo"
-              className="mt-1"
-            />
-            <div className="flex items-center gap-2 mt-2">
-              <label className="cursor-pointer text-xs font-medium text-primary hover:underline">
-                📁 Fazer upload
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const ext = file.name.split(".").pop();
-                    const path = `checkout-banners/${productId}-sidebar.${ext}`;
-                    const { error } = await supabase.storage.from("checkout-images").upload(path, file, { upsert: true });
-                    if (error) { toast({ title: "Erro no upload", description: error.message, variant: "destructive" }); return; }
-                    const { data: pub } = supabase.storage.from("checkout-images").getPublicUrl(path);
-                    updateField("checkout_sidebar_banner_url", pub.publicUrl);
-                    toast({ title: "Banner vertical enviado!" });
-                  }}
-                />
-              </label>
             </div>
-            {form.checkout_sidebar_banner_url && (
-              <div className="mt-2 rounded-lg overflow-hidden max-h-40">
-                <img src={form.checkout_sidebar_banner_url} alt="Preview sidebar" className="w-full h-full object-cover" />
-              </div>
-            )}
           </div>
         </div>
       </div>
