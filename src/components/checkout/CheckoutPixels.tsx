@@ -18,7 +18,14 @@ export function useCheckoutPixels(pixels: Pixel[]) {
   useEffect(() => {
     if (!pixels.length) return;
 
+    // Defer pixel loading to after page render
+    const scheduleLoad = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : (cb: () => void) => setTimeout(cb, 100);
+
     const scripts: HTMLScriptElement[] = [];
+    let cancelled = false;
+
+    scheduleLoad(() => {
+      if (cancelled) return;
 
     pixels.forEach((px) => {
       if (!px.pixel_id) return;
