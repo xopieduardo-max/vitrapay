@@ -704,7 +704,7 @@ export default function Checkout() {
 
       {/* ── Headline Banner ── */}
       {product.checkout_headline && (
-        <div className="py-2.5 text-center text-sm font-bold tracking-wide" style={{ background: "hsl(48, 96%, 53%)", color: "hsl(0,0%,10%)" }}>
+        <div className="py-2.5 text-center text-sm font-bold tracking-wide" style={{ background: "var(--ck-accent)", color: "var(--ck-accent-fg)" }}>
           {product.checkout_headline}
         </div>
       )}
