@@ -13,6 +13,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 import iphoneMockup3d from "@/assets/iphone-mockup-3d.png";
+import iphone3dMockup from "@/assets/iphone-3d-mockup.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { IPhoneFrame } from "@/components/IPhoneFrame";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
@@ -715,15 +716,13 @@ export default function Landing() {
               whileHover={{ scale: 1.03 }}
               className="flex justify-center"
             >
-              <IPhoneFrame className="w-[280px] md:w-[340px]">
-                <img
-                  src={appMockup}
-                  alt="Dashboard VitraPay"
-                  className="w-full"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </IPhoneFrame>
+              <img
+                src={iphone3dMockup}
+                alt="Dashboard VitraPay no iPhone"
+                className="w-[300px] md:w-[380px] drop-shadow-2xl"
+                loading="lazy"
+                decoding="async"
+              />
             </motion.div>
           </div>
         </div>
