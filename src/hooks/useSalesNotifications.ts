@@ -56,8 +56,8 @@ export function useSalesNotifications() {
             await supabase.functions.invoke("send-push", {
               body: {
                 producer_id: user.id,
-                title: `Venda Aprovada! 🎉`,
-                body: `Pagamento via ${methodLabel}\nValor: ${fmt}`,
+                title: `Venda Aprovada! 🚀`,
+                body: `Pagamento via ${methodLabel}  Valor: ${fmt}`,
                 url: "/sales",
               },
             });
