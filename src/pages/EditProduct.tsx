@@ -17,16 +17,18 @@ import {
   Eye,
   ShoppingCart,
   BarChart3,
+  Zap,
 } from "lucide-react";
 
 import EditProductSettings from "@/components/edit-product/EditProductSettings";
+import EditProductFunnel from "@/components/edit-product/EditProductFunnel";
 import EditProductCoupons from "@/components/edit-product/EditProductCoupons";
 import EditProductLinks from "@/components/edit-product/EditProductLinks";
 import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
 import EditProductPixels from "@/components/edit-product/EditProductPixels";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const PRODUCT_TABS = ["settings", "checkout", "pixels", "coupons", "links"] as const;
+const PRODUCT_TABS = ["settings", "checkout", "funnel", "pixels", "coupons", "links"] as const;
 type ProductTab = (typeof PRODUCT_TABS)[number];
 
 export default function EditProduct() {
@@ -69,6 +71,9 @@ export default function EditProduct() {
       checkout_timer_minutes: product.checkout_timer_minutes || 0,
       checkout_banner_url: product.checkout_banner_url || "",
       checkout_theme: product.checkout_theme || "light",
+      checkout_color_theme: (product as any).checkout_color_theme || "classic",
+      checkout_social_proof: (product as any).checkout_social_proof || false,
+      checkout_social_proof_interval: (product as any).checkout_social_proof_interval || 30,
     });
   }
 
@@ -106,7 +111,10 @@ export default function EditProduct() {
           checkout_timer_minutes: form.checkout_timer_minutes,
           checkout_banner_url: form.checkout_banner_url,
           checkout_theme: form.checkout_theme || "light",
-        })
+          checkout_color_theme: form.checkout_color_theme || "classic",
+          checkout_social_proof: form.checkout_social_proof || false,
+          checkout_social_proof_interval: form.checkout_social_proof_interval || 30,
+        } as any)
         .eq("id", product.id);
       if (error) throw error;
       toast({ title: "Produto atualizado!" });
@@ -177,6 +185,7 @@ export default function EditProduct() {
           {[
             { value: "settings", icon: Settings, label: "Geral" },
             { value: "checkout", icon: ShoppingCart, label: "Checkout" },
+            { value: "funnel", icon: Zap, label: "Upsell / Downsell" },
             { value: "pixels", icon: BarChart3, label: "Pixels" },
             { value: "coupons", icon: Tag, label: "Cupons" },
             { value: "links", icon: Link2, label: "Afiliados" },
@@ -202,6 +211,10 @@ export default function EditProduct() {
             updateField={updateField}
             checkoutUrl={checkoutUrl}
           />
+        </TabsContent>
+
+        <TabsContent value="funnel" className="mt-6">
+          <EditProductFunnel productId={id!} producerId={user?.id || ""} />
         </TabsContent>
 
         <TabsContent value="pixels" className="mt-6">
