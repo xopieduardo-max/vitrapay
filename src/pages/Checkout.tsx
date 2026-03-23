@@ -1374,10 +1374,10 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Sidebar banner slot */}
-              {product.checkout_banner_url && (
+              {/* Sidebar banner slot - cover image as secondary banner */}
+              {product.cover_url && product.cover_url !== product.checkout_banner_url && (
                 <div className="rounded-xl overflow-hidden">
-                  <img src={product.checkout_banner_url} alt="Banner" className="w-full object-cover rounded-xl" />
+                  <img src={product.cover_url} alt="Banner" className="w-full object-cover rounded-xl" />
                 </div>
               )}
 
