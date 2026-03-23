@@ -1,4 +1,4 @@
-import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2, BarChart3, Radio } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Edit, Trash2, Loader2, BarChart3, Radio, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
@@ -55,6 +55,25 @@ export default function MyProducts() {
     enabled: productIds.length > 0,
   });
 
+  const { data: salesCounts = {} } = useQuery({
+    queryKey: ["sales-counts", productIds],
+    queryFn: async () => {
+      if (productIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from("sales")
+        .select("product_id, status")
+        .in("product_id", productIds)
+        .eq("status", "paid");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      for (const row of data || []) {
+        counts[row.product_id!] = (counts[row.product_id!] || 0) + 1;
+      }
+      return counts;
+    },
+    enabled: productIds.length > 0,
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -88,10 +107,11 @@ export default function MyProducts() {
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="grid grid-cols-[1fr_120px_100px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
+          <div className="grid grid-cols-[1fr_120px_100px_80px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-label text-muted-foreground">
             <span>Produto</span>
             <span>Preço</span>
             <span>Status</span>
+            <span>Vendas</span>
             <span>Pixels</span>
             <span></span>
           </div>
@@ -101,7 +121,7 @@ export default function MyProducts() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="grid grid-cols-[1fr_120px_100px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+              className="grid grid-cols-[1fr_120px_100px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
               onClick={() => navigate(`/products/${product.id}/edit`)}
             >
               <div>
@@ -114,6 +134,10 @@ export default function MyProducts() {
               <Badge variant="secondary" className={`text-[0.65rem] w-fit ${product.is_published ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground border-border"}`}>
                 {product.is_published ? "Ativo" : "Rascunho"}
               </Badge>
+              <div className="flex items-center gap-1.5">
+                <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium">{salesCounts[product.id] || 0}</span>
+              </div>
               {(pixelCounts[product.id] ?? []).length > 0 ? (
                 <div className="flex items-center gap-1.5">
                   <Radio className="h-3.5 w-3.5 text-primary" />
