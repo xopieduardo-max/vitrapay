@@ -1340,6 +1340,22 @@ export default function Checkout() {
                 )}
               </Button>
 
+              {/* Processing warning */}
+              {processing && (
+                <div className="flex items-center justify-center gap-2 p-3 rounded-lg text-sm font-medium animate-pulse" style={{ background: "hsl(48,96%,53%,0.15)", color: "hsl(48,80%,35%)", border: "1px solid hsl(48,96%,53%,0.3)" }}>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  ⚠️ Não saia desta página até a confirmação do pagamento
+                </div>
+              )}
+
+              {/* PIX waiting warning */}
+              {pixData && !purchaseResult && (
+                <div className="flex items-center justify-center gap-2 p-3 rounded-lg text-sm font-medium" style={{ background: "hsl(200,90%,50%,0.1)", color: "hsl(200,80%,35%)", border: "1px solid hsl(200,90%,50%,0.25)" }}>
+                  <Clock className="h-4 w-4" />
+                  Aguarde nesta página — a confirmação do PIX é automática
+                </div>
+              )}
+
               {/* Trust badges */}
               <div className="text-center space-y-2">
                 <div className="flex items-center justify-center gap-2 text-xs" style={{ color: "var(--ck-dim)" }}>
