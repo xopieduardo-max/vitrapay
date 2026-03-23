@@ -716,15 +716,13 @@ export default function Landing() {
               whileHover={{ scale: 1.03 }}
               className="flex justify-center"
             >
-              <IPhoneFrame className="w-[280px] md:w-[340px]">
-                <img
-                  src={appMockup}
-                  alt="Dashboard VitraPay"
-                  className="w-full"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </IPhoneFrame>
+              <img
+                src={iphone3dMockup}
+                alt="Dashboard VitraPay no iPhone"
+                className="w-[300px] md:w-[380px] drop-shadow-2xl"
+                loading="lazy"
+                decoding="async"
+              />
             </motion.div>
           </div>
         </div>
