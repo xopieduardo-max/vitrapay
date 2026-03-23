@@ -57,6 +57,10 @@ export default function CheckoutBuilder() {
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const [checkoutMedia, setCheckoutMedia] = useState({
+    checkout_banner_url: "",
+    checkout_sidebar_banner_url: "",
+  });
 
   const { data: product } = useQuery({
     queryKey: ["builder-product", id],
@@ -85,6 +89,20 @@ export default function CheckoutBuilder() {
       setBlocks(savedBlocks);
     }
   }, [savedBlocks]);
+
+  useEffect(() => {
+    if (product) {
+      setCheckoutMedia({
+        checkout_banner_url: product.checkout_banner_url || "",
+        checkout_sidebar_banner_url: product.checkout_sidebar_banner_url || "",
+      });
+    }
+  }, [product]);
+
+  const updateCheckoutMedia = (field: "checkout_banner_url" | "checkout_sidebar_banner_url", value: string) => {
+    setCheckoutMedia((prev) => ({ ...prev, [field]: value }));
+    setHasChanges(true);
+  };
 
   const addBlock = (type: BlockType) => {
     const newBlock: Block = {
@@ -135,6 +153,16 @@ export default function CheckoutBuilder() {
     if (!id) return;
     setSaving(true);
     try {
+      const { error: productError } = await supabase
+        .from("products")
+        .update({
+          checkout_banner_url: checkoutMedia.checkout_banner_url || null,
+          checkout_sidebar_banner_url: checkoutMedia.checkout_sidebar_banner_url || null,
+        })
+        .eq("id", id);
+
+      if (productError) throw productError;
+
       // Delete old blocks
       await supabase.from("checkout_blocks").delete().eq("product_id", id);
       // Insert new
@@ -151,7 +179,9 @@ export default function CheckoutBuilder() {
       }
       toast({ title: "Checkout salvo!" });
       setHasChanges(false);
+      queryClient.invalidateQueries({ queryKey: ["builder-product", id] });
       queryClient.invalidateQueries({ queryKey: ["checkout-blocks", id] });
+      queryClient.invalidateQueries({ queryKey: ["edit-product", id] });
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
     } finally {
@@ -221,6 +251,18 @@ export default function CheckoutBuilder() {
             {/* ── Realistic Checkout Preview ── */}
             <div className="rounded-2xl overflow-hidden shadow-xl" style={{ background: "hsl(240, 10%, 6%)", color: "hsl(0,0%,90%)" }}>
 
+              {checkoutMedia.checkout_banner_url && (
+                <div className="p-4 pb-0">
+                  <div className="aspect-[21/9] overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                    <img
+                      src={checkoutMedia.checkout_banner_url}
+                      alt="Banner horizontal do checkout"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Custom blocks drop zone (above form) */}
               <div
                 className="relative min-h-[60px]"
@@ -280,11 +322,12 @@ export default function CheckoutBuilder() {
 
               {/* ── Product Info (static preview) ── */}
               <div className="px-5 py-4" style={{ borderTop: "1px solid hsl(240,5%,12%)" }}>
-                <div className="flex items-center gap-3">
-                  <div className="h-14 w-14 rounded-lg shrink-0" style={{ background: "hsl(240,10%,14%)" }} />
-                  <div className="flex-1">
-                    <div className="h-4 w-40 rounded" style={{ background: "hsl(240,10%,14%)" }} />
-                    <div className="h-3 w-24 rounded mt-2" style={{ background: "hsl(48,96%,53%,0.3)" }} />
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="space-y-1.5">
+                    <p className="text-lg font-bold">{product?.title || "Nome do produto"}</p>
+                    <p className="text-sm font-semibold text-emerald-400">
+                      R$ {product ? (product.price / 100).toFixed(2) : "0,00"} à vista
+                    </p>
                   </div>
                 </div>
               </div>
@@ -327,27 +370,54 @@ export default function CheckoutBuilder() {
                 {/* Right column - testimonials preview (desktop only) */}
                 {previewMode === "desktop" && (
                   <div className="col-span-2 space-y-3">
-                    <div className="h-3 w-28 mx-auto rounded" style={{ background: "hsl(240,10%,14%)" }} />
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(240,10%,8%)", border: "1px solid hsl(240,5%,12%)" }}>
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full" style={{ background: "hsl(240,10%,14%)" }} />
-                          <div>
-                            <div className="h-3 w-20 rounded" style={{ background: "hsl(240,10%,14%)" }} />
-                            <div className="flex gap-0.5 mt-1">
-                              {[1, 2, 3, 4].map((s) => (
-                                <Star key={s} className="h-2.5 w-2.5 fill-warning text-warning" />
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="h-2.5 w-full rounded" style={{ background: "hsl(240,10%,12%)" }} />
-                        <div className="h-2.5 w-3/4 rounded" style={{ background: "hsl(240,10%,12%)" }} />
+                    <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                      <div className="bg-emerald-500 px-4 py-3 text-center text-sm font-bold text-white">
+                        Compra segura
                       </div>
-                    ))}
+                      <div className="space-y-3 p-4">
+                        <div>
+                          <p className="text-base font-bold">{product?.title || "Nome do produto"}</p>
+                          <p className="text-xs text-white/60">Precisa de ajuda? Veja o contato do vendedor</p>
+                        </div>
+                        <div className="border-t border-dashed border-white/10 pt-3">
+                          <p className="text-sm font-semibold">Total</p>
+                          <p className="text-lg font-black text-emerald-400">
+                            R$ {product ? (product.price / 100).toFixed(2) : "0,00"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                      {checkoutMedia.checkout_sidebar_banner_url ? (
+                        <div className="aspect-[3/4]">
+                          <img
+                            src={checkoutMedia.checkout_sidebar_banner_url}
+                            alt="Banner vertical do checkout"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex aspect-[3/4] items-center justify-center px-6 text-center text-xs text-white/45">
+                          Imagem vertical do checkout · 3:4 · ex.: 900×1200
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
+
+              {previewMode === "mobile" && checkoutMedia.checkout_sidebar_banner_url && (
+                <div className="px-5 pb-5">
+                  <div className="overflow-hidden rounded-2xl border border-white/10">
+                    <img
+                      src={checkoutMedia.checkout_sidebar_banner_url}
+                      alt="Banner vertical do checkout"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -361,10 +431,51 @@ export default function CheckoutBuilder() {
               onClose={() => setSelectedBlockId(null)}
             />
           ) : (
-            <ComponentPalette onAdd={addBlock} />
+            <BuilderSidebar media={checkoutMedia} onMediaChange={updateCheckoutMedia} onAdd={addBlock} />
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function BuilderSidebar({
+  media,
+  onMediaChange,
+  onAdd,
+}: {
+  media: { checkout_banner_url: string; checkout_sidebar_banner_url: string };
+  onMediaChange: (field: "checkout_banner_url" | "checkout_sidebar_banner_url", value: string) => void;
+  onAdd: (type: BlockType) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <div className="p-4 space-y-4 border-b border-border">
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Imagens do checkout</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Aqui você define a imagem horizontal e a imagem vertical do checkout. Isso não usa a capa do produto.
+          </p>
+        </div>
+
+        <ImageUploadField
+          label="Imagem horizontal"
+          description="Banner principal do checkout · proporção 21:9 · exemplo 1200×514"
+          value={media.checkout_banner_url}
+          onUpdate={(url) => onMediaChange("checkout_banner_url", url)}
+          placeholder="Cole a URL do banner horizontal"
+        />
+
+        <ImageUploadField
+          label="Imagem vertical"
+          description="Banner lateral do checkout · proporção 3:4 · exemplo 900×1200"
+          value={media.checkout_sidebar_banner_url}
+          onUpdate={(url) => onMediaChange("checkout_sidebar_banner_url", url)}
+          placeholder="Cole a URL do banner vertical"
+        />
+      </div>
+
+      <ComponentPalette onAdd={onAdd} />
     </div>
   );
 }
@@ -393,11 +504,13 @@ function ComponentPalette({ onAdd }: { onAdd: (type: BlockType) => void }) {
 /* ─── Image Upload Helper ─── */
 function ImageUploadField({
   label,
+  description,
   value,
   onUpdate,
   placeholder,
 }: {
   label: string;
+  description?: string;
   value: string;
   onUpdate: (url: string) => void;
   placeholder?: string;
@@ -434,7 +547,10 @@ function ImageUploadField({
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs">{label}</Label>
+      <div>
+        <Label className="text-xs">{label}</Label>
+        {description && <p className="mt-1 text-[0.65rem] text-muted-foreground">{description}</p>}
+      </div>
       <div className="flex gap-1.5">
         <Input
           value={value || ""}
