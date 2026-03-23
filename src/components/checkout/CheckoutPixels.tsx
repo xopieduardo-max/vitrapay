@@ -120,7 +120,8 @@ export function firePixelEvent(
   pixels: Pixel[],
   event: "InitiateCheckout" | "Purchase",
   value?: number,
-  currency = "BRL"
+  currency = "BRL",
+  eventId?: string
 ) {
   pixels.forEach((px) => {
     if (!px.pixel_id) return;
@@ -128,9 +129,11 @@ export function firePixelEvent(
 
     if (px.platform === "facebook" && w.fbq) {
       if (event === "InitiateCheckout") {
-        w.fbq("track", "InitiateCheckout");
+        const eid = eventId || `ic_${Date.now()}`;
+        w.fbq("track", "InitiateCheckout", {}, { eventID: eid });
       } else if (event === "Purchase" && value) {
-        w.fbq("track", "Purchase", { value: value / 100, currency });
+        const eid = eventId || `pur_${Date.now()}`;
+        w.fbq("track", "Purchase", { value: value / 100, currency }, { eventID: eid });
       }
     }
 

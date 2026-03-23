@@ -449,7 +449,7 @@ export default function Checkout() {
             copyPaste: data.pix_copy_paste,
           });
           setAsaasPaymentId(data.asaas_payment_id || null);
-          firePixelEvent(productPixels, "Purchase", total);
+          firePixelEvent(productPixels, "Purchase", total, "BRL", data.asaas_payment_id || undefined);
           toast({ title: "Pagamento gerado, finalize via PIX" });
         } else {
           throw new Error("QR Code PIX não disponível");
@@ -485,7 +485,7 @@ export default function Checkout() {
         if (data?.status === "CONFIRMED") {
           setCardStatus("approved");
           setPurchaseResult(data);
-          firePixelEvent(productPixels, "Purchase", total);
+          firePixelEvent(productPixels, "Purchase", total, "BRL", data.payment_id || undefined);
         } else if (data?.status === "PENDING" || data?.status === "RECEIVED_IN_CASH") {
           setCardStatus("pending");
           setAsaasPaymentId(data.payment_id || null);

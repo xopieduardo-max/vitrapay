@@ -432,6 +432,26 @@ Deno.serve(async (req) => {
         console.error("UTMify postback error:", utmErr);
       }
 
+      // ✅ Send Facebook Conversion API (CAPI) Purchase event
+      try {
+        const capiRes = await fetch(`${supabaseUrl}/functions/v1/send-facebook-capi`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id,
+            payment_id: paymentData.id,
+            amount,
+            buyer_email: buyer_email || null,
+            buyer_name: buyer_name || null,
+            buyer_phone: buyer_phone || null,
+            buyer_cpf: buyer_cpf || null,
+          }),
+        });
+        console.log("Facebook CAPI card dispatch status:", capiRes.status);
+      } catch (capiErr) {
+        console.error("Facebook CAPI card dispatch failed:", capiErr);
+      }
+
       return new Response(JSON.stringify({
         success: true, status: "CONFIRMED", payment_id: paymentData.id,
         product_title: product.title, product_type: product.type,
