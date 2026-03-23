@@ -84,6 +84,7 @@ const App = () => {
               <Route path="/learn/:productId" element={<MemberArea />} />
               <Route path="/terms" element={<TermsOfUse />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/purchase-terms" element={<PurchaseTerms />} />
               <Route path="/install" element={<Install />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/minha-conta" element={<MinhaConta />} />
