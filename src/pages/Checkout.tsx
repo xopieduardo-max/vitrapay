@@ -671,8 +671,16 @@ export default function Checkout() {
     return { value: String(n), label: `${n}x de R$ ${val}${n > 1 ? " *" : ""}` };
   });
 
+  const colorThemeClass = `checkout-theme-${(product as any)?.checkout_color_theme || 'classic'}`;
+
   return (
-    <div className={`min-h-screen ${product.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
+    <div className={`min-h-screen ${product.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'} ${colorThemeClass}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
+      {/* Social Proof Notifications */}
+      <SocialProofNotification
+        enabled={(product as any)?.checkout_social_proof || false}
+        interval={(product as any)?.checkout_social_proof_interval || 30}
+        productName={product.title}
+      />
       {/* ── Timer Bar ── */}
       {timeLeft > 0 && (
         <div className="py-3.5" style={{ background: "hsl(38, 92%, 50%)", color: "hsl(0,0%,5%)" }}>
