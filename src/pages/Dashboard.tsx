@@ -420,6 +420,19 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Vendas Pendentes (Desktop) */}
+        {pendingCheckoutsCount > 0 && (
+          <motion.div {...anim(0.22)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
+              <Clock className="h-5 w-5 text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-medium text-warning">Vendas Pendentes</p>
+              <p className="text-sm font-bold">{pendingCheckoutsCount} checkout(s) aguardando pagamento • {fmt(pendingCheckoutsValue)}</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Revenue Chart + Conversion by Payment */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <motion.div {...anim(0.25)} className="lg:col-span-3 rounded-xl border border-border bg-card p-5">

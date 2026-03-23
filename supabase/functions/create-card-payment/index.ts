@@ -215,6 +215,25 @@ Deno.serve(async (req) => {
       utm_term: utm_term || null,
     });
 
+    // Send push notification for pending card payment
+    if (paymentData.status !== "CONFIRMED" && paymentData.status !== "RECEIVED") {
+      try {
+        const fmtValue = `R$ ${(amount / 100).toFixed(2).replace('.', ',')}`;
+        await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            producer_id: product.producer_id,
+            title: "Cartão Gerado! 💳",
+            body: `Pagamento de ${fmtValue} via cartão gerado para ${product.title}`,
+            url: "/sales",
+          }),
+        });
+      } catch (pushErr) {
+        console.error("Push notification error:", pushErr);
+      }
+    }
+
     // If payment confirmed immediately, process sale + access + email
     if (paymentData.status === "CONFIRMED" || paymentData.status === "RECEIVED") {
       const { data: existingSale } = await supabase

@@ -120,8 +120,53 @@ export function useSalesNotifications() {
       )
       .subscribe();
 
+    // Listen for pending payments (checkout initiated)
+    const pendingChannel = supabase
+      .channel("pending-payments-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "pending_payments",
+        },
+        async (payload: any) => {
+          const productId = payload.new?.product_id;
+          if (!productId) return;
+
+          const { data: product } = await supabase
+            .from("products")
+            .select("producer_id, title")
+            .eq("id", productId)
+            .single();
+
+          if (!product || product.producer_id !== user.id) return;
+
+          const amount = payload.new?.amount || 0;
+          const fmtVal = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
+          const title = "Checkout Iniciado! 🛒";
+          const description = `${product.title} • ${fmtVal}`;
+
+          toast.info(title, { description });
+
+          notifIdRef.current++;
+          const notif: SaleNotification = {
+            id: `notif-${notifIdRef.current}-${Date.now()}`,
+            title,
+            description,
+            time: new Date(),
+          };
+
+          setNotifications((prev) => [notif, ...prev].slice(0, 50));
+          setNewSalesCount((prev) => prev + 1);
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(pendingChannel);
     };
   }, [user]);
 

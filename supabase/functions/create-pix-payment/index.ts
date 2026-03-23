@@ -182,6 +182,24 @@ Deno.serve(async (req) => {
       console.error("Failed to save pending payment:", pendingErr);
     }
 
+    // Send push notification to producer about pending PIX
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const fmtValue = `R$ ${(amount / 100).toFixed(2).replace('.', ',')}`;
+      await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producer_id: product.producer_id,
+          title: "Pix Gerado! 💰",
+          body: `Pix de ${fmtValue} gerado para ${product.title}`,
+          url: "/sales",
+        }),
+      });
+    } catch (pushErr) {
+      console.error("Push notification error:", pushErr);
+    }
+
     // Get PIX QR Code
     const pixRes = await fetch(`https://api.asaas.com/v3/payments/${paymentData.id}/pixQrCode`, {
       headers: {

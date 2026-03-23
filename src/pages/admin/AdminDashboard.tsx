@@ -440,6 +440,7 @@ export default function AdminDashboard() {
     { label: "Usuários", value: String(stats?.totalUsers ?? 0), icon: Users, color: "text-muted-foreground" },
     { label: "Saques pendentes", value: fmt(stats?.pendingWithdrawals ?? 0), icon: Clock, color: "text-warning" },
     { label: "Total pago", value: fmt(stats?.totalPaidOut ?? 0), icon: Wallet, color: "text-accent" },
+    { label: "Checkouts pendentes", value: `${adminPendingCheckoutsCount} • ${fmt(adminPendingCheckoutsValue)}`, icon: ShoppingBag, color: "text-warning" },
   ];
 
   return (
