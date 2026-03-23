@@ -110,11 +110,20 @@ export default function EditProductSettings({ form, updateField }: Props) {
             ) : (
               <div className="flex flex-col items-center gap-1.5 text-muted-foreground py-2">
                 <Image className="h-6 w-6" strokeWidth={1} />
-                <span className="text-xs">Enviar capa</span>
+                <span className="text-xs">Enviar capa ou cole um link abaixo</span>
               </div>
             )}
             <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
           </label>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-[0.65rem] text-muted-foreground shrink-0">ou cole a URL:</span>
+            <Input
+              placeholder="https://exemplo.com/imagem.jpg"
+              value={form.cover_url || ""}
+              onChange={(e) => updateField("cover_url", e.target.value)}
+              className="h-8 text-xs"
+            />
+          </div>
         </div>
 
         {/* Product file */}
