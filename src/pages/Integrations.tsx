@@ -104,27 +104,47 @@ function UtmifySection() {
   });
 
   const handleSave = async () => {
-    if (!user || !utmifyToken.trim()) {
+    if (!user) {
+      toast.error("Você precisa estar logado para salvar a integração.");
+      return;
+    }
+    const trimmedToken = utmifyToken.trim();
+    if (!trimmedToken) {
       toast.error("Informe o token do UTMify.");
       return;
     }
     setSaving(true);
-    if (integration) {
-      const { error } = await supabase
-        .from("user_integrations")
-        .update({ api_token: utmifyToken.trim(), is_active: utmifyActive, updated_at: new Date().toISOString() })
-        .eq("id", integration.id);
-      if (error) toast.error("Erro ao atualizar integração.");
-      else toast.success("Integração atualizada!");
-    } else {
-      const { error } = await supabase
-        .from("user_integrations")
-        .insert({ user_id: user.id, platform: "utmify", api_token: utmifyToken.trim(), is_active: utmifyActive });
-      if (error) toast.error("Erro ao salvar integração.");
-      else toast.success("Integração configurada!");
+    try {
+      if (integration) {
+        const { error } = await supabase
+          .from("user_integrations")
+          .update({ api_token: trimmedToken, is_active: utmifyActive, updated_at: new Date().toISOString() })
+          .eq("id", integration.id);
+        if (error) {
+          console.error("Erro update UTMify:", error);
+          toast.error(`Erro ao atualizar: ${error.message}`);
+        } else {
+          toast.success("Integração atualizada!");
+        }
+      } else {
+        const { error } = await supabase
+          .from("user_integrations")
+          .insert({ user_id: user.id, platform: "utmify", api_token: trimmedToken, is_active: utmifyActive });
+        if (error) {
+          console.error("Erro insert UTMify:", error);
+          toast.error(`Erro ao salvar: ${error.message}`);
+        } else {
+          toast.success("Integração configurada!");
+          setLoaded(false);
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ["user-integrations", user?.id, "utmify"] });
+    } catch (e: any) {
+      console.error("Exceção UTMify:", e);
+      toast.error(`Erro inesperado: ${e.message}`);
+    } finally {
+      setSaving(false);
     }
-    queryClient.invalidateQueries({ queryKey: ["user-integrations", user?.id, "utmify"] });
-    setSaving(false);
   };
 
   const handleRemove = async () => {
