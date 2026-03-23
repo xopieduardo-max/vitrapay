@@ -131,7 +131,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
 export default function Checkout() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
