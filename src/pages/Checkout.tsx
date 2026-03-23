@@ -485,7 +485,7 @@ export default function Checkout() {
         if (data?.status === "CONFIRMED") {
           setCardStatus("approved");
           setPurchaseResult(data);
-          firePixelEvent(productPixels, "Purchase", total);
+          firePixelEvent(productPixels, "Purchase", total, "BRL", data.payment_id || undefined);
         } else if (data?.status === "PENDING" || data?.status === "RECEIVED_IN_CASH") {
           setCardStatus("pending");
           setAsaasPaymentId(data.payment_id || null);
