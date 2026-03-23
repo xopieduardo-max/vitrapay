@@ -559,8 +559,8 @@ export default function Landing() {
                 <div className="space-y-0">
                   {[
                     { label: "PIX:", desc: "Instantâneo (D+0)" },
-                    { label: "Cartão de crédito:", desc: "Receba em 2 dias (D+2)" },
-                    { label: "Opção de Antecipação", desc: "de cartões em 2 dias (D+2)" },
+                    { label: "Cartão de crédito:", desc: "Receba em até 2 dias (D+2)" },
+                    { label: "Saque rápido:", desc: "Mínimo R$ 10 direto no Pix" },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 py-5 border-b border-border/30 last:border-b-0">
                       <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
