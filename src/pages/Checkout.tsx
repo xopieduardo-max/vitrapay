@@ -1140,12 +1140,15 @@ export default function Checkout() {
               )}
             </div>
 
-            {/* Order Bumps */}
+            {/* Order Bumps - Cakto style */}
             {orderBumps.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-center" style={{ color: "hsl(38, 92%, 50%)" }}>
-                  ⚡ Ofertas limitadas
-                </h3>
+                <div className="flex items-center gap-2 justify-center">
+                  <span className="text-sm" style={{ color: "var(--ck-fg)" }}>⚡</span>
+                  <h3 className="text-sm font-bold" style={{ color: "var(--ck-fg)" }}>
+                    Oferta limitada
+                  </h3>
+                </div>
                 {orderBumps.map((bump) => {
                   const bumpPrice = bump.bump_product?.price || 0;
                   const discountedPrice = bumpPrice * (1 - (bump.discount_percentage || 0) / 100);
@@ -1155,47 +1158,54 @@ export default function Checkout() {
                     <motion.div
                       key={bump.id}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => toggleBump(bump.id)}
-                      className="rounded-xl p-4 cursor-pointer transition-all"
+                      className="rounded-xl overflow-hidden cursor-pointer transition-all"
                       style={{
-                        background: isSelected ? "hsl(48, 96%, 53%, 0.1)" : "var(--ck-card)",
-                        border: isSelected ? "2px solid hsl(48, 96%, 53%)" : "2px solid var(--ck-card-border)",
+                        border: isSelected ? "2px solid var(--ck-accent)" : "2px solid var(--ck-card-border)",
                       }}
+                      onClick={() => toggleBump(bump.id)}
                     >
-                      {bump.title && (
-                        <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "hsl(38, 92%, 50%)" }}>
-                          {bump.title}
+                      {/* Header bar */}
+                      <div
+                        className="px-4 py-2.5 flex items-center justify-between"
+                        style={{ background: "var(--ck-accent)", color: "var(--ck-accent-fg)" }}
+                      >
+                        <p className="text-xs font-black uppercase tracking-wider">
+                          {bump.title || "9 A CADA 10 COMPRAM JUNTO..."}
                         </p>
-                      )}
-                      <div className="flex items-start gap-3">
-                        <Checkbox checked={isSelected} className="mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            {bump.bump_product?.cover_url && (
-                              <img src={bump.bump_product.cover_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
+                        <Checkbox
+                          checked={isSelected}
+                          className="border-current data-[state=checked]:bg-white data-[state=checked]:text-black"
+                        />
+                      </div>
+                      {/* Body */}
+                      <div className="p-4" style={{ background: "var(--ck-card)" }}>
+                        <div className="flex items-start gap-3">
+                          {bump.bump_product?.cover_url && (
+                            <img src={bump.bump_product.cover_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold" style={{ color: "var(--ck-fg)" }}>
+                              {bump.bump_product?.title}
+                            </p>
+                            {bump.description && (
+                              <p className="text-xs mt-1" style={{ color: "var(--ck-subtle)" }}>{bump.description}</p>
                             )}
-                            <div>
-                              <p className="text-sm font-semibold">{bump.bump_product?.title}</p>
-                              {bump.description && (
-                                <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>{bump.description}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              {bump.discount_percentage > 0 && (
+                                <span className="text-xs line-through" style={{ color: "var(--ck-faint)" }}>
+                                  R$ {(bumpPrice / 100).toFixed(2)}
+                                </span>
+                              )}
+                              <span className="text-sm font-bold" style={{ color: "var(--ck-accent)" }}>
+                                R$ {(discountedPrice / 100).toFixed(2)}
+                              </span>
+                              {bump.discount_percentage > 0 && (
+                                <span className="text-[0.6rem] font-bold px-1.5 py-0.5 rounded" style={{ background: "hsl(0, 84%, 60%)", color: "white" }}>
+                                  {bump.discount_percentage}% OFF
+                                </span>
                               )}
                             </div>
                           </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          {bump.discount_percentage > 0 && (
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs line-through" style={{ color: "var(--ck-faint)" }}>
-                                R$ {(bumpPrice / 100).toFixed(2)}
-                              </span>
-                              <span className="text-[0.6rem] font-bold px-1.5 py-0.5 rounded" style={{ background: "hsl(0, 84%, 60%)", color: "hsl(0,0%,10%)" }}>
-                                {bump.discount_percentage}% OFF
-                              </span>
-                            </div>
-                          )}
-                          <span className="text-sm font-bold text-primary">
-                            R$ {(discountedPrice / 100).toFixed(2)}
-                          </span>
                         </div>
                       </div>
                     </motion.div>
