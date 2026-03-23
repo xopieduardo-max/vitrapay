@@ -53,7 +53,7 @@ export default function Finance() {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("pix_key, pix_key_type")
+        .select("pix_key, pix_key_type, cpf, phone, display_name, address_cep")
         .eq("user_id", user.id)
         .single();
       return data as any;
@@ -63,6 +63,7 @@ export default function Finance() {
 
   const pixKey = profile?.pix_key || "";
   const pixKeyType = profile?.pix_key_type || "cpf";
+  const profileIncomplete = !profile?.cpf || !profile?.phone || !profile?.display_name;
 
   // Get sales for balance calc
   const { data: sales = [] } = useQuery({
@@ -303,7 +304,16 @@ export default function Finance() {
                   </span>
                 </div>
 
-                {!pixKey && (
+                {profileIncomplete && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2">
+                    <Lock className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      Para solicitar saques, complete seu cadastro (nome, CPF e telefone) em <strong>Ajustes</strong>.
+                    </p>
+                  </div>
+                )}
+
+                {!profileIncomplete && !pixKey && (
                   <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 flex items-start gap-2">
                     <AlertCircle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                     <p className="text-xs text-muted-foreground">
@@ -322,7 +332,7 @@ export default function Finance() {
                   </Button>
                   <Button
                     className="flex-1 gap-2"
-                    disabled={parsedAmount < MIN_WITHDRAWAL || !pixKey}
+                    disabled={parsedAmount < MIN_WITHDRAWAL || !pixKey || profileIncomplete}
                     onClick={() => setWithdrawStep(2)}
                   >
                     Prosseguir
