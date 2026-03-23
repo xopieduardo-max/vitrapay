@@ -922,6 +922,7 @@ export type Database = {
           checkout_banner_url: string | null
           checkout_color_theme: string
           checkout_headline: string | null
+          checkout_sidebar_banner_url: string | null
           checkout_social_proof: boolean
           checkout_social_proof_interval: number
           checkout_theme: string
@@ -944,6 +945,7 @@ export type Database = {
           checkout_banner_url?: string | null
           checkout_color_theme?: string
           checkout_headline?: string | null
+          checkout_sidebar_banner_url?: string | null
           checkout_social_proof?: boolean
           checkout_social_proof_interval?: number
           checkout_theme?: string
@@ -966,6 +968,7 @@ export type Database = {
           checkout_banner_url?: string | null
           checkout_color_theme?: string
           checkout_headline?: string | null
+          checkout_sidebar_banner_url?: string | null
           checkout_social_proof?: boolean
           checkout_social_proof_interval?: number
           checkout_theme?: string
