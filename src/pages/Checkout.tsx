@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import logoHorizontal from "@/assets/logo-vitrapay-horizontal.png";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCheckoutPixels, firePixelEvent } from "@/components/checkout/CheckoutPixels";
 import { SocialProofNotification } from "@/components/checkout/SocialProofNotification";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,7 +131,7 @@ function CheckoutBlockRenderer({ block }: { block: any }) {
 export default function Checkout() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -173,61 +172,46 @@ export default function Checkout() {
   useEffect(() => {
     if (!id) return;
     const loadCheckout = async () => {
-      const { data: prod } = await supabase.from("products").select("*").eq("id", id).single();
+      // ── PARALLEL: Fire all queries at once instead of sequential waterfall ──
+      const [
+        { data: prod },
+        { data: bumps },
+        { data: fSteps },
+        { data: testis },
+        { data: blocks },
+        { data: pxs },
+      ] = await Promise.all([
+        supabase.from("products").select("*").eq("id", id).single(),
+        supabase.from("order_bumps").select("*, bump_product:bump_product_id(*)").eq("product_id", id).eq("is_active", true),
+        supabase.from("funnel_steps").select("*, offer_product:offer_product_id(id, title, price, cover_url, description, file_url, type)").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
+        supabase.from("checkout_testimonials").select("*").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
+        supabase.from("checkout_blocks").select("*").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
+        supabase.from("product_pixels").select("*").eq("product_id", id).eq("is_active", true),
+      ]);
+
       if (prod) {
         setProduct(prod);
         if (prod.checkout_timer_minutes && prod.checkout_timer_minutes > 0) {
           setTimeLeft(prod.checkout_timer_minutes * 60);
         }
-        const { data: profile } = await supabase
+        // Producer name fetch — non-blocking, runs in background
+        supabase
           .from("profiles")
           .select("display_name")
           .eq("user_id", prod.producer_id)
-          .maybeSingle();
-        setProducer(profile?.display_name || "");
+          .maybeSingle()
+          .then(({ data: profile }) => {
+            setProducer(profile?.display_name || "");
+          });
       }
 
-      const { data: bumps } = await supabase
-        .from("order_bumps")
-        .select("*, bump_product:bump_product_id(*)")
-        .eq("product_id", id)
-        .eq("is_active", true);
       if (bumps) setOrderBumps(bumps);
-
-      // Load funnel steps (upsell/downsell)
-      const { data: fSteps } = await supabase
-        .from("funnel_steps")
-        .select("*, offer_product:offer_product_id(id, title, price, cover_url, description, file_url, type)")
-        .eq("product_id", id)
-        .eq("is_active", true)
-        .order("position", { ascending: true });
       if (fSteps) setFunnelSteps(fSteps);
-
-      const { data: testis } = await supabase
-        .from("checkout_testimonials")
-        .select("*")
-        .eq("product_id", id)
-        .eq("is_active", true)
-        .order("position", { ascending: true });
       if (testis) setTestimonials(testis);
-
-      const { data: blocks } = await supabase
-        .from("checkout_blocks")
-        .select("*")
-        .eq("product_id", id)
-        .eq("is_active", true)
-        .order("position", { ascending: true });
       if (blocks) setCheckoutBlocks(blocks);
-
-      // Load pixels
-      const { data: pxs } = await supabase
-        .from("product_pixels")
-        .select("*")
-        .eq("product_id", id)
-        .eq("is_active", true);
       if (pxs) setProductPixels(pxs);
 
-      // Track affiliate click
+      // Track affiliate click — non-blocking
       const ref = searchParams.get("ref");
       if (ref) {
         try { await supabase.rpc("increment_affiliate_clicks" as any, { affiliate_id: ref }); } catch {}
@@ -248,9 +232,13 @@ export default function Checkout() {
     }
   }, [productPixels]);
 
+  // Pre-fill email from Supabase session (non-blocking)
   useEffect(() => {
-    if (user?.email) setForm((f) => ({ ...f, email: user.email || "" }));
-  }, [user]);
+    supabase.auth.getSession().then(({ data }) => {
+      const email = data?.session?.user?.email;
+      if (email) setForm((f) => ({ ...f, email }));
+    });
+  }, []);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -563,7 +551,7 @@ export default function Checkout() {
             <div className="rounded-2xl p-5 space-y-3" style={{ background: "var(--ck-bg)", border: "1px solid var(--ck-card-border)" }}>
               <div className="flex items-center gap-3">
                 {offerProduct.cover_url && (
-                  <img src={offerProduct.cover_url} alt="" className="h-16 w-16 rounded-lg object-cover shrink-0" />
+                  <img src={offerProduct.cover_url} alt="" loading="lazy" className="h-16 w-16 rounded-lg object-cover shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-bold">{offerProduct.title}</p>
@@ -867,16 +855,13 @@ export default function Checkout() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
           {/* LEFT COLUMN - Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+          <div
             className="lg:col-span-3 space-y-5"
           >
             {/* Checkout banner image - Cakto style */}
             {product.checkout_banner_url && (
               <div className="rounded-xl overflow-hidden">
-                <img src={product.checkout_banner_url} alt={product.title} className="w-full h-auto object-contain rounded-xl" />
+                <img src={product.checkout_banner_url} alt={product.title} fetchPriority="high" className="w-full h-auto object-contain rounded-xl" />
               </div>
             )}
 
@@ -1182,7 +1167,7 @@ export default function Checkout() {
                       <div className="p-4" style={{ background: "var(--ck-card)" }}>
                         <div className="flex items-start gap-3">
                           {bump.bump_product?.cover_url && (
-                            <img src={bump.bump_product.cover_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
+                            <img src={bump.bump_product.cover_url} alt="" loading="lazy" className="h-12 w-12 rounded-lg object-cover shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold" style={{ color: "var(--ck-fg)" }}>
@@ -1248,13 +1233,10 @@ export default function Checkout() {
               )}
             </div>
             )}
-          </motion.div>
+          </div>
 
           {/* RIGHT COLUMN - Cakto style sidebar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
+          <div
             className="lg:col-span-2"
           >
             <div className="sticky top-6 space-y-4">
@@ -1379,7 +1361,7 @@ export default function Checkout() {
               {/* Sidebar vertical banner */}
               {(product as any).checkout_sidebar_banner_url && (
                 <div className="rounded-xl overflow-hidden">
-                  <img src={(product as any).checkout_sidebar_banner_url} alt="Banner" className="w-full h-auto object-contain rounded-xl" />
+                  <img src={(product as any).checkout_sidebar_banner_url} alt="Banner" loading="lazy" className="w-full h-auto object-contain rounded-xl" />
                 </div>
               )}
 
@@ -1397,7 +1379,7 @@ export default function Checkout() {
                     >
                       <div className="flex items-center gap-2">
                         {t.author_avatar_url ? (
-                          <img src={t.author_avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                          <img src={t.author_avatar_url} alt="" loading="lazy" className="h-8 w-8 rounded-full object-cover" />
                         ) : (
                           <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(48, 96%, 53%, 0.2)", color: "hsl(48, 96%, 45%)" }}>
                             {t.author_name?.charAt(0)?.toUpperCase()}
@@ -1420,7 +1402,7 @@ export default function Checkout() {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>
