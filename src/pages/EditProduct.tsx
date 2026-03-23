@@ -69,6 +69,9 @@ export default function EditProduct() {
       checkout_timer_minutes: product.checkout_timer_minutes || 0,
       checkout_banner_url: product.checkout_banner_url || "",
       checkout_theme: product.checkout_theme || "light",
+      checkout_color_theme: (product as any).checkout_color_theme || "classic",
+      checkout_social_proof: (product as any).checkout_social_proof || false,
+      checkout_social_proof_interval: (product as any).checkout_social_proof_interval || 30,
     });
   }
 
