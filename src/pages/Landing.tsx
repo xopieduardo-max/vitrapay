@@ -711,18 +711,37 @@ export default function Landing() {
             <motion.div
               {...fadeUp}
               transition={{ delay: 0.2, duration: 0.6 }}
-              whileHover={{ rotate: 2, scale: 1.02 }}
+              whileHover={{ scale: 1.03 }}
               className="flex justify-center"
             >
-              <IPhoneFrame className="w-[240px] md:w-[280px]">
+              <div className="relative w-[280px] md:w-[340px]" style={{ perspective: '1000px' }}>
                 <img
-                  src={appMockup}
-                  alt="App VitraPay"
-                  className="w-full"
+                  src={iphoneMockup3d}
+                  alt="App VitraPay no iPhone"
+                  className="w-full drop-shadow-2xl"
                   loading="lazy"
                   decoding="async"
                 />
-              </IPhoneFrame>
+                {/* App screenshot overlaid on the phone screen */}
+                <img
+                  src={appMockup}
+                  alt="Dashboard VitraPay"
+                  className="absolute"
+                  style={{
+                    top: '5.8%',
+                    left: '14.5%',
+                    width: '60%',
+                    height: '82%',
+                    objectFit: 'cover',
+                    objectPosition: 'top',
+                    borderRadius: '1.2rem',
+                    clipPath: 'inset(0 round 1.2rem)',
+                    transform: 'perspective(800px) rotateY(-8deg) rotateX(2deg) rotateZ(3deg)',
+                  }}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </motion.div>
           </div>
         </div>
