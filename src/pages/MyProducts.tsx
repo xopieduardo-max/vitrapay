@@ -134,6 +134,10 @@ export default function MyProducts() {
               <Badge variant="secondary" className={`text-[0.65rem] w-fit ${product.is_published ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground border-border"}`}>
                 {product.is_published ? "Ativo" : "Rascunho"}
               </Badge>
+              <div className="flex items-center gap-1.5">
+                <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium">{salesCounts[product.id] || 0}</span>
+              </div>
               {(pixelCounts[product.id] ?? []).length > 0 ? (
                 <div className="flex items-center gap-1.5">
                   <Radio className="h-3.5 w-3.5 text-primary" />
