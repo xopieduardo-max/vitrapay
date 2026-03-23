@@ -74,6 +74,7 @@ export default function EditProduct() {
       checkout_color_theme: (product as any).checkout_color_theme || "classic",
       checkout_social_proof: (product as any).checkout_social_proof || false,
       checkout_social_proof_interval: (product as any).checkout_social_proof_interval || 30,
+      checkout_sidebar_banner_url: (product as any).checkout_sidebar_banner_url || "",
     });
   }
 
