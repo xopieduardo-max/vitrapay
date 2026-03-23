@@ -1402,7 +1402,7 @@ export default function Checkout() {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>
