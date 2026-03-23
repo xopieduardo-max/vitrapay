@@ -199,7 +199,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
-      <OnboardingTour />
+      
       {/* Promotional Banner */}
       <motion.div {...anim(0)} className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
         <img
