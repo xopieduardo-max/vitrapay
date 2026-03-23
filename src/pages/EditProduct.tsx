@@ -28,7 +28,7 @@ import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
 import EditProductPixels from "@/components/edit-product/EditProductPixels";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const PRODUCT_TABS = ["settings", "checkout", "pixels", "coupons", "links"] as const;
+const PRODUCT_TABS = ["settings", "checkout", "funnel", "pixels", "coupons", "links"] as const;
 type ProductTab = (typeof PRODUCT_TABS)[number];
 
 export default function EditProduct() {
