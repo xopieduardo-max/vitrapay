@@ -1233,13 +1233,10 @@ export default function Checkout() {
               )}
             </div>
             )}
-          </motion.div>
+          </div>
 
           {/* RIGHT COLUMN - Cakto style sidebar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
+          <div
             className="lg:col-span-2"
           >
             <div className="sticky top-6 space-y-4">
