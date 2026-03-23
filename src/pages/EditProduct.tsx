@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import EditProductSettings from "@/components/edit-product/EditProductSettings";
+import EditProductFunnel from "@/components/edit-product/EditProductFunnel";
 import EditProductCoupons from "@/components/edit-product/EditProductCoupons";
 import EditProductLinks from "@/components/edit-product/EditProductLinks";
 import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
