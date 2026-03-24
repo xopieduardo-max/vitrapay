@@ -488,33 +488,36 @@ export default function Landing() {
             </motion.div>
           </motion.div>
 
-          {/* Dashboard Preview + Floating Notifications */}
-          <div className="mt-16 md:mt-20 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
-            <div className="order-2 lg:order-1 max-h-[500px] overflow-hidden">
-              <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
-                <Bell className="h-3 w-3 text-primary" />
-                Notificações em tempo real
-              </p>
-              <FloatingNotifications />
-            </div>
-            <motion.div
-              style={{ y: dashboardY, scale: dashboardScale }}
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="order-1 lg:order-2 relative rounded-2xl border border-border/50 overflow-hidden shadow-2xl shadow-primary/5 group"
+          {/* Dashboard Preview — Full Width Perspective like BlackCatPay */}
+          <motion.div
+            style={{ y: dashboardY, scale: dashboardScale }}
+            initial={{ opacity: 0, y: 80 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
+            className="mt-16 md:mt-24 max-w-6xl mx-auto relative"
+            style={{ perspective: "1200px" }}
+          >
+            <div
+              className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
+              style={{
+                transform: "rotateX(8deg) rotateY(0deg)",
+                transformOrigin: "center center",
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
                 src={dashboardPreview}
                 alt="Dashboard VitraPay com métricas de vendas em tempo real"
                 className="w-full"
-                loading="lazy"
+                loading="eager"
                 decoding="async"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
-            </motion.div>
-          </div>
+              {/* Fade overlay at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            </div>
+            {/* Glow effect beneath */}
+            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
+          </motion.div>
         </div>
       </section>
 
