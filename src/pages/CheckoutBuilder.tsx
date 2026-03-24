@@ -532,13 +532,23 @@ function ImageUploadField({
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
+      // Compress image before upload (max 1200px, WebP, ~150KB target)
+      const compressed = await compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 800,
+        quality: 0.82,
+        type: "image/webp",
+      });
+      const ext = compressed.name.split(".").pop() || "webp";
       const path = `${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("checkout-images").upload(path, file);
+      const { error } = await supabase.storage.from("checkout-images").upload(path, compressed, {
+        contentType: compressed.type,
+      });
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from("checkout-images").getPublicUrl(path);
       onUpdate(publicUrl);
-      toast({ title: "Imagem enviada!" });
+      const savedKB = Math.round((file.size - compressed.size) / 1024);
+      toast({ title: `Imagem enviada!${savedKB > 0 ? ` (${savedKB}KB economizados)` : ""}` });
     } catch (err: any) {
       toast({ title: "Erro ao enviar", description: err.message, variant: "destructive" });
     } finally {
