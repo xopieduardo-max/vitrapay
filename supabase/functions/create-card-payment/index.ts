@@ -247,27 +247,31 @@ Deno.serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Calculate fees - read platform defaults from DB, then check producer overrides
-      let feePercentage = 0.0389;
-      let feeFixed = 249;
+      // ── Fee calculation: Card D+2 (default) ──
+      // Platform fee: 4.99% + R$ 2.49
+      // Asaas cost:   4.14% + R$ 0.49
+      const CARD_D2_PLATFORM_PCT = 0.0499;
+      const CARD_D2_PLATFORM_FIXED = 249; // R$ 2.49
+      const CARD_D2_ASAAS_PCT = 0.0414;
+      const CARD_D2_ASAAS_FIXED = 49;     // R$ 0.49
 
-      // Read platform-level fees
-      const { data: platformFees } = await supabase
-        .from("platform_fees").select("card_percentage, card_fixed").eq("id", 1).single();
-      if (platformFees) {
-        feePercentage = Number(platformFees.card_percentage) / 100;
-        feeFixed = platformFees.card_fixed;
-      }
-
-      // Producer custom overrides take priority
+      // Check producer custom overrides
       const { data: producerProfile } = await supabase
         .from("profiles").select("custom_fee_percentage, custom_fee_fixed")
         .eq("user_id", product.producer_id).single();
-      if (producerProfile) {
-        if (producerProfile.custom_fee_percentage != null) feePercentage = producerProfile.custom_fee_percentage / 100;
-        if (producerProfile.custom_fee_fixed != null) feeFixed = producerProfile.custom_fee_fixed;
+
+      let platformFee: number;
+      if (producerProfile?.custom_fee_fixed != null) {
+        platformFee = producerProfile.custom_fee_fixed;
+      } else if (producerProfile?.custom_fee_percentage != null) {
+        platformFee = Math.round(amount * producerProfile.custom_fee_percentage / 100 + CARD_D2_PLATFORM_FIXED);
+      } else {
+        platformFee = Math.round(amount * CARD_D2_PLATFORM_PCT + CARD_D2_PLATFORM_FIXED);
       }
-      const platformFee = Math.round(amount * feePercentage + feeFixed);
+
+      const asaasCost = Math.round(amount * CARD_D2_ASAAS_PCT + CARD_D2_ASAAS_FIXED);
+      const netProfit = platformFee - asaasCost;
+      console.log(`Card D+2 fees: platform=${platformFee}, asaas=${asaasCost}, profit=${netProfit}`);
 
       let affiliateId: string | null = null;
       if (affiliate_ref) {
