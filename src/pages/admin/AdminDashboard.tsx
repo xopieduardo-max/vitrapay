@@ -1037,6 +1037,10 @@ export default function AdminDashboard() {
       </div>
 
       <AdminProfitWithdrawDialog open={profitDialogOpen} onOpenChange={setProfitDialogOpen} availableProfit={netProfit} />
+      <AdminWithdrawHistoryDialog open={adminHistoryOpen} onOpenChange={setAdminHistoryOpen} transactions={allTransactions} totalWithdrawn={adminWithdrawals} />
+      <PendingWithdrawalsDetailDialog open={pendingWdOpen} onOpenChange={setPendingWdOpen} withdrawals={withdrawals} profileMap={profileMap} />
+      <TotalPaidOutDetailDialog open={totalPaidOpen} onOpenChange={setTotalPaidOpen} withdrawals={withdrawals} profileMap={profileMap} totalPaidOut={stats?.totalPaidOut ?? 0} />
+      <PendingCheckoutsDetailDialog open={checkoutsOpen} onOpenChange={setCheckoutsOpen} checkouts={adminPendingCheckouts} />
     </div>
   );
 }
