@@ -20,6 +20,7 @@ import {
   ShoppingCart,
   Wallet,
   CalendarDays,
+  Target,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -177,6 +178,20 @@ export default function Dashboard() {
     refetchInterval: 30000,
   });
 
+  // All checkout initiations (all statuses) for conversion rate
+  const { data: allCheckouts = [] } = useQuery({
+    queryKey: ["dashboard-all-checkouts", user?.id, productIds],
+    queryFn: async () => {
+      if (!user || productIds.length === 0) return [];
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("status, created_at")
+        .in("product_id", productIds);
+      return data || [];
+    },
+    enabled: !!user && productIds.length > 0,
+  });
+
   // Date range from period filter
   const dateRange = useMemo(() => getDateRange(period, customFrom, customTo), [period, customFrom, customTo]);
 
@@ -223,6 +238,21 @@ export default function Dashboard() {
   const refundRate = filteredSales.length > 0 ? ((refundedSales.length / filteredSales.length) * 100).toFixed(1) : "0";
   const refundAmount = refundedSales.reduce((acc, s) => acc + s.amount, 0);
   const abandonedSales = filteredSales.filter((s) => s.status === "abandoned").length;
+
+  // Checkout conversion rate
+  const filteredCheckouts = useMemo(() => {
+    return allCheckouts.filter((c) => {
+      const d = new Date(c.created_at);
+      if (dateRange.from && d < dateRange.from) return false;
+      if (d > dateRange.to) return false;
+      return true;
+    });
+  }, [allCheckouts, dateRange]);
+  const totalCheckoutInitiations = filteredCheckouts.length + salesCount; // checkouts + completed sales = total visitors who initiated
+  const checkoutConversionRate = totalCheckoutInitiations > 0
+    ? ((salesCount / totalCheckoutInitiations) * 100).toFixed(1)
+    : "0";
+  const checkoutConversionColor = parseFloat(checkoutConversionRate) >= 3 ? "text-primary" : parseFloat(checkoutConversionRate) >= 1 ? "text-warning" : "text-destructive";
 
   const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
 
@@ -478,6 +508,20 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Conversão do Checkout */}
+        <motion.div {...anim(0.24)} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Target className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Conversão do checkout</p>
+            <p className={`text-lg font-bold ${checkoutConversionColor}`}>{checkoutConversionRate}%</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[0.55rem] text-muted-foreground">{salesCount} de {totalCheckoutInitiations}</p>
+            <p className="text-[0.55rem] text-muted-foreground">visitantes</p>
+          </div>
+        </motion.div>
         {/* Vendas Pendentes */}
         {pendingCheckoutsCount > 0 && (
           <motion.div {...anim(0.28)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
@@ -589,8 +633,8 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Second Row: Faturamento + Reembolso + Conquistas */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Second Row: Faturamento + Conversão + Reembolso + Conquistas */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <motion.div {...anim(0.22)} className="rounded-xl border-2 border-primary/40 bg-card p-5 lg:col-span-2">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
@@ -626,7 +670,17 @@ export default function Dashboard() {
             </p>
           </motion.div>
 
-          <motion.div {...anim(0.31)} className="rounded-xl border border-border bg-card p-5">
+          <motion.div {...anim(0.3)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Conversão do checkout • {periodLabels[period]}</p>
+            <p className={`text-2xl font-bold mt-1 ${checkoutConversionColor}`}>
+              {checkoutConversionRate}%
+            </p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <Target className="h-3 w-3" /> {salesCount} de {totalCheckoutInitiations} visitantes
+            </p>
+          </motion.div>
+
+          <motion.div {...anim(0.33)} className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Jornada de conquistas</p>
               <button onClick={() => navigate("/sales")} className="text-[0.6rem] text-primary hover:underline">
