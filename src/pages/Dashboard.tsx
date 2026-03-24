@@ -155,7 +155,28 @@ export default function Dashboard() {
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = salesData.filter((s) => s.status === "refunded");
   const refundRate = salesData.length > 0 ? ((refundedSales.length / salesData.length) * 100).toFixed(1) : "0";
+  const refundAmount = refundedSales.reduce((acc, s) => acc + s.amount, 0);
   const abandonedSales = salesData.filter((s) => s.status === "abandoned").length;
+
+  // Today's revenue
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayRevenue = completedSales
+    .filter((s) => new Date(s.created_at) >= todayStart)
+    .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+  const todaySalesCount = completedSales.filter((s) => new Date(s.created_at) >= todayStart).length;
+
+  // Last sale
+  const lastSale = completedSales.length > 0 ? completedSales.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] : null;
+  const lastSaleTime = lastSale ? new Date(lastSale.created_at) : null;
+  const lastSaleTimeAgo = lastSaleTime
+    ? (() => {
+        const diff = Math.floor((now.getTime() - lastSaleTime.getTime()) / 60000);
+        if (diff < 1) return "agora";
+        if (diff < 60) return `${diff}min atrás`;
+        if (diff < 1440) return `${Math.floor(diff / 60)}h atrás`;
+        return `${Math.floor(diff / 1440)}d atrás`;
+      })()
+    : null;
 
   const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
 
