@@ -1269,6 +1269,12 @@ export default function Checkout() {
                   )}
                 </div>
 
+                {/* Resumo do pedido */}
+                <div className="flex justify-between text-sm" style={{ color: "var(--ck-label)" }}>
+                  <span className="truncate mr-2">{product.title}</span>
+                  <span className="shrink-0">R$ {(product.price / 100).toFixed(2)}</span>
+                </div>
+
                 {/* Order bumps in summary */}
                 {Array.from(selectedBumps).map((bId) => {
                   const b = orderBumps.find((ob) => ob.id === bId);
@@ -1294,17 +1300,38 @@ export default function Checkout() {
                   </div>
                 )}
 
+                {/* Taxa de serviço */}
+                {paymentMethod === "card" && parseInt(form.installments) > 1 && (
+                  <div className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
+                    <span>Taxa de serviço</span>
+                    <span>R$ 0,99</span>
+                  </div>
+                )}
+
                 <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
 
                 {/* Total */}
                 <div>
                   <p className="text-sm font-semibold" style={{ color: "var(--ck-fg)" }}>Total</p>
-                  <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
-                    R$ {(total / 100).toFixed(2)}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
-                    ou R$ {(total / 100).toFixed(2)} à vista
-                  </p>
+                  {paymentMethod === "card" && parseInt(form.installments) > 1 ? (
+                    <>
+                      <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
+                        {installmentOptions[parseInt(form.installments) - 1]?.label}
+                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
+                        ou R$ {(total / 100).toFixed(2)} à vista
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
+                        R$ {(total / 100).toFixed(2)}
+                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
+                        à vista
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
