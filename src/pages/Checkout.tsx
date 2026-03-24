@@ -194,6 +194,15 @@ export default function Checkout() {
         if (prod.checkout_timer_minutes && prod.checkout_timer_minutes > 0) {
           setTimeLeft(prod.checkout_timer_minutes * 60);
         }
+        // Preload LCP image (checkout banner) as early as possible
+        if (prod.checkout_banner_url) {
+          const link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.href = prod.checkout_banner_url;
+          link.fetchPriority = "high";
+          document.head.appendChild(link);
+        }
         // Producer name fetch — non-blocking, runs in background
         supabase
           .from("profiles")
