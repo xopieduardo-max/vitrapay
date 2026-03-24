@@ -8,9 +8,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Loader2 } from "lucide-react";
 
-// Eager: landing + auth (critical path)
-import Landing from "./pages/Landing";
+// Eager: auth only (smallest critical path)
 import Auth from "./pages/Auth";
+
+// Lazy: everything including landing
+const Landing = lazy(() => import("./pages/Landing"));
 
 // Lazy: everything else
 const DashboardLayout = lazy(() => import("@/components/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
