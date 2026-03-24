@@ -289,6 +289,29 @@ Deno.serve(async (req) => {
           .catch((err: any) => console.error(`${txnCategory} transaction error:`, err));
 
         console.log(`Sale ${saleStatus}:`, sale.id);
+
+        // Send push notification to producer about refund/chargeback
+        const amountFormatted = `R$ ${(sale.amount / 100).toFixed(2).replace(".", ",")}`;
+        const pushTitle = isChargeback ? "⚠️ Chargeback Recebido!" : "🔄 Estorno Realizado";
+        const pushBody = isChargeback
+          ? `Um chargeback de ${amountFormatted} foi aberto. Verifique sua conta.`
+          : `Um estorno de ${amountFormatted} foi processado na sua conta.`;
+
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: sale.producer_id,
+              title: pushTitle,
+              body: pushBody,
+              url: "/dashboard",
+            }),
+          });
+          console.log(`Push notification sent to producer ${sale.producer_id} for ${txnCategory}`);
+        } catch (pushErr) {
+          console.error(`Failed to send ${txnCategory} push notification:`, pushErr);
+        }
       }
 
       return new Response(JSON.stringify({ status: `${txnCategory}_processed` }), {
