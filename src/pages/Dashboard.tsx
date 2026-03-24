@@ -354,9 +354,41 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Extra metrics mobile */}
+        <div className="grid grid-cols-2 gap-3">
+          <motion.div {...anim(0.2)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Hoje</p>
+            <p className="text-lg font-bold text-primary">{fmt(todayRevenue)}</p>
+            <p className="text-[0.55rem] text-muted-foreground">{todaySalesCount} venda(s)</p>
+          </motion.div>
+          <motion.div {...anim(0.22)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Total sacado</p>
+            <p className="text-lg font-bold">{fmt(totalWithdrawn)}</p>
+            <p className="text-[0.55rem] text-muted-foreground">Taxa: {fmt(totalFeesPaid)}</p>
+          </motion.div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <motion.div {...anim(0.24)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Reembolsos</p>
+            <p className={`text-lg font-bold ${parseFloat(refundRate) > 5 ? "text-destructive" : ""}`}>{refundRate}%</p>
+            <p className="text-[0.55rem] text-muted-foreground">{refundedSales.length} reembolso(s)</p>
+          </motion.div>
+          <motion.div {...anim(0.26)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Última venda</p>
+            {lastSale ? (
+              <>
+                <p className="text-lg font-bold">{fmt(lastSale.amount - (lastSale.platform_fee || 0))}</p>
+                <p className="text-[0.55rem] text-muted-foreground">{lastSaleTimeAgo}</p>
+              </>
+            ) : (
+              <p className="text-lg font-bold text-muted-foreground">—</p>
+            )}
+          </motion.div>
+        </div>
+
         {/* Vendas Pendentes */}
         {pendingCheckoutsCount > 0 && (
-          <motion.div {...anim(0.2)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
+          <motion.div {...anim(0.28)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
               <Clock className="h-5 w-5 text-warning" />
             </div>
