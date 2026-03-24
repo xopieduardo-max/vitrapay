@@ -76,78 +76,44 @@ serve(async (req) => {
       });
     }
 
-    // Calculate available balance (same logic as frontend)
-    const now = new Date();
+    // ── Validate balance from wallets table ──
+    const { data: wallet } = await supabase
+      .from("wallets")
+      .select("id, balance_available, balance_pending")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    const { data: sales } = await supabase
-      .from("sales")
-      .select("amount, platform_fee, created_at, payment_provider, payment_id")
-      .eq("producer_id", user.id)
-      .eq("status", "completed");
+    const availableBalance = wallet ? Number(wallet.balance_available) : 0;
 
-    const paymentIds = [...new Set((sales || []).map((sale) => sale.payment_id).filter(Boolean))];
-    const { data: confirmedPayments } = paymentIds.length > 0
-      ? await supabase
-          .from("pending_payments")
-          .select("asaas_payment_id")
-          .in("asaas_payment_id", paymentIds)
-          .eq("status", "confirmed")
-      : { data: [] };
-
-    const confirmedPaymentIds = new Set(
-      (confirmedPayments || []).map((payment) => payment.asaas_payment_id).filter(Boolean)
-    );
-
-    const verifiedSales = (sales || []).filter(
-      (sale) => !!sale.payment_id && confirmedPaymentIds.has(sale.payment_id)
-    );
-
-    const { data: commissions } = await supabase
-      .from("commissions")
-      .select("amount, created_at, status")
-      .eq("affiliate_id", user.id);
-
-    const { data: withdrawals } = await supabase
-      .from("withdrawals")
-      .select("amount, status")
-      .eq("user_id", user.id);
-
-    // Available sales (past holdback period)
-    const totalAvailableSales = verifiedSales.reduce((acc, s) => {
-      const holdDays = s.payment_provider === "pix" ? HOLDBACK_DAYS_PIX : HOLDBACK_DAYS_CARD;
-      const availAt = new Date(s.created_at);
-      availAt.setDate(availAt.getDate() + holdDays);
-      if (availAt <= now) {
-        return acc + s.amount - (s.platform_fee || 0);
-      }
-      return acc;
-    }, 0);
-
-    // Available commissions (D+2 conservative)
-    const totalAvailableCommissions = (commissions || []).reduce((acc, c) => {
-      if (c.status === "cancelled") return acc;
-      const availAt = new Date(c.created_at);
-      availAt.setDate(availAt.getDate() + HOLDBACK_DAYS_CARD);
-      if (availAt <= now) return acc + c.amount;
-      return acc;
-    }, 0);
-
-    const totalWithdrawn = (withdrawals || [])
-      .filter((w) => w.status === "completed")
-      .reduce((acc, w) => acc + w.amount, 0);
-
-    const pendingWithdrawals = (withdrawals || [])
-      .filter((w) => w.status === "pending" || w.status === "processing")
-      .reduce((acc, w) => acc + w.amount, 0);
-
-    const totalFeesPaid = (withdrawals || [])
-      .filter((w) => w.status !== "rejected")
-      .length * WITHDRAWAL_FEE;
-
-    const availableBalance = totalAvailableSales + totalAvailableCommissions - totalWithdrawn - pendingWithdrawals - totalFeesPaid;
+    if (availableBalance <= 0) {
+      return new Response(JSON.stringify({ error: "Saldo disponível insuficiente" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (amount + WITHDRAWAL_FEE > availableBalance) {
-      return new Response(JSON.stringify({ error: "Saldo insuficiente (valor + taxa de R$ 5,00)" }), {
+      return new Response(JSON.stringify({
+        error: `Saldo insuficiente. Disponível: R$ ${(availableBalance / 100).toFixed(2)} (saque + taxa de R$ 5,00 = R$ ${((amount + WITHDRAWAL_FEE) / 100).toFixed(2)})`,
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check for pending withdrawals to prevent double-spending
+    const { data: pendingWithdrawals } = await supabase
+      .from("withdrawals")
+      .select("amount")
+      .eq("user_id", user.id)
+      .in("status", ["pending", "processing"]);
+
+    const totalPending = (pendingWithdrawals || []).reduce((acc, w) => acc + w.amount + WITHDRAWAL_FEE, 0);
+
+    if (amount + WITHDRAWAL_FEE + totalPending > availableBalance) {
+      return new Response(JSON.stringify({
+        error: `Saldo insuficiente considerando saques pendentes (R$ ${(totalPending / 100).toFixed(2)} em processamento)`,
+      }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -238,6 +204,7 @@ serve(async (req) => {
       }).eq("id", withdrawal.id);
 
       // Record withdrawal + fee transactions
+      const totalDeducted = amount + WITHDRAWAL_FEE;
       try {
         await supabase.from("transactions").insert([
           {
@@ -247,18 +214,33 @@ serve(async (req) => {
             amount,
             balance_type: "available",
             reference_id: withdrawal.id,
+            release_date: new Date().toISOString(),
+            status: "completed",
           },
           {
             user_id: user.id,
             type: "debit",
             category: "fee",
-            amount: 500, // R$ 5.00
+            amount: WITHDRAWAL_FEE,
             balance_type: "available",
             reference_id: withdrawal.id,
+            release_date: new Date().toISOString(),
+            status: "completed",
           },
         ]);
       } catch (txErr) {
         console.error("Auto-withdraw transaction error:", txErr);
+      }
+
+      // ── Deduct from wallet ──
+      if (wallet) {
+        const newAvailable = Math.max(0, Number(wallet.balance_available) - totalDeducted);
+        const newTotal = Math.max(0, newAvailable); // balance_total will be recalculated
+        await supabase.from("wallets").update({
+          balance_available: newAvailable,
+          balance_total: newAvailable + (wallet.balance_pending || 0),
+        }).eq("id", wallet.id);
+        console.log(`Wallet deducted: -${totalDeducted} from available. New available: ${newAvailable}`);
       }
 
       // Notify producer (email + push)
