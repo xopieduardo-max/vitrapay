@@ -160,7 +160,6 @@ export default function AdminDashboard() {
   const [pendingWdOpen, setPendingWdOpen] = useState(false);
   const [totalPaidOpen, setTotalPaidOpen] = useState(false);
   const [checkoutsOpen, setCheckoutsOpen] = useState(false);
-  );
 
   // ── Data fetching ──
   const { data: allTransactions = [] } = useQuery({
