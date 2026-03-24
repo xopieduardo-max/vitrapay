@@ -167,7 +167,7 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("sales")
-        .select("id, amount, platform_fee, status, created_at, producer_id, product_id")
+        .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider")
         .eq("status", "completed")
         .order("created_at", { ascending: false })
         .limit(1000);
