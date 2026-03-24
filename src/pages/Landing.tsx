@@ -379,23 +379,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
-      {/* ─── Announcement Bar ─── */}
-      <div className="bg-primary/10 border-b border-primary/20">
-        <div className="container max-w-6xl mx-auto flex items-center justify-center gap-2 py-2.5 px-4 text-center">
-          <span className="text-xs sm:text-sm text-foreground">
-            Você fatura acima de <strong>R$ 100k/mês</strong>?
-          </span>
-          <span className="hidden sm:inline text-muted-foreground text-xs">•</span>
-          <a
-            href="https://wa.me/5500000000000"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Converse com nosso time para migrar <ArrowRight className="h-3 w-3" />
-          </a>
-        </div>
-      </div>
+      {/* Announcement Bar — desativado por enquanto */}
 
       {/* ─── Header ─── */}
       <header className="sticky top-0 z-50 py-3 px-2 sm:px-4">
