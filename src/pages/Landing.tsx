@@ -517,9 +517,9 @@ export default function Landing() {
             {/* Glow effect beneath */}
             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
 
-            {/* Floating Notifications — social proof below dashboard */}
+            {/* Floating Notification — single social proof */}
             <div className="mt-8 flex justify-center">
-              <div className="w-full max-w-xs sm:max-w-sm">
+              <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md">
                 <FloatingNotifications />
               </div>
             </div>
