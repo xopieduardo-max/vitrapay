@@ -300,15 +300,20 @@ Deno.serve(async (req) => {
       }
 
       // ── Record transactions (split) ──
+      // Card: release D+2 (pending balance)
       if (sale) {
         const producerNet = amount - platformFee - commissionAmount;
+        const releaseDate = new Date();
+        releaseDate.setDate(releaseDate.getDate() + 2); // D+2
+        const releaseDateStr = releaseDate.toISOString();
+
         const txns: any[] = [
           {
             user_id: product.producer_id,
             type: "credit",
             category: "sale",
             amount: producerNet,
-            balance_type: "available",
+            balance_type: "pending", // Card goes to pending (D+2)
             reference_id: sale.id,
           },
         ];
@@ -319,7 +324,7 @@ Deno.serve(async (req) => {
             type: "debit",
             category: "fee",
             amount: platformFee,
-            balance_type: "available",
+            balance_type: "pending",
             reference_id: sale.id,
           });
         }
@@ -330,13 +335,61 @@ Deno.serve(async (req) => {
             type: "credit",
             category: "commission",
             amount: commissionAmount,
-            balance_type: "available",
+            balance_type: "pending",
             reference_id: sale.id,
           });
         }
 
         await supabase.from("transactions").insert(txns)
           .catch((err: any) => console.error("Transaction insert error:", err));
+
+        // ── Update wallet: Card = balance_pending (D+2) ──
+        console.log(`Updating wallet for producer ${product.producer_id}: +${producerNet} pending (release: ${releaseDateStr})`);
+
+        const { data: existingWallet } = await supabase
+          .from("wallets")
+          .select("id, balance_pending, balance_total")
+          .eq("user_id", product.producer_id)
+          .maybeSingle();
+
+        if (existingWallet) {
+          await supabase.from("wallets").update({
+            balance_pending: Number(existingWallet.balance_pending) + producerNet,
+            balance_total: Number(existingWallet.balance_total) + producerNet,
+          }).eq("id", existingWallet.id);
+        } else {
+          await supabase.from("wallets").insert({
+            user_id: product.producer_id,
+            balance_available: 0,
+            balance_pending: producerNet,
+            balance_total: producerNet,
+          });
+        }
+
+        // Update affiliate wallet if applicable
+        if (affiliateId && commissionAmount > 0) {
+          const { data: affWallet } = await supabase
+            .from("wallets")
+            .select("id, balance_pending, balance_total")
+            .eq("user_id", affiliateId)
+            .maybeSingle();
+
+          if (affWallet) {
+            await supabase.from("wallets").update({
+              balance_pending: Number(affWallet.balance_pending) + commissionAmount,
+              balance_total: Number(affWallet.balance_total) + commissionAmount,
+            }).eq("id", affWallet.id);
+          } else {
+            await supabase.from("wallets").insert({
+              user_id: affiliateId,
+              balance_available: 0,
+              balance_pending: commissionAmount,
+              balance_total: commissionAmount,
+            });
+          }
+        }
+
+        console.log(`Sale processed: Card D+2, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDateStr}`);
       }
 
       // ✅ Grant product access

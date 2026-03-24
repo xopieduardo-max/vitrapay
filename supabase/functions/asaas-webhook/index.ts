@@ -492,14 +492,18 @@ Deno.serve(async (req) => {
     }
 
     // ── Record transactions (split) ──
+    // PIX: release immediately (D+0)
     const producerNet = pending.amount - pixPlatformFee - commissionAmount;
+    const netProfit = pixPlatformFee - FEE_PIX_ASAAS;
+    const releaseDate = new Date().toISOString(); // PIX = D+0
+
     const txns: any[] = [
       {
         user_id: product.producer_id,
         type: "credit",
         category: "sale",
         amount: producerNet,
-        balance_type: "available",
+        balance_type: "available", // PIX goes to available immediately
         reference_id: sale.id,
       },
     ];
@@ -529,6 +533,55 @@ Deno.serve(async (req) => {
     await supabase.from("transactions").insert(txns)
       .then(() => console.log("Transactions recorded:", txns.length))
       .catch((err: any) => console.error("Transaction insert error:", err));
+
+    // ── Update wallet: PIX = balance_available (D+0) ──
+    console.log(`Updating wallet for producer ${product.producer_id}: +${producerNet} available`);
+    
+    // Upsert wallet - create if not exists
+    const { data: existingWallet } = await supabase
+      .from("wallets")
+      .select("id, balance_available, balance_total")
+      .eq("user_id", product.producer_id)
+      .maybeSingle();
+
+    if (existingWallet) {
+      await supabase.from("wallets").update({
+        balance_available: Number(existingWallet.balance_available) + producerNet,
+        balance_total: Number(existingWallet.balance_total) + producerNet,
+      }).eq("id", existingWallet.id);
+    } else {
+      await supabase.from("wallets").insert({
+        user_id: product.producer_id,
+        balance_available: producerNet,
+        balance_pending: 0,
+        balance_total: producerNet,
+      });
+    }
+
+    // Update affiliate wallet if applicable
+    if (affiliateUserId && commissionAmount > 0) {
+      const { data: affWallet } = await supabase
+        .from("wallets")
+        .select("id, balance_available, balance_total")
+        .eq("user_id", affiliateUserId)
+        .maybeSingle();
+
+      if (affWallet) {
+        await supabase.from("wallets").update({
+          balance_available: Number(affWallet.balance_available) + commissionAmount,
+          balance_total: Number(affWallet.balance_total) + commissionAmount,
+        }).eq("id", affWallet.id);
+      } else {
+        await supabase.from("wallets").insert({
+          user_id: affiliateUserId,
+          balance_available: commissionAmount,
+          balance_pending: 0,
+          balance_total: commissionAmount,
+        });
+      }
+    }
+
+    console.log(`Sale processed: PIX D+0, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDate}`);
 
     // ✅ Grant product access
     await grantProductAccess(supabase, pending.product_id, pending.buyer_email, sale.id);
