@@ -1228,6 +1228,8 @@ export type Database = {
           created_at: string
           id: string
           reference_id: string | null
+          release_date: string | null
+          status: string
           type: string
           user_id: string
         }
@@ -1238,6 +1240,8 @@ export type Database = {
           created_at?: string
           id?: string
           reference_id?: string | null
+          release_date?: string | null
+          status?: string
           type: string
           user_id: string
         }
@@ -1248,6 +1252,8 @@ export type Database = {
           created_at?: string
           id?: string
           reference_id?: string | null
+          release_date?: string | null
+          status?: string
           type?: string
           user_id?: string
         }
