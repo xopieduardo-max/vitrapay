@@ -493,7 +493,7 @@ export default function Landing() {
 
           {/* Dashboard Preview — Full Width Perspective like BlackCatPay */}
           <motion.div
-            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px" }}
+            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px", rotateX: dashboardRotateX }}
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
@@ -501,10 +501,7 @@ export default function Landing() {
           >
             <div
               className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
-              style={{
-                transform: "rotateX(8deg) rotateY(0deg)",
-                transformOrigin: "center center",
-              }}
+              style={{ transformOrigin: "center bottom" }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
