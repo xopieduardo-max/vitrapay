@@ -1230,97 +1230,88 @@ export default function Checkout() {
             className="lg:col-span-2"
           >
             <div className="sticky top-6 space-y-4">
-              {/* Compra Segura header */}
-              <div className="rounded-t-xl overflow-hidden">
-                <div
-                  className="py-3 px-5 text-center font-bold text-sm tracking-wide rounded-t-xl"
-                  style={{ background: "var(--ck-accent)", color: "var(--ck-accent-fg)" }}
-                >
-                  <ShieldCheck className="h-4 w-4 inline-block mr-1.5 -mt-0.5" />
-                  Compra segura
+
+              {/* Summary card */}
+              <div className="rounded-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
+                {/* Product name + help */}
+                <div>
+                  <h4 className="font-bold text-base" style={{ color: "var(--ck-fg)" }}>{product.title}</h4>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>Precisa de ajuda?</p>
+                  {producer && (
+                    <p className="text-xs mt-0.5" style={{ color: "var(--ck-accent)" }}>
+                      Veja o contato do vendedor
+                    </p>
+                  )}
                 </div>
 
-                <div className="rounded-b-xl p-5 space-y-4" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)", borderTop: "none" }}>
-                  {/* Product name + help */}
-                  <div>
-                    <h4 className="font-bold text-base" style={{ color: "var(--ck-fg)" }}>{product.title}</h4>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>Precisa de ajuda?</p>
-                    {producer && (
-                      <p className="text-xs mt-0.5" style={{ color: "var(--ck-accent)" }}>
-                        Veja o contato do vendedor
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Order bumps in summary */}
-                  {Array.from(selectedBumps).map((bId) => {
-                    const b = orderBumps.find((ob) => ob.id === bId);
-                    if (!b) return null;
-                    const bp = b.bump_product?.price || 0;
-                    const dp = bp * (1 - (b.discount_percentage || 0) / 100);
-                    return (
-                      <div key={bId} className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
-                        <span className="truncate mr-2">{b.bump_product?.title || b.title}</span>
-                        <span className="shrink-0">+ R$ {(dp / 100).toFixed(2)}</span>
-                      </div>
-                    );
-                  })}
-
-                  {appliedCoupon && (
-                    <div className="flex justify-between text-xs" style={{ color: "var(--ck-accent)" }}>
-                      <span>Desconto</span>
-                      <span>
-                        -{appliedCoupon.discount_type === "percentage"
-                          ? `${appliedCoupon.discount_value}%`
-                          : `R$ ${(appliedCoupon.discount_value / 100).toFixed(2)}`}
-                      </span>
+                {/* Order bumps in summary */}
+                {Array.from(selectedBumps).map((bId) => {
+                  const b = orderBumps.find((ob) => ob.id === bId);
+                  if (!b) return null;
+                  const bp = b.bump_product?.price || 0;
+                  const dp = bp * (1 - (b.discount_percentage || 0) / 100);
+                  return (
+                    <div key={bId} className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
+                      <span className="truncate mr-2">{b.bump_product?.title || b.title}</span>
+                      <span className="shrink-0">+ R$ {(dp / 100).toFixed(2)}</span>
                     </div>
-                  )}
+                  );
+                })}
 
-                  <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
-
-                  {/* Total */}
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: "var(--ck-fg)" }}>Total</p>
-                    <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
-                      R$ {(total / 100).toFixed(2)}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
-                      ou R$ {(total / 100).toFixed(2)} à vista
-                    </p>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-xs" style={{ color: "var(--ck-accent)" }}>
+                    <span>Desconto</span>
+                    <span>
+                      -{appliedCoupon.discount_type === "percentage"
+                        ? `${appliedCoupon.discount_value}%`
+                        : `R$ ${(appliedCoupon.discount_value / 100).toFixed(2)}`}
+                    </span>
                   </div>
+                )}
 
-                  <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
+                <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
 
-                  {/* Logo + processing info */}
-                  <div className="text-center space-y-1.5">
-                    <img
-                      src="/logo-vitrapay-horizontal.png"
-                      alt="VitraPay"
-                      className="h-6 mx-auto"
-                    />
-                    <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
-                      VitraPay está processando este pagamento
-                      {producer && <><br />para o vendedor <strong>{producer}</strong></>}
-                    </p>
-                    <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
-                      Este site é protegido e seus dados estão seguros.
-                    </p>
-                    <p className="text-[0.6rem] mt-2" style={{ color: "var(--ck-ghost)" }}>
-                      Ao continuar, você concorda com os{" "}
-                      <a href="/purchase-terms" target="_blank" className="underline" style={{ color: "var(--ck-accent)" }}>
-                        Termos de Compra
-                      </a>
-                      {" "}e{" "}
-                      <a href="/privacy" target="_blank" className="underline" style={{ color: "var(--ck-accent)" }}>
-                        Política de Privacidade
-                      </a>
-                    </p>
-                  </div>
+                {/* Total */}
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: "var(--ck-fg)" }}>Total</p>
+                  <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
+                    R$ {(total / 100).toFixed(2)}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
+                    ou R$ {(total / 100).toFixed(2)} à vista
+                  </p>
+                </div>
+
+                <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
+
+                {/* Logo + processing info */}
+                <div className="text-center space-y-1.5">
+                  <img
+                    src="/logo-vitrapay-horizontal.png"
+                    alt="VitraPay"
+                    className="h-6 mx-auto"
+                  />
+                  <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
+                    VitraPay está processando este pagamento
+                    {producer && <><br />para o vendedor <strong>{producer}</strong></>}
+                  </p>
+                  <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
+                    Este site é protegido e seus dados estão seguros.
+                  </p>
+                  <p className="text-[0.6rem] mt-2" style={{ color: "var(--ck-ghost)" }}>
+                    Ao continuar, você concorda com os{" "}
+                    <a href="/purchase-terms" target="_blank" className="underline" style={{ color: "var(--ck-accent)" }}>
+                      Termos de Compra
+                    </a>
+                    {" "}e{" "}
+                    <a href="/privacy" target="_blank" className="underline" style={{ color: "var(--ck-accent)" }}>
+                      Política de Privacidade
+                    </a>
+                  </p>
                 </div>
               </div>
 
-              {/* Buy Button */}
+              {/* Buy Button - ABOVE "Compra segura" */}
               <Button
                 onClick={handlePurchase}
                 disabled={processing}
@@ -1339,6 +1330,15 @@ export default function Checkout() {
                   </>
                 )}
               </Button>
+
+              {/* Compra Segura - BELOW buy button */}
+              <div
+                className="py-3 px-5 text-center font-bold text-sm tracking-wide rounded-xl"
+                style={{ background: "var(--ck-accent)", color: "var(--ck-accent-fg)" }}
+              >
+                <ShieldCheck className="h-4 w-4 inline-block mr-1.5 -mt-0.5" />
+                Compra segura
+              </div>
 
               {/* Processing warning */}
               {processing && (
@@ -1411,6 +1411,7 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
