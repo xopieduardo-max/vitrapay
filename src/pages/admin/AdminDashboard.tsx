@@ -167,7 +167,7 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("sales")
-        .select("id, amount, platform_fee, status, created_at, producer_id, product_id")
+        .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider")
         .eq("status", "completed")
         .order("created_at", { ascending: false })
         .limit(1000);
@@ -385,6 +385,49 @@ export default function AdminDashboard() {
     if (txFilter !== "all") list = list.filter((t) => t.category === txFilter);
     return list.slice(0, 50);
   }, [transactions, txFilter]);
+
+  // ── Profit per sale (fee_platform - fee_asaas) ──
+  const profitPerSale = useMemo(() => {
+    return filteredSales.map((s) => {
+      const method = s.payment_provider || "pix";
+      const amount = s.amount;
+      const platformFee = s.platform_fee || 0;
+      let asaasCost = 0;
+
+      if (method === "pix") {
+        asaasCost = 199; // R$ 1.99
+      } else {
+        // Card D+2: 4.14% + R$ 0.49
+        asaasCost = Math.round(amount * 0.0414 + 49);
+      }
+
+      const netProfit = platformFee - asaasCost;
+
+      return {
+        id: s.id,
+        created_at: s.created_at,
+        amount,
+        platformFee,
+        asaasCost,
+        netProfit,
+        method,
+        producer_id: s.producer_id,
+        product_id: s.product_id,
+      };
+    });
+  }, [filteredSales]);
+
+  const totalPlatformProfit = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.netProfit, 0);
+  }, [profitPerSale]);
+
+  const totalAsaasCost = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.asaasCost, 0);
+  }, [profitPerSale]);
+
+  const totalPlatformFeePeriod = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.platformFee, 0);
+  }, [profitPerSale]);
 
   // ── Alerts ──
   const alerts = useMemo(() => {
@@ -706,6 +749,63 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Platform Profit Report */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-accent" />
+            <h2 className="text-sm font-semibold">Lucro Líquido por Transação</h2>
+          </div>
+          <div className="flex items-center gap-4 text-xs">
+            <span className="text-muted-foreground">Taxa cobrada: <strong className="text-foreground">{fmt(totalPlatformFeePeriod)}</strong></span>
+            <span className="text-muted-foreground">Custo gateway: <strong className="text-destructive">{fmt(totalAsaasCost)}</strong></span>
+            <span className="text-muted-foreground">Lucro líquido: <strong className={totalPlatformProfit >= 0 ? "text-accent" : "text-destructive"}>{fmt(totalPlatformProfit)}</strong></span>
+          </div>
+        </div>
+        {profitPerSale.length === 0 ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">Nenhuma venda no período.</div>
+        ) : (
+          <div className="max-h-[500px] overflow-y-auto">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-card border-b border-border">
+                <tr className="text-muted-foreground">
+                  <th className="text-left px-4 py-2 font-medium">Data</th>
+                  <th className="text-left px-4 py-2 font-medium">Produtor</th>
+                  <th className="text-left px-4 py-2 font-medium">Produto</th>
+                  <th className="text-left px-4 py-2 font-medium">Método</th>
+                  <th className="text-right px-4 py-2 font-medium">Valor Bruto</th>
+                  <th className="text-right px-4 py-2 font-medium">Taxa Cobrada</th>
+                  <th className="text-right px-4 py-2 font-medium">Custo Gateway</th>
+                  <th className="text-right px-4 py-2 font-medium">Lucro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {profitPerSale.map((s) => (
+                  <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                    <td className="px-4 py-2.5 text-muted-foreground">
+                      {new Date(s.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </td>
+                    <td className="px-4 py-2.5 truncate max-w-[120px]">{profileMap[s.producer_id || ""] || "—"}</td>
+                    <td className="px-4 py-2.5 truncate max-w-[150px]">{productMap[s.product_id || ""] || "—"}</td>
+                    <td className="px-4 py-2.5">
+                      <Badge variant="outline" className={`text-[0.6rem] ${s.method === "pix" ? "border-accent/30 text-accent" : "border-primary/30 text-primary"}`}>
+                        {s.method === "pix" ? "PIX" : "Cartão"}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-medium">{fmt(s.amount)}</td>
+                    <td className="px-4 py-2.5 text-right text-foreground">{fmt(s.platformFee)}</td>
+                    <td className="px-4 py-2.5 text-right text-destructive">{fmt(s.asaasCost)}</td>
+                    <td className={`px-4 py-2.5 text-right font-bold ${s.netProfit >= 0 ? "text-accent" : "text-destructive"}`}>
+                      {fmt(s.netProfit)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Two columns: Transactions + Withdrawals */}
