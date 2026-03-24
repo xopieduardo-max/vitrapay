@@ -162,7 +162,7 @@ export default function Checkout() {
     cardExpiry: "",
     cardCvv: "",
     cardHolder: "",
-    installments: "1",
+    installments: "12",
     cep: "",
   });
 
