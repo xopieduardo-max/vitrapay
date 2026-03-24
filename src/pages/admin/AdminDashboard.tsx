@@ -714,8 +714,11 @@ export default function AdminDashboard() {
               <span className="text-xs text-muted-foreground">{card.label}</span>
             </div>
             <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-            {(card as any).clickable && (
-              <p className="text-[0.6rem] text-primary/70 mt-1">Clique para sacar →</p>
+            {(card as any).desc && (
+              <p className="text-[0.55rem] text-muted-foreground/70 leading-tight">{(card as any).desc}</p>
+            )}
+            {(card as any).hint && (
+              <p className="text-[0.6rem] text-primary/70 mt-1">{(card as any).hint}</p>
             )}
           </motion.div>
         ))}
