@@ -1301,6 +1301,33 @@ export type Database = {
         }
         Relationships: []
       }
+      wallets: {
+        Row: {
+          balance_available: number
+          balance_pending: number
+          balance_total: number
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          balance_available?: number
+          balance_pending?: number
+          balance_total?: number
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          balance_available?: number
+          balance_pending?: number
+          balance_total?: number
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       withdrawals: {
         Row: {
           amount: number
