@@ -429,7 +429,39 @@ export default function AdminDashboard() {
     return profitPerSale.reduce((a, s) => a + s.platformFee, 0);
   }, [profitPerSale]);
 
-  // ── Alerts ──
+  // ── Daily profit chart data ──
+  const dailyProfitData = useMemo(() => {
+    const dayMs = 86400000;
+    const fromTime = dateRange.from.getTime();
+    const toTime = dateRange.to.getTime();
+    const days = Math.max(1, Math.ceil((toTime - fromTime) / dayMs));
+    const map: Record<string, { fee: number; cost: number; profit: number }> = {};
+
+    for (let i = 0; i < days && i < 90; i++) {
+      const key = new Date(fromTime + i * dayMs).toISOString().slice(0, 10);
+      map[key] = { fee: 0, cost: 0, profit: 0 };
+    }
+
+    profitPerSale.forEach((s) => {
+      const key = new Date(s.created_at).toISOString().slice(0, 10);
+      if (map[key]) {
+        map[key].fee += s.platformFee;
+        map[key].cost += s.asaasCost;
+        map[key].profit += s.netProfit;
+      }
+    });
+
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, v]) => ({
+        date,
+        label: new Date(date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+        taxa: v.fee / 100,
+        custo: v.cost / 100,
+        lucro: v.profit / 100,
+      }));
+  }, [profitPerSale, dateRange]);
+
   const alerts = useMemo(() => {
     const items: { message: string; type: "warning" | "info" }[] = [];
     const pending = withdrawals.filter((w) => w.status === "pending").length;
