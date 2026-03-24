@@ -508,6 +508,20 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Conversão do Checkout */}
+        <motion.div {...anim(0.24)} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Target className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Conversão do checkout</p>
+            <p className={`text-lg font-bold ${checkoutConversionColor}`}>{checkoutConversionRate}%</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[0.55rem] text-muted-foreground">{salesCount} de {totalCheckoutInitiations}</p>
+            <p className="text-[0.55rem] text-muted-foreground">visitantes</p>
+          </div>
+        </motion.div>
         {/* Vendas Pendentes */}
         {pendingCheckoutsCount > 0 && (
           <motion.div {...anim(0.28)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
