@@ -432,29 +432,28 @@ Deno.serve(async (req) => {
       if (aff) affiliateUserId = aff.user_id;
     }
 
-    // Calculate platform fee - read platform defaults from DB, then check producer overrides
-    let pixFeePercentage = 0;
-    let pixFeeFixed = 0;
+    // ── Fee calculation: PIX (fixed fees) ──
+    // Platform charges producer: R$ 2,49 (249 centavos)
+    // Asaas cost: R$ 1,99 (199 centavos)
+    // Net platform profit: R$ 0,50
+    const FEE_PIX_PLATFORM = 249; // R$ 2.49
+    const FEE_PIX_ASAAS = 199;    // R$ 1.99
 
-    // Read platform-level fees for pix
-    const { data: platformFees } = await supabase
-      .from("platform_fees").select("pix_percentage, pix_fixed").eq("id", 1).single();
-    if (platformFees) {
-      pixFeePercentage = Number(platformFees.pix_percentage) / 100;
-      pixFeeFixed = platformFees.pix_fixed;
-    }
-
-    // Producer custom overrides take priority
+    // Check producer custom overrides
     const { data: producerProfile } = await supabase
       .from("profiles")
       .select("custom_fee_percentage, custom_fee_fixed")
       .eq("user_id", product.producer_id)
       .single();
-    if (producerProfile) {
-      if (producerProfile.custom_fee_percentage != null) pixFeePercentage = producerProfile.custom_fee_percentage / 100;
-      if (producerProfile.custom_fee_fixed != null) pixFeeFixed = producerProfile.custom_fee_fixed;
+
+    let pixPlatformFee = FEE_PIX_PLATFORM;
+    if (producerProfile?.custom_fee_fixed != null) {
+      pixPlatformFee = producerProfile.custom_fee_fixed;
+    } else if (producerProfile?.custom_fee_percentage != null) {
+      pixPlatformFee = Math.round(pending.amount * producerProfile.custom_fee_percentage / 100);
     }
-    const pixPlatformFee = Math.round(pending.amount * pixFeePercentage + pixFeeFixed);
+
+    console.log(`PIX fees: platform=${pixPlatformFee}, asaas=${FEE_PIX_ASAAS}, profit=${pixPlatformFee - FEE_PIX_ASAAS}`);
 
     // Insert sale
     const { data: sale, error: saleErr } = await supabase
