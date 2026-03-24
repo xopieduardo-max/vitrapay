@@ -19,16 +19,6 @@ import {
   RefreshCcw,
   ShoppingCart,
   Wallet,
-  Calendar,
-  Flame,
-  HelpCircle,
-  Users,
-  ExternalLink,
-  Package,
-  BarChart3,
-  ArrowDownToLine,
-  TrendingUp,
-  Clock,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
