@@ -248,8 +248,9 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("pending_payments")
-        .select("amount")
-        .eq("status", "pending");
+        .select("id, amount, buyer_name, buyer_email, created_at, status")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
       return data || [];
     },
     refetchInterval: 30000,
