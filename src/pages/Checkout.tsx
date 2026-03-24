@@ -1059,8 +1059,10 @@ export default function Checkout() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Parcelas</Label>
+                    <Label htmlFor="installments-select" className="text-xs" style={{ color: "var(--ck-label)" }}>Parcelas</Label>
                     <select
+                      id="installments-select"
+                      aria-label="Selecione o número de parcelas"
                       value={form.installments}
                       onChange={(e) => updateForm("installments", e.target.value)}
                       className="mt-1 flex h-11 w-full rounded-md px-3 py-2 text-sm border-0"
