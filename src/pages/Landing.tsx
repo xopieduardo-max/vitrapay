@@ -451,18 +451,23 @@ export default function Landing() {
               Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
             </p>
 
-            {/* ─── Dual CTAs ─── */}
+            {/* ─── Dual CTAs — BlackCatPay Style ─── */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="relative h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shimmer-gold animate-pulse-glow-primary" asChild>
+              <Button size="lg" className="relative h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20" asChild>
                 <Link to="/auth">
-                  Criar minha conta <ArrowRight className="h-4 w-4" />
+                  Criar minha conta
+                  <div className="h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold gap-2 border-border/50 hover:border-primary/30 transition-all duration-200" asChild>
-                <a href="https://wa.me/5500000000000" target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-4 w-4" />
-                  Falar com especialista
-                </a>
+              <Button size="lg" variant="outline" className="h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200" asChild>
+                <Link to="/auth">
+                  Fazer login
+                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </Link>
               </Button>
             </div>
 
