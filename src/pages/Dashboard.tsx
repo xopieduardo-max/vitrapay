@@ -670,7 +670,16 @@ export default function Dashboard() {
             </p>
           </motion.div>
 
-          <motion.div {...anim(0.31)} className="rounded-xl border border-border bg-card p-5">
+          <motion.div {...anim(0.3)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Conversão do checkout • {periodLabels[period]}</p>
+            <p className={`text-2xl font-bold mt-1 ${checkoutConversionColor}`}>
+              {checkoutConversionRate}%
+            </p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <Target className="h-3 w-3" /> {salesCount} de {totalCheckoutInitiations} visitantes
+            </p>
+          </motion.div>
+
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Jornada de conquistas</p>
               <button onClick={() => navigate("/sales")} className="text-[0.6rem] text-primary hover:underline">
