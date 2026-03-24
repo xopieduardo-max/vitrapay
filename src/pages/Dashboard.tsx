@@ -651,32 +651,8 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Second Row: Faturamento + Conversão + Reembolso + Conquistas */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <motion.div {...anim(0.22)} className="rounded-xl border-2 border-primary/40 bg-card p-5 lg:col-span-2">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
-                <Zap className="h-5 w-5 text-primary" strokeWidth={2} />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-primary/80 font-medium">Faturamento • {periodLabels[period]}</p>
-                <p className="text-xl font-bold text-primary tracking-tight">
-                  {fmtShort(totalRevenue)} <span className="text-sm font-normal text-muted-foreground">/ {fmtShort(REVENUE_GOAL)}</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 mt-3">
-              <div className="flex-1 h-2 rounded-full bg-primary/15 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${revenueProgress}%` }}
-                  transition={{ duration: 1.2, ease: "easeOut" }}
-                  className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
-                />
-              </div>
-              <span className="text-xs font-bold text-primary/70">{revenueProgress.toFixed(1)}%</span>
-            </div>
-          </motion.div>
+        {/* Second Row: Conversão + Reembolso + Conquistas */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
 
           <motion.div {...anim(0.28)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground">Taxa de reembolso • {periodLabels[period]}</p>
