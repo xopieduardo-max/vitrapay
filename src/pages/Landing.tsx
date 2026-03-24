@@ -504,11 +504,6 @@ export default function Landing() {
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
             className="mt-16 md:mt-24 max-w-6xl mx-auto relative"
           >
-            {/* Floating Notifications — social proof */}
-            <div className="hidden lg:block absolute -left-[280px] top-8 w-[260px] z-10">
-              <FloatingNotifications />
-            </div>
-
             <div
               className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
               style={{
@@ -529,6 +524,13 @@ export default function Landing() {
             </div>
             {/* Glow effect beneath */}
             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
+
+            {/* Floating Notifications — social proof below dashboard */}
+            <div className="mt-8 flex justify-center">
+              <div className="w-full max-w-xs sm:max-w-sm">
+                <FloatingNotifications />
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
