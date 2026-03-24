@@ -386,6 +386,49 @@ export default function AdminDashboard() {
     return list.slice(0, 50);
   }, [transactions, txFilter]);
 
+  // ── Profit per sale (fee_platform - fee_asaas) ──
+  const profitPerSale = useMemo(() => {
+    return filteredSales.map((s) => {
+      const method = s.payment_provider || "pix";
+      const amount = s.amount;
+      const platformFee = s.platform_fee || 0;
+      let asaasCost = 0;
+
+      if (method === "pix") {
+        asaasCost = 199; // R$ 1.99
+      } else {
+        // Card D+2: 4.14% + R$ 0.49
+        asaasCost = Math.round(amount * 0.0414 + 49);
+      }
+
+      const netProfit = platformFee - asaasCost;
+
+      return {
+        id: s.id,
+        created_at: s.created_at,
+        amount,
+        platformFee,
+        asaasCost,
+        netProfit,
+        method,
+        producer_id: s.producer_id,
+        product_id: s.product_id,
+      };
+    });
+  }, [filteredSales]);
+
+  const totalPlatformProfit = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.netProfit, 0);
+  }, [profitPerSale]);
+
+  const totalAsaasCost = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.asaasCost, 0);
+  }, [profitPerSale]);
+
+  const totalPlatformFeePeriod = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.platformFee, 0);
+  }, [profitPerSale]);
+
   // ── Alerts ──
   const alerts = useMemo(() => {
     const items: { message: string; type: "warning" | "info" }[] = [];
