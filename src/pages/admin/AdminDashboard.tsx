@@ -155,6 +155,13 @@ export default function AdminDashboard() {
     [period, customDateFrom, customDateTo, customTimeFrom, customTimeTo]
   );
 
+  // ── Dialog states ──
+  const [adminHistoryOpen, setAdminHistoryOpen] = useState(false);
+  const [pendingWdOpen, setPendingWdOpen] = useState(false);
+  const [totalPaidOpen, setTotalPaidOpen] = useState(false);
+  const [checkoutsOpen, setCheckoutsOpen] = useState(false);
+  );
+
   // ── Data fetching ──
   const { data: allTransactions = [] } = useQuery({
     queryKey: ["admin-all-transactions"],
