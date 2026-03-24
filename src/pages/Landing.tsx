@@ -50,43 +50,49 @@ const methodLabels: Record<PayMethod, string> = {
 };
 
 function FloatingNotifications() {
-  const [notif, setNotif] = useState(generateNotification());
+  const [visibleNotifs, setVisibleNotifs] = useState<ReturnType<typeof generateNotification>[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setNotif(generateNotification());
-    }, 4000);
+      setVisibleNotifs((prev) => {
+        const next = [...prev, generateNotification()];
+        return next.length > 4 ? next.slice(1) : next;
+      });
+    }, 3500);
+    setVisibleNotifs([generateNotification()]);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="w-full">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`${notif.name}-${notif.amount}-${notif.product}`}
-          initial={{ opacity: 0, y: 20, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.9 }}
-          transition={{ type: "spring", damping: 20, stiffness: 300 }}
-          className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
-        >
-          <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
-            <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
-          </div>
-          <div className="min-w-0 space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
+    <div className="flex flex-col gap-3 w-full">
+      <AnimatePresence mode="popLayout">
+        {visibleNotifs.map((notif, i) => (
+          <motion.div
+            key={`${notif.name}-${notif.amount}-${i}`}
+            initial={{ opacity: 0, x: -60, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -40, scale: 0.9 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
+          >
+            <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
+              <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
             </div>
-            <p className="text-xs text-muted-foreground">VitraPay</p>
-            <p className="text-xs text-muted-foreground">
-              Pagamento via {methodLabels[notif.method]}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
-            </p>
-          </div>
-          <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
-        </motion.div>
+            <div className="min-w-0 space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
+              </div>
+              <p className="text-xs text-muted-foreground">VitraPay</p>
+              <p className="text-xs text-muted-foreground">
+                Pagamento via {methodLabels[notif.method]}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
+              </p>
+            </div>
+            <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
+          </motion.div>
+        ))}
       </AnimatePresence>
     </div>
   );
