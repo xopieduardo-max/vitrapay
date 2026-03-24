@@ -24,41 +24,21 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    target: 'es2020',
-    cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // Core React - always needed
-          if (id.includes('react-dom') || (id.includes('/react/') && !id.includes('react-router'))) {
-            return 'vendor-react';
-          }
-          if (id.includes('react-router-dom')) {
-            return 'vendor-router';
-          }
-          // Supabase - needed for checkout
-          if (id.includes('@supabase/')) {
-            return 'vendor-supabase';
-          }
-          // TanStack Query
-          if (id.includes('@tanstack/react-query')) {
-            return 'vendor-query';
-          }
-          // Framer Motion - NOT needed for checkout, separate chunk
-          if (id.includes('framer-motion')) {
-            return 'vendor-motion';
-          }
-          // Radix UI - split into checkout-needed and rest
-          if (id.includes('@radix-ui/react-checkbox') || id.includes('@radix-ui/react-label') || id.includes('@radix-ui/react-separator')) {
-            return 'vendor-ui-checkout';
-          }
-          if (id.includes('@radix-ui/')) {
-            return 'vendor-ui';
-          }
-          // Recharts - only for dashboard
-          if (id.includes('recharts') || id.includes('d3-')) {
-            return 'vendor-charts';
-          }
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-query": ["@tanstack/react-query"],
+          "vendor-motion": ["framer-motion"],
+          "vendor-ui": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-tooltip",
+          ],
+          "vendor-supabase": ["@supabase/supabase-js"],
         },
       },
     },
