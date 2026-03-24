@@ -370,6 +370,7 @@ export default function Landing() {
   });
   const dashboardY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const dashboardScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+  const dashboardRotateX = useTransform(scrollYProgress, [0, 0.6], [12, 0]);
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
