@@ -104,7 +104,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodKey>("30d");
   const [showValues, setShowValues] = useState(true);
-  const [showValues, setShowValues] = useState(true);
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [showCustomPicker, setShowCustomPicker] = useState(false);
