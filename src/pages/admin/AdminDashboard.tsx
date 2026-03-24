@@ -3,6 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import AdminProfitWithdrawDialog from "@/components/admin/AdminProfitWithdrawDialog";
+import {
+  AdminWithdrawHistoryDialog,
+  PendingWithdrawalsDetailDialog,
+  TotalPaidOutDetailDialog,
+  PendingCheckoutsDetailDialog,
+} from "@/components/admin/AdminCardDetailDialogs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,6 +155,12 @@ export default function AdminDashboard() {
     [period, customDateFrom, customDateTo, customTimeFrom, customTimeTo]
   );
 
+  // ── Dialog states ──
+  const [adminHistoryOpen, setAdminHistoryOpen] = useState(false);
+  const [pendingWdOpen, setPendingWdOpen] = useState(false);
+  const [totalPaidOpen, setTotalPaidOpen] = useState(false);
+  const [checkoutsOpen, setCheckoutsOpen] = useState(false);
+
   // ── Data fetching ──
   const { data: allTransactions = [] } = useQuery({
     queryKey: ["admin-all-transactions"],
@@ -236,8 +248,9 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("pending_payments")
-        .select("amount")
-        .eq("status", "pending");
+        .select("id, amount, buyer_name, buyer_email, created_at, status")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
       return data || [];
     },
     refetchInterval: 30000,
@@ -516,23 +529,63 @@ export default function AdminDashboard() {
 
   // ── KPI Cards ──
   const cards = [
-    { label: "Faturamento (período)", value: fmt(periodStats.revenue), icon: DollarSign, color: "text-primary" },
-    { label: "Taxa plataforma (período)", value: fmt(periodStats.fees), icon: TrendingUp, color: "text-accent" },
-    { label: "Vendas (período)", value: String(periodStats.count), icon: ShoppingBag, color: "text-primary" },
+    { label: "Faturamento (período)", desc: "Total bruto faturado no período selecionado", value: fmt(periodStats.revenue), icon: DollarSign, color: "text-primary" },
+    { label: "Taxa plataforma (período)", desc: "Total de taxas cobradas dos produtores no período", value: fmt(periodStats.fees), icon: TrendingUp, color: "text-accent" },
+    { label: "Vendas (período)", desc: "Quantidade de vendas confirmadas no período", value: String(periodStats.count), icon: ShoppingBag, color: "text-primary" },
     {
-      label: "Lucro líquido (total)",
+      label: "Disponível para saque",
+      desc: "Lucro líquido acumulado menos saques já realizados",
       value: fmt(netProfit),
       icon: Banknote,
       color: "text-emerald-500",
       clickable: true,
       onClick: () => setProfitDialogOpen(true),
+      hint: "Clique para sacar →",
     },
-    { label: "Usuários", value: String(stats?.totalUsers ?? 0), icon: Users, color: "text-muted-foreground" },
-    { label: "Saques pendentes", value: fmt(stats?.pendingWithdrawals ?? 0), icon: Clock, color: "text-warning" },
-    { label: "Total pago", value: fmt(stats?.totalPaidOut ?? 0), icon: Wallet, color: "text-accent" },
-    { label: "Checkouts pendentes", value: `${adminPendingCheckoutsCount} • ${fmt(adminPendingCheckoutsValue)}`, icon: ShoppingBag, color: "text-warning" },
+    {
+      label: "Total sacado (admin)",
+      desc: "Total já sacado pelo administrador da plataforma",
+      value: fmt(adminWithdrawals),
+      icon: ArrowDownLeft,
+      color: "text-primary",
+      clickable: true,
+      onClick: () => setAdminHistoryOpen(true),
+      hint: "Ver histórico →",
+    },
+    {
+      label: "Saques pendentes (produtores)",
+      desc: "Saques solicitados por produtores aguardando aprovação",
+      value: fmt(stats?.pendingWithdrawals ?? 0),
+      icon: Clock,
+      color: "text-warning",
+      clickable: true,
+      onClick: () => setPendingWdOpen(true),
+      hint: "Ver detalhes →",
+    },
+    {
+      label: "Total pago (produtores)",
+      desc: "Total de saques pagos aos produtores",
+      value: fmt(stats?.totalPaidOut ?? 0),
+      icon: Wallet,
+      color: "text-accent",
+      clickable: true,
+      onClick: () => setTotalPaidOpen(true),
+      hint: "Ver histórico →",
+    },
+    {
+      label: "Checkouts pendentes",
+      desc: "Pagamentos iniciados ainda não confirmados (expiram pelo gateway)",
+      value: `${adminPendingCheckoutsCount} • ${fmt(adminPendingCheckoutsValue)}`,
+      icon: ShoppingBag,
+      color: "text-warning",
+      clickable: true,
+      onClick: () => setCheckoutsOpen(true),
+      hint: "Ver detalhes →",
+    },
+    { label: "Usuários", desc: "Total de usuários cadastrados", value: String(stats?.totalUsers ?? 0), icon: Users, color: "text-muted-foreground" },
     {
       label: "Margem de lucro média",
+      desc: "Percentual médio de lucro sobre taxas cobradas no período",
       value: totalPlatformFeePeriod > 0
         ? `${((totalPlatformProfit / totalPlatformFeePeriod) * 100).toFixed(1)}%`
         : "0%",
@@ -661,8 +714,11 @@ export default function AdminDashboard() {
               <span className="text-xs text-muted-foreground">{card.label}</span>
             </div>
             <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-            {(card as any).clickable && (
-              <p className="text-[0.6rem] text-primary/70 mt-1">Clique para sacar →</p>
+            {(card as any).desc && (
+              <p className="text-[0.55rem] text-muted-foreground/70 leading-tight">{(card as any).desc}</p>
+            )}
+            {(card as any).hint && (
+              <p className="text-[0.6rem] text-primary/70 mt-1">{(card as any).hint}</p>
             )}
           </motion.div>
         ))}
@@ -981,6 +1037,10 @@ export default function AdminDashboard() {
       </div>
 
       <AdminProfitWithdrawDialog open={profitDialogOpen} onOpenChange={setProfitDialogOpen} availableProfit={netProfit} />
+      <AdminWithdrawHistoryDialog open={adminHistoryOpen} onOpenChange={setAdminHistoryOpen} transactions={allTransactions} totalWithdrawn={adminWithdrawals} />
+      <PendingWithdrawalsDetailDialog open={pendingWdOpen} onOpenChange={setPendingWdOpen} withdrawals={withdrawals} profileMap={profileMap} />
+      <TotalPaidOutDetailDialog open={totalPaidOpen} onOpenChange={setTotalPaidOpen} withdrawals={withdrawals} profileMap={profileMap} totalPaidOut={stats?.totalPaidOut ?? 0} />
+      <PendingCheckoutsDetailDialog open={checkoutsOpen} onOpenChange={setCheckoutsOpen} checkouts={adminPendingCheckouts} />
     </div>
   );
 }
