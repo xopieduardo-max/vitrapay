@@ -379,23 +379,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
-      {/* ─── Announcement Bar ─── */}
-      <div className="bg-primary/10 border-b border-primary/20">
-        <div className="container max-w-6xl mx-auto flex items-center justify-center gap-2 py-2.5 px-4 text-center">
-          <span className="text-xs sm:text-sm text-foreground">
-            Você fatura acima de <strong>R$ 100k/mês</strong>?
-          </span>
-          <span className="hidden sm:inline text-muted-foreground text-xs">•</span>
-          <a
-            href="https://wa.me/5500000000000"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Converse com nosso time para migrar <ArrowRight className="h-3 w-3" />
-          </a>
-        </div>
-      </div>
+      {/* Announcement Bar — desativado por enquanto */}
 
       {/* ─── Header ─── */}
       <header className="sticky top-0 z-50 py-3 px-2 sm:px-4">
@@ -416,11 +400,19 @@ export default function Landing() {
             </div>
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               <CountrySelector />
-              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex font-semibold tracking-wide text-xs uppercase">
-                <Link to="/auth">Log in</Link>
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex font-semibold tracking-wide text-xs uppercase gap-2">
+                <Link to="/auth">
+                  Fazer login
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </Button>
-              <Button size="sm" asChild className="font-semibold tracking-wide text-[10px] sm:text-xs uppercase rounded-full px-3 sm:px-5">
-                <Link to="/auth"><span className="hidden sm:inline">Começar agora</span><span className="sm:hidden">Começar</span></Link>
+              <Button size="sm" asChild className="font-semibold tracking-wide text-[10px] sm:text-xs uppercase rounded-full px-3 sm:px-5 gap-2">
+                <Link to="/auth">
+                  <span className="hidden sm:inline">Criar conta</span><span className="sm:hidden">Começar</span>
+                  <div className="h-5 w-5 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                    <ArrowRight className="h-3 w-3" />
+                  </div>
+                </Link>
               </Button>
             </div>
           </nav>
@@ -467,18 +459,23 @@ export default function Landing() {
               Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
             </p>
 
-            {/* ─── Dual CTAs ─── */}
+            {/* ─── Dual CTAs — BlackCatPay Style ─── */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="relative h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shimmer-gold animate-pulse-glow-primary" asChild>
+              <Button size="lg" className="relative h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20" asChild>
                 <Link to="/auth">
-                  Criar minha conta <ArrowRight className="h-4 w-4" />
+                  Criar minha conta
+                  <div className="h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold gap-2 border-border/50 hover:border-primary/30 transition-all duration-200" asChild>
-                <a href="https://wa.me/5500000000000" target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-4 w-4" />
-                  Falar com especialista
-                </a>
+              <Button size="lg" variant="outline" className="h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200" asChild>
+                <Link to="/auth">
+                  Fazer login
+                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </Link>
               </Button>
             </div>
 
@@ -499,33 +496,35 @@ export default function Landing() {
             </motion.div>
           </motion.div>
 
-          {/* Dashboard Preview + Floating Notifications */}
-          <div className="mt-16 md:mt-20 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
-            <div className="order-2 lg:order-1 max-h-[500px] overflow-hidden">
-              <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
-                <Bell className="h-3 w-3 text-primary" />
-                Notificações em tempo real
-              </p>
-              <FloatingNotifications />
-            </div>
-            <motion.div
-              style={{ y: dashboardY, scale: dashboardScale }}
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="order-1 lg:order-2 relative rounded-2xl border border-border/50 overflow-hidden shadow-2xl shadow-primary/5 group"
+          {/* Dashboard Preview — Full Width Perspective like BlackCatPay */}
+          <motion.div
+            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px" }}
+            initial={{ opacity: 0, y: 80 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
+            className="mt-16 md:mt-24 max-w-6xl mx-auto relative"
+          >
+            <div
+              className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
+              style={{
+                transform: "rotateX(8deg) rotateY(0deg)",
+                transformOrigin: "center center",
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
                 src={dashboardPreview}
                 alt="Dashboard VitraPay com métricas de vendas em tempo real"
                 className="w-full"
-                loading="lazy"
+                loading="eager"
                 decoding="async"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
-            </motion.div>
-          </div>
+              {/* Fade overlay at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            </div>
+            {/* Glow effect beneath */}
+            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
+          </motion.div>
         </div>
       </section>
 
@@ -1031,8 +1030,7 @@ export default function Landing() {
         </div>
       </footer>
 
-      {/* ─── Floating WhatsApp ─── */}
-      <FloatingWhatsApp />
+      {/* WhatsApp flutuante — desativado por enquanto */}
     </div>
   );
 }
