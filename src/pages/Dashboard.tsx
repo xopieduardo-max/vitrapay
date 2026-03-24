@@ -4,7 +4,6 @@ import {
   EyeOff,
   Zap,
   CreditCard,
-  Landmark,
   QrCode,
   ChevronRight,
   Calendar,
@@ -17,6 +16,9 @@ import {
   ArrowDownToLine,
   TrendingUp,
   Clock,
+  RefreshCcw,
+  ShoppingCart,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -40,7 +42,6 @@ const REVENUE_GOAL = 1000000;
 const paymentMethods = [
   { name: "Cartão de crédito", key: "card", icon: CreditCard },
   { name: "Pix", key: "pix", icon: QrCode },
-  { name: "Boleto", key: "boleto", icon: Landmark },
 ];
 
 const anim = (delay: number) => ({
@@ -154,7 +155,28 @@ export default function Dashboard() {
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = salesData.filter((s) => s.status === "refunded");
   const refundRate = salesData.length > 0 ? ((refundedSales.length / salesData.length) * 100).toFixed(1) : "0";
+  const refundAmount = refundedSales.reduce((acc, s) => acc + s.amount, 0);
   const abandonedSales = salesData.filter((s) => s.status === "abandoned").length;
+
+  // Today's revenue
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayRevenue = completedSales
+    .filter((s) => new Date(s.created_at) >= todayStart)
+    .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+  const todaySalesCount = completedSales.filter((s) => new Date(s.created_at) >= todayStart).length;
+
+  // Last sale
+  const lastSale = completedSales.length > 0 ? completedSales.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] : null;
+  const lastSaleTime = lastSale ? new Date(lastSale.created_at) : null;
+  const lastSaleTimeAgo = lastSaleTime
+    ? (() => {
+        const diff = Math.floor((now.getTime() - lastSaleTime.getTime()) / 60000);
+        if (diff < 1) return "agora";
+        if (diff < 60) return `${diff}min atrás`;
+        if (diff < 1440) return `${Math.floor(diff / 60)}h atrás`;
+        return `${Math.floor(diff / 1440)}d atrás`;
+      })()
+    : null;
 
   const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
 
@@ -332,9 +354,41 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Extra metrics mobile */}
+        <div className="grid grid-cols-2 gap-3">
+          <motion.div {...anim(0.2)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Hoje</p>
+            <p className="text-lg font-bold text-primary">{fmt(todayRevenue)}</p>
+            <p className="text-[0.55rem] text-muted-foreground">{todaySalesCount} venda(s)</p>
+          </motion.div>
+          <motion.div {...anim(0.22)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Total sacado</p>
+            <p className="text-lg font-bold">{fmt(totalWithdrawn)}</p>
+            <p className="text-[0.55rem] text-muted-foreground">Taxa: {fmt(totalFeesPaid)}</p>
+          </motion.div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <motion.div {...anim(0.24)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Reembolsos</p>
+            <p className={`text-lg font-bold ${parseFloat(refundRate) > 5 ? "text-destructive" : ""}`}>{refundRate}%</p>
+            <p className="text-[0.55rem] text-muted-foreground">{refundedSales.length} reembolso(s)</p>
+          </motion.div>
+          <motion.div {...anim(0.26)} className="rounded-xl border border-border bg-card p-4">
+            <p className="text-[0.65rem] text-muted-foreground font-medium">Última venda</p>
+            {lastSale ? (
+              <>
+                <p className="text-lg font-bold">{fmt(lastSale.amount - (lastSale.platform_fee || 0))}</p>
+                <p className="text-[0.55rem] text-muted-foreground">{lastSaleTimeAgo}</p>
+              </>
+            ) : (
+              <p className="text-lg font-bold text-muted-foreground">—</p>
+            )}
+          </motion.div>
+        </div>
+
         {/* Vendas Pendentes */}
         {pendingCheckoutsCount > 0 && (
-          <motion.div {...anim(0.2)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
+          <motion.div {...anim(0.28)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
               <Clock className="h-5 w-5 text-warning" />
             </div>
@@ -410,7 +464,7 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground">Saldo disponível</p>
             <p className="text-2xl font-bold mt-1">{fmt(availableBalance)}</p>
             <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
-              <Landmark className="h-3 w-3" /> Pendente: {fmt(pendingSales + pendingWithdrawals)}
+              <Clock className="h-3 w-3" /> Pendente: {fmt(pendingSales + pendingWithdrawals)}
             </p>
           </motion.div>
 
@@ -436,6 +490,52 @@ export default function Dashboard() {
             <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
               <Flame className="h-3 w-3" /> Próximo nível: {nextLevel}
             </p>
+          </motion.div>
+        </div>
+
+        {/* Second Row: Today + Total Withdrawn + Last Sale + Refund */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div {...anim(0.22)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Faturamento hoje</p>
+            <p className="text-2xl font-bold mt-1 text-primary">{fmt(todayRevenue)}</p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <ShoppingCart className="h-3 w-3" /> {todaySalesCount} venda(s) hoje
+            </p>
+          </motion.div>
+
+          <motion.div {...anim(0.25)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Total sacado</p>
+            <p className="text-2xl font-bold mt-1">{fmt(totalWithdrawn)}</p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <Wallet className="h-3 w-3" /> Taxa paga: {fmt(totalFeesPaid)}
+            </p>
+          </motion.div>
+
+          <motion.div {...anim(0.28)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Taxa de reembolso</p>
+            <p className={`text-2xl font-bold mt-1 ${parseFloat(refundRate) > 5 ? "text-destructive" : "text-primary"}`}>
+              {refundRate}%
+            </p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <RefreshCcw className="h-3 w-3" /> {refundedSales.length} reembolso(s) • {fmt(refundAmount)}
+            </p>
+          </motion.div>
+
+          <motion.div {...anim(0.31)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Última venda</p>
+            {lastSale ? (
+              <>
+                <p className="text-2xl font-bold mt-1">{fmt(lastSale.amount - (lastSale.platform_fee || 0))}</p>
+                <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> {lastSaleTimeAgo} • via {lastSale.payment_provider === "pix" ? "PIX" : "Cartão"}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-bold mt-1 text-muted-foreground">—</p>
+                <p className="text-[0.65rem] text-muted-foreground mt-1.5">Nenhuma venda ainda</p>
+              </>
+            )}
           </motion.div>
         </div>
 
