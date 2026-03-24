@@ -503,8 +503,10 @@ Deno.serve(async (req) => {
         type: "credit",
         category: "sale",
         amount: producerNet,
-        balance_type: "available", // PIX goes to available immediately
+        balance_type: "available",
         reference_id: sale.id,
+        release_date: releaseDate,
+        status: "completed", // PIX = immediately completed
       },
     ];
 
@@ -516,6 +518,8 @@ Deno.serve(async (req) => {
         amount: pixPlatformFee,
         balance_type: "available",
         reference_id: sale.id,
+        release_date: releaseDate,
+        status: "completed",
       });
     }
 
@@ -527,6 +531,8 @@ Deno.serve(async (req) => {
         amount: commissionAmount,
         balance_type: "available",
         reference_id: sale.id,
+        release_date: releaseDate,
+        status: "completed",
       });
     }
 
