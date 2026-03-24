@@ -220,17 +220,20 @@ Deno.serve(async (req) => {
     const asaasPaymentId = payment.id;
 
     // ── Handle REFUND / CHARGEBACK events ──
-    if (
-      event === "PAYMENT_REFUNDED" ||
+    const isChargeback =
       event === "PAYMENT_CHARGEBACK_REQUESTED" ||
       event === "PAYMENT_CHARGEBACK_DISPUTE" ||
-      event === "PAYMENT_CHARGEBACK_CREATED"
-    ) {
-      console.log("Processing refund/chargeback:", event, asaasPaymentId);
+      event === "PAYMENT_CHARGEBACK_CREATED";
+    const isRefund = event === "PAYMENT_REFUNDED";
+
+    if (isRefund || isChargeback) {
+      const saleStatus = isChargeback ? "chargeback" : "refunded";
+      const txnCategory = isChargeback ? "chargeback" : "refund";
+      console.log(`Processing ${txnCategory}:`, event, asaasPaymentId);
 
       await supabase
         .from("pending_payments")
-        .update({ status: "refunded" })
+        .update({ status: saleStatus })
         .eq("asaas_payment_id", asaasPaymentId);
 
       const { data: sale } = await supabase
@@ -240,7 +243,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (sale) {
-        await supabase.from("sales").update({ status: "refunded" }).eq("id", sale.id);
+        await supabase.from("sales").update({ status: saleStatus }).eq("id", sale.id);
 
         // Revoke product access
         await supabase
@@ -253,11 +256,11 @@ Deno.serve(async (req) => {
           .update({ status: "cancelled" })
           .eq("sale_id", sale.id);
 
-        // Record refund transaction
+        // Record refund/chargeback transaction
         const refundTxns: any[] = [{
           user_id: sale.producer_id,
           type: "debit",
-          category: "refund",
+          category: txnCategory,
           amount: sale.amount,
           balance_type: "available",
           reference_id: sale.id,
@@ -274,7 +277,7 @@ Deno.serve(async (req) => {
             refundTxns.push({
               user_id: c.affiliate_id,
               type: "debit",
-              category: "refund",
+              category: txnCategory,
               amount: c.amount,
               balance_type: "available",
               reference_id: sale.id,
@@ -283,12 +286,12 @@ Deno.serve(async (req) => {
         }
 
         await supabase.from("transactions").insert(refundTxns)
-          .catch((err: any) => console.error("Refund transaction error:", err));
+          .catch((err: any) => console.error(`${txnCategory} transaction error:`, err));
 
-        console.log("Sale refunded:", sale.id);
+        console.log(`Sale ${saleStatus}:`, sale.id);
       }
 
-      return new Response(JSON.stringify({ status: "refund_processed" }), {
+      return new Response(JSON.stringify({ status: `${txnCategory}_processed` }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

@@ -234,7 +234,9 @@ export default function Dashboard() {
   const availableBalance = totalAvailableSales - totalWithdrawn - pendingWithdrawals - totalFeesPaid;
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = filteredSales.filter((s) => s.status === "refunded");
+  const chargebackSales = filteredSales.filter((s) => s.status === "chargeback");
   const refundRate = filteredSales.length > 0 ? ((refundedSales.length / filteredSales.length) * 100).toFixed(1) : "0";
+  const chargebackRate = filteredSales.length > 0 ? ((chargebackSales.length / filteredSales.length) * 100).toFixed(1) : "0";
   const refundAmount = refundedSales.reduce((acc, s) => acc + s.amount, 0);
   const abandonedSales = filteredSales.filter((s) => s.status === "abandoned").length;
 
@@ -271,7 +273,7 @@ export default function Dashboard() {
   }, {});
 
   // Health score
-  const healthScore = Math.max(0, 10 - Math.round(parseFloat(refundRate) * 0.5) - abandonedSales * 0.1);
+  const healthScore = Math.max(0, 10 - Math.round(parseFloat(refundRate) * 0.5) - Math.round(parseFloat(chargebackRate) * 1.5) - abandonedSales * 0.1);
   const healthColor = healthScore >= 8 ? "text-primary" : healthScore >= 5 ? "text-warning" : "text-destructive";
 
   const fmt = (v: number) => showValues
@@ -844,12 +846,12 @@ export default function Dashboard() {
                 <p className="text-[0.55rem] text-muted-foreground">Estorno</p>
               </div>
               <div>
-                <p className="text-xs font-bold">0%</p>
+                <p className={`text-xs font-bold ${parseFloat(chargebackRate) > 1 ? "text-destructive" : ""}`}>{chargebackRate}%</p>
                 <p className="text-[0.55rem] text-muted-foreground">Chargeback</p>
               </div>
               <div>
-                <p className="text-xs font-bold">0%</p>
-                <p className="text-[0.55rem] text-muted-foreground">MED</p>
+                <p className="text-xs font-bold">{(parseFloat(refundRate) + parseFloat(chargebackRate)).toFixed(1)}%</p>
+                <p className="text-[0.55rem] text-muted-foreground">Disputas</p>
               </div>
             </div>
           </motion.div>
