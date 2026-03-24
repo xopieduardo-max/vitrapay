@@ -103,7 +103,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodKey>("30d");
-  const [chartPeriod, setChartPeriod] = useState("30d");
   const [showValues, setShowValues] = useState(true);
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
@@ -306,6 +305,53 @@ export default function Dashboard() {
     const max = Math.max(...vals, 1);
     return vals.map((v) => Math.max((v / max) * 95, 5));
   }, [completedSalesAll]);
+
+  // Week-over-week comparison data
+  const weekComparison = useMemo(() => {
+    const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const now = new Date();
+    const todayDow = now.getDay();
+    
+    // Current week start (Sunday)
+    const thisWeekStart = new Date(now);
+    thisWeekStart.setDate(now.getDate() - todayDow);
+    thisWeekStart.setHours(0, 0, 0, 0);
+    
+    // Last week start
+    const lastWeekStart = new Date(thisWeekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    
+    const thisWeek = Array(7).fill(0);
+    const lastWeek = Array(7).fill(0);
+    
+    completedSalesAll.forEach((s) => {
+      const d = new Date(s.created_at);
+      const net = s.amount - (s.platform_fee || 0);
+      const dow = d.getDay();
+      
+      if (d >= thisWeekStart) {
+        thisWeek[dow] += net;
+      } else if (d >= lastWeekStart && d < thisWeekStart) {
+        lastWeek[dow] += net;
+      }
+    });
+    
+    const allVals = [...thisWeek, ...lastWeek];
+    const max = Math.max(...allVals, 1);
+    
+    return dayNames.map((name, i) => ({
+      day: name,
+      thisWeek: thisWeek[i],
+      lastWeek: lastWeek[i],
+      thisWeekPct: Math.max((thisWeek[i] / max) * 95, 3),
+      lastWeekPct: Math.max((lastWeek[i] / max) * 95, 3),
+      isFuture: i > todayDow,
+    }));
+  }, [completedSalesAll]);
+
+  const thisWeekTotal = weekComparison.reduce((a, d) => a + d.thisWeek, 0);
+  const lastWeekTotal = weekComparison.reduce((a, d) => a + d.lastWeek, 0);
+  const weekChange = lastWeekTotal > 0 ? (((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100).toFixed(0) : thisWeekTotal > 0 ? "+100" : "0";
 
   const quickLinks = [
     { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
@@ -710,40 +756,59 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Revenue Chart + Conversion by Payment */}
+        {/* Week Comparison Chart + Conversion by Payment */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <motion.div {...anim(0.25)} className="lg:col-span-3 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-1">
               <div>
-                <p className="text-xs text-muted-foreground">Receita líquida</p>
-                <p className="text-2xl font-bold mt-1">{fmt(totalRevenue)}</p>
+                <p className="text-xs text-muted-foreground">Semana atual vs anterior</p>
+                <p className="text-2xl font-bold mt-1">{fmt(thisWeekTotal)}</p>
               </div>
-              <div className="flex gap-1">
-                {["7d", "30d", "90d"].map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setChartPeriod(p)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                      chartPeriod === p
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+              <div className="text-right">
+                <span className={`text-sm font-bold ${Number(weekChange) >= 0 ? "text-primary" : "text-destructive"}`}>
+                  {Number(weekChange) >= 0 ? "+" : ""}{weekChange}%
+                </span>
+                <p className="text-[0.6rem] text-muted-foreground">vs semana passada</p>
               </div>
             </div>
-            <div className="h-40 flex items-end gap-1.5">
-              {chartBars.map((h, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-t bg-primary/30 hover:bg-primary/60 transition-colors relative group"
-                  style={{ height: `${h}%` }}
-                >
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1.5 py-0.5 text-[0.55rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    {fmt(Math.round(h * 100))}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
+                <span className="text-[0.6rem] text-muted-foreground">Esta semana</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="h-2.5 w-2.5 rounded-sm bg-muted-foreground/30" />
+                <span className="text-[0.6rem] text-muted-foreground">Semana passada</span>
+              </div>
+            </div>
+            <div className="h-40 flex items-end gap-2">
+              {weekComparison.map((d, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                  <div className="w-full flex items-end gap-0.5 h-32">
+                    {/* Last week bar */}
+                    <div className="flex-1 relative group">
+                      <div
+                        className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
+                        style={{ height: `${d.lastWeekPct}%` }}
+                      />
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        {fmt(d.lastWeek)}
+                      </div>
+                    </div>
+                    {/* This week bar */}
+                    <div className="flex-1 relative group">
+                      <div
+                        className={`w-full rounded-t transition-colors ${d.isFuture ? "bg-primary/10" : "bg-primary/60 hover:bg-primary/80"}`}
+                        style={{ height: d.isFuture ? "3%" : `${d.thisWeekPct}%` }}
+                      />
+                      {!d.isFuture && (
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          {fmt(d.thisWeek)}
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  <span className="text-[0.55rem] text-muted-foreground">{d.day}</span>
                 </div>
               ))}
             </div>
