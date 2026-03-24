@@ -846,12 +846,12 @@ export default function Dashboard() {
                 <p className="text-[0.55rem] text-muted-foreground">Estorno</p>
               </div>
               <div>
-                <p className="text-xs font-bold">0%</p>
+                <p className={`text-xs font-bold ${parseFloat(chargebackRate) > 1 ? "text-destructive" : ""}`}>{chargebackRate}%</p>
                 <p className="text-[0.55rem] text-muted-foreground">Chargeback</p>
               </div>
               <div>
-                <p className="text-xs font-bold">0%</p>
-                <p className="text-[0.55rem] text-muted-foreground">MED</p>
+                <p className="text-xs font-bold">{(parseFloat(refundRate) + parseFloat(chargebackRate)).toFixed(1)}%</p>
+                <p className="text-[0.55rem] text-muted-foreground">Disputas</p>
               </div>
             </div>
           </motion.div>
