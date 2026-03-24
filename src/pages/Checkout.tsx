@@ -194,6 +194,15 @@ export default function Checkout() {
         if (prod.checkout_timer_minutes && prod.checkout_timer_minutes > 0) {
           setTimeLeft(prod.checkout_timer_minutes * 60);
         }
+        // Preload LCP image (checkout banner) as early as possible
+        if (prod.checkout_banner_url) {
+          const link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.href = prod.checkout_banner_url;
+          link.fetchPriority = "high";
+          document.head.appendChild(link);
+        }
         // Producer name fetch — non-blocking, runs in background
         supabase
           .from("profiles")
@@ -817,7 +826,7 @@ export default function Checkout() {
   const colorThemeClass = `checkout-theme-${(product as any)?.checkout_color_theme || 'classic'}`;
 
   return (
-    <div className={`min-h-screen ${product.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'} ${colorThemeClass}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
+    <div className={`min-h-screen ${product.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'} ${colorThemeClass}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }} role="main">
       {/* Social Proof Notifications */}
       <Suspense fallback={null}>
         <SocialProofNotification
@@ -873,8 +882,8 @@ export default function Checkout() {
           >
             {/* Checkout banner image - Cakto style */}
             {product.checkout_banner_url && (
-              <div className="rounded-xl overflow-hidden">
-                <img src={product.checkout_banner_url} alt={product.title} fetchPriority="high" className="w-full h-auto object-contain rounded-xl" />
+              <div className="rounded-xl overflow-hidden" style={{ aspectRatio: "21/9" }}>
+                <img src={product.checkout_banner_url} alt={product.title} fetchPriority="high" width={700} height={300} className="w-full h-full object-contain rounded-xl" />
               </div>
             )}
 
@@ -1059,8 +1068,10 @@ export default function Checkout() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Parcelas</Label>
+                    <Label htmlFor="installments-select" className="text-xs" style={{ color: "var(--ck-label)" }}>Parcelas</Label>
                     <select
+                      id="installments-select"
+                      aria-label="Selecione o número de parcelas"
                       value={form.installments}
                       onChange={(e) => updateForm("installments", e.target.value)}
                       className="mt-1 flex h-11 w-full rounded-md px-3 py-2 text-sm border-0"
@@ -1339,7 +1350,9 @@ export default function Checkout() {
                   <img
                     src="/logo-vitrapay-horizontal.png"
                     alt="VitraPay"
-                    className="h-6 mx-auto"
+                    width={120}
+                    height={30}
+                    className="h-6 w-auto mx-auto"
                   />
                   <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
                     VitraPay está processando este pagamento
