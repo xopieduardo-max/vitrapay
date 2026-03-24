@@ -498,12 +498,11 @@ export default function Landing() {
 
           {/* Dashboard Preview — Full Width Perspective like BlackCatPay */}
           <motion.div
-            style={{ y: dashboardY, scale: dashboardScale }}
+            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px" }}
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
             className="mt-16 md:mt-24 max-w-6xl mx-auto relative"
-            style={{ perspective: "1200px" }}
           >
             <div
               className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
