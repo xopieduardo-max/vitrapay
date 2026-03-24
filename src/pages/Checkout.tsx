@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCheckoutPixels, firePixelEvent } from "@/components/checkout/CheckoutPixels";
@@ -500,6 +500,34 @@ export default function Checkout() {
     }
   };
 
+  const total = calculateTotal();
+  const time = formatTime(timeLeft);
+
+  const SERVICE_FEE = 99; // R$ 0.99 in centavos
+
+  const installmentOptions = useMemo(() => {
+    const asc = Array.from({ length: 12 }, (_, i) => {
+      const n = i + 1;
+      if (n === 1) {
+        return { value: "1", label: `1x de R$ ${(total / 100).toFixed(2)}`, totalWithFees: total };
+      }
+      const fixedFee = SERVICE_FEE;
+      const baseRate = n <= 6 ? 0.0349 : 0.0399;
+      const baseFixed = 49;
+      const monthlyInterest = 0.016;
+      const baseCost = Math.round(total * baseRate + baseFixed);
+      const interestCost = Math.round(total * monthlyInterest * (n - 1));
+      const totalWithFees = total + baseCost + interestCost + (fixedFee * n);
+      const installmentValue = (totalWithFees / n / 100).toFixed(2);
+      return { value: String(n), label: `${n}x de R$ ${installmentValue}`, totalWithFees };
+    });
+    return [...asc].reverse();
+  }, [total]);
+
+  const installmentOptionsAsc = useMemo(() => [...installmentOptions].reverse(), [installmentOptions]);
+  const maxInstallment = installmentOptionsAsc[installmentOptionsAsc.length - 1];
+  const colorThemeClass = `checkout-theme-${(product as any)?.checkout_color_theme || 'classic'}`;
+
   // ── Upsell/Downsell Screen ──
   const activeFunnelStep = funnelSteps[currentFunnelStep];
   const showFunnel = purchaseResult && funnelSteps.length > 0 && currentFunnelStep < funnelSteps.length;
@@ -791,39 +819,6 @@ export default function Checkout() {
     );
   }
 
-  const total = calculateTotal();
-  const time = formatTime(timeLeft);
-
-  const SERVICE_FEE = 99; // R$ 0.99 in centavos
-
-  const installmentOptionsAsc = Array.from({ length: 12 }, (_, i) => {
-    const n = i + 1;
-    if (n === 1) {
-      return { value: "1", label: `1x de R$ ${(total / 100).toFixed(2)}`, totalWithFees: total };
-    }
-    const fixedFee = SERVICE_FEE;
-    const baseRate = n <= 6 ? 0.0349 : 0.0399;
-    const baseFixed = 49;
-    const monthlyInterest = 0.016;
-    
-    const baseCost = Math.round(total * baseRate + baseFixed);
-    const interestCost = Math.round(total * monthlyInterest * (n - 1));
-    const totalWithFees = total + baseCost + interestCost + (fixedFee * n);
-    const installmentValue = (totalWithFees / n / 100).toFixed(2);
-    
-    return {
-      value: String(n),
-      label: `${n}x de R$ ${installmentValue}`,
-      totalWithFees,
-    };
-  });
-  // Reverse so 12x appears first in selector
-  const installmentOptions = [...installmentOptionsAsc].reverse();
-
-  // Get the max installment for display at top
-  const maxInstallment = installmentOptionsAsc[installmentOptionsAsc.length - 1];
-
-  const colorThemeClass = `checkout-theme-${(product as any)?.checkout_color_theme || 'classic'}`;
 
   return (
     <div className={`min-h-screen ${product.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'} ${colorThemeClass}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }} role="main">
