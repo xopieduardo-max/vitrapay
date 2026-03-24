@@ -1023,8 +1023,7 @@ export default function Landing() {
         </div>
       </footer>
 
-      {/* ─── Floating WhatsApp ─── */}
-      <FloatingWhatsApp />
+      {/* WhatsApp flutuante — desativado por enquanto */}
     </div>
   );
 }
