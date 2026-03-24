@@ -204,6 +204,7 @@ serve(async (req) => {
       }).eq("id", withdrawal.id);
 
       // Record withdrawal + fee transactions
+      const totalDeducted = amount + WITHDRAWAL_FEE;
       try {
         await supabase.from("transactions").insert([
           {
@@ -213,18 +214,33 @@ serve(async (req) => {
             amount,
             balance_type: "available",
             reference_id: withdrawal.id,
+            release_date: new Date().toISOString(),
+            status: "completed",
           },
           {
             user_id: user.id,
             type: "debit",
             category: "fee",
-            amount: 500, // R$ 5.00
+            amount: WITHDRAWAL_FEE,
             balance_type: "available",
             reference_id: withdrawal.id,
+            release_date: new Date().toISOString(),
+            status: "completed",
           },
         ]);
       } catch (txErr) {
         console.error("Auto-withdraw transaction error:", txErr);
+      }
+
+      // ── Deduct from wallet ──
+      if (wallet) {
+        const newAvailable = Math.max(0, Number(wallet.balance_available) - totalDeducted);
+        const newTotal = Math.max(0, newAvailable); // balance_total will be recalculated
+        await supabase.from("wallets").update({
+          balance_available: newAvailable,
+          balance_total: newAvailable + (wallet.balance_pending || 0),
+        }).eq("id", wallet.id);
+        console.log(`Wallet deducted: -${totalDeducted} from available. New available: ${newAvailable}`);
       }
 
       // Notify producer (email + push)
