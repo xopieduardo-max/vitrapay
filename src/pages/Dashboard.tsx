@@ -103,7 +103,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodKey>("30d");
-  const [chartPeriod, setChartPeriod] = useState("30d");
+  const [showValues, setShowValues] = useState(true);
   const [showValues, setShowValues] = useState(true);
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
