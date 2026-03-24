@@ -757,40 +757,59 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Revenue Chart + Conversion by Payment */}
+        {/* Week Comparison Chart + Conversion by Payment */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <motion.div {...anim(0.25)} className="lg:col-span-3 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-1">
               <div>
-                <p className="text-xs text-muted-foreground">Receita líquida</p>
-                <p className="text-2xl font-bold mt-1">{fmt(totalRevenue)}</p>
+                <p className="text-xs text-muted-foreground">Semana atual vs anterior</p>
+                <p className="text-2xl font-bold mt-1">{fmt(thisWeekTotal)}</p>
               </div>
-              <div className="flex gap-1">
-                {["7d", "30d", "90d"].map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setChartPeriod(p)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                      chartPeriod === p
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+              <div className="text-right">
+                <span className={`text-sm font-bold ${Number(weekChange) >= 0 ? "text-primary" : "text-destructive"}`}>
+                  {Number(weekChange) >= 0 ? "+" : ""}{weekChange}%
+                </span>
+                <p className="text-[0.6rem] text-muted-foreground">vs semana passada</p>
               </div>
             </div>
-            <div className="h-40 flex items-end gap-1.5">
-              {chartBars.map((h, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-t bg-primary/30 hover:bg-primary/60 transition-colors relative group"
-                  style={{ height: `${h}%` }}
-                >
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1.5 py-0.5 text-[0.55rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    {fmt(Math.round(h * 100))}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
+                <span className="text-[0.6rem] text-muted-foreground">Esta semana</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="h-2.5 w-2.5 rounded-sm bg-muted-foreground/30" />
+                <span className="text-[0.6rem] text-muted-foreground">Semana passada</span>
+              </div>
+            </div>
+            <div className="h-40 flex items-end gap-2">
+              {weekComparison.map((d, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                  <div className="w-full flex items-end gap-0.5 h-32">
+                    {/* Last week bar */}
+                    <div className="flex-1 relative group">
+                      <div
+                        className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
+                        style={{ height: `${d.lastWeekPct}%` }}
+                      />
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        {fmt(d.lastWeek)}
+                      </div>
+                    </div>
+                    {/* This week bar */}
+                    <div className="flex-1 relative group">
+                      <div
+                        className={`w-full rounded-t transition-colors ${d.isFuture ? "bg-primary/10" : "bg-primary/60 hover:bg-primary/80"}`}
+                        style={{ height: d.isFuture ? "3%" : `${d.thisWeekPct}%` }}
+                      />
+                      {!d.isFuture && (
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          {fmt(d.thisWeek)}
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  <span className="text-[0.55rem] text-muted-foreground">{d.day}</span>
                 </div>
               ))}
             </div>
