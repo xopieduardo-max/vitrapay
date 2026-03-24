@@ -807,7 +807,7 @@ export default function Checkout() {
     
     return {
       value: String(n),
-      label: `${n}x de R$ ${installmentValue} (total R$ ${totalFormatted})`,
+      label: `${n}x de R$ ${installmentValue}`,
     };
   });
 
