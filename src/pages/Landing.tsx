@@ -50,49 +50,43 @@ const methodLabels: Record<PayMethod, string> = {
 };
 
 function FloatingNotifications() {
-  const [visibleNotifs, setVisibleNotifs] = useState<ReturnType<typeof generateNotification>[]>([]);
+  const [notif, setNotif] = useState(generateNotification());
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setVisibleNotifs((prev) => {
-        const next = [...prev, generateNotification()];
-        return next.length > 4 ? next.slice(1) : next;
-      });
-    }, 3500);
-    setVisibleNotifs([generateNotification()]);
+      setNotif(generateNotification());
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col gap-3 w-full">
-      <AnimatePresence mode="popLayout">
-        {visibleNotifs.map((notif, i) => (
-          <motion.div
-            key={`${notif.name}-${notif.amount}-${i}`}
-            initial={{ opacity: 0, x: -60, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -40, scale: 0.9 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
-          >
-            <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
-              <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
+    <div className="w-full">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${notif.name}-${notif.amount}-${notif.product}`}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.9 }}
+          transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
+        >
+          <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
+            <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
+          </div>
+          <div className="min-w-0 space-y-0.5">
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
             </div>
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
-              </div>
-              <p className="text-xs text-muted-foreground">VitraPay</p>
-              <p className="text-xs text-muted-foreground">
-                Pagamento via {methodLabels[notif.method]}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
-              </p>
-            </div>
-            <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
-          </motion.div>
-        ))}
+            <p className="text-xs text-muted-foreground">VitraPay</p>
+            <p className="text-xs text-muted-foreground">
+              Pagamento via {methodLabels[notif.method]}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
+            </p>
+          </div>
+          <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
+        </motion.div>
       </AnimatePresence>
     </div>
   );
@@ -376,6 +370,7 @@ export default function Landing() {
   });
   const dashboardY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const dashboardScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+  const dashboardRotateX = useTransform(scrollYProgress, [0, 0.6], [12, 0]);
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -498,7 +493,7 @@ export default function Landing() {
 
           {/* Dashboard Preview — Full Width Perspective like BlackCatPay */}
           <motion.div
-            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px" }}
+            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px", rotateX: dashboardRotateX }}
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
@@ -506,10 +501,7 @@ export default function Landing() {
           >
             <div
               className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
-              style={{
-                transform: "rotateX(8deg) rotateY(0deg)",
-                transformOrigin: "center center",
-              }}
+              style={{ transformOrigin: "center bottom" }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
@@ -525,9 +517,9 @@ export default function Landing() {
             {/* Glow effect beneath */}
             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
 
-            {/* Floating Notifications — social proof below dashboard */}
+            {/* Floating Notification — single social proof */}
             <div className="mt-8 flex justify-center">
-              <div className="w-full max-w-xs sm:max-w-sm">
+              <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md">
                 <FloatingNotifications />
               </div>
             </div>
