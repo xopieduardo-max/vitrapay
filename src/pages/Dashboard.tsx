@@ -461,6 +461,51 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Second Row: Today + Total Withdrawn + Last Sale + Refund */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div {...anim(0.22)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Faturamento hoje</p>
+            <p className="text-2xl font-bold mt-1 text-primary">{fmt(todayRevenue)}</p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <ShoppingCart className="h-3 w-3" /> {todaySalesCount} venda(s) hoje
+            </p>
+          </motion.div>
+
+          <motion.div {...anim(0.25)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Total sacado</p>
+            <p className="text-2xl font-bold mt-1">{fmt(totalWithdrawn)}</p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <Wallet className="h-3 w-3" /> Taxa paga: {fmt(totalFeesPaid)}
+            </p>
+          </motion.div>
+
+          <motion.div {...anim(0.28)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Taxa de reembolso</p>
+            <p className={`text-2xl font-bold mt-1 ${parseFloat(refundRate) > 5 ? "text-destructive" : "text-primary"}`}>
+              {refundRate}%
+            </p>
+            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <RefreshCcw className="h-3 w-3" /> {refundedSales.length} reembolso(s) • {fmt(refundAmount)}
+            </p>
+          </motion.div>
+
+          <motion.div {...anim(0.31)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground">Última venda</p>
+            {lastSale ? (
+              <>
+                <p className="text-2xl font-bold mt-1">{fmt(lastSale.amount - (lastSale.platform_fee || 0))}</p>
+                <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> {lastSaleTimeAgo} • via {lastSale.payment_provider === "pix" ? "PIX" : "Cartão"}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-bold mt-1 text-muted-foreground">—</p>
+                <p className="text-[0.65rem] text-muted-foreground mt-1.5">Nenhuma venda ainda</p>
+              </>
+            )}
+          </motion.div>
+
         {/* Vendas Pendentes (Desktop) */}
         {pendingCheckoutsCount > 0 && (
           <motion.div {...anim(0.22)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
