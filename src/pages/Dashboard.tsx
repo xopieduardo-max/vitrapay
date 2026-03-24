@@ -680,6 +680,7 @@ export default function Dashboard() {
             </p>
           </motion.div>
 
+          <motion.div {...anim(0.33)} className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Jornada de conquistas</p>
               <button onClick={() => navigate("/sales")} className="text-[0.6rem] text-primary hover:underline">
