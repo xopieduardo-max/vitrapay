@@ -238,6 +238,21 @@ export default function Dashboard() {
   const refundAmount = refundedSales.reduce((acc, s) => acc + s.amount, 0);
   const abandonedSales = filteredSales.filter((s) => s.status === "abandoned").length;
 
+  // Checkout conversion rate
+  const filteredCheckouts = useMemo(() => {
+    return allCheckouts.filter((c) => {
+      const d = new Date(c.created_at);
+      if (dateRange.from && d < dateRange.from) return false;
+      if (d > dateRange.to) return false;
+      return true;
+    });
+  }, [allCheckouts, dateRange]);
+  const totalCheckoutInitiations = filteredCheckouts.length + salesCount; // checkouts + completed sales = total visitors who initiated
+  const checkoutConversionRate = totalCheckoutInitiations > 0
+    ? ((salesCount / totalCheckoutInitiations) * 100).toFixed(1)
+    : "0";
+  const checkoutConversionColor = parseFloat(checkoutConversionRate) >= 3 ? "text-primary" : parseFloat(checkoutConversionRate) >= 1 ? "text-warning" : "text-destructive";
+
   const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
 
   // Achievement level (global)
