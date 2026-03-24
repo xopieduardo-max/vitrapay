@@ -497,37 +497,38 @@ export default function Landing() {
             </motion.div>
           </motion.div>
 
-          {/* Dashboard Preview — Full Width Perspective like BlackCatPay */}
+          {/* Dashboard Preview with notifications side by side */}
           <motion.div
-            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px", rotateX: dashboardRotateX }}
+            style={{ y: dashboardY, scale: dashboardScale }}
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-            className="mt-16 md:mt-24 max-w-6xl mx-auto relative"
+            className="mt-16 md:mt-24 max-w-6xl mx-auto relative flex items-start justify-center gap-6"
           >
-            <div
-              className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
-              style={{ transformOrigin: "center bottom" }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-              <img
-                src={dashboardPreview}
-                alt="Dashboard VitraPay com métricas de vendas em tempo real"
-                className="w-full"
-                loading="eager"
-                decoding="async"
-              />
-              {/* Fade overlay at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            {/* Floating Notifications — left side, desktop only */}
+            <div className="hidden lg:block w-[260px] shrink-0 pt-8">
+              <FloatingNotifications />
             </div>
-            {/* Glow effect beneath */}
-            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
 
-            {/* Floating Notification — single social proof */}
-            <div className="mt-8 flex justify-center">
-              <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md">
-                <FloatingNotifications />
-              </div>
+            {/* Dashboard image with scroll-driven tilt */}
+            <div className="flex-1 min-w-0 max-w-4xl" style={{ perspective: "1200px" }}>
+              <motion.div
+                style={{ rotateX: dashboardRotateX }}
+                className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group origin-bottom"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                <img
+                  src={dashboardPreview}
+                  alt="Dashboard VitraPay com métricas de vendas em tempo real"
+                  className="w-full"
+                  loading="eager"
+                  decoding="async"
+                />
+                {/* Fade overlay at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
+              </motion.div>
+              {/* Glow effect beneath */}
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
             </div>
           </motion.div>
         </div>
