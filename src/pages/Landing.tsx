@@ -50,43 +50,49 @@ const methodLabels: Record<PayMethod, string> = {
 };
 
 function FloatingNotifications() {
-  const [notif, setNotif] = useState(generateNotification());
+  const [visibleNotifs, setVisibleNotifs] = useState<ReturnType<typeof generateNotification>[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setNotif(generateNotification());
-    }, 4000);
+      setVisibleNotifs((prev) => {
+        const next = [...prev, generateNotification()];
+        return next.length > 4 ? next.slice(1) : next;
+      });
+    }, 3500);
+    setVisibleNotifs([generateNotification()]);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="w-full">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`${notif.name}-${notif.amount}-${notif.product}`}
-          initial={{ opacity: 0, y: 20, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.9 }}
-          transition={{ type: "spring", damping: 20, stiffness: 300 }}
-          className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
-        >
-          <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
-            <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
-          </div>
-          <div className="min-w-0 space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
+    <div className="flex flex-col gap-3 w-full">
+      <AnimatePresence mode="popLayout">
+        {visibleNotifs.map((notif, i) => (
+          <motion.div
+            key={`${notif.name}-${notif.amount}-${i}`}
+            initial={{ opacity: 0, x: -60, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -40, scale: 0.9 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
+          >
+            <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
+              <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
             </div>
-            <p className="text-xs text-muted-foreground">VitraPay</p>
-            <p className="text-xs text-muted-foreground">
-              Pagamento via {methodLabels[notif.method]}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
-            </p>
-          </div>
-          <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
-        </motion.div>
+            <div className="min-w-0 space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
+              </div>
+              <p className="text-xs text-muted-foreground">VitraPay</p>
+              <p className="text-xs text-muted-foreground">
+                Pagamento via {methodLabels[notif.method]}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
+              </p>
+            </div>
+            <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
+          </motion.div>
+        ))}
       </AnimatePresence>
     </div>
   );
@@ -491,37 +497,38 @@ export default function Landing() {
             </motion.div>
           </motion.div>
 
-          {/* Dashboard Preview — Full Width Perspective like BlackCatPay */}
+          {/* Dashboard Preview with notifications side by side */}
           <motion.div
-            style={{ y: dashboardY, scale: dashboardScale, perspective: "1200px", rotateX: dashboardRotateX }}
+            style={{ y: dashboardY, scale: dashboardScale }}
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-            className="mt-16 md:mt-24 max-w-6xl mx-auto relative"
+            className="mt-16 md:mt-24 max-w-6xl mx-auto relative flex items-start justify-center gap-6"
           >
-            <div
-              className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
-              style={{ transformOrigin: "center bottom" }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-              <img
-                src={dashboardPreview}
-                alt="Dashboard VitraPay com métricas de vendas em tempo real"
-                className="w-full"
-                loading="eager"
-                decoding="async"
-              />
-              {/* Fade overlay at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            {/* Floating Notifications — left side, desktop only */}
+            <div className="hidden lg:block w-[260px] shrink-0 pt-8">
+              <FloatingNotifications />
             </div>
-            {/* Glow effect beneath */}
-            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
 
-            {/* Floating Notification — single social proof */}
-            <div className="mt-8 flex justify-center">
-              <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md">
-                <FloatingNotifications />
-              </div>
+            {/* Dashboard image with scroll-driven tilt */}
+            <div className="flex-1 min-w-0 max-w-4xl" style={{ perspective: "1200px" }}>
+              <motion.div
+                style={{ rotateX: dashboardRotateX }}
+                className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group origin-bottom"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                <img
+                  src={dashboardPreview}
+                  alt="Dashboard VitraPay com métricas de vendas em tempo real"
+                  className="w-full"
+                  loading="eager"
+                  decoding="async"
+                />
+                {/* Fade overlay at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
+              </motion.div>
+              {/* Glow effect beneath */}
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
             </div>
           </motion.div>
         </div>
