@@ -1299,7 +1299,7 @@ export default function Checkout() {
                 )}
 
                 {/* Taxa de serviço */}
-                {paymentMethod === "card" && parseInt(form.installments) > 1 && (
+                {paymentMethod === "card" && (
                   <div className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
                     <span>Taxa de serviço</span>
                     <span>R$ 0,99</span>
