@@ -411,7 +411,7 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground">Saldo disponível</p>
             <p className="text-2xl font-bold mt-1">{fmt(availableBalance)}</p>
             <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
-              <Landmark className="h-3 w-3" /> Pendente: {fmt(pendingSales + pendingWithdrawals)}
+              <Clock className="h-3 w-3" /> Pendente: {fmt(pendingSales + pendingWithdrawals)}
             </p>
           </motion.div>
 
