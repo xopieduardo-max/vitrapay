@@ -558,12 +558,13 @@ export default function Landing() {
                 
                 <div className="space-y-0">
                   {[
-                    { label: "PIX:", desc: "Instantâneo (D+0)" },
-                    { label: "Cartão de crédito:", desc: "Receba em até 2 dias (D+2)" },
-                    { label: "Saque rápido:", desc: "Mínimo R$ 10 direto no Pix" },
+                    { label: "PIX:", desc: "Instantâneo (D+0)", highlight: true },
+                    { label: "Cartão D+30:", desc: "Receba em até 30 dias — Taxa 3,99% + R$ 2,49", highlight: false },
+                    { label: "Cartão D+2:", desc: "Antecipação — Receba em até 2 dias — Taxa 4,99% + R$ 2,49", highlight: false },
+                    { label: "Saque rápido:", desc: "Mínimo R$ 10 direto no Pix", highlight: false },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 py-5 border-b border-border/30 last:border-b-0">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                      <CheckCircle2 className={`h-5 w-5 shrink-0 ${item.highlight ? "text-primary" : "text-primary"}`} />
                       <p className="text-sm md:text-base text-muted-foreground">
                         <span className="font-semibold text-foreground">{item.label}</span>{" "}
                         {item.desc}
@@ -668,15 +669,15 @@ export default function Landing() {
                   hsl(var(--card)) 100%)`,
               }}
             >
-              <p className="text-sm md:text-base text-muted-foreground">Taxa para cartões na plataforma</p>
+              <p className="text-sm md:text-base text-muted-foreground">Taxa inicial para cartões na plataforma</p>
               <p className="text-4xl md:text-5xl font-extrabold text-primary tracking-tight">
-                {feeDisplay.cardText}
+                3,99% + R$ 2,49
               </p>
-              <p className="text-sm md:text-base text-muted-foreground">
+              <p className="text-lg md:text-xl text-muted-foreground mt-2">
                 Pix com taxa <span className="font-bold text-primary">zero</span> para o seu cliente
               </p>
-              <p className="text-[0.7rem] text-muted-foreground/60 mt-2">
-                *taxa de antecipação já inclusa
+              <p className="text-[0.7rem] text-muted-foreground/60 mt-3">
+                *taxa de antecipação D+2: 4,99% + R$ 2,49
               </p>
             </motion.div>
           </motion.div>
