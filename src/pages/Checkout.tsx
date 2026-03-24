@@ -873,8 +873,8 @@ export default function Checkout() {
           >
             {/* Checkout banner image - Cakto style */}
             {product.checkout_banner_url && (
-              <div className="rounded-xl overflow-hidden">
-                <img src={product.checkout_banner_url} alt={product.title} fetchPriority="high" className="w-full h-auto object-contain rounded-xl" />
+              <div className="rounded-xl overflow-hidden" style={{ aspectRatio: "21/9" }}>
+                <img src={product.checkout_banner_url} alt={product.title} fetchPriority="high" width={700} height={300} className="w-full h-full object-contain rounded-xl" />
               </div>
             )}
 
