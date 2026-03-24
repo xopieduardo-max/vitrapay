@@ -1350,6 +1350,9 @@ export default function Checkout() {
                   <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
                     Este site é protegido e seus dados estão seguros.
                   </p>
+                  <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
+                    * Parcelamento com acréscimo
+                  </p>
                   <p className="text-[0.6rem] mt-2" style={{ color: "var(--ck-ghost)" }}>
                     Ao continuar, você concorda com os{" "}
                     <a href="/purchase-terms" target="_blank" className="underline" style={{ color: "var(--ck-accent)" }}>
