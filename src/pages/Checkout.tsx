@@ -1339,7 +1339,9 @@ export default function Checkout() {
                   <img
                     src="/logo-vitrapay-horizontal.png"
                     alt="VitraPay"
-                    className="h-6 mx-auto"
+                    width={120}
+                    height={30}
+                    className="h-6 w-auto mx-auto"
                   />
                   <p className="text-[0.6rem]" style={{ color: "var(--ck-ghost)" }}>
                     VitraPay está processando este pagamento
