@@ -633,8 +633,8 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Second Row: Faturamento + Reembolso + Conquistas */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Second Row: Faturamento + Conversão + Reembolso + Conquistas */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <motion.div {...anim(0.22)} className="rounded-xl border-2 border-primary/40 bg-card p-5 lg:col-span-2">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
