@@ -79,7 +79,7 @@ serve(async (req) => {
     // ── Validate balance from wallets table ──
     const { data: wallet } = await supabase
       .from("wallets")
-      .select("id, balance_available")
+      .select("id, balance_available, balance_pending")
       .eq("user_id", user.id)
       .maybeSingle();
 
