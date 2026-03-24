@@ -783,6 +783,38 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Daily Profit Chart */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <Banknote className="h-4 w-4 text-accent" />
+          <h2 className="text-sm font-semibold">Lucro Líquido por Dia</h2>
+        </div>
+        <div className="p-4 h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dailyProfitData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="label" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `R$${v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v.toFixed(0)}`} />
+              <Tooltip
+                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                formatter={(value: number, name: string) => {
+                  const labels: Record<string, string> = { taxa: "Taxa cobrada", custo: "Custo gateway", lucro: "Lucro líquido" };
+                  return [`R$ ${value.toFixed(2)}`, labels[name] || name];
+                }}
+              />
+              <Bar dataKey="lucro" name="lucro" radius={[4, 4, 0, 0]}>
+                {dailyProfitData.map((entry, index) => (
+                  <Cell
+                    key={index}
+                    fill={entry.lucro >= 0 ? "hsl(var(--accent))" : "hsl(var(--destructive))"}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Platform Profit Report */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
