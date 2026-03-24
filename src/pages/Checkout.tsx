@@ -817,7 +817,7 @@ export default function Checkout() {
   const colorThemeClass = `checkout-theme-${(product as any)?.checkout_color_theme || 'classic'}`;
 
   return (
-    <div className={`min-h-screen ${product.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'} ${colorThemeClass}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }}>
+    <div className={`min-h-screen ${product.checkout_theme === 'light' ? 'checkout-light' : 'checkout-dark'} ${colorThemeClass}`} style={{ background: "var(--ck-bg)", color: "var(--ck-fg)" }} role="main">
       {/* Social Proof Notifications */}
       <Suspense fallback={null}>
         <SocialProofNotification
