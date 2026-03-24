@@ -485,34 +485,6 @@ export default function Dashboard() {
           </p>
         </motion.div>
 
-        {/* ✨ FATURAMENTO CARD */}
-        <motion.div
-          {...anim(0.1)}
-          className="rounded-xl border-2 border-primary/40 bg-card p-5 shimmer-gold animate-pulse-glow-primary"
-        >
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
-              <Zap className="h-6 w-6 text-primary" strokeWidth={2} />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-primary/80 font-medium">Faturamento • {periodLabels[period]}</p>
-              <p className="text-xl font-bold text-primary tracking-tight">
-                {fmtShort(totalRevenue)} <span className="text-sm font-normal text-muted-foreground">/ {fmtShort(REVENUE_GOAL)}</span>
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3 relative z-10">
-            <div className="flex-1 h-2 rounded-full bg-primary/15 overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${revenueProgress}%` }}
-                transition={{ duration: 1.2, ease: "easeOut" }}
-                className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
-              />
-            </div>
-            <span className="text-xs font-bold text-primary/70">{revenueProgress.toFixed(1)}%</span>
-          </div>
-        </motion.div>
 
         {/* Saldo + Total de Vendas */}
         <div className="grid grid-cols-2 gap-3">
