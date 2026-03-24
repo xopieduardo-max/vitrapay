@@ -273,7 +273,7 @@ export default function Dashboard() {
   }, {});
 
   // Health score
-  const healthScore = Math.max(0, 10 - Math.round(parseFloat(refundRate) * 0.5) - abandonedSales * 0.1);
+  const healthScore = Math.max(0, 10 - Math.round(parseFloat(refundRate) * 0.5) - Math.round(parseFloat(chargebackRate) * 1.5) - abandonedSales * 0.1);
   const healthColor = healthScore >= 8 ? "text-primary" : healthScore >= 5 ? "text-warning" : "text-destructive";
 
   const fmt = (v: number) => showValues
