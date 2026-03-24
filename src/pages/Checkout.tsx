@@ -880,14 +880,14 @@ export default function Checkout() {
               </div>
             )}
 
-            {/* Product Info Card */}
+            {/* Product Info Card - Cakto style with installment highlight */}
             <div className="rounded-xl p-5" style={{ background: "var(--ck-card)", border: "1px solid var(--ck-card-border)" }}>
               <h2 className="font-bold text-xl" style={{ color: "var(--ck-fg)" }}>{product.title}</h2>
               <p className="font-bold mt-1" style={{ color: "var(--ck-accent)" }}>
-                <span className="text-lg">R$ {(product.price / 100).toFixed(2)}</span>
-                <span className="text-xs font-normal ml-2" style={{ color: "var(--ck-subtle)" }}>
-                  ou R$ {(product.price / 100).toFixed(2)} à vista
-                </span>
+                <span className="text-lg">{maxInstallment.label}</span>
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
+                ou R$ {(total / 100).toFixed(2)} à vista
               </p>
             </div>
 
