@@ -812,7 +812,7 @@ export default function Checkout() {
   const installmentOptions = [...installmentOptionsAsc].reverse();
 
   // Get the max installment for display at top
-  const maxInstallment = installmentOptions[installmentOptions.length - 1];
+  const maxInstallment = installmentOptionsAsc[installmentOptionsAsc.length - 1];
 
   const colorThemeClass = `checkout-theme-${(product as any)?.checkout_color_theme || 'classic'}`;
 
