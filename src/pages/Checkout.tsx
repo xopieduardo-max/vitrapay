@@ -1314,7 +1314,7 @@ export default function Checkout() {
                   {paymentMethod === "card" && parseInt(form.installments) > 1 ? (
                     <>
                       <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
-                        {installmentOptions[parseInt(form.installments) - 1]?.label}
+                        {installmentOptionsAsc.find(o => o.value === form.installments)?.label}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
                         ou R$ {(total / 100).toFixed(2)} à vista
