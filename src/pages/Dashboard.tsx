@@ -307,6 +307,53 @@ export default function Dashboard() {
     return vals.map((v) => Math.max((v / max) * 95, 5));
   }, [completedSalesAll]);
 
+  // Week-over-week comparison data
+  const weekComparison = useMemo(() => {
+    const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const now = new Date();
+    const todayDow = now.getDay();
+    
+    // Current week start (Sunday)
+    const thisWeekStart = new Date(now);
+    thisWeekStart.setDate(now.getDate() - todayDow);
+    thisWeekStart.setHours(0, 0, 0, 0);
+    
+    // Last week start
+    const lastWeekStart = new Date(thisWeekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    
+    const thisWeek = Array(7).fill(0);
+    const lastWeek = Array(7).fill(0);
+    
+    completedSalesAll.forEach((s) => {
+      const d = new Date(s.created_at);
+      const net = s.amount - (s.platform_fee || 0);
+      const dow = d.getDay();
+      
+      if (d >= thisWeekStart) {
+        thisWeek[dow] += net;
+      } else if (d >= lastWeekStart && d < thisWeekStart) {
+        lastWeek[dow] += net;
+      }
+    });
+    
+    const allVals = [...thisWeek, ...lastWeek];
+    const max = Math.max(...allVals, 1);
+    
+    return dayNames.map((name, i) => ({
+      day: name,
+      thisWeek: thisWeek[i],
+      lastWeek: lastWeek[i],
+      thisWeekPct: Math.max((thisWeek[i] / max) * 95, 3),
+      lastWeekPct: Math.max((lastWeek[i] / max) * 95, 3),
+      isFuture: i > todayDow,
+    }));
+  }, [completedSalesAll]);
+
+  const thisWeekTotal = weekComparison.reduce((a, d) => a + d.thisWeek, 0);
+  const lastWeekTotal = weekComparison.reduce((a, d) => a + d.lastWeek, 0);
+  const weekChange = lastWeekTotal > 0 ? (((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100).toFixed(0) : thisWeekTotal > 0 ? "+100" : "0";
+
   const quickLinks = [
     { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
     { label: "Meus Produtos", icon: Package, path: "/products" },
