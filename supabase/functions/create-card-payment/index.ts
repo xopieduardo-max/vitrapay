@@ -313,8 +313,10 @@ Deno.serve(async (req) => {
             type: "credit",
             category: "sale",
             amount: producerNet,
-            balance_type: "pending", // Card goes to pending (D+2)
+            balance_type: "pending",
             reference_id: sale.id,
+            release_date: releaseDateStr,
+            status: "pending", // Card = pending until D+2
           },
         ];
 
@@ -326,6 +328,8 @@ Deno.serve(async (req) => {
             amount: platformFee,
             balance_type: "pending",
             reference_id: sale.id,
+            release_date: releaseDateStr,
+            status: "pending",
           });
         }
 
@@ -337,6 +341,8 @@ Deno.serve(async (req) => {
             amount: commissionAmount,
             balance_type: "pending",
             reference_id: sale.id,
+            release_date: releaseDateStr,
+            status: "pending",
           });
         }
 
