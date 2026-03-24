@@ -531,6 +531,14 @@ export default function AdminDashboard() {
     { label: "Saques pendentes", value: fmt(stats?.pendingWithdrawals ?? 0), icon: Clock, color: "text-warning" },
     { label: "Total pago", value: fmt(stats?.totalPaidOut ?? 0), icon: Wallet, color: "text-accent" },
     { label: "Checkouts pendentes", value: `${adminPendingCheckoutsCount} • ${fmt(adminPendingCheckoutsValue)}`, icon: ShoppingBag, color: "text-warning" },
+    {
+      label: "Margem de lucro média",
+      value: totalPlatformFeePeriod > 0
+        ? `${((totalPlatformProfit / totalPlatformFeePeriod) * 100).toFixed(1)}%`
+        : "0%",
+      icon: TrendingUp,
+      color: "text-primary",
+    },
   ];
 
   return (
