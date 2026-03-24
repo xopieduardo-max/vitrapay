@@ -400,11 +400,19 @@ export default function Landing() {
             </div>
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               <CountrySelector />
-              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex font-semibold tracking-wide text-xs uppercase">
-                <Link to="/auth">Log in</Link>
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex font-semibold tracking-wide text-xs uppercase gap-2">
+                <Link to="/auth">
+                  Fazer login
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </Button>
-              <Button size="sm" asChild className="font-semibold tracking-wide text-[10px] sm:text-xs uppercase rounded-full px-3 sm:px-5">
-                <Link to="/auth"><span className="hidden sm:inline">Começar agora</span><span className="sm:hidden">Começar</span></Link>
+              <Button size="sm" asChild className="font-semibold tracking-wide text-[10px] sm:text-xs uppercase rounded-full px-3 sm:px-5 gap-2">
+                <Link to="/auth">
+                  <span className="hidden sm:inline">Criar conta</span><span className="sm:hidden">Começar</span>
+                  <div className="h-5 w-5 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                    <ArrowRight className="h-3 w-3" />
+                  </div>
+                </Link>
               </Button>
             </div>
           </nav>
