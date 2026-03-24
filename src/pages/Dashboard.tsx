@@ -505,6 +505,7 @@ export default function Dashboard() {
               </>
             )}
           </motion.div>
+        </div>
 
         {/* Vendas Pendentes (Desktop) */}
         {pendingCheckoutsCount > 0 && (
