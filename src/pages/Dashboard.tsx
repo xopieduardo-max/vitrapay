@@ -177,6 +177,20 @@ export default function Dashboard() {
     refetchInterval: 30000,
   });
 
+  // All checkout initiations (all statuses) for conversion rate
+  const { data: allCheckouts = [] } = useQuery({
+    queryKey: ["dashboard-all-checkouts", user?.id, productIds],
+    queryFn: async () => {
+      if (!user || productIds.length === 0) return [];
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("status, created_at")
+        .in("product_id", productIds);
+      return data || [];
+    },
+    enabled: !!user && productIds.length > 0,
+  });
+
   // Date range from period filter
   const dateRange = useMemo(() => getDateRange(period, customFrom, customTo), [period, customFrom, customTo]);
 
