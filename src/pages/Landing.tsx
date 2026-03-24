@@ -504,6 +504,11 @@ export default function Landing() {
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
             className="mt-16 md:mt-24 max-w-6xl mx-auto relative"
           >
+            {/* Floating Notifications — social proof */}
+            <div className="hidden lg:block absolute -left-[280px] top-8 w-[260px] z-10">
+              <FloatingNotifications />
+            </div>
+
             <div
               className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group"
               style={{
