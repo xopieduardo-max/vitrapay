@@ -42,7 +42,6 @@ const REVENUE_GOAL = 1000000;
 const paymentMethods = [
   { name: "Cartão de crédito", key: "card", icon: CreditCard },
   { name: "Pix", key: "pix", icon: QrCode },
-  { name: "Boleto", key: "boleto", icon: Landmark },
 ];
 
 const anim = (delay: number) => ({
