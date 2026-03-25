@@ -271,7 +271,7 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, display_name");
+        .select("user_id, display_name, card_plan");
       return data || [];
     },
   });
