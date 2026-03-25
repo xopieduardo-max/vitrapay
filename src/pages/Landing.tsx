@@ -253,9 +253,9 @@ const bentoFeatures = [
 
 
 const bigStats = [
-{ value: "50+", label: "colaboradores engajados" },
-{ value: "500K+", label: "usuários cadastrados" },
-{ value: "10 mil+", label: "produtos cadastrados" }];
+{ value: "0%", label: "taxa no Pix para compradores" },
+{ value: "D+0", label: "recebimento instantâneo via Pix" },
+{ value: "24/7", label: "suporte humano disponível" }];
 
 
 const testimonials = [
