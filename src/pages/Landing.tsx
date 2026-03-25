@@ -425,21 +425,21 @@ export default function Landing() {
         <GridBackground />
         <FloatingParticles />
 
-        <div className="container relative py-16 md:py-24 lg:py-32">
+        <div className="container relative pt-6 md:pt-10 pb-16 md:pb-24 lg:pb-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="max-w-4xl mx-auto text-center space-y-8"
+            className="max-w-4xl mx-auto text-center space-y-6"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary"
+              className="inline-flex items-center gap-2 rounded-full border border-border/40 bg-card/60 backdrop-blur-sm px-4 py-1.5 text-sm text-muted-foreground"
             >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>A plataforma que acelera seus resultados</span>
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span>Segurança, visão e controle em cada transação.</span>
             </motion.div>
 
             <motion.div
@@ -451,13 +451,20 @@ export default function Landing() {
               <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-              Venda produtos digitais{" "}
-              <span className="text-gradient-primary">sem limites.</span>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] relative">
+              <span className="relative">
+                <span className="absolute inset-0 blur-2xl opacity-20 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full scale-150 pointer-events-none" />
+                <span className="relative text-foreground/90" style={{ textShadow: '0 4px 30px hsla(var(--primary), 0.15), 0 1px 3px hsla(0, 0%, 0%, 0.1)' }}>
+                  A VitraPay enxerga{" "}
+                  <br className="hidden sm:block" />
+                  o caminho para{" "}
+                  <span className="text-gradient-primary">não te deixar no escuro.</span>
+                </span>
+              </span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
+              Desenvolvida para negócios que não podem parar, nossa tecnologia combina automação inteligente, checkout otimizado e performance contínua para maximizar conversões com total segurança.
             </p>
 
             {/* ─── Dual CTAs — BlackCatPay Style ─── */}
@@ -479,22 +486,6 @@ export default function Landing() {
                 </Link>
               </Button>
             </div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground"
-            >
-              <div className="flex -space-x-2">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[0.6rem] font-bold text-primary">
-                    {String.fromCharCode(65 + i)}
-                  </div>
-                ))}
-              </div>
-              <span><strong className="text-foreground">+10.000</strong> produtores já confiam na VitraPay</span>
-            </motion.div>
           </motion.div>
 
           {/* Dashboard Preview with notifications side by side */}
