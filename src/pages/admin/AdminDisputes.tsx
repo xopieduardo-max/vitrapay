@@ -102,6 +102,7 @@ export default function AdminDisputes() {
   const statusMap: Record<string, { label: string; icon: any; className: string }> = {
     refunded: { label: "Estorno", icon: RotateCcw, className: "bg-warning/10 text-warning border-warning/20" },
     chargeback: { label: "Chargeback", icon: ShieldAlert, className: "bg-destructive/10 text-destructive border-destructive/20" },
+    med: { label: "MED Pix", icon: AlertTriangle, className: "bg-orange-500/10 text-orange-500 border-orange-500/20" },
   };
 
   const exportColumns = [
