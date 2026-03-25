@@ -71,6 +71,9 @@ const categoryIcons: Record<string, string> = {
   fee: "🏷️",
   withdrawal: "💸",
   refund: "↩️",
+  service_fee: "🧾",
+  chargeback: "⚠️",
+  med: "🏦",
 };
 
 const withdrawalStatusColors: Record<string, string> = {
