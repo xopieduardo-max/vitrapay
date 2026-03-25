@@ -1313,13 +1313,11 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {/* Taxa de serviço */}
-                {paymentMethod === "card" && (
-                  <div className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
-                    <span>Taxa de serviço</span>
-                    <span>R$ 0,99</span>
-                  </div>
-                )}
+                {/* Taxa de serviço - always shown */}
+                <div className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
+                  <span>Taxa de serviço</span>
+                  <span>R$ 0,99</span>
+                </div>
 
                 <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
 
