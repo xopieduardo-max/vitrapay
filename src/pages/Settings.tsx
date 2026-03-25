@@ -71,6 +71,7 @@ export default function Settings() {
         setCpf((data as any).cpf || "");
         setPhone((data as any).phone || "");
         setBirthDate((data as any).birth_date || "");
+        setCardPlan((data as any).card_plan || "d2");
         setAddressCep((data as any).address_cep || "");
         setAddressStreet((data as any).address_street || "");
         setAddressNumber((data as any).address_number || "");
