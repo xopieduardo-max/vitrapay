@@ -60,6 +60,9 @@ const categoryLabels: Record<string, string> = {
   fee: "Taxa",
   withdrawal: "Saque",
   refund: "Reembolso",
+  service_fee: "Taxa Serviço",
+  chargeback: "Chargeback",
+  med: "MED Pix",
 };
 
 const categoryIcons: Record<string, string> = {
