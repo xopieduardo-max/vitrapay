@@ -113,6 +113,7 @@ const App = () => {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/help" element={<HelpCenter />} />
+                  <Route path="/taxas" element={<Taxas />} />
                 </Route>
               </Route>
 
