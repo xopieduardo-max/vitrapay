@@ -495,7 +495,7 @@ export default function AdminUserDetail() {
                   <div
                     key={p.id}
                     className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/edit-product/${p.id}`)}
+                    onClick={() => navigate(`/product/${p.id}`)}
                   >
                     {p.cover_url ? (
                       <img
