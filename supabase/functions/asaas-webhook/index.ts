@@ -295,9 +295,11 @@ Deno.serve(async (req) => {
 
         // Send push notification to producer about refund/chargeback
         const amountFormatted = `R$ ${(sale.amount / 100).toFixed(2).replace(".", ",")}`;
-        const pushTitle = isChargeback ? "⚠️ Chargeback Recebido!" : "🔄 Estorno Realizado";
+        const pushTitle = isChargeback ? "⚠️ Chargeback Recebido!" : isMED ? "🏦 MED Pix Recebido!" : "🔄 Estorno Realizado";
         const pushBody = isChargeback
           ? `Um chargeback de ${amountFormatted} foi aberto. Verifique sua conta.`
+          : isMED
+          ? `Uma devolução MED (Pix) de ${amountFormatted} foi processada na sua conta.`
           : `Um estorno de ${amountFormatted} foi processado na sua conta.`;
 
         try {
