@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
 
       let commissionAmount = 0;
       if (sale && affiliateId && product.affiliate_commission > 0) {
-        commissionAmount = Math.round(amount * product.affiliate_commission / 100);
+        commissionAmount = Math.round(productAmount * product.affiliate_commission / 100);
         await supabase.from("commissions").insert({
           sale_id: sale.id, affiliate_id: affiliateId,
           amount: commissionAmount, status: "pending",

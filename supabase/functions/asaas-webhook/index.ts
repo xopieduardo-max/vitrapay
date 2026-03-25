@@ -307,7 +307,7 @@ Deno.serve(async (req) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              user_id: sale.producer_id,
+              producer_id: sale.producer_id,
               title: pushTitle,
               body: pushBody,
               url: "/dashboard",

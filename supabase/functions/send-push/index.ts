@@ -8,8 +8,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const VAPID_PUBLIC_KEY = "BMl6o6EhTPzsw80f47Dxs3_GqfrtFV0L8dHuhKTpiqfc_RL7cMbt0ahYuMwBesOIYPieW-UCihniGf7hJ-_iOvQ";
-const VAPID_PRIVATE_KEY = "oEmxqbA2jtWLOsrXbOhHiKtpS_bAyakweV9HjA_zfsY";
+const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") || "";
+const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") || "";
 
 webpush.setVapidDetails(
   "mailto:noreply@vitrapay.com.br",
