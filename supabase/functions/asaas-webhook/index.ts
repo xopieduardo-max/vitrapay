@@ -528,8 +528,8 @@ Deno.serve(async (req) => {
 
     // ── Record transactions (split) ──
     // PIX: release immediately (D+0)
-    const producerNet = pending.amount - pixPlatformFee - commissionAmount;
-    const netProfit = pixPlatformFee - FEE_PIX_ASAAS;
+    const producerNet = productAmount - pixPlatformFee - commissionAmount;
+    const netProfit = pixPlatformFee - FEE_PIX_ASAAS + SERVICE_FEE;
     const releaseDate = new Date().toISOString(); // PIX = D+0
 
     const txns: any[] = [
