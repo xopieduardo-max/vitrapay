@@ -219,16 +219,19 @@ Deno.serve(async (req) => {
 
     const asaasPaymentId = payment.id;
 
-    // ── Handle REFUND / CHARGEBACK events ──
+    // ── Handle REFUND / CHARGEBACK / MED events ──
     const isChargeback =
       event === "PAYMENT_CHARGEBACK_REQUESTED" ||
       event === "PAYMENT_CHARGEBACK_DISPUTE" ||
       event === "PAYMENT_CHARGEBACK_CREATED";
     const isRefund = event === "PAYMENT_REFUNDED";
+    const isMED =
+      event === "PAYMENT_RECEIVED_IN_CASH_UNDONE" ||
+      event === "PAYMENT_DUNNING_RECEIVED" && payment?.billingType === "PIX";
 
-    if (isRefund || isChargeback) {
-      const saleStatus = isChargeback ? "chargeback" : "refunded";
-      const txnCategory = isChargeback ? "chargeback" : "refund";
+    if (isRefund || isChargeback || isMED) {
+      const saleStatus = isChargeback ? "chargeback" : isMED ? "med" : "refunded";
+      const txnCategory = isChargeback ? "chargeback" : isMED ? "med" : "refund";
       console.log(`Processing ${txnCategory}:`, event, asaasPaymentId);
 
       await supabase
@@ -292,9 +295,11 @@ Deno.serve(async (req) => {
 
         // Send push notification to producer about refund/chargeback
         const amountFormatted = `R$ ${(sale.amount / 100).toFixed(2).replace(".", ",")}`;
-        const pushTitle = isChargeback ? "⚠️ Chargeback Recebido!" : "🔄 Estorno Realizado";
+        const pushTitle = isChargeback ? "⚠️ Chargeback Recebido!" : isMED ? "🏦 MED Pix Recebido!" : "🔄 Estorno Realizado";
         const pushBody = isChargeback
           ? `Um chargeback de ${amountFormatted} foi aberto. Verifique sua conta.`
+          : isMED
+          ? `Uma devolução MED (Pix) de ${amountFormatted} foi processada na sua conta.`
           : `Um estorno de ${amountFormatted} foi processado na sua conta.`;
 
         try {

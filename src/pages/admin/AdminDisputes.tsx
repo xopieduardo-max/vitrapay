@@ -62,7 +62,7 @@ export default function AdminDisputes() {
       const { data } = await supabase
         .from("sales")
         .select("id, amount, platform_fee, status, created_at, payment_provider, payment_id, product_id, producer_id, buyer_id, products(title)")
-        .in("status", ["refunded", "chargeback"])
+        .in("status", ["refunded", "chargeback", "med"])
         .order("created_at", { ascending: false });
       return data || [];
     },
@@ -92,14 +92,17 @@ export default function AdminDisputes() {
 
   const totalRefunded = filtered.filter((d: any) => d.status === "refunded");
   const totalChargeback = filtered.filter((d: any) => d.status === "chargeback");
+  const totalMED = filtered.filter((d: any) => d.status === "med");
   const refundedAmount = totalRefunded.reduce((a: number, d: any) => a + d.amount, 0);
   const chargebackAmount = totalChargeback.reduce((a: number, d: any) => a + d.amount, 0);
-  const totalLoss = refundedAmount + chargebackAmount;
+  const medAmount = totalMED.reduce((a: number, d: any) => a + d.amount, 0);
+  const totalLoss = refundedAmount + chargebackAmount + medAmount;
   const feeImpact = filtered.reduce((a: number, d: any) => a + (d.platform_fee || 0), 0);
 
   const statusMap: Record<string, { label: string; icon: any; className: string }> = {
     refunded: { label: "Estorno", icon: RotateCcw, className: "bg-warning/10 text-warning border-warning/20" },
     chargeback: { label: "Chargeback", icon: ShieldAlert, className: "bg-destructive/10 text-destructive border-destructive/20" },
+    med: { label: "MED Pix", icon: AlertTriangle, className: "bg-orange-500/10 text-orange-500 border-orange-500/20" },
   };
 
   const exportColumns = [
@@ -114,7 +117,7 @@ export default function AdminDisputes() {
   const exportData = filtered.map((d: any) => ({
     product_title: d.products?.title || "Produto removido",
     producer_name: profileMap[d.producer_id] || "—",
-    type: d.status === "chargeback" ? "Chargeback" : "Estorno",
+    type: d.status === "chargeback" ? "Chargeback" : d.status === "med" ? "MED Pix" : "Estorno",
     amount_formatted: (d.amount / 100).toFixed(2),
     payment_provider: d.payment_provider || "N/A",
     created_at: new Date(d.created_at).toLocaleDateString("pt-BR"),
@@ -158,12 +161,13 @@ export default function AdminDisputes() {
             <SelectItem value="all">Todos os tipos</SelectItem>
             <SelectItem value="refunded">Estornos</SelectItem>
             <SelectItem value="chargeback">Chargebacks</SelectItem>
+            <SelectItem value="med">MED Pix</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
             <TrendingDown className="h-4 w-4" /> Perda Total
@@ -184,6 +188,13 @@ export default function AdminDisputes() {
           </div>
           <p className="text-xl font-bold text-destructive">{fmt(chargebackAmount)}</p>
           <p className="text-[0.65rem] text-muted-foreground mt-1">{totalChargeback.length} chargeback(s)</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+            <AlertTriangle className="h-4 w-4" /> MED Pix
+          </div>
+          <p className="text-xl font-bold text-orange-500">{fmt(medAmount)}</p>
+          <p className="text-[0.65rem] text-muted-foreground mt-1">{totalMED.length} MED(s)</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">

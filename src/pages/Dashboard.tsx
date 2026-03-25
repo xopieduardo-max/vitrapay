@@ -235,8 +235,10 @@ export default function Dashboard() {
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = filteredSales.filter((s) => s.status === "refunded");
   const chargebackSales = filteredSales.filter((s) => s.status === "chargeback");
+  const medSales = filteredSales.filter((s) => s.status === "med");
+  const allDisputeSales = [...refundedSales, ...chargebackSales, ...medSales];
   const refundRate = filteredSales.length > 0 ? ((refundedSales.length / filteredSales.length) * 100).toFixed(1) : "0";
-  const chargebackRate = filteredSales.length > 0 ? ((chargebackSales.length / filteredSales.length) * 100).toFixed(1) : "0";
+  const chargebackRate = filteredSales.length > 0 ? (((chargebackSales.length + medSales.length) / filteredSales.length) * 100).toFixed(1) : "0";
   const refundAmount = refundedSales.reduce((acc, s) => acc + s.amount, 0);
   const abandonedSales = filteredSales.filter((s) => s.status === "abandoned").length;
 
