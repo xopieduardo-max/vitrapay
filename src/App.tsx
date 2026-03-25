@@ -136,6 +136,7 @@ const App = () => {
                 <Route path="/admin/fee-simulator" element={<AdminFeeSimulator />} />
                 <Route path="/admin/disputes" element={<AdminDisputes />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/product/:productId" element={<AdminProductDetail />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
