@@ -798,7 +798,7 @@ export default function Checkout() {
   const total = calculateTotal();
   const time = formatTime(timeLeft);
 
-  const SERVICE_FEE = 99; // R$ 0.99 in centavos
+  // SERVICE_FEE already declared above
 
   const installmentOptionsAsc = Array.from({ length: 12 }, (_, i) => {
     const n = i + 1;
