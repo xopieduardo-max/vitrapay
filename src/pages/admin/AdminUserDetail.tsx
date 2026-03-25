@@ -76,12 +76,31 @@ export default function AdminUserDetail() {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, title, price, type, is_published, created_at, cover_url")
+        .select("id, title, price, type, is_published, created_at, cover_url, file_url")
         .eq("producer_id", userId!)
         .order("created_at", { ascending: false });
       return data || [];
     },
     enabled: !!userId,
+  });
+
+  // Product access counts
+  const { data: accessCounts = {} } = useQuery({
+    queryKey: ["admin-user-product-access", userId, products],
+    queryFn: async () => {
+      if (!products.length) return {};
+      const productIds = products.map((p) => p.id);
+      const { data } = await supabase
+        .from("product_access")
+        .select("product_id")
+        .in("product_id", productIds);
+      const counts: Record<string, number> = {};
+      (data || []).forEach((a: any) => {
+        counts[a.product_id] = (counts[a.product_id] || 0) + 1;
+      });
+      return counts;
+    },
+    enabled: !!userId && products.length > 0,
   });
 
   // Sales
