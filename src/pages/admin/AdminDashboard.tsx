@@ -434,6 +434,7 @@ export default function AdminDashboard() {
         platformFee,
         asaasCost,
         serviceFee: SERVICE_FEE_PER_SALE,
+        serviceFeeNet,
         netProfit,
         method,
         producer_id: s.producer_id,

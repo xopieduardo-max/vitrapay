@@ -274,9 +274,11 @@ Deno.serve(async (req) => {
         platformFee = Math.round(productAmount * PLATFORM_PCT + PLATFORM_FIXED);
       }
 
-      const asaasCost = Math.round(productAmount * ASAAS_PCT + ASAAS_FIXED);
+      // Asaas charges on the FULL amount (including service fee)
+      const asaasCost = Math.round(amount * ASAAS_PCT + ASAAS_FIXED);
+      const serviceFeeNet = SERVICE_FEE - Math.round(SERVICE_FEE * ASAAS_PCT); // Net service fee after Asaas cut
       const netProfit = platformFee - asaasCost + SERVICE_FEE;
-      console.log(`Card ${cardPlan} fees: platform=${platformFee}, asaas=${asaasCost}, serviceFee=${SERVICE_FEE}, profit=${netProfit}`);
+      console.log(`Card ${cardPlan} fees: platform=${platformFee}, asaas=${asaasCost}, serviceFee=${SERVICE_FEE}, serviceFeeNet=${serviceFeeNet}, profit=${netProfit}`);
 
       let affiliateId: string | null = null;
       if (affiliate_ref) {
