@@ -413,11 +413,16 @@ export default function AdminDashboard() {
       const amount = s.amount;
       const platformFee = s.platform_fee || 0;
       let asaasCost = 0;
+      let serviceFeeNet = SERVICE_FEE_PER_SALE;
 
       if (method === "pix") {
-        asaasCost = 199; // R$ 1.99
+        asaasCost = 199; // R$ 1.99 flat - service fee has no extra Asaas cost on PIX
       } else {
-        asaasCost = Math.round(amount * 0.0414 + 49);
+        // Card: Asaas charges on full amount (product + service fee)
+        const fullAmount = amount + SERVICE_FEE_PER_SALE;
+        asaasCost = Math.round(fullAmount * 0.0414 + 49);
+        // Net service fee after Asaas cut on the R$0.99
+        serviceFeeNet = SERVICE_FEE_PER_SALE - Math.round(SERVICE_FEE_PER_SALE * 0.0414);
       }
 
       const netProfit = platformFee - asaasCost + SERVICE_FEE_PER_SALE;
