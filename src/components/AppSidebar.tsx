@@ -49,6 +49,7 @@ const navItems = [
   { title: "Minhas Compras", url: "/purchases", icon: FileText },
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
   { title: "Comunidade", url: "/community", icon: MessageCircle },
+  { title: "Taxas e Plano", url: "/taxas", icon: Receipt },
   { title: "Integrações", url: "/integrations", icon: Plug },
   { title: "Baixar App", url: "/install", icon: Smartphone },
 ];
