@@ -4,15 +4,57 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, BookOpen, Play, LogOut, Package } from "lucide-react";
-import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Download, BookOpen, Play, LogOut, Package, AlertTriangle, Lock, Eye, EyeOff, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ThemeLogo } from "@/components/ThemeLogo";
+import { useToast } from "@/hooks/use-toast";
 import MinhaContaLogin from "./MinhaContaLogin";
 
 export default function MinhaConta() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [authTrigger, setAuthTrigger] = useState(0);
+  const { toast } = useToast();
+
+  // Check if user was auto-created (needs password change)
+  const isAutoCreated = user?.user_metadata?.auto_created === true;
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordChanged, setPasswordChanged] = useState(false);
+
+  // Dismiss banner if user already changed password in this session
+  const [dismissed, setDismissed] = useState(false);
+
+  const handlePasswordChange = async () => {
+    if (newPassword.length < 6) {
+      toast({ title: "Senha muito curta", description: "A senha deve ter no mínimo 6 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Senhas não conferem", description: "A nova senha e a confirmação devem ser iguais.", variant: "destructive" });
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      // Remove auto_created flag
+      await supabase.auth.updateUser({ data: { auto_created: false } });
+      setPasswordChanged(true);
+      setShowPasswordChange(false);
+      setDismissed(true);
+      toast({ title: "Senha alterada!", description: "Sua nova senha foi salva com sucesso." });
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   const { data: accessItems = [], isLoading } = useQuery({
     queryKey: ["minha-conta-products", user?.id, user?.email, authTrigger],
@@ -117,6 +159,98 @@ export default function MinhaConta() {
             Acesse os produtos que você comprou
           </p>
         </div>
+
+        {/* Password change banner for auto-created accounts */}
+        <AnimatePresence>
+          {isAutoCreated && !dismissed && !passwordChanged && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="rounded-xl border-2 border-accent bg-accent/10 p-4"
+            >
+              <div className="flex items-start gap-3">
+                <div className="h-9 w-9 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <AlertTriangle className="h-4 w-4 text-accent-foreground" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">Troque sua senha provisória</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Sua conta foi criada automaticamente na compra. Por segurança, recomendamos que você defina uma nova senha.
+                    </p>
+                  </div>
+
+                  {!showPasswordChange ? (
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowPasswordChange(true)}>
+                        <Lock className="h-3.5 w-3.5" />
+                        Trocar Senha
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setDismissed(true)}>
+                        Depois
+                      </Button>
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="space-y-3 pt-1"
+                    >
+                      <div className="space-y-1.5">
+                        <Label htmlFor="new-pass" className="text-xs">Nova senha</Label>
+                        <div className="relative">
+                          <Input
+                            id="new-pass"
+                            type={showPass ? "text" : "password"}
+                            placeholder="Mínimo 6 caracteres"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="h-9 text-sm pr-9"
+                            minLength={6}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPass(!showPass)}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPass ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="confirm-pass" className="text-xs">Confirmar senha</Label>
+                        <Input
+                          id="confirm-pass"
+                          type={showPass ? "text" : "password"}
+                          placeholder="Repita a nova senha"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="h-9 text-sm"
+                          minLength={6}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs gap-1.5"
+                          onClick={handlePasswordChange}
+                          disabled={changingPassword || newPassword.length < 6}
+                        >
+                          {changingPassword ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                          {changingPassword ? "Salvando..." : "Salvar Nova Senha"}
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setShowPasswordChange(false)}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {isLoading ? (
           <div className="flex justify-center py-20">
