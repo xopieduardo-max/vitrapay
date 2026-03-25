@@ -467,6 +467,110 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Payout Plan Section */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <CreditCard className="h-4 w-4 text-primary" />
+          Plano de Recebimento (Cartão)
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Escolha quando deseja receber os valores das vendas por cartão de crédito. Vendas via PIX são sempre D+0 (imediato).
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* D+2 */}
+          <button
+            onClick={() => setCardPlan("d2")}
+            className={`relative rounded-xl border-2 p-4 text-left transition-all ${
+              cardPlan === "d2"
+                ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                : "border-border hover:border-muted-foreground/30"
+            }`}
+          >
+            {cardPlan === "d2" && (
+              <span className="absolute top-2 right-2 text-[0.6rem] font-bold uppercase px-1.5 py-0.5 rounded bg-primary text-primary-foreground">
+                Ativo
+              </span>
+            )}
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="h-5 w-5 text-primary" />
+              <span className="font-bold text-sm">D+2 — Antecipação</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Receba em 2 dias úteis após a venda.
+            </p>
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Taxa percentual</span>
+                <span className="font-semibold">4,99%</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Taxa fixa</span>
+                <span className="font-semibold">R$ 2,49</span>
+              </div>
+            </div>
+          </button>
+
+          {/* D+30 */}
+          <button
+            onClick={() => setCardPlan("d30")}
+            className={`relative rounded-xl border-2 p-4 text-left transition-all ${
+              cardPlan === "d30"
+                ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                : "border-border hover:border-muted-foreground/30"
+            }`}
+          >
+            {cardPlan === "d30" && (
+              <span className="absolute top-2 right-2 text-[0.6rem] font-bold uppercase px-1.5 py-0.5 rounded bg-primary text-primary-foreground">
+                Ativo
+              </span>
+            )}
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="h-5 w-5 text-muted-foreground" />
+              <span className="font-bold text-sm">D+30 — Padrão</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Receba em 30 dias corridos após a venda. Taxa menor.
+            </p>
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Taxa percentual</span>
+                <span className="font-semibold">3,99%</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Taxa fixa</span>
+                <span className="font-semibold">R$ 2,49</span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            disabled={savingPlan || cardPlan === ((profile as any)?.card_plan || "d2")}
+            onClick={async () => {
+              if (!user) return;
+              setSavingPlan(true);
+              const { error } = await supabase
+                .from("profiles")
+                .update({ card_plan: cardPlan } as any)
+                .eq("user_id", user.id);
+              if (error) {
+                toast.error("Erro ao salvar plano.");
+              } else {
+                toast.success("Plano de recebimento atualizado!");
+                queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+              }
+              setSavingPlan(false);
+            }}
+          >
+            {savingPlan ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+            Salvar Plano
+          </Button>
+        </div>
+      </div>
+
       {/* Push Notifications Section */}
       <NotificationsSection />
 
