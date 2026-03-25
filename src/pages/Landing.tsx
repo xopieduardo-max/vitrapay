@@ -433,7 +433,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="max-w-4xl mx-auto text-center space-y-8">
+            className="max-w-4xl mx-auto text-center space-y-6">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -442,19 +442,10 @@ export default function Landing() {
               className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
               
               <Sparkles className="h-3.5 w-3.5" />
-              <span>A plataforma que acelera seus resultados</span>
+              <span>Segurança, visão e controle em cada transação.</span>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ delay: 0.2, duration: 0.8, type: "spring", damping: 15 }}
-              className="flex justify-center">
-              
-              <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
-            </motion.div>
-
-            <h1 className="relative text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.08]">
+            <h1 className="relative text-3xl sm:text-4xl md:text-[3.5rem] lg:text-[4rem] font-bold tracking-tight leading-[1.12] text-foreground/90">
               <span className="relative z-10">
                 A VitraPay enxerga o caminho
                 <br />
@@ -462,10 +453,10 @@ export default function Landing() {
                 <span className="text-gradient-primary">no escuro.</span>
               </span>
               {/* Glow central — centro mais claro, cantos mais escuros */}
-              <span className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--primary)/0.12),transparent_70%)] blur-xl pointer-events-none" />
+              <span className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--primary)/0.08),transparent_70%)] blur-2xl pointer-events-none" />
             </h1>
 
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Desenvolvida para negócios que não podem parar, nossa tecnologia combina automação inteligente, checkout otimizado e performance contínua para maximizar conversões com total segurança.
             </p>
 
