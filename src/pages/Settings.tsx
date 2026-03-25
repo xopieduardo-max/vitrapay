@@ -34,6 +34,8 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [savingPix, setSavingPix] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [cardPlan, setCardPlan] = useState("d2");
+  const [savingPlan, setSavingPlan] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
