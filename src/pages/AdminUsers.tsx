@@ -126,16 +126,23 @@ export default function AdminUsers() {
     }
     if (search.trim()) {
       const q = search.toLowerCase();
-      result = result.filter((u) => u.name.toLowerCase().includes(q));
+      result = result.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+    }
+    // Sort
+    if (sortBy === "revenue") {
+      result = [...result].sort((a, b) => b.totalRevenue - a.totalRevenue);
+    } else if (sortBy === "products") {
+      result = [...result].sort((a, b) => b.productsCount - a.productsCount);
     }
     return result;
-  }, [users, roleFilter, search]);
+  }, [users, roleFilter, search, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   const handleSearch = (v: string) => { setSearch(v); setPage(1); };
   const handleRoleFilter = (v: string) => { setRoleFilter(v); setPage(1); };
+  const handleSortBy = (v: string) => { setSortBy(v); setPage(1); };
 
   const openFeeDialog = (user: UserData) => {
     setEditingUser(user);
