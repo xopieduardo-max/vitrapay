@@ -428,7 +428,7 @@ export default function Landing() {
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
-        <div className="container relative py-16 md:py-24 lg:py-32">
+        <div className="container relative py-8 md:py-14 lg:py-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -442,25 +442,33 @@ export default function Landing() {
               className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
               
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Segurança, visão e controle em cada transação.</span>
+              <span>A plataforma que acelera seus resultados</span>
             </motion.div>
 
-            <h1 className="relative text-3xl sm:text-4xl md:text-[3.5rem] lg:text-[4rem] font-bold tracking-tight leading-[1.12] text-foreground/90">
-              <span className="relative z-10">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              transition={{ delay: 0.2, duration: 0.8, type: "spring", damping: 15 }}
+              className="flex justify-center">
+              
+              <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
+            </motion.div>
+
+            <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1]">
+              <span className="relative z-10 bg-gradient-to-b from-foreground via-foreground to-foreground/40 bg-clip-text text-transparent">
                 A VitraPay enxerga o caminho
                 <br />
-                para não te deixar{" "}
-                <span className="text-gradient-primary">no escuro.</span>
+                para não te deixar no escuro
               </span>
-              {/* Glow central — centro mais claro, cantos mais escuros */}
-              <span className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--primary)/0.08),transparent_70%)] blur-2xl pointer-events-none" />
+              {/* Glow central sutil */}
+              <span className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--primary)/0.06),transparent_70%)] blur-2xl pointer-events-none" />
             </h1>
 
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Desenvolvida para negócios que não podem parar, nossa tecnologia combina automação inteligente, checkout otimizado e performance contínua para maximizar conversões com total segurança.
             </p>
 
-            {/* ─── Dual CTAs — BlackCatPay Style ─── */}
+            {/* ─── Dual CTAs ─── */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button size="lg" className="relative h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20" asChild>
                 <Link to="/auth" className="text-sm">
@@ -479,22 +487,6 @@ export default function Landing() {
                 </Link>
               </Button>
             </div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground">
-              
-              <div className="flex -space-x-2">
-                {[...Array(5)].map((_, i) =>
-                <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[0.6rem] font-bold text-primary">
-                    {String.fromCharCode(65 + i)}
-                  </div>
-                )}
-              </div>
-              <span><strong className="text-foreground">+10.000</strong> produtores já confiam na VitraPay</span>
-            </motion.div>
           </motion.div>
 
           {/* Dashboard Preview with notifications side by side */}
