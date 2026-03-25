@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import {
   Camera, Loader2, Save, KeyRound, User, Bell, BellOff, Landmark,
-  ShieldCheck, MapPin, Phone, CreditCard, Zap, Clock,
+  ShieldCheck, MapPin, Phone,
 } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Badge } from "@/components/ui/badge";
