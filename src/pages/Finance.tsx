@@ -409,20 +409,22 @@ export default function Finance() {
       {/* Stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque", clickAction: "available" as const },
-          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Cartão: D+${HOLDBACK_DAYS_CARD} • PIX: D+0`, clickAction: "held" as const },
-          { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões", clickAction: null },
-          { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido", clickAction: null },
+          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-emerald-500", cardClass: "border-emerald-500/30 bg-emerald-500/5", description: "Pronto para saque", clickAction: "available" as const },
+          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", cardClass: "", description: `Cartão: D+${HOLDBACK_DAYS_CARD} • PIX: D+0`, clickAction: "held" as const },
+          { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", cardClass: "", description: "Vendas + comissões", clickAction: null },
+          { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", cardClass: "", description: "Já transferido", clickAction: null },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className={`rounded-xl border bg-card p-4 space-y-1 transition-colors ${
+            className={`rounded-xl border p-4 space-y-1 transition-colors ${
+              stat.cardClass || "bg-card border-border"
+            } ${
               stat.clickAction
-                ? "cursor-pointer hover:border-primary/40 border-border"
-                : "border-border"
+                ? "cursor-pointer hover:border-primary/40"
+                : ""
             } ${detailView === stat.clickAction ? "border-primary/50 ring-1 ring-primary/20" : ""}`}
             onClick={() => stat.clickAction && setDetailView(detailView === stat.clickAction ? null : stat.clickAction)}
           >
