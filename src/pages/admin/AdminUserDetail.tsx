@@ -42,6 +42,7 @@ export default function AdminUserDetail() {
   const [feeDialogOpen, setFeeDialogOpen] = useState(false);
   const [customPct, setCustomPct] = useState("");
   const [customFixed, setCustomFixed] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<string>("d2");
 
   // Profile
   const { data: profile, isLoading: loadingProfile } = useQuery({
