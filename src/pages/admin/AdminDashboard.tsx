@@ -284,6 +284,15 @@ export default function AdminDashboard() {
     return map;
   }, [profiles]);
 
+  const planCounts = useMemo(() => {
+    let d2 = 0, d30 = 0;
+    profiles.forEach((p: any) => {
+      if (p.card_plan === "d2") d2++;
+      else d30++;
+    });
+    return { d2, d30, total: d2 + d30 };
+  }, [profiles]);
+
   const productMap = useMemo(() => {
     const map: Record<string, string> = {};
     allProducts.forEach((p) => {
