@@ -461,7 +461,7 @@ export default function AdminUserDetail() {
                   <div
                     key={p.id}
                     className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/product/${p.id}`)}
+                    onClick={() => navigate(`/edit-product/${p.id}`)}
                   >
                     {p.cover_url ? (
                       <img
@@ -481,6 +481,10 @@ export default function AdminUserDetail() {
                         {!p.is_published && " · Rascunho"}
                       </p>
                     </div>
+                    <div className="flex items-center gap-1.5 text-muted-foreground flex-shrink-0">
+                      <Users className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      <span className="text-xs">{accessCounts[p.id] || 0} acesso{(accessCounts[p.id] || 0) !== 1 ? "s" : ""}</span>
+                    </div>
                     <div className="text-right flex-shrink-0">
                       {pSales ? (
                         <>
@@ -494,6 +498,7 @@ export default function AdminUserDetail() {
                       )}
                     </div>
                     <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  </div>
                   </div>
                 );
               })}
