@@ -548,6 +548,10 @@ export default function Landing() {
 
       {/* ─── Marquee ─── */}
       <section className="relative border-y border-border/50 bg-card/30 py-6 overflow-hidden space-y-4">
+        {/* Fade edges — sombra nos cantos */}
+        <div className="absolute inset-y-0 left-0 w-32 sm:w-48 bg-gradient-to-r from-card/95 via-card/60 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-32 sm:w-48 bg-gradient-to-l from-card/95 via-card/60 to-transparent z-10 pointer-events-none" />
+
         <div className="flex whitespace-nowrap animate-marquee">
           {[...Array(3)].map((_, rep) =>
             marqueeStats.map((item, i) => (
