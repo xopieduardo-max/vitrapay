@@ -47,12 +47,12 @@ export default function Finance() {
 
   // Get saved pix key from profile
   const { data: profile } = useQuery({
-    queryKey: ["profile-pix", user?.id],
+    queryKey: ["profile-finance", user?.id],
     queryFn: async () => {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("pix_key, pix_key_type, cpf, phone, display_name, address_cep")
+        .select("pix_key, pix_key_type, cpf, phone, display_name, address_cep, card_plan")
         .eq("user_id", user.id)
         .single();
       return data as any;
