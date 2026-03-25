@@ -42,6 +42,7 @@ export default function AdminUserDetail() {
   const [feeDialogOpen, setFeeDialogOpen] = useState(false);
   const [customPct, setCustomPct] = useState("");
   const [customFixed, setCustomFixed] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<string>("d2");
 
   // Profile
   const { data: profile, isLoading: loadingProfile } = useQuery({
@@ -130,12 +131,12 @@ export default function AdminUserDetail() {
     },
   });
 
-  // Save custom fees
+  // Save custom fees and plan
   const saveCustomFees = useMutation({
-    mutationFn: async ({ pct, fixed }: { pct: number | null; fixed: number | null }) => {
+    mutationFn: async ({ pct, fixed, plan }: { pct: number | null; fixed: number | null; plan: string }) => {
       const { error } = await supabase
         .from("profiles")
-        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed })
+        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed, card_plan: plan } as any)
         .eq("user_id", userId!);
       if (error) throw error;
     },
@@ -150,6 +151,7 @@ export default function AdminUserDetail() {
   const openFeeDialog = () => {
     setCustomPct(profile?.custom_fee_percentage != null ? String(profile.custom_fee_percentage) : "");
     setCustomFixed(profile?.custom_fee_fixed != null ? String((profile.custom_fee_fixed / 100).toFixed(2)) : "");
+    setSelectedPlan(profile?.card_plan || "d2");
     setFeeDialogOpen(true);
   };
 
@@ -164,11 +166,11 @@ export default function AdminUserDetail() {
       toast.error("Valor fixo inválido");
       return;
     }
-    saveCustomFees.mutate({ pct, fixed });
+    saveCustomFees.mutate({ pct, fixed, plan: selectedPlan });
   };
 
   const handleResetFees = () => {
-    saveCustomFees.mutate({ pct: null, fixed: null });
+    saveCustomFees.mutate({ pct: null, fixed: null, plan: selectedPlan });
   };
 
   const filteredSales = useMemo(() => {
@@ -313,91 +315,123 @@ export default function AdminUserDetail() {
       )}
 
       {/* Fee info */}
-      <Card className="border-border">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Percent className="h-4 w-4" strokeWidth={1.5} />
-            Taxas VitraPay
-          </CardTitle>
-          <div className="flex gap-2">
-            {(profile.custom_fee_percentage != null || profile.custom_fee_fixed != null) && (
-              <Button variant="ghost" size="sm" onClick={handleResetFees} disabled={saveCustomFees.isPending}>
-                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Resetar
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={openFeeDialog}>
-              <Pencil className="h-3.5 w-3.5 mr-1" /> Editar Taxas
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {profile.custom_fee_percentage != null || profile.custom_fee_fixed != null ? (
-            <div className="space-y-2">
-              <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm flex items-center gap-2">
-                <span>
-                  🎯 Taxa personalizada: <strong>
-                    {profile.custom_fee_percentage ?? (platformFees?.card_percentage ?? 3.89)}% + R$ {((profile.custom_fee_fixed ?? (platformFees?.card_fixed ?? 249)) / 100).toFixed(2)}
-                  </strong>
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Este usuário possui taxa diferenciada que sobrepõe a taxa padrão da plataforma.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Usando taxas padrão da plataforma: <strong>{platformFees?.card_percentage ?? 3.89}% + R$ {((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}</strong> (Cartão)
-                {platformFees && (Number(platformFees.pix_percentage) > 0 || platformFees.pix_fixed > 0) && (
-                  <> · <strong>{platformFees.pix_percentage}% + R$ {(platformFees.pix_fixed / 100).toFixed(2)}</strong> (Pix)</>
+      {(() => {
+        const plan = profile.card_plan || "d2";
+        const planLabel = plan === "d30" ? "D+30 Padrão" : "D+2 Antecipação";
+        const planPct = plan === "d30" ? 3.99 : 4.99;
+        const planFixed = 2.49;
+        const hasCustom = profile.custom_fee_percentage != null || profile.custom_fee_fixed != null;
+        const activePct = hasCustom ? (profile.custom_fee_percentage ?? planPct) : planPct;
+        const activeFixed = hasCustom ? ((profile.custom_fee_fixed ?? Math.round(planFixed * 100)) / 100) : planFixed;
+
+        return (
+          <Card className="border-border">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Percent className="h-4 w-4" strokeWidth={1.5} />
+                Taxas VitraPay
+              </CardTitle>
+              <div className="flex gap-2">
+                {hasCustom && (
+                  <Button variant="ghost" size="sm" onClick={handleResetFees} disabled={saveCustomFees.isPending}>
+                    <RotateCcw className="h-3.5 w-3.5 mr-1" /> Resetar
+                  </Button>
                 )}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Clique em "Editar Taxas" para definir uma taxa personalizada para este usuário.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <Button variant="outline" size="sm" onClick={openFeeDialog}>
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> Editar Taxas
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Badge variant="outline" className="text-xs">{planLabel}</Badge>
+                  {hasCustom && <Badge variant="outline" className="text-xs border-primary/30 text-primary">Taxa personalizada</Badge>}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Taxa ativa: <strong>{activePct}% + R$ {activeFixed.toFixed(2)}</strong> (Cartão)
+                </p>
+                {hasCustom && (
+                  <p className="text-xs text-muted-foreground">
+                    🎯 Este usuário possui taxa diferenciada que sobrepõe o plano padrão.
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Fee Dialog */}
       <Dialog open={feeDialogOpen} onOpenChange={setFeeDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Editar Taxas VitraPay — {profile.display_name || "Usuário"}</DialogTitle>
+            <DialogTitle>Editar Taxas — {profile.display_name || "Usuário"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-muted-foreground">
-              Defina taxas personalizadas para este produtor. Deixe em branco para usar as taxas padrão da plataforma
-              ({platformFees?.card_percentage ?? 3.89}% + R$ {((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}).
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Porcentagem (%)</Label>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={String(platformFees?.card_percentage ?? 3.89)}
-                  value={customPct}
-                  onChange={(e) => setCustomPct(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Valor fixo (R$)</Label>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}
-                  value={customFixed}
-                  onChange={(e) => setCustomFixed(e.target.value)}
-                />
+          <div className="space-y-5 py-2">
+            {/* Plan selection */}
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Plano de recebimento</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { id: "d30", label: "D+30 Padrão", pct: "3,99%", fixed: "R$ 2,49", desc: "Recebe em 30 dias" },
+                  { id: "d2", label: "D+2 Antecipação", pct: "4,99%", fixed: "R$ 2,49", desc: "Recebe em 2 dias" },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setSelectedPlan(p.id)}
+                    className={`rounded-xl border-2 p-4 text-left transition-all ${
+                      selectedPlan === p.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold">{p.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{p.desc}</p>
+                    <p className="text-sm font-bold mt-2 text-primary">{p.pct} + {p.fixed}</p>
+                  </button>
+                ))}
               </div>
             </div>
+
+            {/* Custom fee override */}
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Taxa personalizada (opcional)</Label>
+              <p className="text-xs text-muted-foreground">
+                Deixe em branco para usar a taxa do plano selecionado. Preencha para aplicar uma taxa diferenciada.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Porcentagem (%)</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={selectedPlan === "d30" ? "3.99" : "4.99"}
+                    value={customPct}
+                    onChange={(e) => setCustomPct(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Valor fixo (R$)</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="2.49"
+                    value={customFixed}
+                    onChange={(e) => setCustomFixed(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Simulation */}
             <div className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-              💡 Exemplo: Se o produtor vender R$ 100 com taxa de {customPct || String(platformFees?.card_percentage ?? 3.89)}% + R$ {customFixed || ((platformFees?.card_fixed ?? 249) / 100).toFixed(2)}, 
-              a VitraPay receberá R$ {(() => {
-                const pct = parseFloat((customPct || String(platformFees?.card_percentage ?? 3.89)).replace(",", "."));
-                const fix = parseFloat((customFixed || ((platformFees?.card_fixed ?? 249) / 100).toFixed(2)).replace(",", "."));
+              💡 Exemplo: Venda de R$ 100 → VitraPay recebe R$ {(() => {
+                const basePct = selectedPlan === "d30" ? 3.99 : 4.99;
+                const baseFix = 2.49;
+                const pct = customPct.trim() ? parseFloat(customPct.replace(",", ".")) : basePct;
+                const fix = customFixed.trim() ? parseFloat(customFixed.replace(",", ".")) : baseFix;
                 if (isNaN(pct) || isNaN(fix)) return "—";
                 return ((100 * pct / 100) + fix).toFixed(2);
               })()}
@@ -407,7 +441,7 @@ export default function AdminUserDetail() {
             <Button variant="ghost" onClick={() => setFeeDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleSaveFees} disabled={saveCustomFees.isPending}>
               {saveCustomFees.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Salvar Taxas
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
