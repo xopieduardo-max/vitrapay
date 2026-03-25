@@ -62,7 +62,7 @@ export default function AdminDisputes() {
       const { data } = await supabase
         .from("sales")
         .select("id, amount, platform_fee, status, created_at, payment_provider, payment_id, product_id, producer_id, buyer_id, products(title)")
-        .in("status", ["refunded", "chargeback"])
+        .in("status", ["refunded", "chargeback", "med"])
         .order("created_at", { ascending: false });
       return data || [];
     },
