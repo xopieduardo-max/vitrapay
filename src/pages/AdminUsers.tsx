@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MoreHorizontal, Shield, Package, ShoppingCart, Loader2, Search, ChevronLeft, ChevronRight, Percent } from "lucide-react";
+import { MoreHorizontal, Shield, Package, ShoppingCart, Loader2, Search, ChevronLeft, ChevronRight, Percent, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,7 @@ const ITEMS_PER_PAGE = 15;
 interface UserData {
   id: string;
   name: string;
+  email: string;
   joined: string;
   role: string;
   custom_fee_percentage: number | null;
@@ -53,6 +54,7 @@ interface UserData {
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("recent");
   const [page, setPage] = useState(1);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [feePercentage, setFeePercentage] = useState("");
@@ -71,16 +73,22 @@ export default function AdminUsers() {
 
       if (!profiles) return [];
 
-      const [{ data: roles }, { data: products }, { data: salesData }] = await Promise.all([
+      const [{ data: roles }, { data: products }, { data: salesData }, { data: emails }] = await Promise.all([
         supabase.from("user_roles").select("user_id, role"),
         supabase.from("products").select("id, producer_id"),
         supabase.from("sales").select("producer_id, amount, status"),
+        supabase.rpc("get_user_emails"),
       ]);
 
       const rolesMap: Record<string, string[]> = {};
       (roles || []).forEach((r: any) => {
         if (!rolesMap[r.user_id]) rolesMap[r.user_id] = [];
         rolesMap[r.user_id].push(r.role);
+      });
+
+      const emailsMap: Record<string, string> = {};
+      (emails || []).forEach((e: any) => {
+        emailsMap[e.user_id] = e.email;
       });
 
       const productsCountMap: Record<string, number> = {};
@@ -99,6 +107,7 @@ export default function AdminUsers() {
         return {
           id: p.user_id,
           name: p.display_name || "Sem nome",
+          email: emailsMap[p.user_id] || "",
           joined: format(new Date(p.created_at), "dd/MM/yyyy"),
           role,
           custom_fee_percentage: p.custom_fee_percentage,
@@ -117,16 +126,23 @@ export default function AdminUsers() {
     }
     if (search.trim()) {
       const q = search.toLowerCase();
-      result = result.filter((u) => u.name.toLowerCase().includes(q));
+      result = result.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+    }
+    // Sort
+    if (sortBy === "revenue") {
+      result = [...result].sort((a, b) => b.totalRevenue - a.totalRevenue);
+    } else if (sortBy === "products") {
+      result = [...result].sort((a, b) => b.productsCount - a.productsCount);
     }
     return result;
-  }, [users, roleFilter, search]);
+  }, [users, roleFilter, search, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   const handleSearch = (v: string) => { setSearch(v); setPage(1); };
   const handleRoleFilter = (v: string) => { setRoleFilter(v); setPage(1); };
+  const handleSortBy = (v: string) => { setSortBy(v); setPage(1); };
 
   const openFeeDialog = (user: UserData) => {
     setEditingUser(user);
@@ -213,7 +229,7 @@ export default function AdminUsers() {
           <Input
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Buscar por nome..."
+            placeholder="Buscar por nome ou e-mail..."
             className="pl-9 h-9 text-sm"
           />
         </div>
@@ -228,66 +244,82 @@ export default function AdminUsers() {
             <SelectItem value="buyer">Comprador</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={sortBy} onValueChange={handleSortBy}>
+          <SelectTrigger className="w-[180px] h-9 text-sm">
+            <ArrowUpDown className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Ordenar por" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recent">Mais recente</SelectItem>
+            <SelectItem value="revenue">Maior faturamento</SelectItem>
+            <SelectItem value="products">Mais produtos</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <div className="grid grid-cols-[1fr_100px_80px_80px_80px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          <span>Nome</span>
-          <span>Função</span>
-          <span>Taxa</span>
-          <span>Produtos</span>
-          <span>Faturamento</span>
-          <span>Cadastro</span>
-          <span></span>
-        </div>
-        {paginated.map((user, i) => {
-          const rc = roleConfig[user.role as keyof typeof roleConfig] || roleConfig.buyer;
-          const hasCustomFee = user.custom_fee_percentage != null || user.custom_fee_fixed != null;
-          return (
-            <motion.div
-              key={user.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="grid grid-cols-[1fr_100px_80px_80px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-              onClick={() => navigate(`/admin/users/${user.id}`)}
-            >
-              <span className="text-sm font-medium truncate">{user.name}</span>
-              <Badge variant="outline" className={`text-[0.65rem] w-fit gap-1 ${rc.className}`}>
-                <rc.icon className="h-3 w-3" strokeWidth={1.5} />
-                {rc.label}
-              </Badge>
-              <span className={`text-xs truncate ${hasCustomFee ? "text-primary font-medium" : "text-muted-foreground"}`}>
-                {getFeeLabel(user)}
-              </span>
-              <span className="text-xs text-muted-foreground">{user.productsCount}</span>
-              <span className="text-xs font-medium text-foreground">
-                {user.totalRevenue > 0 ? `R$ ${(user.totalRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
-              </span>
-              <span className="text-xs text-muted-foreground">{user.joined}</span>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
-                    <MoreHorizontal className="h-4 w-4" strokeWidth={1.5} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="text-sm" onClick={() => openFeeDialog(user)}>
-                    <Percent className="h-3.5 w-3.5 mr-2" />
-                    Editar Taxas
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-sm" onClick={() => navigate(`/admin/users/${user.id}`)}>Ver perfil</DropdownMenuItem>
-                  <DropdownMenuItem className="text-sm text-destructive">Suspender</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </motion.div>
-          );
-        })}
-        {paginated.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            Nenhum usuário encontrado.
+      <div className="rounded-lg border border-border bg-card overflow-x-auto">
+        <div className="min-w-[700px]">
+          <div className="grid grid-cols-[1fr_90px_80px_70px_100px_90px_40px] gap-3 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            <span>Nome</span>
+            <span>Função</span>
+            <span>Taxa</span>
+            <span>Produtos</span>
+            <span>Faturamento</span>
+            <span>Cadastro</span>
+            <span></span>
           </div>
-        )}
+          {paginated.map((user, i) => {
+            const rc = roleConfig[user.role as keyof typeof roleConfig] || roleConfig.buyer;
+            const hasCustomFee = user.custom_fee_percentage != null || user.custom_fee_fixed != null;
+            return (
+              <motion.div
+                key={user.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+                className="grid grid-cols-[1fr_90px_80px_70px_100px_90px_40px] gap-3 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                onClick={() => navigate(`/admin/users/${user.id}`)}
+              >
+                <div className="min-w-0">
+                  <span className="text-sm font-medium truncate block">{user.name}</span>
+                  {user.email && <span className="text-[0.65rem] text-muted-foreground truncate block">{user.email}</span>}
+                </div>
+                <Badge variant="outline" className={`text-[0.65rem] w-fit gap-1 ${rc.className}`}>
+                  <rc.icon className="h-3 w-3" strokeWidth={1.5} />
+                  {rc.label}
+                </Badge>
+                <span className={`text-xs truncate ${hasCustomFee ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                  {getFeeLabel(user)}
+                </span>
+                <span className="text-xs text-muted-foreground text-center">{user.productsCount}</span>
+                <span className="text-xs font-medium text-foreground truncate">
+                  {user.totalRevenue > 0 ? `R$ ${(user.totalRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
+                </span>
+                <span className="text-xs text-muted-foreground">{user.joined}</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                      <MoreHorizontal className="h-4 w-4" strokeWidth={1.5} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="text-sm" onClick={() => openFeeDialog(user)}>
+                      <Percent className="h-3.5 w-3.5 mr-2" />
+                      Editar Taxas
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-sm" onClick={() => navigate(`/admin/users/${user.id}`)}>Ver perfil</DropdownMenuItem>
+                    <DropdownMenuItem className="text-sm text-destructive">Suspender</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </motion.div>
+            );
+          })}
+          {paginated.length === 0 && (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              Nenhum usuário encontrado.
+            </div>
+          )}
+        </div>
       </div>
 
       {totalPages > 1 && (
