@@ -424,6 +424,9 @@ export default function Landing() {
       <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center">
         <GridBackground />
         <FloatingParticles />
+        {/* Fade lateral (sombra nos cantos) */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
         <div className="container relative py-16 md:py-24 lg:py-32">
           <motion.div
