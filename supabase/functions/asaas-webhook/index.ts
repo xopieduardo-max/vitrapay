@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { autoCreateBuyerAccount } from "../_shared/auto-create-buyer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
