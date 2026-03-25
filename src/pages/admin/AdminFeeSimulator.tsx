@@ -67,6 +67,9 @@ export default function AdminFeeSimulator() {
   const amount = Math.round((parseFloat(value) || 0) * 100);
   const isValid = amount >= 500;
 
+  // Service fee (R$0.99 per transaction, paid by buyer)
+  const SERVICE_FEE = 99;
+
   // Asaas cost (internal, invisible to producer)
   const asCfg = getAs(method);
   const asaasPctVal = parseFloat(asCfg.pct) || 0;
@@ -79,10 +82,16 @@ export default function AdminFeeSimulator() {
   const vpFixedVal = Math.round((parseFloat(vpCfg.fixed) || 0) * 100);
   const feePlatform = Math.round(amount * (vpPctVal / 100)) + vpFixedVal;
 
+  // Service fee net: on PIX no extra gateway cost; on card Asaas charges % on it
+  const serviceFeeGatewayCost = method === "pix" ? 0 : Math.round(SERVICE_FEE * (asaasPctVal / 100));
+  const serviceFeeNet = SERVICE_FEE - serviceFeeGatewayCost;
+
   // KEY: Producer pays ONLY feePlatform. Asaas is absorbed internally.
   const producerReceives = amount - feePlatform;
   // Platform profit = what VitraPay keeps after paying Asaas
   const platformProfit = feePlatform - feeAsaas;
+  // Total profit including service fee
+  const totalProfit = platformProfit + serviceFeeNet;
 
   const pctPlatformOnSale = amount > 0 ? (feePlatform / amount) * 100 : 0;
   const pctAsaasOnSale = amount > 0 ? (feeAsaas / amount) * 100 : 0;
