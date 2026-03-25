@@ -45,24 +45,15 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
         }}
         className="relative w-full h-full"
       >
-        {/* Glow */}
-        <div className="absolute -inset-4 rounded-full bg-primary/10 blur-3xl" />
+        {/* Subtle glow behind logo */}
+        <div className="absolute inset-8 rounded-full bg-primary/8 blur-2xl pointer-events-none" />
 
-        {/* Shadow layer */}
-        <motion.img
-          src={logoIcon}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 w-full h-full object-contain blur-lg opacity-30"
-          style={{ transform: "translateZ(-30px) scale(1.15)" }}
-        />
-
-        {/* Main logo */}
+        {/* Main logo — crisp, no blur effects */}
         <motion.img
           src={logoIcon}
           alt="VitraPay Logo 3D"
-          className="relative w-full h-full object-contain drop-shadow-[0_0_25px_hsla(48,96%,53%,0.3)]"
-          style={{ transform: "translateZ(30px)" }}
+          className="relative w-full h-full object-contain"
+          style={{ transform: "translateZ(30px)", imageRendering: "auto" }}
         />
       </motion.div>
     </div>
