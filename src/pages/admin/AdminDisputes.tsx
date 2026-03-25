@@ -161,6 +161,7 @@ export default function AdminDisputes() {
             <SelectItem value="all">Todos os tipos</SelectItem>
             <SelectItem value="refunded">Estornos</SelectItem>
             <SelectItem value="chargeback">Chargebacks</SelectItem>
+            <SelectItem value="med">MED Pix</SelectItem>
           </SelectContent>
         </Select>
       </div>
