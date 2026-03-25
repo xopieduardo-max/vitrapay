@@ -162,7 +162,8 @@ async function sendPurchaseEmailNotification(
   productTitle: string,
   productType: string,
   productId: string,
-  fileUrl: string | null
+  fileUrl: string | null,
+  tempPassword: string | null = null
 ) {
   try {
     const res = await fetch(`${supabaseUrl}/functions/v1/send-purchase-email`, {
