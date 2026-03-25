@@ -21,14 +21,13 @@ import {
 } from "lucide-react";
 
 // ── Platform constants ──
-const HOLDBACK_DAYS_CARD = 2;   // Credit card: D+2
 const HOLDBACK_DAYS_PIX = 0;    // PIX: D+0 (instant)
 const MIN_WITHDRAWAL = 1000;    // R$ 10.00 in cents
 const WITHDRAWAL_FEE = 500;     // R$ 5.00 in cents
 const AUTO_APPROVE_LIMIT = 10000; // R$ 100.00 — auto PIX
 
-function getHoldbackDays(provider: string | null) {
-  return provider === "pix" ? HOLDBACK_DAYS_PIX : HOLDBACK_DAYS_CARD;
+function getHoldbackDays(provider: string | null, cardHoldDays: number) {
+  return provider === "pix" ? HOLDBACK_DAYS_PIX : cardHoldDays;
 }
 
 function addDays(date: string, days: number) {
