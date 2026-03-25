@@ -405,7 +405,8 @@ export default function AdminDashboard() {
     return list.slice(0, 50);
   }, [transactions, txFilter]);
 
-  // ── Profit per sale (fee_platform - fee_asaas) ──
+  // ── Profit per sale (fee_platform - fee_asaas + service_fee) ──
+  const SERVICE_FEE_PER_SALE = 99; // R$ 0.99
   const profitPerSale = useMemo(() => {
     return filteredSales.map((s) => {
       const method = s.payment_provider || "pix";
@@ -416,11 +417,10 @@ export default function AdminDashboard() {
       if (method === "pix") {
         asaasCost = 199; // R$ 1.99
       } else {
-        // Card D+2: 4.14% + R$ 0.49
         asaasCost = Math.round(amount * 0.0414 + 49);
       }
 
-      const netProfit = platformFee - asaasCost;
+      const netProfit = platformFee - asaasCost + SERVICE_FEE_PER_SALE;
 
       return {
         id: s.id,
@@ -428,6 +428,7 @@ export default function AdminDashboard() {
         amount,
         platformFee,
         asaasCost,
+        serviceFee: SERVICE_FEE_PER_SALE,
         netProfit,
         method,
         producer_id: s.producer_id,
