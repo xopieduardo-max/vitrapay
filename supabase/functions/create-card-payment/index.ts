@@ -292,7 +292,6 @@ Deno.serve(async (req) => {
           product_id, producer_id: product.producer_id, buyer_id: null,
           affiliate_id: affiliateId, amount: productAmount, platform_fee: platformFee,
           payment_provider: "card", payment_id: paymentData.id, status: "completed",
-          payment_provider: "card", payment_id: paymentData.id, status: "completed",
         })
         .select().single();
 
