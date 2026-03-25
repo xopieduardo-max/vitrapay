@@ -151,7 +151,7 @@ export default function AdminUserDetail() {
   const openFeeDialog = () => {
     setCustomPct(profile?.custom_fee_percentage != null ? String(profile.custom_fee_percentage) : "");
     setCustomFixed(profile?.custom_fee_fixed != null ? String((profile.custom_fee_fixed / 100).toFixed(2)) : "");
-    setSelectedPlan(profile?.card_plan || "d2");
+    setSelectedPlan(profile?.card_plan || "d30");
     setFeeDialogOpen(true);
   };
 
