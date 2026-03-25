@@ -306,11 +306,11 @@ Deno.serve(async (req) => {
       }
 
       // ── Record transactions (split) ──
-      // Card: release D+2 (pending balance)
+      // Card: release based on producer plan (D+2 or D+30)
       if (sale) {
-        const producerNet = amount - platformFee - commissionAmount;
+        const producerNet = productAmount - platformFee - commissionAmount;
         const releaseDate = new Date();
-        releaseDate.setDate(releaseDate.getDate() + 2); // D+2
+        releaseDate.setDate(releaseDate.getDate() + holdDays); // D+2 or D+30
         const releaseDateStr = releaseDate.toISOString();
 
         const txns: any[] = [
