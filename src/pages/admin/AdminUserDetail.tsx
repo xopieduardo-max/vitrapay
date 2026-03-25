@@ -499,7 +499,6 @@ export default function AdminUserDetail() {
                     </div>
                     <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   </div>
-                  </div>
                 );
               })}
             </div>
