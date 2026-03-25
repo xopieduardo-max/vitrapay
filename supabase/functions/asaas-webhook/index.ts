@@ -176,6 +176,7 @@ async function sendPurchaseEmailNotification(
         product_type: productType,
         product_id: productId,
         file_url: fileUrl,
+        temp_password: tempPassword,
       }),
     });
     console.log("Purchase email dispatch status:", res.status);
