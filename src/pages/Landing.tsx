@@ -5,8 +5,8 @@ import {
   Zap, ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
   BarChart3, Rocket, Clock, Headphones, Award, Star,
   DollarSign, Wallet, Globe, Play, CheckCircle2, Sparkles, Smartphone,
-  Bell, ChevronDown, MessageCircle, X,
-} from "lucide-react";
+  Bell, ChevronDown, MessageCircle, X } from
+"lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
@@ -22,8 +22,8 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  AccordionTrigger } from
+"@/components/ui/accordion";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
@@ -39,14 +39,14 @@ function generateNotification() {
     name: names[Math.floor(Math.random() * names.length)],
     product: products[Math.floor(Math.random() * products.length)],
     amount: `R$ ${amounts[Math.floor(Math.random() * amounts.length)].toFixed(2).replace(".", ",")}`,
-    method,
+    method
   };
 }
 
 const methodLabels: Record<PayMethod, string> = {
   pix: "Pix",
   card: "Cartão",
-  boleto: "Boleto",
+  boleto: "Boleto"
 };
 
 function FloatingNotifications() {
@@ -66,15 +66,15 @@ function FloatingNotifications() {
   return (
     <div className="flex flex-col gap-3 w-full">
       <AnimatePresence mode="popLayout">
-        {visibleNotifs.map((notif, i) => (
-          <motion.div
-            key={`${notif.name}-${notif.amount}-${i}`}
-            initial={{ opacity: 0, x: -60, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -40, scale: 0.9 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg"
-          >
+        {visibleNotifs.map((notif, i) =>
+        <motion.div
+          key={`${notif.name}-${notif.amount}-${i}`}
+          initial={{ opacity: 0, x: -60, scale: 0.8 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: -40, scale: 0.9 }}
+          transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg">
+          
             <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
               <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
             </div>
@@ -92,10 +92,10 @@ function FloatingNotifications() {
             </div>
             <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
           </motion.div>
-        ))}
+        )}
       </AnimatePresence>
-    </div>
-  );
+    </div>);
+
 }
 
 /* ─── Interactive Grid Background ─── */
@@ -103,35 +103,35 @@ const GridBackground = React.memo(function GridBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
+      style={{
+        backgroundImage: `
             linear-gradient(hsl(var(--primary)) 1px, transparent 1px),
             linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)
           `,
-          backgroundSize: "60px 60px",
-        }}
-      />
+        backgroundSize: "60px 60px"
+      }} />
+      
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px]" />
-    </div>
-  );
+    </div>);
+
 });
 
 /* ─── Floating Particles ─── */
 const FloatingParticles = React.memo(function FloatingParticles() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 rounded-full bg-primary/20"
-          style={{ left: `${15 + i * 15}%`, top: `${10 + i * 12}%` }}
-          animate={{ y: [0, -30, 0], opacity: [0.2, 0.6, 0.2] }}
-          transition={{ duration: 5 + i, repeat: Infinity, delay: i * 0.5, ease: "easeInOut" }}
-        />
-      ))}
-    </div>
-  );
+      {[...Array(6)].map((_, i) =>
+      <motion.div
+        key={i}
+        className="absolute w-1 h-1 rounded-full bg-primary/20"
+        style={{ left: `${15 + i * 15}%`, top: `${10 + i * 12}%` }}
+        animate={{ y: [0, -30, 0], opacity: [0.2, 0.6, 0.2] }}
+        transition={{ duration: 5 + i, repeat: Infinity, delay: i * 0.5, ease: "easeInOut" }} />
+
+      )}
+    </div>);
+
 });
 
 /* ─── Floating WhatsApp Button ─── */
@@ -149,31 +149,31 @@ function FloatingWhatsApp() {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       <AnimatePresence>
-        {showPopup && !dismissed && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            className="relative bg-card border border-border/50 rounded-2xl p-4 shadow-xl max-w-[260px]"
-          >
+        {showPopup && !dismissed &&
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.9 }}
+          className="relative bg-card border border-border/50 rounded-2xl p-4 shadow-xl max-w-[260px]">
+          
             <button
-              onClick={() => { setDismissed(true); setShowPopup(false); }}
-              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
-            >
+            onClick={() => {setDismissed(true);setShowPopup(false);}}
+            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground">
+            
               <X className="h-3.5 w-3.5" />
             </button>
             <p className="text-sm font-medium text-foreground">Oi! 👋</p>
             <p className="text-xs text-muted-foreground mt-1">Está com dúvidas? Fale com nosso time agora.</p>
             <a
-              href="https://wa.me/5500000000000"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-            >
+            href="https://wa.me/5500000000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+            
               Iniciar conversa <ArrowRight className="h-3 w-3" />
             </a>
           </motion.div>
-        )}
+        }
       </AnimatePresence>
       <motion.a
         href="https://wa.me/5500000000000"
@@ -181,125 +181,125 @@ function FloatingWhatsApp() {
         rel="noopener noreferrer"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => { setDismissed(true); setShowPopup(false); }}
-        className="flex items-center justify-center h-14 w-14 rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/30 hover:shadow-[#25D366]/50 transition-shadow"
-      >
+        onClick={() => {setDismissed(true);setShowPopup(false);}}
+        className="flex items-center justify-center h-14 w-14 rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/30 hover:shadow-[#25D366]/50 transition-shadow">
+        
         <MessageCircle className="h-6 w-6" />
       </motion.a>
-    </div>
-  );
+    </div>);
+
 }
 
 /* ─── Data ─── */
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-50px" },
+  viewport: { once: true, margin: "-50px" }
 };
 
 const stagger = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
+  viewport: { once: true }
 };
 
 const highlights = [
-  { icon: Rocket, title: "Saque rápido", desc: "Receba seu dinheiro na conta em minutos" },
-  { icon: TrendingUp, title: "Projetada para escala", desc: "Escale suas vendas com taxas imperdíveis" },
-  { icon: Award, title: "Premiações", desc: "Premiações a cada marca de faturamento" },
-  { icon: Shield, title: "Menos burocracia", desc: "Plataforma sem burocracia desnecessária" },
-  { icon: Headphones, title: "Suporte 24/7", desc: "Suporte humano, disponível o tempo todo" },
-  { icon: BarChart3, title: "Métricas em tempo real", desc: "Acompanhe suas métricas ao vivo" },
-];
+{ icon: Rocket, title: "Saque rápido", desc: "Receba seu dinheiro na conta em minutos" },
+{ icon: TrendingUp, title: "Projetada para escala", desc: "Escale suas vendas com taxas imperdíveis" },
+{ icon: Award, title: "Premiações", desc: "Premiações a cada marca de faturamento" },
+{ icon: Shield, title: "Menos burocracia", desc: "Plataforma sem burocracia desnecessária" },
+{ icon: Headphones, title: "Suporte 24/7", desc: "Suporte humano, disponível o tempo todo" },
+{ icon: BarChart3, title: "Métricas em tempo real", desc: "Acompanhe suas métricas ao vivo" }];
+
 
 /* Bento Grid Features */
 const bentoFeatures = [
-  {
-    icon: CreditCard,
-    title: "Checkout de Alta Conversão",
-    desc: "Checkout customizável com timer, banners, cupons, order bumps e upsell. Otimizado para converter.",
-    size: "large" as const,
-  },
-  {
-    icon: Globe,
-    title: "Área de Membros",
-    desc: "Player de vídeo, módulos, aulas e acompanhamento de progresso dos alunos.",
-    size: "small" as const,
-  },
-  {
-    icon: Users,
-    title: "Programa de Afiliados",
-    desc: "Deixe outros promoverem seus produtos e defina comissões personalizadas.",
-    size: "small" as const,
-  },
-  {
-    icon: Wallet,
-    title: "Financeiro Completo",
-    desc: "Saldo disponível e pendente, comissões, histórico de saques e pagamento via Pix automático.",
-    size: "small" as const,
-  },
-  {
-    icon: BarChart3,
-    title: "Funil de Vendas",
-    desc: "Upsell, downsell e order bumps integrados ao checkout para maximizar o ticket médio.",
-    size: "small" as const,
-  },
-  {
-    icon: Package,
-    title: "Produtos Digitais",
-    desc: "Venda cursos, e-books, templates, mentorias e qualquer infoproduto com facilidade.",
-    size: "large" as const,
-  },
-];
+{
+  icon: CreditCard,
+  title: "Checkout de Alta Conversão",
+  desc: "Checkout customizável com timer, banners, cupons, order bumps e upsell. Otimizado para converter.",
+  size: "large" as const
+},
+{
+  icon: Globe,
+  title: "Área de Membros",
+  desc: "Player de vídeo, módulos, aulas e acompanhamento de progresso dos alunos.",
+  size: "small" as const
+},
+{
+  icon: Users,
+  title: "Programa de Afiliados",
+  desc: "Deixe outros promoverem seus produtos e defina comissões personalizadas.",
+  size: "small" as const
+},
+{
+  icon: Wallet,
+  title: "Financeiro Completo",
+  desc: "Saldo disponível e pendente, comissões, histórico de saques e pagamento via Pix automático.",
+  size: "small" as const
+},
+{
+  icon: BarChart3,
+  title: "Funil de Vendas",
+  desc: "Upsell, downsell e order bumps integrados ao checkout para maximizar o ticket médio.",
+  size: "small" as const
+},
+{
+  icon: Package,
+  title: "Produtos Digitais",
+  desc: "Venda cursos, e-books, templates, mentorias e qualquer infoproduto com facilidade.",
+  size: "large" as const
+}];
+
 
 const bigStats = [
-  { value: "50+", label: "colaboradores engajados" },
-  { value: "500K+", label: "usuários cadastrados" },
-  { value: "10 mil+", label: "produtos cadastrados" },
-];
+{ value: "50+", label: "colaboradores engajados" },
+{ value: "500K+", label: "usuários cadastrados" },
+{ value: "10 mil+", label: "produtos cadastrados" }];
+
 
 const testimonials = [
-  { name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
-  { name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
-  { name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 },
-];
+{ name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
+{ name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
+{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 }];
+
 
 const faqItems = [
-  { q: "O que é a VitraPay?", a: "A VitraPay é uma plataforma completa de vendas de produtos digitais. Você pode vender cursos, e-books, mentorias e muito mais com checkout otimizado, área de membros, programa de afiliados e financeiro integrado." },
-  { q: "Quais as taxas cobradas pela VitraPay?", a: "Para Pix, a taxa é zero para o comprador e o recebimento é instantâneo (D+0). Para cartão de crédito, a taxa inicial é de 3,99% + R$ 2,49 com recebimento em D+30, ou 4,99% + R$ 2,49 com antecipação D+2." },
-  { q: "Como funciona o saque?", a: "Você pode solicitar saque a partir de R$ 10,00. O valor é enviado direto para sua chave Pix cadastrada. Saques são processados rapidamente pela nossa equipe." },
-  { q: "Posso ter afiliados vendendo meus produtos?", a: "Sim! A VitraPay tem um programa de afiliados completo. Você define a comissão de cada produto e os afiliados recebem um link exclusivo para divulgar." },
-  { q: "A plataforma tem área de membros?", a: "Sim! Você pode organizar conteúdo em módulos e aulas, adicionar vídeos, acompanhar o progresso dos alunos e oferecer uma experiência profissional de aprendizado." },
-  { q: "Preciso pagar para criar minha conta?", a: "Não! A criação de conta é 100% gratuita. Você só paga taxas sobre as vendas realizadas. Sem mensalidade, sem taxa de adesão." },
-];
+{ q: "O que é a VitraPay?", a: "A VitraPay é uma plataforma completa de vendas de produtos digitais. Você pode vender cursos, e-books, mentorias e muito mais com checkout otimizado, área de membros, programa de afiliados e financeiro integrado." },
+{ q: "Quais as taxas cobradas pela VitraPay?", a: "Para Pix, a taxa é zero para o comprador e o recebimento é instantâneo (D+0). Para cartão de crédito, a taxa inicial é de 3,99% + R$ 2,49 com recebimento em D+30, ou 4,99% + R$ 2,49 com antecipação D+2." },
+{ q: "Como funciona o saque?", a: "Você pode solicitar saque a partir de R$ 10,00. O valor é enviado direto para sua chave Pix cadastrada. Saques são processados rapidamente pela nossa equipe." },
+{ q: "Posso ter afiliados vendendo meus produtos?", a: "Sim! A VitraPay tem um programa de afiliados completo. Você define a comissão de cada produto e os afiliados recebem um link exclusivo para divulgar." },
+{ q: "A plataforma tem área de membros?", a: "Sim! Você pode organizar conteúdo em módulos e aulas, adicionar vídeos, acompanhar o progresso dos alunos e oferecer uma experiência profissional de aprendizado." },
+{ q: "Preciso pagar para criar minha conta?", a: "Não! A criação de conta é 100% gratuita. Você só paga taxas sobre as vendas realizadas. Sem mensalidade, sem taxa de adesão." }];
+
 
 const marqueeStats = [
-  { icon: Globe, text: "Aceito em todo o Brasil" },
-  { icon: Users, text: "Centenas de novos usuários todos os dias" },
-  { icon: Rocket, text: "Saque instantâneo via Pix" },
-  { icon: Shield, text: "Pagamentos 100% seguros" },
-  { icon: CreditCard, text: "Pix e Cartão de Crédito" },
-  { icon: BarChart3, text: "Métricas em tempo real" },
-  { icon: Award, text: "Premiações por faturamento" },
-  { icon: Headphones, text: "Suporte humano 24/7" },
-  { icon: Smartphone, text: "App otimizado para mobile" },
-];
+{ icon: Globe, text: "Aceito em todo o Brasil" },
+{ icon: Users, text: "Centenas de novos usuários todos os dias" },
+{ icon: Rocket, text: "Saque instantâneo via Pix" },
+{ icon: Shield, text: "Pagamentos 100% seguros" },
+{ icon: CreditCard, text: "Pix e Cartão de Crédito" },
+{ icon: BarChart3, text: "Métricas em tempo real" },
+{ icon: Award, text: "Premiações por faturamento" },
+{ icon: Headphones, text: "Suporte humano 24/7" },
+{ icon: Smartphone, text: "App otimizado para mobile" }];
+
 
 const marqueeText = "Transformando vidas através do digital";
 
 /* ─── Counter Animation ─── */
-function AnimatedCounter({ value }: { value: string }) {
+function AnimatedCounter({ value }: {value: string;}) {
   return (
     <motion.span
       initial={{ opacity: 0, scale: 0.5 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ type: "spring", damping: 15, stiffness: 200 }}
-      className="text-5xl md:text-6xl font-bold text-gradient-primary inline-block"
-    >
+      className="text-5xl md:text-6xl font-bold text-gradient-primary inline-block">
+      
       {value}
-    </motion.span>
-  );
+    </motion.span>);
+
 }
 
 /* ─── Country Selector ─── */
@@ -309,20 +309,20 @@ function CountrySelector() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-muted/50 transition-colors text-sm"
-      >
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-muted/50 transition-colors text-sm">
+        
         <span className="text-lg leading-none">🇧🇷</span>
         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -5, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -5, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card shadow-xl p-3 space-y-2 z-50"
-          >
+        {open &&
+        <motion.div
+          initial={{ opacity: 0, y: -5, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -5, scale: 0.95 }}
+          transition={{ duration: 0.15 }}
+          className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card shadow-xl p-3 space-y-2 z-50">
+          
             <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg bg-primary/10">
               <span className="text-lg">🇧🇷</span>
               <span className="text-sm font-medium text-foreground">Brasil</span>
@@ -333,11 +333,11 @@ function CountrySelector() {
               🌎 Em breve, novos países
             </p>
           </motion.div>
-        )}
+        }
       </AnimatePresence>
       {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
-    </div>
-  );
+    </div>);
+
 }
 
 /* ─── Main Landing ─── */
@@ -351,28 +351,28 @@ export default function Landing() {
       if (error) throw error;
       return data;
     },
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 10
   });
 
   const feeDisplay = useMemo(() => {
     if (!platformFees) return { cardText: "...", pixText: "0%" };
     const pct = Number(platformFees.card_percentage);
     const fixed = (platformFees.card_fixed / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-    const pixFixed = platformFees.pix_fixed > 0
-      ? `R$${(platformFees.pix_fixed / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-      : null;
+    const pixFixed = platformFees.pix_fixed > 0 ?
+    `R$${(platformFees.pix_fixed / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` :
+    null;
     const pixPct = Number(platformFees.pix_percentage);
-    const pixLabel = pixPct > 0 ? `${pixPct.toLocaleString("pt-BR")}%` : (pixFixed ? pixFixed : "0%");
+    const pixLabel = pixPct > 0 ? `${pixPct.toLocaleString("pt-BR")}%` : pixFixed ? pixFixed : "0%";
     return {
       cardText: `${pct.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}% + R$${fixed}`,
       pixText: pixPct === 0 && !pixFixed ? "0%" : pixLabel,
-      pixIsFree: pixPct === 0 && platformFees.pix_fixed === 0,
+      pixIsFree: pixPct === 0 && platformFees.pix_fixed === 0
     };
   }, [platformFees]);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
-    offset: ["start start", "end start"],
+    offset: ["start start", "end start"]
   });
   const dashboardY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const dashboardScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
@@ -425,52 +425,45 @@ export default function Landing() {
         <GridBackground />
         <FloatingParticles />
 
-        <div className="container relative pt-6 md:pt-10 pb-16 md:pb-24 lg:pb-32">
+        <div className="container relative py-16 md:py-24 lg:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="max-w-4xl mx-auto text-center space-y-6"
-          >
+            className="max-w-4xl mx-auto text-center space-y-8">
+            
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-border/40 bg-card/60 backdrop-blur-sm px-4 py-1.5 text-sm text-muted-foreground"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span>Segurança, visão e controle em cada transação.</span>
+              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
+              
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>A plataforma que acelera seus resultados</span>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
               transition={{ delay: 0.2, duration: 0.8, type: "spring", damping: 15 }}
-              className="flex justify-center"
-            >
+              className="flex justify-center">
+              
               <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] relative">
-              <span className="relative">
-                <span className="absolute inset-0 blur-2xl opacity-20 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full scale-150 pointer-events-none" />
-                <span className="relative text-foreground/90" style={{ textShadow: '0 4px 30px hsla(var(--primary), 0.15), 0 1px 3px hsla(0, 0%, 0%, 0.1)' }}>
-                  A VitraPay enxerga{" "}
-                  <br className="hidden sm:block" />
-                  o caminho para{" "}
-                  <span className="text-gradient-primary">não te deixar no escuro.</span>
-                </span>
-              </span>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
+              Venda produtos digitais{" "}
+              <span className="text-gradient-primary">sem limites.</span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Desenvolvida para negócios que não podem parar, nossa tecnologia combina automação inteligente, checkout otimizado e performance contínua para maximizar conversões com total segurança.
+              Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
             </p>
 
             {/* ─── Dual CTAs — BlackCatPay Style ─── */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button size="lg" className="relative h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20" asChild>
-                <Link to="/auth">
+                <Link to="/auth" className="text-sm">
                   Criar minha conta
                   <div className="h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
                     <ArrowRight className="h-4 w-4" />
@@ -486,6 +479,22 @@ export default function Landing() {
                 </Link>
               </Button>
             </div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground">
+              
+              <div className="flex -space-x-2">
+                {[...Array(5)].map((_, i) =>
+                <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[0.6rem] font-bold text-primary">
+                    {String.fromCharCode(65 + i)}
+                  </div>
+                )}
+              </div>
+              <span><strong className="text-foreground">+10.000</strong> produtores já confiam na VitraPay</span>
+            </motion.div>
           </motion.div>
 
           {/* Dashboard Preview with notifications side by side */}
@@ -494,8 +503,8 @@ export default function Landing() {
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-            className="mt-16 md:mt-24 max-w-6xl mx-auto relative flex items-start justify-center gap-6"
-          >
+            className="mt-16 md:mt-24 max-w-6xl mx-auto relative flex items-start justify-center gap-6">
+            
             {/* Floating Notifications — left side, desktop only */}
             <div className="hidden lg:block w-[260px] shrink-0 pt-8">
               <FloatingNotifications />
@@ -505,16 +514,16 @@ export default function Landing() {
             <div className="flex-1 min-w-0 max-w-4xl" style={{ perspective: "1200px" }}>
               <motion.div
                 style={{ rotateX: dashboardRotateX }}
-                className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group origin-bottom"
-              >
+                className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group origin-bottom">
+                
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                 <img
                   src={dashboardPreview}
                   alt="Dashboard VitraPay com métricas de vendas em tempo real"
                   className="w-full"
                   loading="eager"
-                  decoding="async"
-                />
+                  decoding="async" />
+                
                 {/* Fade overlay at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
               </motion.div>
@@ -528,47 +537,43 @@ export default function Landing() {
       {/* ─── Highlight Cards ─── */}
       <section className="container pb-20">
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
-          {highlights.map((item, i) => (
-            <motion.div
-              key={item.title}
-              {...stagger}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card transition-all duration-300 cursor-default"
-            >
+          {highlights.map((item, i) =>
+          <motion.div
+            key={item.title}
+            {...stagger}
+            transition={{ delay: i * 0.08, duration: 0.5 }}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card transition-all duration-300 cursor-default">
+            
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                 <item.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
               </div>
               <h3 className="font-semibold text-sm md:text-base">{item.title}</h3>
               <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
             </motion.div>
-          ))}
+          )}
         </div>
       </section>
 
       {/* ─── Marquee ─── */}
       <section className="relative border-y border-border/50 bg-card/30 py-6 overflow-hidden space-y-4">
-        {/* Fade edges — sombra nos cantos */}
-        <div className="absolute inset-y-0 left-0 w-32 sm:w-48 bg-gradient-to-r from-card/95 via-card/60 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-32 sm:w-48 bg-gradient-to-l from-card/95 via-card/60 to-transparent z-10 pointer-events-none" />
-
         <div className="flex whitespace-nowrap animate-marquee">
           {[...Array(3)].map((_, rep) =>
-            marqueeStats.map((item, i) => (
-              <span key={`${rep}-${i}`} className="mx-3 inline-flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/40 px-5 py-2.5 text-sm font-medium text-muted-foreground">
+          marqueeStats.map((item, i) =>
+          <span key={`${rep}-${i}`} className="mx-3 inline-flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/40 px-5 py-2.5 text-sm font-medium text-muted-foreground">
                 <item.icon className="h-4 w-4 text-primary/70" />
                 {item.text}
                 <Sparkles className="h-3 w-3 text-primary/50 ml-1" />
               </span>
-            ))
+          )
           )}
         </div>
         <div className="flex whitespace-nowrap animate-marquee-reverse">
-          {[...Array(10)].map((_, i) => (
-            <span key={i} className="mx-8 text-lg md:text-xl font-bold text-primary/80 flex items-center gap-3">
+          {[...Array(10)].map((_, i) =>
+          <span key={i} className="mx-8 text-lg md:text-xl font-bold text-primary/80 flex items-center gap-3">
               <Zap className="h-4 w-4" /> {marqueeText}
             </span>
-          ))}
+          )}
         </div>
       </section>
 
@@ -584,18 +589,18 @@ export default function Landing() {
           </motion.div>
 
           <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-            {bigStats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                {...stagger}
-                transition={{ delay: i * 0.15, duration: 0.5 }}
-                whileHover={{ scale: 1.05 }}
-                className="text-center rounded-2xl border border-border/50 bg-background p-8 space-y-2 hover:border-primary/30 transition-all duration-300"
-              >
+            {bigStats.map((stat, i) =>
+            <motion.div
+              key={stat.label}
+              {...stagger}
+              transition={{ delay: i * 0.15, duration: 0.5 }}
+              whileHover={{ scale: 1.05 }}
+              className="text-center rounded-2xl border border-border/50 bg-background p-8 space-y-2 hover:border-primary/30 transition-all duration-300">
+              
                 <AnimatedCounter value={stat.value} />
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -615,16 +620,16 @@ export default function Landing() {
 
         {/* Bento Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(180px,auto)]">
-          {bentoFeatures.map((f, i) => (
-            <motion.div
-              key={f.title}
-              {...stagger}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              whileHover={{ y: -6, scale: 1.01 }}
-              className={`group relative rounded-2xl border border-border/50 bg-card/50 p-7 flex flex-col justify-between hover:border-primary/30 transition-all duration-300 overflow-hidden cursor-default ${
-                f.size === "large" ? "lg:col-span-2 lg:row-span-1" : ""
-              }`}
-            >
+          {bentoFeatures.map((f, i) =>
+          <motion.div
+            key={f.title}
+            {...stagger}
+            transition={{ delay: i * 0.08, duration: 0.5 }}
+            whileHover={{ y: -6, scale: 1.01 }}
+            className={`group relative rounded-2xl border border-border/50 bg-card/50 p-7 flex flex-col justify-between hover:border-primary/30 transition-all duration-300 overflow-hidden cursor-default ${
+            f.size === "large" ? "lg:col-span-2 lg:row-span-1" : ""}`
+            }>
+            
               {/* Glow effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-primary/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -644,7 +649,7 @@ export default function Landing() {
                 </span>
               </div>
             </motion.div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -669,8 +674,8 @@ export default function Landing() {
               {...fadeUp}
               transition={{ delay: 0.1, duration: 0.6 }}
               whileHover={{ y: -5 }}
-              className="relative rounded-3xl border border-primary/30 bg-background p-8 space-y-4 overflow-hidden"
-            >
+              className="relative rounded-3xl border border-primary/30 bg-background p-8 space-y-4 overflow-hidden">
+              
               <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-primary/10 blur-3xl" />
               <div className="relative">
                 <div className="flex items-center justify-between">
@@ -703,8 +708,8 @@ export default function Landing() {
               {...fadeUp}
               transition={{ delay: 0.2, duration: 0.6 }}
               whileHover={{ y: -5 }}
-              className="relative rounded-3xl border border-border/50 bg-background p-8 space-y-4 overflow-hidden"
-            >
+              className="relative rounded-3xl border border-border/50 bg-background p-8 space-y-4 overflow-hidden">
+              
               <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-accent/10 blur-3xl" />
               <div className="relative">
                 <div className="flex items-center justify-between">
@@ -737,24 +742,24 @@ export default function Landing() {
           <motion.div
             {...fadeUp}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="max-w-5xl mx-auto rounded-3xl border border-border/50 bg-background overflow-hidden shadow-xl shadow-black/5"
-          >
+            className="max-w-5xl mx-auto rounded-3xl border border-border/50 bg-background overflow-hidden shadow-xl shadow-black/5">
+            
             <div className="grid md:grid-cols-[1fr_auto] items-stretch">
               <div className="p-8 md:p-10 space-y-6">
                 <h3 className="text-2xl md:text-3xl font-bold tracking-tight">Saque rápido via Pix</h3>
                 <div className="space-y-0">
                   {[
-                    { label: "Saque mínimo:", desc: "R$ 10,00 direto na sua chave Pix" },
-                    { label: "Sem mensalidade:", desc: "Pague apenas quando vender" },
-                    { label: "Sem taxa de adesão:", desc: "Crie sua conta 100% grátis" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 py-4 border-b border-border/30 last:border-b-0">
+                  { label: "Saque mínimo:", desc: "R$ 10,00 direto na sua chave Pix" },
+                  { label: "Sem mensalidade:", desc: "Pague apenas quando vender" },
+                  { label: "Sem taxa de adesão:", desc: "Crie sua conta 100% grátis" }].
+                  map((item, i) =>
+                  <div key={i} className="flex items-center gap-3 py-4 border-b border-border/30 last:border-b-0">
                       <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
                       <p className="text-sm md:text-base text-muted-foreground">
                         <span className="font-semibold text-foreground">{item.label}</span>{" "}{item.desc}
                       </p>
                     </div>
-                  ))}
+                  )}
                 </div>
                 <Button size="lg" className="mt-4 h-13 px-8 text-base font-semibold gap-2 rounded-full glow-primary-strong shimmer-gold" asChild>
                   <Link to="/auth">
@@ -770,12 +775,12 @@ export default function Landing() {
                     y: [0, -14, 0],
                     rotateY: [0, 4, 0, -4, 0],
                     rotateX: [0, -3, 0, 3, 0],
-                    rotate: [-3, -2, -3],
+                    rotate: [-3, -2, -3]
                   }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                   className="relative w-full max-w-[520px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl"
-                  style={{ perspective: "1000px", transformStyle: "preserve-3d", transform: "rotate(-3deg)" }}
-                >
+                  style={{ perspective: "1000px", transformStyle: "preserve-3d", transform: "rotate(-3deg)" }}>
+                  
                   <div className="absolute inset-0" style={{
                     background: `linear-gradient(145deg, 
                       hsl(48, 80%, 78%) 0%, hsl(45, 75%, 68%) 20%, hsl(43, 70%, 62%) 40%, 
@@ -786,7 +791,7 @@ export default function Landing() {
                       radial-gradient(ellipse at 30% 20%, hsla(0,0%,100%,0.45), transparent 50%),
                       radial-gradient(ellipse at 80% 80%, hsla(0,0%,100%,0.1), transparent 40%),
                       linear-gradient(160deg, transparent 35%, hsla(0,0%,100%,0.2) 48%, hsla(0,0%,100%,0.08) 52%, transparent 65%)
-                    `,
+                    `
                   }} />
                   <div className="absolute inset-0 shimmer-gold" />
                   <div className="relative h-full flex flex-col justify-between p-6 md:p-8">
@@ -799,9 +804,9 @@ export default function Landing() {
                         boxShadow: 'inset 0 0 0 0.5px hsla(40, 20%, 50%, 0.4), 0 1px 3px hsla(0,0%,0%,0.1)'
                       }}>
                         <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-[1px] p-[3px]">
-                          {[...Array(6)].map((_, i) => (
-                            <div key={i} className="rounded-[1px]" style={{ background: 'hsla(40, 20%, 55%, 0.35)' }} />
-                          ))}
+                          {[...Array(6)].map((_, i) =>
+                          <div key={i} className="rounded-[1px]" style={{ background: 'hsla(40, 20%, 55%, 0.35)' }} />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -845,11 +850,11 @@ export default function Landing() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" /></svg>
                   App Store — Em breve
                 </Button>
                 <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 1.33a1.004 1.004 0 010 1.724l-2.302 1.33-2.498-2.498 2.498-2.886zM5.864 2.658L16.8 8.99l-2.302 2.302-8.635-8.635z"/></svg>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 1.33a1.004 1.004 0 010 1.724l-2.302 1.33-2.498-2.498 2.498-2.886zM5.864 2.658L16.8 8.99l-2.302 2.302-8.635-8.635z" /></svg>
                   Google Play — Em breve
                 </Button>
               </div>
@@ -858,15 +863,15 @@ export default function Landing() {
               {...fadeUp}
               transition={{ delay: 0.2, duration: 0.6 }}
               whileHover={{ scale: 1.03 }}
-              className="flex justify-center"
-            >
+              className="flex justify-center">
+              
               <img
                 src={iphone3dMockup}
                 alt="Dashboard VitraPay no iPhone"
                 className="w-[300px] md:w-[380px] drop-shadow-2xl"
                 loading="lazy"
-                decoding="async"
-              />
+                decoding="async" />
+              
             </motion.div>
           </div>
         </div>
@@ -882,18 +887,18 @@ export default function Landing() {
             </h2>
           </motion.div>
           <div className="grid gap-5 md:grid-cols-3">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name}
-                {...stagger}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -5 }}
-                className="rounded-2xl border border-border/50 bg-background p-7 space-y-4 hover:border-primary/20 transition-all duration-300"
-              >
+            {testimonials.map((t, i) =>
+            <motion.div
+              key={t.name}
+              {...stagger}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              whileHover={{ y: -5 }}
+              className="rounded-2xl border border-border/50 bg-background p-7 space-y-4 hover:border-primary/20 transition-all duration-300">
+              
                 <div className="flex gap-0.5">
-                  {[...Array(t.stars)].map((_, j) => (
-                    <Star key={j} className="h-4 w-4 fill-primary text-primary" />
-                  ))}
+                  {[...Array(t.stars)].map((_, j) =>
+                <Star key={j} className="h-4 w-4 fill-primary text-primary" />
+                )}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.text}"</p>
                 <div className="flex items-center gap-3 pt-2">
@@ -907,7 +912,7 @@ export default function Landing() {
                   </div>
                 </div>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -923,12 +928,12 @@ export default function Landing() {
 
         <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }} className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-3">
-            {faqItems.map((item, i) => (
-              <AccordionItem
-                key={i}
-                value={`faq-${i}`}
-                className="rounded-2xl border border-border/50 bg-card/50 px-6 data-[state=open]:border-primary/30 transition-colors"
-              >
+            {faqItems.map((item, i) =>
+            <AccordionItem
+              key={i}
+              value={`faq-${i}`}
+              className="rounded-2xl border border-border/50 bg-card/50 px-6 data-[state=open]:border-primary/30 transition-colors">
+              
                 <AccordionTrigger className="hover:no-underline text-left gap-4">
                   <div className="flex items-center gap-4">
                     <span className="text-2xl font-black text-primary/30 shrink-0">
@@ -941,7 +946,7 @@ export default function Landing() {
                   {item.a}
                 </AccordionContent>
               </AccordionItem>
-            ))}
+            )}
           </Accordion>
         </motion.div>
       </section>
@@ -949,8 +954,8 @@ export default function Landing() {
       {/* ─── CTA Section ─── */}
       <section className="container pb-20 md:pb-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }}
-          className="relative rounded-3xl border border-primary/20 bg-primary/5 overflow-hidden"
-        >
+        className="relative rounded-3xl border border-primary/20 bg-primary/5 overflow-hidden">
+          
           <FloatingParticles />
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/10 blur-[100px]" />
@@ -1032,6 +1037,6 @@ export default function Landing() {
       </footer>
 
       {/* WhatsApp flutuante — desativado por enquanto */}
-    </div>
-  );
+    </div>);
+
 }
