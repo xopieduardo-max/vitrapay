@@ -22,18 +22,34 @@ interface PurchaseEmailParams {
 }
 
 function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
-  const { buyer_name, product_title, product_type, product_id, file_url } = params;
+  const { buyer_name, product_title, product_type, product_id, temp_password, buyer_email } = params;
 
-  let accessLink: string;
-  if (product_type === "course") {
-    accessLink = `https://vitrapay.lovable.app/learn/${product_id}`;
-  } else if (file_url) {
-    accessLink = file_url;
-  } else {
-    accessLink = `https://vitrapay.lovable.app/library`;
-  }
+  // Always direct to /minha-conta — the buyer's portal
+  const accessLink = `https://vitrapay.lovable.app/minha-conta`;
+  const accessText = product_type === "course" ? "Acessar Meu Curso" : "Acessar Meus Produtos";
 
-  const accessText = product_type === "course" ? "Acessar Curso" : "Baixar Produto";
+  // Account credentials section (only shown for new accounts)
+  const credentialsSection = temp_password ? `
+          <!-- Account Credentials -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e1;border:2px solid #f5c518;border-radius:12px;margin:0 0 24px;">
+            <tr><td style="padding:20px;">
+              <p style="font-size:14px;color:#1a1a1a;margin:0 0 4px;font-weight:bold;">🔑 Sua conta foi criada automaticamente!</p>
+              <p style="font-size:14px;color:#333;margin:0 0 12px;line-height:1.5;">
+                Use os dados abaixo para acessar seus produtos a qualquer momento:
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;">
+                <tr><td style="padding:12px 16px;">
+                  <p style="font-size:13px;color:#888;margin:0 0 2px;">E-mail</p>
+                  <p style="font-size:15px;color:#1a1a1a;margin:0 0 10px;font-weight:bold;">${buyer_email}</p>
+                  <p style="font-size:13px;color:#888;margin:0 0 2px;">Senha provis&#243;ria</p>
+                  <p style="font-size:15px;color:#1a1a1a;margin:0;font-weight:bold;font-family:monospace;">${temp_password}</p>
+                </td></tr>
+              </table>
+              <p style="font-size:12px;color:#666;margin:10px 0 0;line-height:1.4;">
+                ⚠️ Recomendamos que voc&#234; troque sua senha ap&#243;s o primeiro acesso em Ajustes.
+              </p>
+            </td></tr>
+          </table>` : '';
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -71,8 +87,12 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
             </td></tr>
           </table>
 
+          ${credentialsSection}
+
           <p style="font-size:16px;color:#333;margin:0 0 24px;line-height:1.6;">
-            Voc&#234; j&#225; pode acessar seu produto agora clicando no bot&#227;o abaixo:
+            ${temp_password 
+              ? 'Acesse sua conta agora para ver seus produtos:' 
+              : 'Voc&#234; pode acessar seus produtos a qualquer momento clicando no bot&#227;o abaixo:'}
           </p>
 
           <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
