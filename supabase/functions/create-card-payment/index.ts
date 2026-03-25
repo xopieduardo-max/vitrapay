@@ -254,7 +254,7 @@ Deno.serve(async (req) => {
         .from("profiles").select("custom_fee_percentage, custom_fee_fixed, card_plan")
         .eq("user_id", product.producer_id).single();
 
-      const cardPlan = producerProfile?.card_plan || "d2";
+      const cardPlan = producerProfile?.card_plan || "d30";
       const isD2 = cardPlan === "d2";
 
       // D+2: 4.99% + R$2.49 (Asaas: 4.14% + R$0.49)
