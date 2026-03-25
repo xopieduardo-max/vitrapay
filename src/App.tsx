@@ -127,6 +127,7 @@ const App = () => {
                 <Route path="/admin/community" element={<AdminCommunity />} />
                 <Route path="/admin/push" element={<AdminPushNotifications />} />
                 <Route path="/admin/fee-simulator" element={<AdminFeeSimulator />} />
+                <Route path="/admin/disputes" element={<AdminDisputes />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
               </Route>
 
