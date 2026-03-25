@@ -383,6 +383,10 @@ export default function Checkout() {
     return Math.round(total);
   };
 
+  // Total + service fee (always charged)
+  const SERVICE_FEE = 99; // R$ 0.99
+  const calculateTotalWithServiceFee = () => calculateTotal() + SERVICE_FEE;
+
   const [cardStatus, setCardStatus] = useState<"idle" | "approved" | "declined" | "pending">("idle");
 
   const isCardDisabled = paymentMethod === "card" && calculateTotal() < 500;
