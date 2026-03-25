@@ -612,6 +612,20 @@ export default function AdminDashboard() {
       onClick: () => setCheckoutsOpen(true),
       hint: "Ver detalhes →",
     },
+    {
+      label: "Taxa de serviço (período)",
+      desc: `R$ 0,99/transação • Líquido após gateway: ${fmt(totalServiceFeesNet)}`,
+      value: fmt(totalServiceFees),
+      icon: Receipt,
+      color: "text-primary",
+    },
+    {
+      label: "Taxa serviço disponível",
+      desc: "Taxa de serviço líquida acumulada menos saques realizados",
+      value: fmt(Math.max(0, serviceFeeAvailable)),
+      icon: Banknote,
+      color: "text-emerald-500",
+    },
     { label: "Usuários", desc: "Total de usuários cadastrados", value: String(stats?.totalUsers ?? 0), icon: Users, color: "text-muted-foreground" },
     {
       label: "Margem de lucro média",
