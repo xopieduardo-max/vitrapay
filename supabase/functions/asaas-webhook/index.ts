@@ -571,6 +571,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Service fee transaction (platform revenue from buyer)
+    if (SERVICE_FEE > 0) {
+      txns.push({
+        user_id: product.producer_id,
+        type: "debit",
+        category: "service_fee",
+        amount: SERVICE_FEE,
+        balance_type: "available",
+        reference_id: sale.id,
+        release_date: releaseDate,
+        status: "completed",
+      });
+    }
+
     await supabase.from("transactions").insert(txns)
       .then(() => console.log("Transactions recorded:", txns.length))
       .catch((err: any) => console.error("Transaction insert error:", err));
