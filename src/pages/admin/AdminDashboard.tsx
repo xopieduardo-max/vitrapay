@@ -271,7 +271,7 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, display_name");
+        .select("user_id, display_name, card_plan");
       return data || [];
     },
   });
@@ -282,6 +282,15 @@ export default function AdminDashboard() {
       map[p.user_id] = p.display_name || "Sem nome";
     });
     return map;
+  }, [profiles]);
+
+  const planCounts = useMemo(() => {
+    let d2 = 0, d30 = 0;
+    profiles.forEach((p: any) => {
+      if (p.card_plan === "d2") d2++;
+      else d30++;
+    });
+    return { d2, d30, total: d2 + d30 };
   }, [profiles]);
 
   const productMap = useMemo(() => {
@@ -1177,6 +1186,47 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Plan Distribution */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <BarChart3 className="h-4 w-4 text-primary" />
+          Distribuição de Planos de Recebimento
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="rounded-lg border border-border bg-muted/30 p-4 text-center space-y-1">
+            <p className="text-2xl font-bold">{planCounts.d30}</p>
+            <p className="text-xs text-muted-foreground">Plano D+30 (Padrão)</p>
+            <p className="text-[0.6rem] text-muted-foreground">
+              {planCounts.total > 0 ? ((planCounts.d30 / planCounts.total) * 100).toFixed(0) : 0}% dos usuários
+            </p>
+          </div>
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center space-y-1">
+            <p className="text-2xl font-bold text-primary">{planCounts.d2}</p>
+            <p className="text-xs text-muted-foreground">Plano D+2 (Antecipação)</p>
+            <p className="text-[0.6rem] text-muted-foreground">
+              {planCounts.total > 0 ? ((planCounts.d2 / planCounts.total) * 100).toFixed(0) : 0}% dos usuários
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-4 text-center space-y-1">
+            <p className="text-2xl font-bold">{planCounts.total}</p>
+            <p className="text-xs text-muted-foreground">Total de Usuários</p>
+          </div>
+        </div>
+        {planCounts.total > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${(planCounts.d2 / planCounts.total) * 100}%` }}
+              />
+            </div>
+            <span className="text-[0.6rem] text-muted-foreground whitespace-nowrap">
+              {((planCounts.d2 / planCounts.total) * 100).toFixed(0)}% antecipação
+            </span>
+          </div>
+        )}
       </div>
 
       <AdminProfitWithdrawDialog open={profitDialogOpen} onOpenChange={setProfitDialogOpen} availableProfit={netProfit} />
