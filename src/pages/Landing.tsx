@@ -424,6 +424,9 @@ export default function Landing() {
       <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center">
         <GridBackground />
         <FloatingParticles />
+        {/* Fade lateral (sombra nos cantos) */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
         <div className="container relative py-16 md:py-24 lg:py-32">
           <motion.div
@@ -452,15 +455,9 @@ export default function Landing() {
             </motion.div>
 
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-              <span className="relative inline-block">
-                <span className="relative z-10">Venda produtos digitais</span>
-                <span className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent blur-2xl -z-10" />
-              </span>{" "}
+              Venda produtos digitais{" "}
               <span className="text-gradient-primary">sem limites.</span>
             </h1>
-            <p className="text-sm md:text-base font-medium text-primary/70 tracking-wide uppercase mt-2">
-              A VitraPay enxerga o caminho para não te deixar no escuro
-            </p>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
