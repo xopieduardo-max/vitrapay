@@ -1188,6 +1188,47 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Plan Distribution */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <BarChart3 className="h-4 w-4 text-primary" />
+          Distribuição de Planos de Recebimento
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="rounded-lg border border-border bg-muted/30 p-4 text-center space-y-1">
+            <p className="text-2xl font-bold">{planCounts.d30}</p>
+            <p className="text-xs text-muted-foreground">Plano D+30 (Padrão)</p>
+            <p className="text-[0.6rem] text-muted-foreground">
+              {planCounts.total > 0 ? ((planCounts.d30 / planCounts.total) * 100).toFixed(0) : 0}% dos usuários
+            </p>
+          </div>
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center space-y-1">
+            <p className="text-2xl font-bold text-primary">{planCounts.d2}</p>
+            <p className="text-xs text-muted-foreground">Plano D+2 (Antecipação)</p>
+            <p className="text-[0.6rem] text-muted-foreground">
+              {planCounts.total > 0 ? ((planCounts.d2 / planCounts.total) * 100).toFixed(0) : 0}% dos usuários
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-4 text-center space-y-1">
+            <p className="text-2xl font-bold">{planCounts.total}</p>
+            <p className="text-xs text-muted-foreground">Total de Usuários</p>
+          </div>
+        </div>
+        {planCounts.total > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${(planCounts.d2 / planCounts.total) * 100}%` }}
+              />
+            </div>
+            <span className="text-[0.6rem] text-muted-foreground whitespace-nowrap">
+              {((planCounts.d2 / planCounts.total) * 100).toFixed(0)}% antecipação
+            </span>
+          </div>
+        )}
+      </div>
+
       <AdminProfitWithdrawDialog open={profitDialogOpen} onOpenChange={setProfitDialogOpen} availableProfit={netProfit} />
       <AdminWithdrawHistoryDialog open={adminHistoryOpen} onOpenChange={setAdminHistoryOpen} transactions={allTransactions} totalWithdrawn={adminWithdrawals} />
       <PendingWithdrawalsDetailDialog open={pendingWdOpen} onOpenChange={setPendingWdOpen} withdrawals={withdrawals} profileMap={profileMap} />
