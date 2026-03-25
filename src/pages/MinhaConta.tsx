@@ -16,6 +16,46 @@ import MinhaContaLogin from "./MinhaContaLogin";
 export default function MinhaConta() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [authTrigger, setAuthTrigger] = useState(0);
+  const { toast } = useToast();
+
+  // Check if user was auto-created (needs password change)
+  const isAutoCreated = user?.user_metadata?.auto_created === true;
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordChanged, setPasswordChanged] = useState(false);
+
+  // Dismiss banner if user already changed password in this session
+  const [dismissed, setDismissed] = useState(false);
+
+  const handlePasswordChange = async () => {
+    if (newPassword.length < 6) {
+      toast({ title: "Senha muito curta", description: "A senha deve ter no mínimo 6 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Senhas não conferem", description: "A nova senha e a confirmação devem ser iguais.", variant: "destructive" });
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      // Remove auto_created flag
+      await supabase.auth.updateUser({ data: { auto_created: false } });
+      setPasswordChanged(true);
+      setShowPasswordChange(false);
+      setDismissed(true);
+      toast({ title: "Senha alterada!", description: "Sua nova senha foi salva com sucesso." });
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+  const [authTrigger, setAuthTrigger] = useState(0);
 
   const { data: accessItems = [], isLoading } = useQuery({
     queryKey: ["minha-conta-products", user?.id, user?.email, authTrigger],
