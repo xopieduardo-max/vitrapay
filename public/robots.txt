@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://vitrapay.lovable.app/sitemap.xml
+Sitemap: https://vitrapay.com.br/sitemap.xml
