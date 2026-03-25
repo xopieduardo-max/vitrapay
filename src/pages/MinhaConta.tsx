@@ -160,7 +160,99 @@ export default function MinhaConta() {
           </p>
         </div>
 
-        {isLoading ? (
+        {/* Password change banner for auto-created accounts */}
+        <AnimatePresence>
+          {isAutoCreated && !dismissed && !passwordChanged && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="rounded-xl border-2 border-yellow-400/60 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-500/40 p-4"
+            >
+              <div className="flex items-start gap-3">
+                <div className="h-9 w-9 rounded-full bg-yellow-400/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <AlertTriangle className="h-4.5 w-4.5 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">Troque sua senha provisória</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Sua conta foi criada automaticamente na compra. Por segurança, recomendamos que você defina uma nova senha.
+                    </p>
+                  </div>
+
+                  {!showPasswordChange ? (
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowPasswordChange(true)}>
+                        <Lock className="h-3.5 w-3.5" />
+                        Trocar Senha
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setDismissed(true)}>
+                        Depois
+                      </Button>
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="space-y-3 pt-1"
+                    >
+                      <div className="space-y-1.5">
+                        <Label htmlFor="new-pass" className="text-xs">Nova senha</Label>
+                        <div className="relative">
+                          <Input
+                            id="new-pass"
+                            type={showPass ? "text" : "password"}
+                            placeholder="Mínimo 6 caracteres"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="h-9 text-sm pr-9"
+                            minLength={6}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPass(!showPass)}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPass ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="confirm-pass" className="text-xs">Confirmar senha</Label>
+                        <Input
+                          id="confirm-pass"
+                          type={showPass ? "text" : "password"}
+                          placeholder="Repita a nova senha"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="h-9 text-sm"
+                          minLength={6}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs gap-1.5"
+                          onClick={handlePasswordChange}
+                          disabled={changingPassword || newPassword.length < 6}
+                        >
+                          {changingPassword ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                          {changingPassword ? "Salvando..." : "Salvar Nova Senha"}
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setShowPasswordChange(false)}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+
           <div className="flex justify-center py-20">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
