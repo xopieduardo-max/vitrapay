@@ -122,16 +122,15 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
 }
 
 function buildPlainText(params: PurchaseEmailParams): string {
-  const { buyer_name, product_title, product_type, product_id, file_url } = params;
-  let accessLink: string;
-  if (product_type === "course") {
-    accessLink = `https://vitrapay.lovable.app/learn/${product_id}`;
-  } else if (file_url) {
-    accessLink = file_url;
-  } else {
-    accessLink = `https://vitrapay.lovable.app/library`;
+  const { buyer_name, product_title, temp_password, buyer_email } = params;
+  const accessLink = `https://vitrapay.lovable.app/minha-conta`;
+  
+  let credentialsText = "";
+  if (temp_password) {
+    credentialsText = `\n\nSua conta foi criada automaticamente!\nE-mail: ${buyer_email}\nSenha provisória: ${temp_password}\n\nRecomendamos trocar sua senha após o primeiro acesso.`;
   }
-  return `Olá ${buyer_name},\n\nSeu pagamento foi confirmado com sucesso!\n\nProduto: ${product_title}\n\nAcesse seu produto: ${accessLink}\n\nBom proveito!\nEquipe VitraPay`;
+  
+  return `Olá ${buyer_name},\n\nSeu pagamento foi confirmado com sucesso!\n\nProduto: ${product_title}${credentialsText}\n\nAcesse seus produtos: ${accessLink}\n\nBom proveito!\nEquipe VitraPay`;
 }
 
 Deno.serve(async (req) => {
