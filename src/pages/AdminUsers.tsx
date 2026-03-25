@@ -46,6 +46,8 @@ interface UserData {
   role: string;
   custom_fee_percentage: number | null;
   custom_fee_fixed: number | null;
+  productsCount: number;
+  totalRevenue: number;
 }
 
 export default function AdminUsers() {
@@ -69,14 +71,26 @@ export default function AdminUsers() {
 
       if (!profiles) return [];
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
+      const [{ data: roles }, { data: products }, { data: salesData }] = await Promise.all([
+        supabase.from("user_roles").select("user_id, role"),
+        supabase.from("products").select("id, producer_id"),
+        supabase.from("sales").select("producer_id, amount, status"),
+      ]);
 
       const rolesMap: Record<string, string[]> = {};
       (roles || []).forEach((r: any) => {
         if (!rolesMap[r.user_id]) rolesMap[r.user_id] = [];
         rolesMap[r.user_id].push(r.role);
+      });
+
+      const productsCountMap: Record<string, number> = {};
+      (products || []).forEach((p: any) => {
+        productsCountMap[p.producer_id] = (productsCountMap[p.producer_id] || 0) + 1;
+      });
+
+      const revenueMap: Record<string, number> = {};
+      (salesData || []).filter((s: any) => s.status === "completed").forEach((s: any) => {
+        revenueMap[s.producer_id] = (revenueMap[s.producer_id] || 0) + s.amount;
       });
 
       return profiles.map((p: any) => {
@@ -89,6 +103,8 @@ export default function AdminUsers() {
           role,
           custom_fee_percentage: p.custom_fee_percentage,
           custom_fee_fixed: p.custom_fee_fixed,
+          productsCount: productsCountMap[p.user_id] || 0,
+          totalRevenue: revenueMap[p.user_id] || 0,
         } as UserData;
       });
     },
@@ -215,10 +231,12 @@ export default function AdminUsers() {
       </div>
 
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <div className="grid grid-cols-[1fr_100px_80px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        <div className="grid grid-cols-[1fr_100px_80px_80px_80px_80px_50px] gap-4 px-4 py-3 border-b border-border text-xs font-medium uppercase tracking-widest text-muted-foreground">
           <span>Nome</span>
           <span>Função</span>
           <span>Taxa</span>
+          <span>Produtos</span>
+          <span>Faturamento</span>
           <span>Cadastro</span>
           <span></span>
         </div>
@@ -231,7 +249,7 @@ export default function AdminUsers() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="grid grid-cols-[1fr_100px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+              className="grid grid-cols-[1fr_100px_80px_80px_80px_80px_50px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
               onClick={() => navigate(`/admin/users/${user.id}`)}
             >
               <span className="text-sm font-medium truncate">{user.name}</span>
@@ -242,10 +260,14 @@ export default function AdminUsers() {
               <span className={`text-xs truncate ${hasCustomFee ? "text-primary font-medium" : "text-muted-foreground"}`}>
                 {getFeeLabel(user)}
               </span>
+              <span className="text-xs text-muted-foreground">{user.productsCount}</span>
+              <span className="text-xs font-medium text-foreground">
+                {user.totalRevenue > 0 ? `R$ ${(user.totalRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
+              </span>
               <span className="text-xs text-muted-foreground">{user.joined}</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
                     <MoreHorizontal className="h-4 w-4" strokeWidth={1.5} />
                   </Button>
                 </DropdownMenuTrigger>

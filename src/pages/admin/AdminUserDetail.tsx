@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   ArrowLeft, Package, ShoppingBag, Landmark, Percent, Loader2,
-  Calendar, Eye, TrendingUp, DollarSign, Pencil, RotateCcw,
+  Calendar, Eye, TrendingUp, DollarSign, Pencil, RotateCcw, Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,12 +76,31 @@ export default function AdminUserDetail() {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, title, price, type, is_published, created_at, cover_url")
+        .select("id, title, price, type, is_published, created_at, cover_url, file_url")
         .eq("producer_id", userId!)
         .order("created_at", { ascending: false });
       return data || [];
     },
     enabled: !!userId,
+  });
+
+  // Product access counts
+  const { data: accessCounts = {} } = useQuery({
+    queryKey: ["admin-user-product-access", userId, products],
+    queryFn: async () => {
+      if (!products.length) return {};
+      const productIds = products.map((p) => p.id);
+      const { data } = await supabase
+        .from("product_access")
+        .select("product_id")
+        .in("product_id", productIds);
+      const counts: Record<string, number> = {};
+      (data || []).forEach((a: any) => {
+        counts[a.product_id] = (counts[a.product_id] || 0) + 1;
+      });
+      return counts;
+    },
+    enabled: !!userId && products.length > 0,
   });
 
   // Sales
@@ -442,7 +461,7 @@ export default function AdminUserDetail() {
                   <div
                     key={p.id}
                     className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/product/${p.id}`)}
+                    onClick={() => navigate(`/edit-product/${p.id}`)}
                   >
                     {p.cover_url ? (
                       <img
@@ -461,6 +480,10 @@ export default function AdminUserDetail() {
                         {p.type === "course" ? "Curso" : "Download"} · {fmt(p.price)}
                         {!p.is_published && " · Rascunho"}
                       </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-muted-foreground flex-shrink-0">
+                      <Users className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      <span className="text-xs">{accessCounts[p.id] || 0} acesso{(accessCounts[p.id] || 0) !== 1 ? "s" : ""}</span>
                     </div>
                     <div className="text-right flex-shrink-0">
                       {pSales ? (
