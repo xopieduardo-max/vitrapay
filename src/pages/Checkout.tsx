@@ -899,7 +899,7 @@ export default function Checkout() {
                 <span className="text-lg">{maxInstallment.label}</span>
               </p>
               <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
-                ou R$ {(total / 100).toFixed(2)} à vista
+                ou R$ {((total + SERVICE_FEE) / 100).toFixed(2)} à vista
               </p>
             </div>
 
