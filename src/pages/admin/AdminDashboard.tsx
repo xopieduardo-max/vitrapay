@@ -38,6 +38,7 @@ import {
   CalendarDays,
   Trophy,
   Package,
+  Receipt,
 } from "lucide-react";
 import {
   LineChart,
@@ -413,11 +414,16 @@ export default function AdminDashboard() {
       const amount = s.amount;
       const platformFee = s.platform_fee || 0;
       let asaasCost = 0;
+      let serviceFeeNet = SERVICE_FEE_PER_SALE;
 
       if (method === "pix") {
-        asaasCost = 199; // R$ 1.99
+        asaasCost = 199; // R$ 1.99 flat - service fee has no extra Asaas cost on PIX
       } else {
-        asaasCost = Math.round(amount * 0.0414 + 49);
+        // Card: Asaas charges on full amount (product + service fee)
+        const fullAmount = amount + SERVICE_FEE_PER_SALE;
+        asaasCost = Math.round(fullAmount * 0.0414 + 49);
+        // Net service fee after Asaas cut on the R$0.99
+        serviceFeeNet = SERVICE_FEE_PER_SALE - Math.round(SERVICE_FEE_PER_SALE * 0.0414);
       }
 
       const netProfit = platformFee - asaasCost + SERVICE_FEE_PER_SALE;
@@ -429,6 +435,7 @@ export default function AdminDashboard() {
         platformFee,
         asaasCost,
         serviceFee: SERVICE_FEE_PER_SALE,
+        serviceFeeNet,
         netProfit,
         method,
         producer_id: s.producer_id,
@@ -452,6 +459,19 @@ export default function AdminDashboard() {
   const totalServiceFees = useMemo(() => {
     return profitPerSale.reduce((a, s) => a + s.serviceFee, 0);
   }, [profitPerSale]);
+
+  const totalServiceFeesNet = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.serviceFeeNet, 0);
+  }, [profitPerSale]);
+
+  // Admin service fee withdrawals
+  const adminServiceFeeWithdrawals = useMemo(() => {
+    return allTransactions
+      .filter((t) => t.category === "admin-service-fee-withdrawal" && t.type === "debit")
+      .reduce((a, t) => a + t.amount, 0);
+  }, [allTransactions]);
+
+  const serviceFeeAvailable = totalServiceFeesNet - adminServiceFeeWithdrawals;
 
   // ── Daily profit chart data ──
   const dailyProfitData = useMemo(() => {
@@ -592,6 +612,20 @@ export default function AdminDashboard() {
       clickable: true,
       onClick: () => setCheckoutsOpen(true),
       hint: "Ver detalhes →",
+    },
+    {
+      label: "Taxa de serviço (período)",
+      desc: `R$ 0,99/transação • Líquido após gateway: ${fmt(totalServiceFeesNet)}`,
+      value: fmt(totalServiceFees),
+      icon: Receipt,
+      color: "text-primary",
+    },
+    {
+      label: "Taxa serviço disponível",
+      desc: "Taxa de serviço líquida acumulada menos saques realizados",
+      value: fmt(Math.max(0, serviceFeeAvailable)),
+      icon: Banknote,
+      color: "text-emerald-500",
     },
     { label: "Usuários", desc: "Total de usuários cadastrados", value: String(stats?.totalUsers ?? 0), icon: Users, color: "text-muted-foreground" },
     {

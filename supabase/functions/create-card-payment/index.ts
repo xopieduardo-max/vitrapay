@@ -274,9 +274,11 @@ Deno.serve(async (req) => {
         platformFee = Math.round(productAmount * PLATFORM_PCT + PLATFORM_FIXED);
       }
 
-      const asaasCost = Math.round(productAmount * ASAAS_PCT + ASAAS_FIXED);
+      // Asaas charges on the FULL amount (including service fee)
+      const asaasCost = Math.round(amount * ASAAS_PCT + ASAAS_FIXED);
+      const serviceFeeNet = SERVICE_FEE - Math.round(SERVICE_FEE * ASAAS_PCT); // Net service fee after Asaas cut
       const netProfit = platformFee - asaasCost + SERVICE_FEE;
-      console.log(`Card ${cardPlan} fees: platform=${platformFee}, asaas=${asaasCost}, serviceFee=${SERVICE_FEE}, profit=${netProfit}`);
+      console.log(`Card ${cardPlan} fees: platform=${platformFee}, asaas=${asaasCost}, serviceFee=${SERVICE_FEE}, serviceFeeNet=${serviceFeeNet}, profit=${netProfit}`);
 
       let affiliateId: string | null = null;
       if (affiliate_ref) {
@@ -351,19 +353,8 @@ Deno.serve(async (req) => {
           });
         }
 
-        // Service fee transaction (platform revenue from buyer)
-        if (SERVICE_FEE > 0) {
-          txns.push({
-            user_id: product.producer_id,
-            type: "debit",
-            category: "service_fee",
-            amount: SERVICE_FEE,
-            balance_type: "pending",
-            reference_id: sale.id,
-            release_date: releaseDateStr,
-            status: "pending",
-          });
-        }
+        // Note: Service fee (R$0.99) is NOT a producer debit — it was never part of
+        // productAmount. It goes directly to platform revenue via the total charged amount.
 
         await supabase.from("transactions").insert(txns)
           .catch((err: any) => console.error("Transaction insert error:", err));
