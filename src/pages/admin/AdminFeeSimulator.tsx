@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calculator, CreditCard, QrCode, Barcode, Save, Loader2, TrendingUp, TrendingDown, Building2, Landmark, User, Percent } from "lucide-react";
+import { Calculator, CreditCard, QrCode, Barcode, Save, Loader2, TrendingUp, TrendingDown, Building2, Landmark, User, Percent, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const METHODS = [
@@ -67,6 +67,9 @@ export default function AdminFeeSimulator() {
   const amount = Math.round((parseFloat(value) || 0) * 100);
   const isValid = amount >= 500;
 
+  // Service fee (R$0.99 per transaction, paid by buyer)
+  const SERVICE_FEE = 99;
+
   // Asaas cost (internal, invisible to producer)
   const asCfg = getAs(method);
   const asaasPctVal = parseFloat(asCfg.pct) || 0;
@@ -79,10 +82,16 @@ export default function AdminFeeSimulator() {
   const vpFixedVal = Math.round((parseFloat(vpCfg.fixed) || 0) * 100);
   const feePlatform = Math.round(amount * (vpPctVal / 100)) + vpFixedVal;
 
+  // Service fee net: on PIX no extra gateway cost; on card Asaas charges % on it
+  const serviceFeeGatewayCost = method === "pix" ? 0 : Math.round(SERVICE_FEE * (asaasPctVal / 100));
+  const serviceFeeNet = SERVICE_FEE - serviceFeeGatewayCost;
+
   // KEY: Producer pays ONLY feePlatform. Asaas is absorbed internally.
   const producerReceives = amount - feePlatform;
   // Platform profit = what VitraPay keeps after paying Asaas
   const platformProfit = feePlatform - feeAsaas;
+  // Total profit including service fee
+  const totalProfit = platformProfit + serviceFeeNet;
 
   const pctPlatformOnSale = amount > 0 ? (feePlatform / amount) * 100 : 0;
   const pctAsaasOnSale = amount > 0 ? (feeAsaas / amount) * 100 : 0;
@@ -255,6 +264,38 @@ export default function AdminFeeSimulator() {
               </div>
               <span className={cn("text-lg font-bold", platformProfit >= 0 ? "text-emerald-500" : "text-destructive")}>
                 {fmt(platformProfit)}
+              </span>
+            </div>
+
+            {/* Taxa de serviço */}
+            <ResultRow
+              icon={<Receipt className="h-4 w-4" />}
+              label="Taxa de serviço (paga pelo comprador)"
+              sublabel={`R$ 0,99 bruto${serviceFeeGatewayCost > 0 ? ` − ${fmt(serviceFeeGatewayCost)} gateway` : ""}`}
+              value={`+ ${fmt(serviceFeeNet)}`}
+              valueColor="text-amber-500"
+            />
+
+            {/* Lucro total por transação */}
+            <div className={cn(
+              "flex items-center justify-between p-3 rounded-lg border-2",
+              totalProfit >= 0 ? "bg-emerald-500/10 border-emerald-500/30" : "bg-destructive/10 border-destructive/30"
+            )}>
+              <div className="flex items-center gap-2">
+                {totalProfit >= 0 ? (
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
+                ) : (
+                  <TrendingDown className="h-5 w-5 text-destructive" />
+                )}
+                <div>
+                  <p className="text-sm font-bold">Lucro total por transação</p>
+                  <p className="text-xs text-muted-foreground">
+                    {fmt(platformProfit)} (taxa) + {fmt(serviceFeeNet)} (serviço)
+                  </p>
+                </div>
+              </div>
+              <span className={cn("text-xl font-bold", totalProfit >= 0 ? "text-emerald-500" : "text-destructive")}>
+                {fmt(totalProfit)}
               </span>
             </div>
 
