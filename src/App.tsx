@@ -43,6 +43,7 @@ const Install = lazy(() => import("./pages/Install"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
+const Taxas = lazy(() => import("./pages/Taxas"));
 
 
 // Admin pages
@@ -112,6 +113,7 @@ const App = () => {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/help" element={<HelpCenter />} />
+                  <Route path="/taxas" element={<Taxas />} />
                 </Route>
               </Route>
 
