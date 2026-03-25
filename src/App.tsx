@@ -57,6 +57,7 @@ const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
 const AdminPushNotifications = lazy(() => import("./pages/admin/AdminPushNotifications"));
 const AdminUserDetail = lazy(() => import("./pages/admin/AdminUserDetail"));
 const AdminFeeSimulator = lazy(() => import("./pages/admin/AdminFeeSimulator"));
+const AdminDisputes = lazy(() => import("./pages/admin/AdminDisputes"));
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => {
                 <Route path="/admin/community" element={<AdminCommunity />} />
                 <Route path="/admin/push" element={<AdminPushNotifications />} />
                 <Route path="/admin/fee-simulator" element={<AdminFeeSimulator />} />
+                <Route path="/admin/disputes" element={<AdminDisputes />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
               </Route>
 
