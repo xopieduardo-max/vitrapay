@@ -85,7 +85,7 @@ const App = () => {
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/checkout/:id" element={<Checkout />} />
-              <Route path="/learn/:productId" element={<MemberArea />} />
+              
               <Route path="/terms" element={<TermsOfUse />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/purchase-terms" element={<PurchaseTerms />} />
