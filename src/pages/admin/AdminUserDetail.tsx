@@ -166,11 +166,11 @@ export default function AdminUserDetail() {
       toast.error("Valor fixo inválido");
       return;
     }
-    saveCustomFees.mutate({ pct, fixed });
+    saveCustomFees.mutate({ pct, fixed, plan: selectedPlan });
   };
 
   const handleResetFees = () => {
-    saveCustomFees.mutate({ pct: null, fixed: null });
+    saveCustomFees.mutate({ pct: null, fixed: null, plan: selectedPlan });
   };
 
   const filteredSales = useMemo(() => {
