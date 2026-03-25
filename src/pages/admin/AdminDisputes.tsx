@@ -117,7 +117,7 @@ export default function AdminDisputes() {
   const exportData = filtered.map((d: any) => ({
     product_title: d.products?.title || "Produto removido",
     producer_name: profileMap[d.producer_id] || "—",
-    type: d.status === "chargeback" ? "Chargeback" : "Estorno",
+    type: d.status === "chargeback" ? "Chargeback" : d.status === "med" ? "MED Pix" : "Estorno",
     amount_formatted: (d.amount / 100).toFixed(2),
     payment_provider: d.payment_provider || "N/A",
     created_at: new Date(d.created_at).toLocaleDateString("pt-BR"),
