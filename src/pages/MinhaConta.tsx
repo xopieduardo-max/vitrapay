@@ -55,7 +55,6 @@ export default function MinhaConta() {
       setChangingPassword(false);
     }
   };
-  const [authTrigger, setAuthTrigger] = useState(0);
 
   const { data: accessItems = [], isLoading } = useQuery({
     queryKey: ["minha-conta-products", user?.id, user?.email, authTrigger],
