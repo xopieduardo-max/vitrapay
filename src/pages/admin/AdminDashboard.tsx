@@ -532,7 +532,7 @@ export default function AdminDashboard() {
 
   const adminWithdrawals = useMemo(() => {
     return allTransactions
-      .filter((t) => t.category === "withdrawal" && t.type === "debit" && t.reference_id?.startsWith("admin"))
+      .filter((t) => t.category === "admin-withdrawal" && t.type === "debit")
       .reduce((a, t) => a + t.amount, 0);
   }, [allTransactions]);
 

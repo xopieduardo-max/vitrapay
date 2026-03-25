@@ -307,7 +307,7 @@ Deno.serve(async (req) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              user_id: sale.producer_id,
+              producer_id: sale.producer_id,
               title: pushTitle,
               body: pushBody,
               url: "/dashboard",
@@ -517,7 +517,7 @@ Deno.serve(async (req) => {
     // Create affiliate commission
     let commissionAmount = 0;
     if (affiliateUserId && product.affiliate_commission > 0 && sale) {
-      commissionAmount = Math.round(pending.amount * product.affiliate_commission / 100);
+      commissionAmount = Math.round(productAmount * product.affiliate_commission / 100);
       await supabase.from("commissions").insert({
         sale_id: sale.id,
         affiliate_id: affiliateUserId,
