@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   ArrowLeft, Package, ShoppingBag, Landmark, Percent, Loader2,
-  Calendar, Eye, TrendingUp, DollarSign, Pencil, RotateCcw,
+  Calendar, Eye, TrendingUp, DollarSign, Pencil, RotateCcw, Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
