@@ -92,9 +92,11 @@ export default function AdminDisputes() {
 
   const totalRefunded = filtered.filter((d: any) => d.status === "refunded");
   const totalChargeback = filtered.filter((d: any) => d.status === "chargeback");
+  const totalMED = filtered.filter((d: any) => d.status === "med");
   const refundedAmount = totalRefunded.reduce((a: number, d: any) => a + d.amount, 0);
   const chargebackAmount = totalChargeback.reduce((a: number, d: any) => a + d.amount, 0);
-  const totalLoss = refundedAmount + chargebackAmount;
+  const medAmount = totalMED.reduce((a: number, d: any) => a + d.amount, 0);
+  const totalLoss = refundedAmount + chargebackAmount + medAmount;
   const feeImpact = filtered.reduce((a: number, d: any) => a + (d.platform_fee || 0), 0);
 
   const statusMap: Record<string, { label: string; icon: any; className: string }> = {
