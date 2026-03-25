@@ -42,9 +42,11 @@ Deno.serve(async (req) => {
     const {
       product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, buyer_postal_code,
       card_number, card_holder_name, card_expiry_month, card_expiry_year, card_cvv,
-      installments, amount, affiliate_ref,
+      installments, amount, service_fee, affiliate_ref,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term
     } = await req.json();
+    const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
+    const productAmount = amount - SERVICE_FEE; // Amount without service fee for fee calculation
 
     if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
       return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_cpf, buyer_name, buyer_email" }), {
