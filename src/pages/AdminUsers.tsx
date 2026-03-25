@@ -46,6 +46,8 @@ interface UserData {
   role: string;
   custom_fee_percentage: number | null;
   custom_fee_fixed: number | null;
+  productsCount: number;
+  totalRevenue: number;
 }
 
 export default function AdminUsers() {
