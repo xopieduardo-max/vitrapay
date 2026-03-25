@@ -57,6 +57,7 @@ const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
 const AdminPushNotifications = lazy(() => import("./pages/admin/AdminPushNotifications"));
 const AdminUserDetail = lazy(() => import("./pages/admin/AdminUserDetail"));
 const AdminFeeSimulator = lazy(() => import("./pages/admin/AdminFeeSimulator"));
+const AdminDisputes = lazy(() => import("./pages/admin/AdminDisputes"));
 
 const queryClient = new QueryClient();
 
