@@ -69,14 +69,26 @@ export default function AdminUsers() {
 
       if (!profiles) return [];
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
+      const [{ data: roles }, { data: products }, { data: salesData }] = await Promise.all([
+        supabase.from("user_roles").select("user_id, role"),
+        supabase.from("products").select("id, producer_id"),
+        supabase.from("sales").select("producer_id, amount, status"),
+      ]);
 
       const rolesMap: Record<string, string[]> = {};
       (roles || []).forEach((r: any) => {
         if (!rolesMap[r.user_id]) rolesMap[r.user_id] = [];
         rolesMap[r.user_id].push(r.role);
+      });
+
+      const productsCountMap: Record<string, number> = {};
+      (products || []).forEach((p: any) => {
+        productsCountMap[p.producer_id] = (productsCountMap[p.producer_id] || 0) + 1;
+      });
+
+      const revenueMap: Record<string, number> = {};
+      (salesData || []).filter((s: any) => s.status === "completed").forEach((s: any) => {
+        revenueMap[s.producer_id] = (revenueMap[s.producer_id] || 0) + s.amount;
       });
 
       return profiles.map((p: any) => {
@@ -89,6 +101,8 @@ export default function AdminUsers() {
           role,
           custom_fee_percentage: p.custom_fee_percentage,
           custom_fee_fixed: p.custom_fee_fixed,
+          productsCount: productsCountMap[p.user_id] || 0,
+          totalRevenue: revenueMap[p.user_id] || 0,
         } as UserData;
       });
     },
