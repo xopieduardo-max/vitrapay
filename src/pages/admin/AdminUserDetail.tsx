@@ -131,12 +131,12 @@ export default function AdminUserDetail() {
     },
   });
 
-  // Save custom fees
+  // Save custom fees and plan
   const saveCustomFees = useMutation({
-    mutationFn: async ({ pct, fixed }: { pct: number | null; fixed: number | null }) => {
+    mutationFn: async ({ pct, fixed, plan }: { pct: number | null; fixed: number | null; plan: string }) => {
       const { error } = await supabase
         .from("profiles")
-        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed })
+        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed, card_plan: plan } as any)
         .eq("user_id", userId!);
       if (error) throw error;
     },
@@ -151,6 +151,7 @@ export default function AdminUserDetail() {
   const openFeeDialog = () => {
     setCustomPct(profile?.custom_fee_percentage != null ? String(profile.custom_fee_percentage) : "");
     setCustomFixed(profile?.custom_fee_fixed != null ? String((profile.custom_fee_fixed / 100).toFixed(2)) : "");
+    setSelectedPlan(profile?.card_plan || "d2");
     setFeeDialogOpen(true);
   };
 
