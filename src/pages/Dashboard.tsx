@@ -114,7 +114,7 @@ export default function Dashboard() {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, card_plan")
         .eq("user_id", user.id)
         .maybeSingle();
       return data;
@@ -216,7 +216,7 @@ export default function Dashboard() {
   const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount, 0);
 
   // Available balance (global, not period-filtered)
-  const HOLDBACK_DAYS_CARD = 2;
+  const HOLDBACK_DAYS_CARD = (profile as any)?.card_plan === "d2" ? 2 : 30;
   const HOLDBACK_DAYS_PIX = 0;
   const WITHDRAWAL_FEE = 500;
   const now = new Date();

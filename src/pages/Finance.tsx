@@ -21,14 +21,13 @@ import {
 } from "lucide-react";
 
 // ── Platform constants ──
-const HOLDBACK_DAYS_CARD = 2;   // Credit card: D+2
 const HOLDBACK_DAYS_PIX = 0;    // PIX: D+0 (instant)
 const MIN_WITHDRAWAL = 1000;    // R$ 10.00 in cents
 const WITHDRAWAL_FEE = 500;     // R$ 5.00 in cents
 const AUTO_APPROVE_LIMIT = 10000; // R$ 100.00 — auto PIX
 
-function getHoldbackDays(provider: string | null) {
-  return provider === "pix" ? HOLDBACK_DAYS_PIX : HOLDBACK_DAYS_CARD;
+function getHoldbackDays(provider: string | null, cardHoldDays: number) {
+  return provider === "pix" ? HOLDBACK_DAYS_PIX : cardHoldDays;
 }
 
 function addDays(date: string, days: number) {
@@ -48,12 +47,12 @@ export default function Finance() {
 
   // Get saved pix key from profile
   const { data: profile } = useQuery({
-    queryKey: ["profile-pix", user?.id],
+    queryKey: ["profile-finance", user?.id],
     queryFn: async () => {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("pix_key, pix_key_type, cpf, phone, display_name, address_cep")
+        .select("pix_key, pix_key_type, cpf, phone, display_name, address_cep, card_plan")
         .eq("user_id", user.id)
         .single();
       return data as any;
@@ -64,6 +63,8 @@ export default function Finance() {
   const pixKey = profile?.pix_key || "";
   const pixKeyType = profile?.pix_key_type || "cpf";
   const profileIncomplete = !profile?.cpf || !profile?.phone || !profile?.display_name;
+  const cardPlan = profile?.card_plan || "d30";
+  const HOLDBACK_DAYS_CARD = cardPlan === "d2" ? 2 : 30;
 
   // Get sales for balance calc
   const { data: sales = [] } = useQuery({
@@ -139,7 +140,7 @@ export default function Finance() {
   // Split sales into available vs held back
   const salesNet = verifiedSales.map((s: any) => ({
     net: s.amount - (s.platform_fee || 0),
-    availableAt: addDays(s.created_at, getHoldbackDays(s.payment_provider)),
+    availableAt: addDays(s.created_at, getHoldbackDays(s.payment_provider, HOLDBACK_DAYS_CARD)),
     provider: s.payment_provider,
   }));
 
@@ -409,7 +410,7 @@ export default function Finance() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-primary", description: "Pronto para saque", clickAction: "available" as const },
-          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Cartão: D+${HOLDBACK_DAYS_CARD}`, clickAction: "held" as const },
+          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", description: `Cartão: D+${HOLDBACK_DAYS_CARD} • PIX: D+0`, clickAction: "held" as const },
           { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", description: "Vendas + comissões", clickAction: null },
           { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", description: "Já transferido", clickAction: null },
         ].map((stat, i) => (
