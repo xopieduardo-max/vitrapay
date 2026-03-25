@@ -739,9 +739,9 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {cards.map((card, i) => (
+      {/* KPI Cards - Row 1: Overview */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+        {[cards[0], cards[2], cards[10]].filter(Boolean).map((card, i) => (
           <motion.div
             key={card.label}
             initial={{ opacity: 0, y: 10 }}
@@ -749,9 +749,7 @@ export default function AdminDashboard() {
             transition={{ delay: i * 0.05 }}
             onClick={(card as any).onClick}
             className={`rounded-xl border border-border bg-card p-4 space-y-1 ${
-              (card as any).clickable
-                ? "cursor-pointer hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all ring-1 ring-primary/20"
-                : ""
+              (card as any).clickable ? "cursor-pointer hover:border-primary/50 hover:shadow-lg transition-all ring-1 ring-primary/20" : ""
             }`}
           >
             <div className="flex items-center gap-2">
@@ -759,12 +757,112 @@ export default function AdminDashboard() {
               <span className="text-xs text-muted-foreground">{card.label}</span>
             </div>
             <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-            {(card as any).desc && (
-              <p className="text-[0.55rem] text-muted-foreground/70 leading-tight">{(card as any).desc}</p>
-            )}
-            {(card as any).hint && (
-              <p className="text-[0.6rem] text-primary/70 mt-1">{(card as any).hint}</p>
-            )}
+            {(card as any).desc && <p className="text-[0.55rem] text-muted-foreground/70 leading-tight">{(card as any).desc}</p>}
+            {(card as any).hint && <p className="text-[0.6rem] text-primary/70 mt-1">{(card as any).hint}</p>}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* KPI Cards - Row 2: Platform Revenue (highlighted pairs) */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+        {/* Taxa da plataforma + Disponível para saque */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-primary/10 p-1"
+        >
+          <div className="grid grid-cols-2 gap-1">
+            <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-primary/80">Taxa plataforma</span>
+              </div>
+              <p className="text-xl font-bold text-primary">{fmt(periodStats.fees)}</p>
+              <p className="text-[0.55rem] text-muted-foreground/70">Total cobrado no período</p>
+            </div>
+            <div
+              onClick={() => setProfitDialogOpen(true)}
+              className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1 cursor-pointer hover:bg-primary/10 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-emerald-500" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-emerald-500">Disponível p/ saque</span>
+              </div>
+              <p className="text-xl font-bold text-emerald-500">{fmt(netProfit)}</p>
+              <p className="text-[0.55rem] text-emerald-500/70">Clique para sacar →</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Taxa de serviço período + Taxa de serviço disponível */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="rounded-xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-card to-amber-500/10 p-1"
+        >
+          <div className="grid grid-cols-2 gap-1">
+            <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+              <div className="flex items-center gap-2">
+                <Receipt className="h-4 w-4 text-amber-500" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-amber-500">Taxa serviço (período)</span>
+              </div>
+              <p className="text-xl font-bold text-amber-500">{fmt(totalServiceFees)}</p>
+              <p className="text-[0.55rem] text-muted-foreground/70">R$ 0,99/transação • Líq: {fmt(totalServiceFeesNet)}</p>
+            </div>
+            <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-amber-600" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-amber-600">Taxa serviço disponível</span>
+              </div>
+              <p className="text-xl font-bold text-amber-600">{fmt(Math.max(0, serviceFeeAvailable))}</p>
+              <p className="text-[0.55rem] text-muted-foreground/70">Acumulado menos saques</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* KPI Cards - Row 3: Operations */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {[cards[4], cards[5], cards[6], cards[7]].filter(Boolean).map((card, i) => (
+          <motion.div
+            key={card.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + i * 0.05 }}
+            onClick={(card as any).onClick}
+            className={`rounded-xl border border-border bg-card p-4 space-y-1 ${
+              (card as any).clickable ? "cursor-pointer hover:border-primary/50 hover:shadow-lg transition-all ring-1 ring-primary/20" : ""
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <card.icon className={`h-4 w-4 ${card.color}`} strokeWidth={1.5} />
+              <span className="text-xs text-muted-foreground">{card.label}</span>
+            </div>
+            <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
+            {(card as any).desc && <p className="text-[0.55rem] text-muted-foreground/70 leading-tight">{(card as any).desc}</p>}
+            {(card as any).hint && <p className="text-[0.6rem] text-primary/70 mt-1">{(card as any).hint}</p>}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* KPI Cards - Row 4: Users + Margin */}
+      <div className="grid gap-4 grid-cols-2">
+        {[cards[9], cards[11]].filter(Boolean).map((card, i) => (
+          <motion.div
+            key={card.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + i * 0.05 }}
+            className="rounded-xl border border-border bg-card p-4 space-y-1"
+          >
+            <div className="flex items-center gap-2">
+              <card.icon className={`h-4 w-4 ${card.color}`} strokeWidth={1.5} />
+              <span className="text-xs text-muted-foreground">{card.label}</span>
+            </div>
+            <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
+            {(card as any).desc && <p className="text-[0.55rem] text-muted-foreground/70 leading-tight">{(card as any).desc}</p>}
           </motion.div>
         ))}
       </div>
