@@ -454,13 +454,19 @@ export default function Landing() {
               <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-              Venda produtos digitais{" "}
-              <span className="text-gradient-primary">sem limites.</span>
+            <h1 className="relative text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.08]">
+              <span className="relative z-10">
+                A VitraPay enxerga o caminho
+                <br />
+                para não te deixar{" "}
+                <span className="text-gradient-primary">no escuro.</span>
+              </span>
+              {/* Glow central — centro mais claro, cantos mais escuros */}
+              <span className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--primary)/0.12),transparent_70%)] blur-xl pointer-events-none" />
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Publique seus infoprodutos, gerencie afiliados, receba pagamentos via Pix instantâneo e escale seu negócio digital.
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Desenvolvida para negócios que não podem parar, nossa tecnologia combina automação inteligente, checkout otimizado e performance contínua para maximizar conversões com total segurança.
             </p>
 
             {/* ─── Dual CTAs — BlackCatPay Style ─── */}
