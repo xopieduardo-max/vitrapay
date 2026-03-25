@@ -136,7 +136,7 @@ export default function AdminUserDetail() {
     mutationFn: async ({ pct, fixed, plan }: { pct: number | null; fixed: number | null; plan: string }) => {
       const { error } = await supabase
         .from("profiles")
-        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed, card_plan: plan } as any)
+        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed, card_plan: plan })
         .eq("user_id", userId!);
       if (error) throw error;
     },
