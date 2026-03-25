@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calculator, CreditCard, QrCode, Barcode, Save, Loader2, TrendingUp, TrendingDown, Building2, Landmark, User, Percent } from "lucide-react";
+import { Calculator, CreditCard, QrCode, Barcode, Save, Loader2, TrendingUp, TrendingDown, Building2, Landmark, User, Percent, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const METHODS = [
