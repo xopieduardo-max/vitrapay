@@ -48,17 +48,20 @@ export default function MemberArea() {
   }, [productId, user]);
 
   const loadContent = async () => {
-    const [{ data: prod }, { data: mods }, { data: lessonsData }, { data: prog }] = await Promise.all([
+    // First get modules IDs
+    const { data: mods } = await supabase
+      .from("modules")
+      .select("*")
+      .eq("product_id", productId!)
+      .order("position");
+
+    const moduleIds = (mods || []).map((m: any) => m.id);
+
+    const [{ data: prod }, { data: lessonsData }, { data: prog }] = await Promise.all([
       supabase.from("products").select("*").eq("id", productId!).single(),
-      supabase
-        .from("modules")
-        .select("*")
-        .eq("product_id", productId!)
-        .order("position"),
-      supabase
-        .from("lessons")
-        .select("*")
-        .in("module_id", (await supabase.from("modules").select("id").eq("product_id", productId!)).data?.map((m: any) => m.id) || []),
+      moduleIds.length > 0
+        ? supabase.from("lessons").select("*").in("module_id", moduleIds)
+        : Promise.resolve({ data: [] as any[] }),
       supabase
         .from("lesson_progress")
         .select("lesson_id, completed")
