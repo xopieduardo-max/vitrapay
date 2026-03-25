@@ -459,6 +459,19 @@ export default function AdminDashboard() {
     return profitPerSale.reduce((a, s) => a + s.serviceFee, 0);
   }, [profitPerSale]);
 
+  const totalServiceFeesNet = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.serviceFeeNet, 0);
+  }, [profitPerSale]);
+
+  // Admin service fee withdrawals
+  const adminServiceFeeWithdrawals = useMemo(() => {
+    return allTransactions
+      .filter((t) => t.category === "admin-service-fee-withdrawal" && t.type === "debit")
+      .reduce((a, t) => a + t.amount, 0);
+  }, [allTransactions]);
+
+  const serviceFeeAvailable = totalServiceFeesNet - adminServiceFeeWithdrawals;
+
   // ── Daily profit chart data ──
   const dailyProfitData = useMemo(() => {
     const dayMs = 86400000;
