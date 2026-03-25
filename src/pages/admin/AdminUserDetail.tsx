@@ -136,7 +136,7 @@ export default function AdminUserDetail() {
     mutationFn: async ({ pct, fixed, plan }: { pct: number | null; fixed: number | null; plan: string }) => {
       const { error } = await supabase
         .from("profiles")
-        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed, card_plan: plan } as any)
+        .update({ custom_fee_percentage: pct, custom_fee_fixed: fixed, card_plan: plan })
         .eq("user_id", userId!);
       if (error) throw error;
     },
@@ -151,7 +151,7 @@ export default function AdminUserDetail() {
   const openFeeDialog = () => {
     setCustomPct(profile?.custom_fee_percentage != null ? String(profile.custom_fee_percentage) : "");
     setCustomFixed(profile?.custom_fee_fixed != null ? String((profile.custom_fee_fixed / 100).toFixed(2)) : "");
-    setSelectedPlan(profile?.card_plan || "d2");
+    setSelectedPlan(profile?.card_plan || "d30");
     setFeeDialogOpen(true);
   };
 
@@ -316,7 +316,7 @@ export default function AdminUserDetail() {
 
       {/* Fee info */}
       {(() => {
-        const plan = profile.card_plan || "d2";
+        const plan = profile.card_plan || "d30";
         const planLabel = plan === "d30" ? "D+30 Padrão" : "D+2 Antecipação";
         const planPct = plan === "d30" ? 3.99 : 4.99;
         const planFixed = 2.49;
