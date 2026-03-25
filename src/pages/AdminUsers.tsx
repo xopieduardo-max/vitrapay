@@ -54,6 +54,7 @@ interface UserData {
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("recent");
   const [page, setPage] = useState(1);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [feePercentage, setFeePercentage] = useState("");
