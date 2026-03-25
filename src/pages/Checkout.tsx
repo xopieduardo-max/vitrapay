@@ -423,8 +423,7 @@ export default function Checkout() {
     try {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
-
-      // Get UTM data from localStorage
+      const totalCharged = calculateTotalWithServiceFee(); // total + R$0.99 service fee
       let utmData: Record<string, string> = {};
       try { utmData = JSON.parse(localStorage.getItem("utm_data") || "{}"); } catch {}
 
