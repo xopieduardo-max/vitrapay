@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { autoCreateBuyerAccount } from "../_shared/auto-create-buyer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -424,7 +425,27 @@ Deno.serve(async (req) => {
           console.log("Product access granted for card payment:", product_id);
         }
 
-        // ✅ Send purchase confirmation email
+        // ✅ Auto-create buyer account if needed
+        let tempPassword: string | null = null;
+        if (buyer_email) {
+          const accountResult = await autoCreateBuyerAccount(
+            supabase,
+            buyer_email,
+            buyer_name || "Cliente"
+          );
+          tempPassword = accountResult.tempPassword;
+
+          // Link user_id to product_access if we have it
+          if (accountResult.userId) {
+            await supabase
+              .from("product_access")
+              .update({ user_id: accountResult.userId })
+              .eq("sale_id", sale.id)
+              .is("user_id", null);
+          }
+        }
+
+        // ✅ Send purchase confirmation email (with temp password if new account)
         try {
           await fetch(`${supabaseUrl}/functions/v1/send-purchase-email`, {
             method: "POST",
@@ -436,6 +457,7 @@ Deno.serve(async (req) => {
               product_type: product.type,
               product_id: product.id,
               file_url: product.file_url,
+              temp_password: tempPassword,
             }),
           });
         } catch (emailErr) {

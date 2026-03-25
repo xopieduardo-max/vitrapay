@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { autoCreateBuyerAccount } from "../_shared/auto-create-buyer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -161,7 +162,8 @@ async function sendPurchaseEmailNotification(
   productTitle: string,
   productType: string,
   productId: string,
-  fileUrl: string | null
+  fileUrl: string | null,
+  tempPassword: string | null = null
 ) {
   try {
     const res = await fetch(`${supabaseUrl}/functions/v1/send-purchase-email`, {
@@ -174,6 +176,7 @@ async function sendPurchaseEmailNotification(
         product_type: productType,
         product_id: productId,
         file_url: fileUrl,
+        temp_password: tempPassword,
       }),
     });
     console.log("Purchase email dispatch status:", res.status);
@@ -630,7 +633,27 @@ Deno.serve(async (req) => {
     // ✅ Grant product access
     await grantProductAccess(supabase, pending.product_id, pending.buyer_email, sale.id);
 
-    // ✅ Send purchase confirmation email
+    // ✅ Auto-create buyer account if needed
+    let tempPassword: string | null = null;
+    if (pending.buyer_email) {
+      const accountResult = await autoCreateBuyerAccount(
+        supabase,
+        pending.buyer_email,
+        pending.buyer_name || "Cliente"
+      );
+      tempPassword = accountResult.tempPassword;
+
+      // Link user_id to product_access if we have it
+      if (accountResult.userId) {
+        await supabase
+          .from("product_access")
+          .update({ user_id: accountResult.userId })
+          .eq("sale_id", sale.id)
+          .is("user_id", null);
+      }
+    }
+
+    // ✅ Send purchase confirmation email (with temp password if new account)
     if (pending.buyer_email) {
       await sendPurchaseEmailNotification(
         supabaseUrl,
@@ -639,7 +662,8 @@ Deno.serve(async (req) => {
         product.title,
         product.type,
         product.id,
-        product.file_url
+        product.file_url,
+        tempPassword
       );
     }
 
