@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS card_plan text NOT NULL DEFAULT 'd2';

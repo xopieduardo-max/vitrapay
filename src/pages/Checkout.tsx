@@ -383,6 +383,10 @@ export default function Checkout() {
     return Math.round(total);
   };
 
+  // Total + service fee (always charged)
+  const SERVICE_FEE = 99; // R$ 0.99
+  const calculateTotalWithServiceFee = () => calculateTotal() + SERVICE_FEE;
+
   const [cardStatus, setCardStatus] = useState<"idle" | "approved" | "declined" | "pending">("idle");
 
   const isCardDisabled = paymentMethod === "card" && calculateTotal() < 500;
@@ -419,8 +423,7 @@ export default function Checkout() {
     try {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
-
-      // Get UTM data from localStorage
+      const totalCharged = calculateTotalWithServiceFee(); // total + R$0.99 service fee
       let utmData: Record<string, string> = {};
       try { utmData = JSON.parse(localStorage.getItem("utm_data") || "{}"); } catch {}
 
@@ -431,7 +434,8 @@ export default function Checkout() {
             buyer_name: form.name,
             buyer_email: form.email,
             buyer_cpf: form.cpf,
-            amount: total,
+            amount: totalCharged,
+            service_fee: SERVICE_FEE,
             description: `Compra na VitraPay`,
             affiliate_ref: affiliateRef,
             ...utmData,
@@ -471,7 +475,8 @@ export default function Checkout() {
             card_expiry_year: expiryYear,
             card_cvv: form.cardCvv,
             installments: form.installments,
-            amount: total,
+            amount: totalCharged,
+            service_fee: SERVICE_FEE,
             affiliate_ref: affiliateRef,
             ...utmData,
           },
@@ -794,7 +799,7 @@ export default function Checkout() {
   const total = calculateTotal();
   const time = formatTime(timeLeft);
 
-  const SERVICE_FEE = 99; // R$ 0.99 in centavos
+  // SERVICE_FEE already declared above
 
   const installmentOptionsAsc = Array.from({ length: 12 }, (_, i) => {
     const n = i + 1;
@@ -894,7 +899,7 @@ export default function Checkout() {
                 <span className="text-lg">{maxInstallment.label}</span>
               </p>
               <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
-                ou R$ {(total / 100).toFixed(2)} à vista
+                ou R$ {((total + SERVICE_FEE) / 100).toFixed(2)} à vista
               </p>
             </div>
 
@@ -1309,13 +1314,11 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {/* Taxa de serviço */}
-                {paymentMethod === "card" && (
-                  <div className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
-                    <span>Taxa de serviço</span>
-                    <span>R$ 0,99</span>
-                  </div>
-                )}
+                {/* Taxa de serviço - always shown */}
+                <div className="flex justify-between text-xs" style={{ color: "var(--ck-label)" }}>
+                  <span>Taxa de serviço</span>
+                  <span>R$ 0,99</span>
+                </div>
 
                 <Separator className="my-1" style={{ background: "var(--ck-card-border)", borderStyle: "dashed" }} />
 
@@ -1328,13 +1331,13 @@ export default function Checkout() {
                         {installmentOptionsAsc.find(o => o.value === form.installments)?.label}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
-                        ou R$ {(total / 100).toFixed(2)} à vista
+                        ou R$ {((total + SERVICE_FEE) / 100).toFixed(2)} à vista
                       </p>
                     </>
                   ) : (
                     <>
                       <p className="text-xl font-black mt-0.5" style={{ color: "var(--ck-accent)" }}>
-                        R$ {(total / 100).toFixed(2)}
+                        R$ {((total + SERVICE_FEE) / 100).toFixed(2)}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--ck-subtle)" }}>
                         à vista

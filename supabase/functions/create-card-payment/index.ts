@@ -42,9 +42,11 @@ Deno.serve(async (req) => {
     const {
       product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, buyer_postal_code,
       card_number, card_holder_name, card_expiry_month, card_expiry_year, card_cvv,
-      installments, amount, affiliate_ref,
+      installments, amount, service_fee, affiliate_ref,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term
     } = await req.json();
+    const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
+    const productAmount = amount - SERVICE_FEE; // Amount without service fee for fee calculation
 
     if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
       return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_cpf, buyer_name, buyer_email" }), {
@@ -247,31 +249,34 @@ Deno.serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // ── Fee calculation: Card D+2 (default) ──
-      // Platform fee: 4.99% + R$ 2.49
-      // Asaas cost:   4.14% + R$ 0.49
-      const CARD_D2_PLATFORM_PCT = 0.0499;
-      const CARD_D2_PLATFORM_FIXED = 249; // R$ 2.49
-      const CARD_D2_ASAAS_PCT = 0.0414;
-      const CARD_D2_ASAAS_FIXED = 49;     // R$ 0.49
-
-      // Check producer custom overrides
+      // ── Fee calculation: Card (D+2 or D+30 based on producer setting) ──
       const { data: producerProfile } = await supabase
-        .from("profiles").select("custom_fee_percentage, custom_fee_fixed")
+        .from("profiles").select("custom_fee_percentage, custom_fee_fixed, card_plan")
         .eq("user_id", product.producer_id).single();
+
+      const cardPlan = producerProfile?.card_plan || "d2";
+      const isD2 = cardPlan === "d2";
+
+      // D+2: 4.99% + R$2.49 (Asaas: 4.14% + R$0.49)
+      // D+30: 3.99% + R$2.49 (Asaas: 2.99% + R$0.49)
+      const PLATFORM_PCT = isD2 ? 0.0499 : 0.0399;
+      const PLATFORM_FIXED = 249;
+      const ASAAS_PCT = isD2 ? 0.0414 : 0.0299;
+      const ASAAS_FIXED = 49;
+      const holdDays = isD2 ? 2 : 30;
 
       let platformFee: number;
       if (producerProfile?.custom_fee_fixed != null) {
         platformFee = producerProfile.custom_fee_fixed;
       } else if (producerProfile?.custom_fee_percentage != null) {
-        platformFee = Math.round(amount * producerProfile.custom_fee_percentage / 100 + CARD_D2_PLATFORM_FIXED);
+        platformFee = Math.round(productAmount * producerProfile.custom_fee_percentage / 100 + PLATFORM_FIXED);
       } else {
-        platformFee = Math.round(amount * CARD_D2_PLATFORM_PCT + CARD_D2_PLATFORM_FIXED);
+        platformFee = Math.round(productAmount * PLATFORM_PCT + PLATFORM_FIXED);
       }
 
-      const asaasCost = Math.round(amount * CARD_D2_ASAAS_PCT + CARD_D2_ASAAS_FIXED);
-      const netProfit = platformFee - asaasCost;
-      console.log(`Card D+2 fees: platform=${platformFee}, asaas=${asaasCost}, profit=${netProfit}`);
+      const asaasCost = Math.round(productAmount * ASAAS_PCT + ASAAS_FIXED);
+      const netProfit = platformFee - asaasCost + SERVICE_FEE;
+      console.log(`Card ${cardPlan} fees: platform=${platformFee}, asaas=${asaasCost}, serviceFee=${SERVICE_FEE}, profit=${netProfit}`);
 
       let affiliateId: string | null = null;
       if (affiliate_ref) {
@@ -285,7 +290,8 @@ Deno.serve(async (req) => {
         .from("sales")
         .insert({
           product_id, producer_id: product.producer_id, buyer_id: null,
-          affiliate_id: affiliateId, amount, platform_fee: platformFee,
+          affiliate_id: affiliateId, amount: productAmount, platform_fee: platformFee,
+          payment_provider: "card", payment_id: paymentData.id, status: "completed",
           payment_provider: "card", payment_id: paymentData.id, status: "completed",
         })
         .select().single();
@@ -300,11 +306,11 @@ Deno.serve(async (req) => {
       }
 
       // ── Record transactions (split) ──
-      // Card: release D+2 (pending balance)
+      // Card: release based on producer plan (D+2 or D+30)
       if (sale) {
-        const producerNet = amount - platformFee - commissionAmount;
+        const producerNet = productAmount - platformFee - commissionAmount;
         const releaseDate = new Date();
-        releaseDate.setDate(releaseDate.getDate() + 2); // D+2
+        releaseDate.setDate(releaseDate.getDate() + holdDays); // D+2 or D+30
         const releaseDateStr = releaseDate.toISOString();
 
         const txns: any[] = [
@@ -339,6 +345,20 @@ Deno.serve(async (req) => {
             type: "credit",
             category: "commission",
             amount: commissionAmount,
+            balance_type: "pending",
+            reference_id: sale.id,
+            release_date: releaseDateStr,
+            status: "pending",
+          });
+        }
+
+        // Service fee transaction (platform revenue from buyer)
+        if (SERVICE_FEE > 0) {
+          txns.push({
+            user_id: product.producer_id,
+            type: "debit",
+            category: "service_fee",
+            amount: SERVICE_FEE,
             balance_type: "pending",
             reference_id: sale.id,
             release_date: releaseDateStr,

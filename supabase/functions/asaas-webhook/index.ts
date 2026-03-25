@@ -466,9 +466,13 @@ Deno.serve(async (req) => {
     // ── Fee calculation: PIX (fixed fees) ──
     // Platform charges producer: R$ 2,49 (249 centavos)
     // Asaas cost: R$ 1,99 (199 centavos)
-    // Net platform profit: R$ 0,50
+    // Service fee: R$ 0,99 (99 centavos) - charged to buyer, goes to platform
     const FEE_PIX_PLATFORM = 249; // R$ 2.49
     const FEE_PIX_ASAAS = 199;    // R$ 1.99
+    const SERVICE_FEE = 99;        // R$ 0.99
+
+    // The amount stored in pending_payments includes the service fee
+    const productAmount = pending.amount - SERVICE_FEE;
 
     // Check producer custom overrides
     const { data: producerProfile } = await supabase
@@ -481,12 +485,12 @@ Deno.serve(async (req) => {
     if (producerProfile?.custom_fee_fixed != null) {
       pixPlatformFee = producerProfile.custom_fee_fixed;
     } else if (producerProfile?.custom_fee_percentage != null) {
-      pixPlatformFee = Math.round(pending.amount * producerProfile.custom_fee_percentage / 100);
+      pixPlatformFee = Math.round(productAmount * producerProfile.custom_fee_percentage / 100);
     }
 
-    console.log(`PIX fees: platform=${pixPlatformFee}, asaas=${FEE_PIX_ASAAS}, profit=${pixPlatformFee - FEE_PIX_ASAAS}`);
+    console.log(`PIX fees: platform=${pixPlatformFee}, asaas=${FEE_PIX_ASAAS}, serviceFee=${SERVICE_FEE}, profit=${pixPlatformFee - FEE_PIX_ASAAS + SERVICE_FEE}`);
 
-    // Insert sale
+    // Insert sale (amount = product price without service fee)
     const { data: sale, error: saleErr } = await supabase
       .from("sales")
       .insert({
@@ -494,7 +498,7 @@ Deno.serve(async (req) => {
         producer_id: product.producer_id,
         buyer_id: null,
         affiliate_id: affiliateUserId,
-        amount: pending.amount,
+        amount: productAmount,
         platform_fee: pixPlatformFee,
         payment_provider: "pix",
         payment_id: asaasPaymentId,
@@ -524,8 +528,8 @@ Deno.serve(async (req) => {
 
     // ── Record transactions (split) ──
     // PIX: release immediately (D+0)
-    const producerNet = pending.amount - pixPlatformFee - commissionAmount;
-    const netProfit = pixPlatformFee - FEE_PIX_ASAAS;
+    const producerNet = productAmount - pixPlatformFee - commissionAmount;
+    const netProfit = pixPlatformFee - FEE_PIX_ASAAS + SERVICE_FEE;
     const releaseDate = new Date().toISOString(); // PIX = D+0
 
     const txns: any[] = [
@@ -560,6 +564,20 @@ Deno.serve(async (req) => {
         type: "credit",
         category: "commission",
         amount: commissionAmount,
+        balance_type: "available",
+        reference_id: sale.id,
+        release_date: releaseDate,
+        status: "completed",
+      });
+    }
+
+    // Service fee transaction (platform revenue from buyer)
+    if (SERVICE_FEE > 0) {
+      txns.push({
+        user_id: product.producer_id,
+        type: "debit",
+        category: "service_fee",
+        amount: SERVICE_FEE,
         balance_type: "available",
         reference_id: sale.id,
         release_date: releaseDate,
