@@ -1004,6 +1004,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           birth_date: string | null
+          card_plan: string
           cpf: string | null
           created_at: string
           current_platform: string | null
@@ -1035,6 +1036,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
+          card_plan?: string
           cpf?: string | null
           created_at?: string
           current_platform?: string | null
@@ -1066,6 +1068,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
+          card_plan?: string
           cpf?: string | null
           created_at?: string
           current_platform?: string | null
