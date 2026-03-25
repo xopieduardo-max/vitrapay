@@ -316,7 +316,7 @@ export default function AdminUserDetail() {
 
       {/* Fee info */}
       {(() => {
-        const plan = profile.card_plan || "d2";
+        const plan = profile.card_plan || "d30";
         const planLabel = plan === "d30" ? "D+30 Padrão" : "D+2 Antecipação";
         const planPct = plan === "d30" ? 3.99 : 4.99;
         const planFixed = 2.49;
