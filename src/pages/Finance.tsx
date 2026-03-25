@@ -63,6 +63,8 @@ export default function Finance() {
   const pixKey = profile?.pix_key || "";
   const pixKeyType = profile?.pix_key_type || "cpf";
   const profileIncomplete = !profile?.cpf || !profile?.phone || !profile?.display_name;
+  const cardPlan = profile?.card_plan || "d30";
+  const HOLDBACK_DAYS_CARD = cardPlan === "d2" ? 2 : 30;
 
   // Get sales for balance calc
   const { data: sales = [] } = useQuery({
