@@ -42,6 +42,7 @@ const ITEMS_PER_PAGE = 15;
 interface UserData {
   id: string;
   name: string;
+  email: string;
   joined: string;
   role: string;
   custom_fee_percentage: number | null;
