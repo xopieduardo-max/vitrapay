@@ -449,6 +449,10 @@ export default function AdminDashboard() {
     return profitPerSale.reduce((a, s) => a + s.platformFee, 0);
   }, [profitPerSale]);
 
+  const totalServiceFees = useMemo(() => {
+    return profitPerSale.reduce((a, s) => a + s.serviceFee, 0);
+  }, [profitPerSale]);
+
   // ── Daily profit chart data ──
   const dailyProfitData = useMemo(() => {
     const dayMs = 86400000;
