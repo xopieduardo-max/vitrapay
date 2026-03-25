@@ -265,6 +265,7 @@ export default function AdminPushNotifications() {
                     onChange={(e) => setUserSearch(e.target.value)}
                     placeholder="Buscar por nome..."
                     className="pl-9 bg-muted/50 border-transparent focus:border-border"
+                    autoComplete="off"
                   />
                 </div>
                 {searchResults.length > 0 && (
