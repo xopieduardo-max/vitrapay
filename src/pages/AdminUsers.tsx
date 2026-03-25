@@ -73,16 +73,22 @@ export default function AdminUsers() {
 
       if (!profiles) return [];
 
-      const [{ data: roles }, { data: products }, { data: salesData }] = await Promise.all([
+      const [{ data: roles }, { data: products }, { data: salesData }, { data: emails }] = await Promise.all([
         supabase.from("user_roles").select("user_id, role"),
         supabase.from("products").select("id, producer_id"),
         supabase.from("sales").select("producer_id, amount, status"),
+        supabase.rpc("get_user_emails"),
       ]);
 
       const rolesMap: Record<string, string[]> = {};
       (roles || []).forEach((r: any) => {
         if (!rolesMap[r.user_id]) rolesMap[r.user_id] = [];
         rolesMap[r.user_id].push(r.role);
+      });
+
+      const emailsMap: Record<string, string> = {};
+      (emails || []).forEach((e: any) => {
+        emailsMap[e.user_id] = e.email;
       });
 
       const productsCountMap: Record<string, number> = {};
@@ -101,6 +107,7 @@ export default function AdminUsers() {
         return {
           id: p.user_id,
           name: p.display_name || "Sem nome",
+          email: emailsMap[p.user_id] || "",
           joined: format(new Date(p.created_at), "dd/MM/yyyy"),
           role,
           custom_fee_percentage: p.custom_fee_percentage,
