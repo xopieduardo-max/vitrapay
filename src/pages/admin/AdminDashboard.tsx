@@ -38,6 +38,7 @@ import {
   CalendarDays,
   Trophy,
   Package,
+  Receipt,
 } from "lucide-react";
 import {
   LineChart,
