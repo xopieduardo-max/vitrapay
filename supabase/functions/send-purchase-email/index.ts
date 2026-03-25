@@ -18,6 +18,7 @@ interface PurchaseEmailParams {
   product_type: string;
   product_id: string;
   file_url?: string | null;
+  temp_password?: string | null;
 }
 
 function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
