@@ -167,11 +167,11 @@ export default function MinhaConta() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="rounded-xl border-2 border-yellow-400/60 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-500/40 p-4"
+              className="rounded-xl border-2 border-accent bg-accent/10 p-4"
             >
               <div className="flex items-start gap-3">
-                <div className="h-9 w-9 rounded-full bg-yellow-400/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <AlertTriangle className="h-4.5 w-4.5 text-yellow-600 dark:text-yellow-400" />
+                <div className="h-9 w-9 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <AlertTriangle className="h-4 w-4 text-accent-foreground" />
                 </div>
                 <div className="flex-1 space-y-2">
                   <div>
