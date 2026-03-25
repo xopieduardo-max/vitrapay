@@ -93,8 +93,12 @@ const App = () => {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/minha-conta" element={<MinhaConta />} />
 
-              {/* Protected producer panel */}
+              {/* Protected routes */}
               <Route element={<AuthGuard />}>
+                {/* Standalone protected pages (no sidebar) */}
+                <Route path="/learn/:productId" element={<MemberArea />} />
+
+                {/* Producer panel with sidebar */}
                 <Route element={<DashboardLayout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/marketplace" element={<Marketplace />} />
