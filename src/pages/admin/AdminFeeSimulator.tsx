@@ -267,6 +267,38 @@ export default function AdminFeeSimulator() {
               </span>
             </div>
 
+            {/* Taxa de serviço */}
+            <ResultRow
+              icon={<Receipt className="h-4 w-4" />}
+              label="Taxa de serviço (paga pelo comprador)"
+              sublabel={`R$ 0,99 bruto${serviceFeeGatewayCost > 0 ? ` − ${fmt(serviceFeeGatewayCost)} gateway` : ""}`}
+              value={`+ ${fmt(serviceFeeNet)}`}
+              valueColor="text-amber-500"
+            />
+
+            {/* Lucro total por transação */}
+            <div className={cn(
+              "flex items-center justify-between p-3 rounded-lg border-2",
+              totalProfit >= 0 ? "bg-emerald-500/10 border-emerald-500/30" : "bg-destructive/10 border-destructive/30"
+            )}>
+              <div className="flex items-center gap-2">
+                {totalProfit >= 0 ? (
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
+                ) : (
+                  <TrendingDown className="h-5 w-5 text-destructive" />
+                )}
+                <div>
+                  <p className="text-sm font-bold">Lucro total por transação</p>
+                  <p className="text-xs text-muted-foreground">
+                    {fmt(platformProfit)} (taxa) + {fmt(serviceFeeNet)} (serviço)
+                  </p>
+                </div>
+              </div>
+              <span className={cn("text-xl font-bold", totalProfit >= 0 ? "text-emerald-500" : "text-destructive")}>
+                {fmt(totalProfit)}
+              </span>
+            </div>
+
             {platformProfit < 0 && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <TrendingDown className="h-4 w-4 text-destructive" />
