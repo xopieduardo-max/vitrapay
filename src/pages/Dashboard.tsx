@@ -114,7 +114,7 @@ export default function Dashboard() {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, card_plan")
         .eq("user_id", user.id)
         .maybeSingle();
       return data;
