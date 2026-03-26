@@ -166,6 +166,7 @@ serve(async (req) => {
         body: JSON.stringify({
           value: valueInReais,
           pixAddressKey: pix_key.trim(),
+          pixAddressKeyType: (pix_key_type || "cpf").toUpperCase(),
           description: `Saque VitraPay #${withdrawal.id.substring(0, 8)}`,
         }),
       });
