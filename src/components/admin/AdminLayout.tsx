@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
 import { Loader2 } from "lucide-react";
 
 export default function AdminLayout() {
@@ -50,6 +51,9 @@ export default function AdminLayout() {
           <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
             <SidebarTrigger className="mr-3" />
             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Admin Master</span>
+            <div className="ml-auto">
+              <UserHeaderDropdown />
+            </div>
           </header>
           <main className="flex-1 overflow-y-auto p-6">
             <Outlet />
