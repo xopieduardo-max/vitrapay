@@ -10,6 +10,8 @@ import {
   Filter,
   Download,
   Receipt,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
