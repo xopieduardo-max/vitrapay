@@ -390,22 +390,18 @@ export default function Finance() {
           </h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Saldo disponível (carteira)</span>
-              <span className="font-medium text-primary">R$ {(availableBalance / 100).toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Saques concluídos</span>
-              <span className="font-medium text-destructive">- R$ {(totalWithdrawn / 100).toFixed(2)}</span>
+              <span className="text-muted-foreground">Saldo na carteira</span>
+              <span className="font-medium text-primary">R$ {(walletAvailableBalance / 100).toFixed(2)}</span>
             </div>
             {pendingWithdrawals > 0 && (
               <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                <span className="text-muted-foreground">Saques pendentes</span>
+                <span className="text-muted-foreground">Reservado em saques pendentes</span>
                 <span className="font-medium text-warning">- R$ {(pendingWithdrawals / 100).toFixed(2)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-sm pt-1 font-bold">
-              <span>Saldo disponível</span>
-              <span className="text-primary">R$ {(Math.max(0, availableBalance) / 100).toFixed(2)}</span>
+              <span>Disponível para novo saque</span>
+              <span className="text-primary">R$ {(availableBalance / 100).toFixed(2)}</span>
             </div>
           </div>
         </motion.div>
