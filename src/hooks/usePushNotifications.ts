@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getAppServiceWorkerRegistration } from "@/lib/serviceWorker";
 
 const VAPID_PUBLIC_KEY =
-  "BMl6o6EhTPzsw80f47Dxs3_GqfrtFV0L8dHuhKTpiqfc_RL7cMbt0ahYuMwBesOIYPieW-UCihniGf7hJ-_iOvQ";
+  "BPen0pq6mJgBGoWhI6U4O2sPeRgW3o4GpoLsnsBMKXj2LnYigOk2buRyS6kxR5iSKddEfi4yfDGtj1schFnbIr8";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
