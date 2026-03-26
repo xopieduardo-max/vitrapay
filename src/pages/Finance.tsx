@@ -86,14 +86,15 @@ export default function Finance() {
   // ── Balance calculations (use wallet as source of truth) ──
   const totalWithdrawn = withdrawals
     .filter((w) => w.status === "completed")
-    .reduce((acc, w) => acc + w.amount, 0);
+    .reduce((acc, w) => acc + Number(w.amount), 0);
   const pendingWithdrawals = withdrawals
     .filter((w) => w.status === "pending" || w.status === "processing")
-    .reduce((acc, w) => acc + w.amount, 0);
+    .reduce((acc, w) => acc + Number(w.amount) + WITHDRAWAL_FEE, 0);
 
-  const availableBalance = wallet?.balance_available ?? 0;
-  const totalHeld = wallet?.balance_pending ?? 0;
-  const totalEarnings = (wallet?.balance_total ?? 0) + totalWithdrawn;
+  const walletAvailableBalance = Number(wallet?.balance_available ?? 0);
+  const availableBalance = Math.max(0, walletAvailableBalance - pendingWithdrawals);
+  const totalHeld = Number(wallet?.balance_pending ?? 0);
+  const totalEarnings = Number(wallet?.balance_total ?? 0) + totalWithdrawn;
 
   const cardPlan = profile?.card_plan || "d30";
   const HOLDBACK_DAYS_CARD_LABEL = cardPlan === "d2" ? 2 : 30;
