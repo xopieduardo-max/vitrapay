@@ -440,6 +440,7 @@ export default function Dashboard() {
           location="dashboard"
           fallbackSrc={dashboardBanner}
           fallbackAlt="Banner promocional VitraPay"
+          maxHeight={160}
         />
       </motion.div>
 

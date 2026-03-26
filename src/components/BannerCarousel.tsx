@@ -8,6 +8,7 @@ interface BannerCarouselProps {
   location: "dashboard" | "marketplace";
   fallbackSrc?: string;
   fallbackAlt?: string;
+  maxHeight?: number;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export default function BannerCarousel({
   location,
   fallbackSrc,
   fallbackAlt = "Banner",
+  maxHeight = 160,
   className = "",
 }: BannerCarouselProps) {
   const [current, setCurrent] = useState(0);
@@ -94,8 +96,8 @@ export default function BannerCarousel({
             <img
               src={slide.image_url || ""}
               alt={slide.title || "Banner"}
-              className="w-full h-auto object-contain rounded-xl"
-              style={{ aspectRatio: "3.75 / 1" }}
+              className="w-full h-auto object-cover rounded-xl"
+              style={{ maxHeight }}
               loading="lazy"
               decoding="async"
             />

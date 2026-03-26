@@ -152,7 +152,7 @@ export default function AdminBanners() {
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Novo Banner</h3>
           <p className="text-[11px] text-muted-foreground">
-            Tamanho recomendado: <span className="font-semibold text-foreground">1920 × 512 px</span> (proporção 3.75:1)
+            Tamanho recomendado: <span className="font-semibold text-foreground">1920 × 320 px</span> (proporção 6:1)
           </p>
         </div>
 
