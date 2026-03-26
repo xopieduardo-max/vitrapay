@@ -1,0 +1,1 @@
+ALTER TABLE public.platform_fees ADD COLUMN IF NOT EXISTS banner_interval_seconds integer NOT NULL DEFAULT 5;

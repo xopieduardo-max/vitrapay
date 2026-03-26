@@ -37,6 +37,7 @@ export default function AdminBanners() {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [intervalSeconds, setIntervalSeconds] = useState(5);
 
   const { data: banners = [], isLoading } = useQuery({
     queryKey: ["admin-banners"],
@@ -47,6 +48,36 @@ export default function AdminBanners() {
         .order("position", { ascending: true });
       return data || [];
     },
+  });
+
+  // Fetch current interval
+  useQuery({
+    queryKey: ["banner-interval"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("platform_fees")
+        .select("banner_interval_seconds")
+        .limit(1)
+        .single();
+      const val = (data as any)?.banner_interval_seconds ?? 5;
+      setIntervalSeconds(val);
+      return val;
+    },
+  });
+
+  const updateInterval = useMutation({
+    mutationFn: async (seconds: number) => {
+      const { error } = await supabase
+        .from("platform_fees")
+        .update({ banner_interval_seconds: seconds } as any)
+        .eq("id", 1);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Intervalo atualizado!" });
+      queryClient.invalidateQueries({ queryKey: ["banner-interval"] });
+    },
+    onError: (err: any) => toast({ title: "Erro", description: err.message, variant: "destructive" }),
   });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,6 +176,26 @@ export default function AdminBanners() {
         <p className="text-sm text-muted-foreground mt-1">
           Gerencie banners do Dashboard e do Marketplace. Eles rodam em carrossel automaticamente.
         </p>
+      </div>
+
+      {/* Rotation interval */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <h3 className="text-sm font-semibold">Velocidade do Carrossel</h3>
+        <p className="text-xs text-muted-foreground">Tempo de exibição de cada banner antes de trocar automaticamente.</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          {[1, 2, 3, 5, 7, 10].map((sec) => (
+            <Button
+              key={sec}
+              type="button"
+              variant={intervalSeconds === sec ? "default" : "outline"}
+              size="sm"
+              onClick={() => { setIntervalSeconds(sec); updateInterval.mutate(sec); }}
+              disabled={updateInterval.isPending}
+            >
+              {sec}s
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Add new */}
