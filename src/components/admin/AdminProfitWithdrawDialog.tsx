@@ -18,10 +18,16 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   availableProfit: number; // centavos
+  source?: "platform" | "service-fee";
 }
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
+const sourceLabels = {
+  platform: { title: "Sacar Lucro da Plataforma", label: "Lucro disponível", category: "admin-withdrawal" },
+  "service-fee": { title: "Sacar Taxa de Serviço", label: "Taxa de serviço disponível", category: "admin-service-fee-withdrawal" },
+};
 
 export default function AdminProfitWithdrawDialog({
   open,
