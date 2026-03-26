@@ -50,6 +50,36 @@ export default function AdminBanners() {
     },
   });
 
+  // Fetch current interval
+  useQuery({
+    queryKey: ["banner-interval"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("platform_fees")
+        .select("banner_interval_seconds")
+        .limit(1)
+        .single();
+      const val = (data as any)?.banner_interval_seconds ?? 5;
+      setIntervalSeconds(val);
+      return val;
+    },
+  });
+
+  const updateInterval = useMutation({
+    mutationFn: async (seconds: number) => {
+      const { error } = await supabase
+        .from("platform_fees")
+        .update({ banner_interval_seconds: seconds } as any)
+        .eq("id", 1);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Intervalo atualizado!" });
+      queryClient.invalidateQueries({ queryKey: ["banner-interval"] });
+    },
+    onError: (err: any) => toast({ title: "Erro", description: err.message, variant: "destructive" }),
+  });
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
