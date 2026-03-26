@@ -1307,6 +1307,13 @@ export default function AdminDashboard() {
       <AdminProfitWithdrawDialog open={serviceFeeDialogOpen} onOpenChange={setServiceFeeDialogOpen} availableProfit={Math.max(0, serviceFeeAvailable)} source="service-fee" />
       <AdminProfitWithdrawDialog open={withdrawalFeeDialogOpen} onOpenChange={setWithdrawalFeeDialogOpen} availableProfit={Math.max(0, withdrawalFeeAvailable)} source="withdrawal-fee" />
       <AdminWithdrawHistoryDialog open={adminHistoryOpen} onOpenChange={setAdminHistoryOpen} transactions={allTransactions} totalWithdrawn={adminWithdrawals} />
+      <AdminCombinedWithdrawDialog
+        open={combinedWithdrawOpen}
+        onOpenChange={setCombinedWithdrawOpen}
+        platformAvailable={Math.max(0, netProfit)}
+        serviceFeeAvailable={Math.max(0, serviceFeeAvailable)}
+        withdrawalFeeAvailable={Math.max(0, withdrawalFeeAvailable)}
+      />
       <PendingWithdrawalsDetailDialog open={pendingWdOpen} onOpenChange={setPendingWdOpen} withdrawals={withdrawals} profileMap={profileMap} />
       <TotalPaidOutDetailDialog open={totalPaidOpen} onOpenChange={setTotalPaidOpen} withdrawals={withdrawals} profileMap={profileMap} totalPaidOut={stats?.totalPaidOut ?? 0} />
       <PendingCheckoutsDetailDialog open={checkoutsOpen} onOpenChange={setCheckoutsOpen} checkouts={adminPendingCheckouts} />
