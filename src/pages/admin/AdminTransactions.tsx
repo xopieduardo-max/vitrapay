@@ -129,6 +129,18 @@ export default function AdminTransactions() {
     });
   }, [transactions, categoryFilter, typeFilter, statusFilter, balanceTypeFilter, searchQuery, profileMap]);
 
+  // Reset page when filters change
+  const filterKey = `${categoryFilter}-${typeFilter}-${statusFilter}-${balanceTypeFilter}-${searchQuery}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setCurrentPage(1);
+  }
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginatedItems = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   // Stats
   const totalCredits = filtered.filter((t) => t.type === "credit").reduce((s, t) => s + t.amount, 0);
   const totalDebits = filtered.filter((t) => t.type === "debit").reduce((s, t) => s + t.amount, 0);
