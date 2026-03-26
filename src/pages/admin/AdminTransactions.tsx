@@ -318,7 +318,7 @@ export default function AdminTransactions() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((t) => (
+                  {paginatedItems.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="text-xs whitespace-nowrap">
                         {format(new Date(t.created_at), "dd/MM/yy HH:mm")}
