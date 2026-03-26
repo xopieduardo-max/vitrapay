@@ -86,14 +86,15 @@ export default function Finance() {
   // ── Balance calculations (use wallet as source of truth) ──
   const totalWithdrawn = withdrawals
     .filter((w) => w.status === "completed")
-    .reduce((acc, w) => acc + w.amount, 0);
+    .reduce((acc, w) => acc + Number(w.amount), 0);
   const pendingWithdrawals = withdrawals
     .filter((w) => w.status === "pending" || w.status === "processing")
-    .reduce((acc, w) => acc + w.amount, 0);
+    .reduce((acc, w) => acc + Number(w.amount) + WITHDRAWAL_FEE, 0);
 
-  const availableBalance = wallet?.balance_available ?? 0;
-  const totalHeld = wallet?.balance_pending ?? 0;
-  const totalEarnings = (wallet?.balance_total ?? 0) + totalWithdrawn;
+  const walletAvailableBalance = Number(wallet?.balance_available ?? 0);
+  const availableBalance = Math.max(0, walletAvailableBalance - pendingWithdrawals);
+  const totalHeld = Number(wallet?.balance_pending ?? 0);
+  const totalEarnings = Number(wallet?.balance_total ?? 0) + totalWithdrawn;
 
   const cardPlan = profile?.card_plan || "d30";
   const HOLDBACK_DAYS_CARD_LABEL = cardPlan === "d2" ? 2 : 30;
@@ -108,7 +109,13 @@ export default function Finance() {
       if (!user) throw new Error("Not authenticated");
       if (isNaN(parsedAmount) || parsedAmount <= 0) throw new Error("Valor inválido");
       if (parsedAmount < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
-      if (parsedAmount > availableBalance) throw new Error("Saldo insuficiente");
+      if (parsedAmount > availableBalance) {
+        throw new Error(
+          availableBalance > 0
+            ? `Saldo disponível para novo saque: R$ ${(availableBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+            : "Você já possui um saque pendente em análise. Aguarde a conclusão para solicitar outro saque."
+        );
+      }
       if (netAfterFee <= 0) throw new Error("O valor do saque precisa ser maior que a taxa de R$ 5,00");
       if (!pixKey.trim()) throw new Error("Configure sua chave Pix em Ajustes");
 
@@ -221,11 +228,20 @@ export default function Finance() {
 
                 {/* Balance info at bottom */}
                 <div className="rounded-lg border border-border p-4 flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Saldo disponível</span>
+                  <span className="text-sm text-muted-foreground">Disponível para novo saque</span>
                   <span className="text-sm font-bold">
-                    R$ {(Math.max(0, availableBalance) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    R$ {(availableBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
+
+                {pendingWithdrawals > 0 && (
+                  <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 flex items-start gap-2">
+                    <Clock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      Você já possui <strong>R$ {(pendingWithdrawals / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong> reservados em saque pendente. Aguarde a conclusão para liberar esse saldo novamente.
+                    </p>
+                  </div>
+                )}
 
                 {profileIncomplete && (
                   <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2">
@@ -255,7 +271,7 @@ export default function Finance() {
                   </Button>
                   <Button
                     className="flex-1 gap-2"
-                    disabled={parsedAmount < MIN_WITHDRAWAL || !pixKey || profileIncomplete}
+                    disabled={parsedAmount < MIN_WITHDRAWAL || parsedAmount > availableBalance || !pixKey || profileIncomplete}
                     onClick={() => setWithdrawStep(2)}
                   >
                     Prosseguir
@@ -331,7 +347,7 @@ export default function Finance() {
       {/* Stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-emerald-500", cardClass: "border-emerald-500/30 bg-emerald-500/5", description: "Pronto para saque", clickAction: "available" as const },
+          { label: "Saldo Disponível", value: availableBalance, icon: Wallet, color: "text-emerald-500", cardClass: "border-emerald-500/30 bg-emerald-500/5", description: pendingWithdrawals > 0 ? "Já desconta saques pendentes" : "Pronto para saque", clickAction: "available" as const },
           { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", cardClass: "", description: `Cartão: D+${HOLDBACK_DAYS_CARD_LABEL} • PIX: D+0`, clickAction: "held" as const },
           { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", cardClass: "", description: "Vendas + comissões", clickAction: null },
           { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", cardClass: "", description: "Já transferido", clickAction: null },
@@ -374,22 +390,18 @@ export default function Finance() {
           </h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Saldo disponível (carteira)</span>
-              <span className="font-medium text-primary">R$ {(availableBalance / 100).toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Saques concluídos</span>
-              <span className="font-medium text-destructive">- R$ {(totalWithdrawn / 100).toFixed(2)}</span>
+              <span className="text-muted-foreground">Saldo na carteira</span>
+              <span className="font-medium text-primary">R$ {(walletAvailableBalance / 100).toFixed(2)}</span>
             </div>
             {pendingWithdrawals > 0 && (
               <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                <span className="text-muted-foreground">Saques pendentes</span>
+                <span className="text-muted-foreground">Reservado em saques pendentes</span>
                 <span className="font-medium text-warning">- R$ {(pendingWithdrawals / 100).toFixed(2)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-sm pt-1 font-bold">
-              <span>Saldo disponível</span>
-              <span className="text-primary">R$ {(Math.max(0, availableBalance) / 100).toFixed(2)}</span>
+              <span>Disponível para novo saque</span>
+              <span className="text-primary">R$ {(availableBalance / 100).toFixed(2)}</span>
             </div>
           </div>
         </motion.div>
