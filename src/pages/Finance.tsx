@@ -467,28 +467,11 @@ export default function Finance() {
       {totalHeld > 0 && (
         <div className="rounded-xl border border-border bg-card p-4 space-y-3">
           <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Lock className="h-4 w-4 text-warning" /> Saldo Retido — Detalhamento
+            <Lock className="h-4 w-4 text-warning" /> Saldo Retido
           </h3>
-          <div className="space-y-1.5">
-            {salesNet.filter((s) => s.availableAt > now).map((s, i) => (
-              <div key={i} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Clock className="h-3 w-3" />
-                  Liberado em {s.availableAt.toLocaleDateString("pt-BR")}
-                </span>
-                <span className="font-medium">R$ {(s.net / 100).toFixed(2)}</span>
-              </div>
-            ))}
-            {commissionsNet.filter((c) => c.availableAt > now).map((c, i) => (
-              <div key={`c-${i}`} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Clock className="h-3 w-3" />
-                  Comissão • Liberado em {c.availableAt.toLocaleDateString("pt-BR")}
-                </span>
-                <span className="font-medium">R$ {(c.amount / 100).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs text-muted-foreground">
+            R$ {(totalHeld / 100).toFixed(2)} aguardando liberação conforme prazo do plano de recebimento.
+          </p>
         </div>
       )}
 
