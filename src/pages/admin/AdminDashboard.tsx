@@ -58,12 +58,13 @@ type Period = "today" | "yesterday" | "7d" | "30d" | "90d" | "custom";
 const categoryLabels: Record<string, string> = {
   sale: "Venda",
   commission: "Comissão",
-  fee: "Taxa",
+  fee: "Taxa Saque",
   withdrawal: "Saque",
   refund: "Reembolso",
   service_fee: "Taxa Serviço",
   chargeback: "Chargeback",
   med: "MED Pix",
+  "admin-withdrawal-fee-withdrawal": "Saque Taxa Saque",
 };
 
 const categoryIcons: Record<string, string> = {
