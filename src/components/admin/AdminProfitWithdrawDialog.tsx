@@ -86,7 +86,7 @@ export default function AdminProfitWithdrawDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Banknote className="h-5 w-5 text-primary" />
-            Sacar Lucro da Plataforma
+            {labels.title}
           </DialogTitle>
           <DialogDescription>
             Transfira o lucro acumulado para sua conta via PIX
@@ -95,7 +95,7 @@ export default function AdminProfitWithdrawDialog({
 
         <div className="space-y-4 pt-2">
           <div className="rounded-lg border border-border bg-muted/30 p-3">
-            <p className="text-xs text-muted-foreground">Lucro disponível</p>
+            <p className="text-xs text-muted-foreground">{labels.label}</p>
             <p className="text-2xl font-bold text-primary">
               {fmt(availableProfit)}
             </p>
