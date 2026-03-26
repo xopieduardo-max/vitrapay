@@ -7,7 +7,26 @@ const corsHeaders = {
 };
 
 function getPublicKey() {
-  return (Deno.env.get("VAPID_PUBLIC_KEY") || Deno.env.get("VAPID_PUB") || "").trim();
+  const decodeBase64Url = (value: string) => {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = "=".repeat((4 - (normalized.length % 4)) % 4);
+    return Uint8Array.from(atob(normalized + padding), (char) => char.charCodeAt(0));
+  };
+
+  const candidates = [Deno.env.get("VAPID_PUB") || "", Deno.env.get("VAPID_PUBLIC_KEY") || ""];
+
+  for (const candidate of candidates) {
+    const trimmed = candidate.trim();
+    if (!trimmed) continue;
+
+    try {
+      if (decodeBase64Url(trimmed).length === 65) return trimmed;
+    } catch {
+      continue;
+    }
+  }
+
+  return "";
 }
 
 serve(async (req) => {

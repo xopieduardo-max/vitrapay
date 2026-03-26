@@ -9,8 +9,34 @@ const corsHeaders = {
 };
 
 function initVapid() {
-  const pub = (Deno.env.get("VAPID_PUBLIC_KEY") || Deno.env.get("VAPID_PUB") || "").trim();
-  const priv = (Deno.env.get("VAPID_PRIVATE_KEY") || Deno.env.get("VAPID_PRIV") || "").trim();
+  const decodeBase64Url = (value: string) => {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = "=".repeat((4 - (normalized.length % 4)) % 4);
+    return Uint8Array.from(atob(normalized + padding), (char) => char.charCodeAt(0));
+  };
+
+  const candidates = [
+    {
+      pub: (Deno.env.get("VAPID_PUB") || "").trim(),
+      priv: (Deno.env.get("VAPID_PRIV") || "").trim(),
+    },
+    {
+      pub: (Deno.env.get("VAPID_PUBLIC_KEY") || "").trim(),
+      priv: (Deno.env.get("VAPID_PRIVATE_KEY") || "").trim(),
+    },
+  ];
+
+  const selected = candidates.find(({ pub, priv }) => {
+    if (!pub || !priv) return false;
+    try {
+      return decodeBase64Url(pub).length === 65 && decodeBase64Url(priv).length === 32;
+    } catch {
+      return false;
+    }
+  });
+
+  const pub = selected?.pub || "";
+  const priv = selected?.priv || "";
   if (!pub || !priv) {
     throw new Error("VAPID keys not configured");
   }
