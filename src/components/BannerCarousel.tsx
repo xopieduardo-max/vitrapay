@@ -15,7 +15,6 @@ export default function BannerCarousel({
   location,
   fallbackSrc,
   fallbackAlt = "Banner",
-  maxHeight = 160,
   className = "",
 }: BannerCarouselProps) {
   const [current, setCurrent] = useState(0);
