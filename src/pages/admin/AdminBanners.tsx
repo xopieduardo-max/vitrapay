@@ -37,6 +37,7 @@ export default function AdminBanners() {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [intervalSeconds, setIntervalSeconds] = useState(5);
 
   const { data: banners = [], isLoading } = useQuery({
     queryKey: ["admin-banners"],
