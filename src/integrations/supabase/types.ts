@@ -740,6 +740,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           link_url: string | null
+          location: string
           position: number
           title: string
         }
@@ -749,6 +750,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           link_url?: string | null
+          location?: string
           position?: number
           title: string
         }
@@ -758,6 +760,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           link_url?: string | null
+          location?: string
           position?: number
           title?: string
         }
