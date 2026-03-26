@@ -68,59 +68,6 @@ export default function Finance() {
   const pixKeyType = profile?.pix_key_type || "cpf";
   const profileIncomplete = !profile?.cpf || !profile?.phone || !profile?.display_name;
 
-  // Get sales for balance calc
-  const { data: sales = [] } = useQuery({
-    queryKey: ["my-sales", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("sales")
-        .select("amount, platform_fee, status, created_at, payment_provider, payment_id")
-        .eq("producer_id", user.id)
-        .eq("status", "completed");
-      return data || [];
-    },
-    enabled: !!user,
-  });
-
-  const paymentIds = useMemo(
-    () => [...new Set(sales.map((sale: any) => sale.payment_id).filter(Boolean))],
-    [sales]
-  );
-
-  const { data: confirmedPaymentIds = [] } = useQuery({
-    queryKey: ["confirmed-sales", paymentIds],
-    queryFn: async () => {
-      if (paymentIds.length === 0) return [];
-      const { data } = await supabase
-        .from("pending_payments")
-        .select("asaas_payment_id")
-        .in("asaas_payment_id", paymentIds)
-        .eq("status", "confirmed");
-      return (data || []).map((payment: any) => payment.asaas_payment_id);
-    },
-    enabled: paymentIds.length > 0,
-  });
-
-  const verifiedSales = useMemo(() => {
-    const validIds = new Set(confirmedPaymentIds);
-    return sales.filter((sale: any) => sale.payment_id && validIds.has(sale.payment_id));
-  }, [sales, confirmedPaymentIds]);
-
-  // Get commissions earned as affiliate
-  const { data: commissions = [] } = useQuery({
-    queryKey: ["my-commissions", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("commissions")
-        .select("amount, status, created_at")
-        .eq("affiliate_id", user.id);
-      return data || [];
-    },
-    enabled: !!user,
-  });
-
   // Get withdrawals
   const { data: withdrawals = [], isLoading } = useQuery({
     queryKey: ["withdrawals", user?.id],
