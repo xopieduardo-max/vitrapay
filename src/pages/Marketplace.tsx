@@ -105,7 +105,6 @@ export default function Marketplace() {
           location="marketplace"
           fallbackSrc={marketplaceBanner}
           fallbackAlt="Banner Oportunidades"
-          maxHeight={140}
         />
       </motion.div>
 
