@@ -111,6 +111,7 @@ export default function AdminUsers() {
           email: emailsMap[p.user_id] || "",
           joined: format(new Date(p.created_at), "dd/MM/yyyy"),
           role,
+          card_plan: p.card_plan || "d30",
           custom_fee_percentage: p.custom_fee_percentage,
           custom_fee_fixed: p.custom_fee_fixed,
           productsCount: productsCountMap[p.user_id] || 0,
