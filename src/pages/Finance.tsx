@@ -347,7 +347,7 @@ export default function Finance() {
       {/* Stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-emerald-500", cardClass: "border-emerald-500/30 bg-emerald-500/5", description: "Pronto para saque", clickAction: "available" as const },
+          { label: "Saldo Disponível", value: availableBalance, icon: Wallet, color: "text-emerald-500", cardClass: "border-emerald-500/30 bg-emerald-500/5", description: pendingWithdrawals > 0 ? "Já desconta saques pendentes" : "Pronto para saque", clickAction: "available" as const },
           { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", cardClass: "", description: `Cartão: D+${HOLDBACK_DAYS_CARD_LABEL} • PIX: D+0`, clickAction: "held" as const },
           { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", cardClass: "", description: "Vendas + comissões", clickAction: null },
           { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", cardClass: "", description: "Já transferido", clickAction: null },
