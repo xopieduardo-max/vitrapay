@@ -71,8 +71,9 @@ function PageLoader() {
   );
 }
 
+const UtmCapture = lazy(() => import("@/components/UtmCapture").then(m => ({ default: m.UtmCapture })));
+
 const App = () => {
-  const UtmCapture = lazy(() => import("@/components/UtmCapture").then(m => ({ default: m.UtmCapture })));
   return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
