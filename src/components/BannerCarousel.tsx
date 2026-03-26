@@ -19,7 +19,7 @@ export default function BannerCarousel({
   className = "",
 }: BannerCarouselProps) {
   const [current, setCurrent] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: banners = [] } = useQuery({
