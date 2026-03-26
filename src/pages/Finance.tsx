@@ -135,7 +135,7 @@ export default function Finance() {
   });
 
   const parsedAmount = Math.round(parseFloat((amount || "0").replace(",", ".")) * 100);
-  const netAfterFee = parsedAmount > 0 ? parsedAmount : 0;
+  const netAfterFee = parsedAmount > 0 ? parsedAmount - WITHDRAWAL_FEE : 0;
   const totalDeducted = netAfterFee + WITHDRAWAL_FEE;
 
   const statusColors: Record<string, string> = {
