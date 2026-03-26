@@ -486,6 +486,23 @@ export default function AdminDashboard() {
 
   const serviceFeeAvailable = totalServiceFeesNet - adminServiceFeeWithdrawals;
 
+  // Admin withdrawal fee tracking (R$5.00 per producer withdrawal)
+  const WITHDRAWAL_FEE = 500; // R$ 5.00
+
+  const totalWithdrawalFeesCollected = useMemo(() => {
+    return allTransactions
+      .filter((t) => t.category === "fee" && t.type === "debit")
+      .reduce((a, t) => a + t.amount, 0);
+  }, [allTransactions]);
+
+  const adminWithdrawalFeeWithdrawals = useMemo(() => {
+    return allTransactions
+      .filter((t) => t.category === "admin-withdrawal-fee-withdrawal" && t.type === "debit")
+      .reduce((a, t) => a + t.amount, 0);
+  }, [allTransactions]);
+
+  const withdrawalFeeAvailable = totalWithdrawalFeesCollected - adminWithdrawalFeeWithdrawals;
+
   // ── Daily profit chart data ──
   const dailyProfitData = useMemo(() => {
     const dayMs = 86400000;
