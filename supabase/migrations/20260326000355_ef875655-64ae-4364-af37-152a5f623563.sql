@@ -1,0 +1,1 @@
+ALTER TABLE public.platform_banners ADD COLUMN location text NOT NULL DEFAULT 'dashboard';
