@@ -275,7 +275,7 @@ export default function AdminUsers() {
           </div>
           {paginated.map((user, i) => {
             const rc = roleConfig[user.role as keyof typeof roleConfig] || roleConfig.buyer;
-            const hasCustomFee = user.custom_fee_percentage != null || user.custom_fee_fixed != null;
+            const hasCustomFee = user.custom_fee_percentage != null || user.custom_fee_fixed != null || user.card_plan === "d2";
             return (
               <motion.div
                 key={user.id}
