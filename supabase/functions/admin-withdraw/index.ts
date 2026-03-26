@@ -31,9 +31,10 @@ Deno.serve(async (req) => {
     });
     if (!isAdmin) throw new Error("Acesso restrito a administradores");
 
-    const { amount, pix_key } = await req.json();
+    const { amount, pix_key, withdrawal_category } = await req.json();
     if (!amount || amount <= 0) throw new Error("Valor inválido");
     if (!pix_key) throw new Error("Chave PIX é obrigatória");
+    const category = withdrawal_category === "admin-service-fee-withdrawal" ? "admin-service-fee-withdrawal" : "admin-withdrawal";
 
     // Amount is in centavos, convert to reais for Asaas
     const valueInReais = amount / 100;
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
     await serviceClient.from("transactions").insert({
       user_id: user.id,
       type: "debit",
-      category: "admin-withdrawal",
+      category,
       amount,
       balance_type: "available",
       reference_id: asaasData.id || "admin-withdraw",

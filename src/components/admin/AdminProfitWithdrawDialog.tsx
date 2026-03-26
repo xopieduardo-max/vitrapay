@@ -18,16 +18,24 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   availableProfit: number; // centavos
+  source?: "platform" | "service-fee";
 }
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
+const sourceLabels = {
+  platform: { title: "Sacar Lucro da Plataforma", label: "Lucro disponível", category: "admin-withdrawal" },
+  "service-fee": { title: "Sacar Taxa de Serviço", label: "Taxa de serviço disponível", category: "admin-service-fee-withdrawal" },
+};
+
 export default function AdminProfitWithdrawDialog({
   open,
   onOpenChange,
   availableProfit,
+  source = "platform",
 }: Props) {
+  const labels = sourceLabels[source];
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [pixKey, setPixKey] = useState("");
@@ -37,7 +45,7 @@ export default function AdminProfitWithdrawDialog({
     mutationFn: async (amount: number) => {
       const { data, error } = await supabase.functions.invoke(
         "admin-withdraw",
-        { body: { amount, pix_key: pixKey } }
+        { body: { amount, pix_key: pixKey, withdrawal_category: labels.category } }
       );
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -78,7 +86,7 @@ export default function AdminProfitWithdrawDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Banknote className="h-5 w-5 text-primary" />
-            Sacar Lucro da Plataforma
+            {labels.title}
           </DialogTitle>
           <DialogDescription>
             Transfira o lucro acumulado para sua conta via PIX
@@ -87,7 +95,7 @@ export default function AdminProfitWithdrawDialog({
 
         <div className="space-y-4 pt-2">
           <div className="rounded-lg border border-border bg-muted/30 p-3">
-            <p className="text-xs text-muted-foreground">Lucro disponível</p>
+            <p className="text-xs text-muted-foreground">{labels.label}</p>
             <p className="text-2xl font-bold text-primary">
               {fmt(availableProfit)}
             </p>
