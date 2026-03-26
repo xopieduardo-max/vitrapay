@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
 import { Loader2 } from "lucide-react";
 
 export default function AdminLayout() {
