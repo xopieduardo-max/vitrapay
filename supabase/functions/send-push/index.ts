@@ -1,47 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
+import { getVapidKeyCandidates } from "../_shared/push-vapid.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-function initVapid() {
-  const decodeBase64Url = (value: string) => {
-    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-    const padding = "=".repeat((4 - (normalized.length % 4)) % 4);
-    return Uint8Array.from(atob(normalized + padding), (char) => char.charCodeAt(0));
-  };
-
-  const candidates = [
-    {
-      pub: (Deno.env.get("VAPID_PUB") || "").trim(),
-      priv: (Deno.env.get("VAPID_PRIV") || "").trim(),
-    },
-    {
-      pub: (Deno.env.get("VAPID_PUBLIC_KEY") || "").trim(),
-      priv: (Deno.env.get("VAPID_PRIVATE_KEY") || "").trim(),
-    },
-  ];
-
-  const selected = candidates.find(({ pub, priv }) => {
-    if (!pub || !priv) return false;
-    try {
-      return decodeBase64Url(pub).length === 65 && decodeBase64Url(priv).length === 32;
-    } catch {
-      return false;
-    }
-  });
-
-  const pub = selected?.pub || "";
-  const priv = selected?.priv || "";
-  if (!pub || !priv) {
-    throw new Error("VAPID keys not configured");
-  }
-  webpush.setVapidDetails("mailto:noreply@vitrapay.com.br", pub, priv);
-}
 
 function getPushErrorReason(errorBody: unknown) {
   if (typeof errorBody !== "string") return null;
@@ -60,7 +26,11 @@ serve(async (req) => {
   }
 
   try {
-    initVapid();
+    const vapidCandidates = getVapidKeyCandidates();
+
+    if (vapidCandidates.length === 0) {
+      throw new Error("VAPID keys not configured");
+    }
 
     const { producer_id, broadcast, title, body, url } = await req.json();
 
@@ -111,8 +81,13 @@ serve(async (req) => {
 
     let sent = 0;
     let invalidated = 0;
+    let mismatched = 0;
 
     for (const sub of subscriptions) {
+      let delivered = false;
+      let lastError: any = null;
+      let lastReason: string | null = null;
+
       try {
         const pushSubscription = {
           endpoint: sub.endpoint,
@@ -122,23 +97,40 @@ serve(async (req) => {
           },
         };
 
-        await webpush.sendNotification(pushSubscription, payload, {
-          TTL: 86400,
-        });
-        sent++;
-        console.log("Push sent to:", sub.endpoint.slice(0, 60));
-      } catch (e: any) {
-        const reason = getPushErrorReason(e.body);
-        console.error("Push send error:", e.statusCode, e.body);
-        if (e.statusCode === 410 || e.statusCode === 404 || reason === "VapidPkHashMismatch") {
+        for (const vapid of vapidCandidates) {
+          try {
+            webpush.setVapidDetails("mailto:noreply@vitrapay.com.br", vapid.publicKey, vapid.privateKey);
+            await webpush.sendNotification(pushSubscription, payload, {
+              TTL: 86400,
+            });
+
+            sent++;
+            delivered = true;
+            console.log(`Push sent via ${vapid.label} to:`, sub.endpoint.slice(0, 60));
+            break;
+          } catch (e: any) {
+            lastError = e;
+            lastReason = getPushErrorReason(e.body);
+            console.error(`Push send error via ${vapid.label}:`, e.statusCode, e.body);
+          }
+        }
+
+        if (delivered) continue;
+
+        if (lastError?.statusCode === 410 || lastError?.statusCode === 404) {
           await supabase.from("push_subscriptions").delete().eq("id", sub.id);
           invalidated++;
           console.log("Removed expired subscription:", sub.id);
+        } else if (lastReason === "VapidPkHashMismatch") {
+          mismatched++;
+          console.warn("Subscription kept due to VAPID mismatch, waiting for re-subscription:", sub.id);
         }
+      } catch (e: any) {
+        console.error("Unexpected push processing error:", e?.message || e);
       }
     }
 
-    return new Response(JSON.stringify({ sent, total: subscriptions.length, invalidated }), {
+    return new Response(JSON.stringify({ sent, total: subscriptions.length, invalidated, mismatched }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
