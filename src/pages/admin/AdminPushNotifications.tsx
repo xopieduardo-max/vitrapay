@@ -152,6 +152,10 @@ export default function AdminPushNotifications() {
         toast.warning(
           `Encontramos ${result.total || 0} dispositivo(s), mas a inscrição estava inválida e foi limpa. Abra o app novamente no celular para reinscrever o dispositivo.`
         );
+      } else if ((result.mismatched ?? 0) > 0) {
+        toast.warning(
+          `Encontramos ${result.total || 0} dispositivo(s), mas as chaves de notificação ainda não bateram. Peça para o usuário abrir novamente o app publicado para atualizar a inscrição.`
+        );
       } else {
         toast.warning("Nenhum dispositivo inscrito encontrado.");
       }

@@ -17,6 +17,7 @@ export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const autoSubAttempted = useRef(false);
+  const isEmbeddedPreview = typeof window !== "undefined" && window.self !== window.top;
 
   useEffect(() => {
     const hasSW = "serviceWorker" in navigator;
@@ -42,12 +43,12 @@ export function usePushNotifications() {
       autoSubAttempted.current = true;
       console.log("[Push] Auto-subscribing (permission already granted)...");
       void silentSubscribe();
-    } else {
+    } else if (!isEmbeddedPreview) {
       autoSubAttempted.current = true;
       console.log("[Push] Auto-prompting for push permission...");
       void subscribe(true);
     }
-  }, [user, isSupported, isSubscribed]);
+  }, [user, isSupported, isSubscribed, isEmbeddedPreview]);
 
   async function getRegistration() {
     const registration = await getAppServiceWorkerRegistration();
@@ -91,7 +92,7 @@ export function usePushNotifications() {
     await supabase
       .from("push_subscriptions")
       .delete()
-      .eq("user_id", user.id);
+      .eq("endpoint", record.endpoint);
 
     const { error } = await supabase.from("push_subscriptions").insert({
       user_id: user.id,
