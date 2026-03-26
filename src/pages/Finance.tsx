@@ -429,12 +429,8 @@ export default function Finance() {
           </h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Vendas liberadas</span>
-              <span className="font-medium text-primary">+ R$ {(totalAvailableSales / 100).toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Comissões liberadas</span>
-              <span className="font-medium text-primary">+ R$ {(totalAvailableCommissions / 100).toFixed(2)}</span>
+              <span className="text-muted-foreground">Saldo disponível (carteira)</span>
+              <span className="font-medium text-primary">R$ {(availableBalance / 100).toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
               <span className="text-muted-foreground">Saques concluídos</span>
@@ -444,12 +440,6 @@ export default function Finance() {
               <div className="flex items-center justify-between text-xs border-b border-border pb-2">
                 <span className="text-muted-foreground">Saques pendentes</span>
                 <span className="font-medium text-warning">- R$ {(pendingWithdrawals / 100).toFixed(2)}</span>
-              </div>
-            )}
-            {totalFeesPaid > 0 && (
-              <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                <span className="text-muted-foreground">Taxas de saque</span>
-                <span className="font-medium text-destructive">- R$ {(totalFeesPaid / 100).toFixed(2)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-sm pt-1 font-bold">
