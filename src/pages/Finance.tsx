@@ -98,19 +98,23 @@ export default function Finance() {
   const cardPlan = profile?.card_plan || "d30";
   const HOLDBACK_DAYS_CARD_LABEL = cardPlan === "d2" ? 2 : 30;
 
+  // ── Withdrawal amount entered by the user = total debited from wallet ──
+  const parsedAmount = Math.round(parseFloat((amount || "0").replace(",", ".")) * 100);
+  const netAfterFee = parsedAmount > 0 ? Math.max(0, parsedAmount - WITHDRAWAL_FEE) : 0;
+
   // ── Withdrawal mutation (uses edge function) ──
   const requestWithdrawal = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
-      const amountCents = Math.round(parseFloat(amount.replace(",", ".")) * 100);
-      if (isNaN(amountCents) || amountCents <= 0) throw new Error("Valor inválido");
-      if (amountCents < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
-      if (amountCents + WITHDRAWAL_FEE > availableBalance) throw new Error("Saldo insuficiente (valor + taxa de R$ 5,00)");
+      if (isNaN(parsedAmount) || parsedAmount <= 0) throw new Error("Valor inválido");
+      if (parsedAmount < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
+      if (parsedAmount > availableBalance) throw new Error("Saldo insuficiente");
+      if (netAfterFee <= 0) throw new Error("O valor do saque precisa ser maior que a taxa de R$ 5,00");
       if (!pixKey.trim()) throw new Error("Configure sua chave Pix em Ajustes");
 
       const { data, error } = await supabase.functions.invoke("request-withdraw", {
         body: {
-          amount: amountCents,
+          amount: netAfterFee,
           pix_key: pixKey.trim(),
           pix_key_type: pixKeyType,
         },
@@ -133,10 +137,6 @@ export default function Finance() {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
     },
   });
-
-  const parsedAmount = Math.round(parseFloat((amount || "0").replace(",", ".")) * 100);
-  const netAfterFee = parsedAmount > 0 ? parsedAmount - WITHDRAWAL_FEE : 0;
-  const totalDeducted = netAfterFee + WITHDRAWAL_FEE;
 
   const statusColors: Record<string, string> = {
     pending: "bg-warning/10 text-warning border-warning/20",
