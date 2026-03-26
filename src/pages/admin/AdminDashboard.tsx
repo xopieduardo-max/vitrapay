@@ -253,10 +253,13 @@ export default function AdminDashboard() {
   const { data: adminPendingCheckouts = [] } = useQuery({
     queryKey: ["admin-pending-checkouts"],
     queryFn: async () => {
+      // Only show pending checkouts from the last 24 hours (PIX/card expire after ~24h)
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data } = await supabase
         .from("pending_payments")
         .select("id, amount, buyer_name, buyer_email, created_at, status")
         .eq("status", "pending")
+        .gte("created_at", cutoff)
         .order("created_at", { ascending: false });
       return data || [];
     },
