@@ -378,34 +378,44 @@ export default function Finance() {
         ))}
       </div>
 
-      {/* Available balance detail */}
-      {detailView === "available" && (
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-primary/20 bg-card p-4 space-y-3"
-        >
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-primary" /> Saldo Disponível — Detalhamento
-          </h3>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
+      {/* Balance breakdown card — always visible */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+        className="rounded-xl border border-border bg-card p-5 space-y-4"
+      >
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Info className="h-4 w-4 text-primary" /> Composição do saldo
+        </h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-primary" />
               <span className="text-muted-foreground">Saldo na carteira</span>
-              <span className="font-medium text-primary">R$ {(walletAvailableBalance / 100).toFixed(2)}</span>
             </div>
-            {pendingWithdrawals > 0 && (
-              <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                <span className="text-muted-foreground">Reservado em saques pendentes</span>
-                <span className="font-medium text-warning">- R$ {(pendingWithdrawals / 100).toFixed(2)}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-between text-sm pt-1 font-bold">
-              <span>Disponível para novo saque</span>
-              <span className="text-primary">R$ {(availableBalance / 100).toFixed(2)}</span>
-            </div>
+            <span className="font-semibold">R$ {(walletAvailableBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
           </div>
-        </motion.div>
-      )}
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-warning" />
+              <span className="text-muted-foreground">Reservado em saques pendentes</span>
+            </div>
+            <span className={`font-semibold ${pendingWithdrawals > 0 ? "text-warning" : ""}`}>
+              {pendingWithdrawals > 0 ? "- " : ""}R$ {(pendingWithdrawals / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div className="border-t border-border pt-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-sm font-semibold">Disponível para novo saque</span>
+            </div>
+            <span className="text-lg font-bold text-emerald-500">
+              R$ {(availableBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Pending withdrawals alert */}
       {pendingWithdrawals > 0 && (
