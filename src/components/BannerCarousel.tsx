@@ -63,11 +63,8 @@ export default function BannerCarousel({
   const count = slides.length;
 
   const goTo = useCallback((index: number) => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
     setCurrent(index);
-    setTimeout(() => setIsTransitioning(false), 500);
-  }, [isTransitioning]);
+  }, []);
 
   const next = useCallback(() => {
     if (count <= 1) return;
