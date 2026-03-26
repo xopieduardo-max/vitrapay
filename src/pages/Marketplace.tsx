@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import marketplaceBanner from "@/assets/marketplace-banner.png";
+import BannerCarousel from "@/components/BannerCarousel";
 
 type Tab = "all" | "trending" | "top_commission" | "newest";
 
@@ -98,13 +99,13 @@ export default function Marketplace() {
 
   return (
     <div className="space-y-6 pb-20 md:pb-6">
-      {/* Banner */}
-      <motion.div {...anim(0)} className="rounded-xl overflow-hidden">
-        <img
-          src={marketplaceBanner}
-          alt="Banner Oportunidades"
-          className="w-full h-auto object-cover rounded-xl"
-          style={{ maxHeight: 140 }}
+      {/* Banner Carousel */}
+      <motion.div {...anim(0)}>
+        <BannerCarousel
+          location="marketplace"
+          fallbackSrc={marketplaceBanner}
+          fallbackAlt="Banner Oportunidades"
+          maxHeight={140}
         />
       </motion.div>
 
