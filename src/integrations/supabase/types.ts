@@ -768,6 +768,7 @@ export type Database = {
       }
       platform_fees: {
         Row: {
+          banner_interval_seconds: number
           boleto_fixed: number
           boleto_percentage: number
           card_fixed: number
@@ -778,6 +779,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_interval_seconds?: number
           boleto_fixed?: number
           boleto_percentage?: number
           card_fixed?: number
@@ -788,6 +790,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_interval_seconds?: number
           boleto_fixed?: number
           boleto_percentage?: number
           card_fixed?: number
