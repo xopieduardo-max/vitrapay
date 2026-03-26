@@ -10,7 +10,6 @@ const corsHeaders = {
 const AUTO_APPROVE_LIMIT = 10000; // R$ 100.00 in cents
 const MIN_WITHDRAWAL = 1000;      // R$ 10.00 in cents
 const WITHDRAWAL_FEE = 500;       // R$ 5.00 in cents
-const HOLDBACK_DAYS_CARD = 2;
 const HOLDBACK_DAYS_PIX = 0;
 
 serve(async (req) => {
