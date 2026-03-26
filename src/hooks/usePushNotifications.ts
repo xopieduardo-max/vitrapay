@@ -3,14 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getAppServiceWorkerRegistration } from "@/lib/serviceWorker";
+import { getPushPublicKey } from "@/lib/pushConfig";
 import {
   subscriptionToRecord,
   subscriptionUsesVapidKey,
   urlBase64ToUint8Array,
 } from "@/lib/pushSubscription";
-
-const VAPID_PUBLIC_KEY =
-  "BPen0pq6mJgBGoWhI6U4O2sPeRgW3o4GpoLsnsBMKXj2LnYigOk2buRyS6kxR5iSKddEfi4yfDGtj1schFnbIr8";
 
 export function usePushNotifications() {
   const { user } = useAuth();
@@ -38,7 +36,6 @@ export function usePushNotifications() {
 
   useEffect(() => {
     if (!user || !isSupported || autoSubAttempted.current) return;
-    if (isSubscribed) return;
     if (Notification.permission === "denied") return;
 
     if (Notification.permission === "granted") {
@@ -63,22 +60,23 @@ export function usePushNotifications() {
   }
 
   async function ensureFreshSubscription(registration: ServiceWorkerRegistration) {
+    const vapidPublicKey = await getPushPublicKey();
     const existingSubscription = await registration.pushManager.getSubscription();
 
     if (!existingSubscription) {
       return registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
     }
 
-    if (!subscriptionUsesVapidKey(existingSubscription, VAPID_PUBLIC_KEY)) {
+    if (!subscriptionUsesVapidKey(existingSubscription, vapidPublicKey)) {
       console.log("[Push] Existing subscription uses old VAPID key, recreating...");
       await existingSubscription.unsubscribe();
 
       return registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
     }
 
@@ -115,8 +113,17 @@ export function usePushNotifications() {
       const registration = await getRegistration();
       console.log("[Push] SW ready, scope:", registration.scope);
       const subscription = await registration.pushManager.getSubscription();
-      console.log("[Push] Existing subscription:", subscription ? "YES" : "NO");
-      setIsSubscribed(!!subscription);
+      if (!subscription) {
+        console.log("[Push] Existing subscription: NO");
+        setIsSubscribed(false);
+        return;
+      }
+
+      const vapidPublicKey = await getPushPublicKey();
+      const isCurrentSubscription = subscriptionUsesVapidKey(subscription, vapidPublicKey);
+
+      console.log("[Push] Existing subscription:", isCurrentSubscription ? "YES" : "STALE");
+      setIsSubscribed(isCurrentSubscription);
     } catch (e) {
       console.error("[Push] checkExistingSubscription error:", e);
     }

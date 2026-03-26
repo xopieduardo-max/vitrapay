@@ -148,6 +148,10 @@ export default function AdminPushNotifications() {
         setUrl("/dashboard");
         setSelectedUser(null);
         setUserSearch("");
+      } else if ((result.invalidated ?? 0) > 0) {
+        toast.warning(
+          `Encontramos ${result.total || 0} dispositivo(s), mas a inscrição estava inválida e foi limpa. Abra o app novamente no celular para reinscrever o dispositivo.`
+        );
       } else {
         toast.warning("Nenhum dispositivo inscrito encontrado.");
       }
