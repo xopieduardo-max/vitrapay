@@ -378,6 +378,58 @@ export default function AdminTransactions() {
             </div>
           )}
         </CardContent>
+
+        {/* Pagination */}
+        {filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between border-t border-border px-4 py-3">
+            <p className="text-xs text-muted-foreground">
+              Mostrando {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} de {filtered.length}
+            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page: number;
+                if (totalPages <= 5) {
+                  page = i + 1;
+                } else if (currentPage <= 3) {
+                  page = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  page = totalPages - 4 + i;
+                } else {
+                  page = currentPage - 2 + i;
+                }
+                return (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="icon"
+                    className="h-8 w-8 text-xs"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
