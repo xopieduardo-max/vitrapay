@@ -23,6 +23,8 @@ serve(async (req) => {
   }
 
   try {
+    initVapid();
+
     const { producer_id, broadcast, title, body, url } = await req.json();
 
     if (!producer_id && !broadcast) {
