@@ -34,7 +34,8 @@ Deno.serve(async (req) => {
     const { amount, pix_key, withdrawal_category } = await req.json();
     if (!amount || amount <= 0) throw new Error("Valor inválido");
     if (!pix_key) throw new Error("Chave PIX é obrigatória");
-    const category = withdrawal_category === "admin-service-fee-withdrawal" ? "admin-service-fee-withdrawal" : "admin-withdrawal";
+    const validCategories = ["admin-withdrawal", "admin-service-fee-withdrawal", "admin-withdrawal-fee-withdrawal"];
+    const category = validCategories.includes(withdrawal_category) ? withdrawal_category : "admin-withdrawal";
 
     // Amount is in centavos, convert to reais for Asaas
     const valueInReais = amount / 100;

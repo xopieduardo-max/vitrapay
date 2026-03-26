@@ -58,12 +58,13 @@ type Period = "today" | "yesterday" | "7d" | "30d" | "90d" | "custom";
 const categoryLabels: Record<string, string> = {
   sale: "Venda",
   commission: "Comissão",
-  fee: "Taxa",
+  fee: "Taxa Saque",
   withdrawal: "Saque",
   refund: "Reembolso",
   service_fee: "Taxa Serviço",
   chargeback: "Chargeback",
   med: "MED Pix",
+  "admin-withdrawal-fee-withdrawal": "Saque Taxa Saque",
 };
 
 const categoryIcons: Record<string, string> = {
@@ -168,7 +169,7 @@ export default function AdminDashboard() {
   const [totalPaidOpen, setTotalPaidOpen] = useState(false);
   const [checkoutsOpen, setCheckoutsOpen] = useState(false);
   const [serviceFeeDialogOpen, setServiceFeeDialogOpen] = useState(false);
-
+  const [withdrawalFeeDialogOpen, setWithdrawalFeeDialogOpen] = useState(false);
   // ── Data fetching ──
   const { data: allTransactions = [] } = useQuery({
     queryKey: ["admin-all-transactions"],
@@ -486,6 +487,23 @@ export default function AdminDashboard() {
 
   const serviceFeeAvailable = totalServiceFeesNet - adminServiceFeeWithdrawals;
 
+  // Admin withdrawal fee tracking (R$5.00 per producer withdrawal)
+  const WITHDRAWAL_FEE = 500; // R$ 5.00
+
+  const totalWithdrawalFeesCollected = useMemo(() => {
+    return allTransactions
+      .filter((t) => t.category === "fee" && t.type === "debit")
+      .reduce((a, t) => a + t.amount, 0);
+  }, [allTransactions]);
+
+  const adminWithdrawalFeeWithdrawals = useMemo(() => {
+    return allTransactions
+      .filter((t) => t.category === "admin-withdrawal-fee-withdrawal" && t.type === "debit")
+      .reduce((a, t) => a + t.amount, 0);
+  }, [allTransactions]);
+
+  const withdrawalFeeAvailable = totalWithdrawalFeesCollected - adminWithdrawalFeeWithdrawals;
+
   // ── Daily profit chart data ──
   const dailyProfitData = useMemo(() => {
     const dayMs = 86400000;
@@ -777,7 +795,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* KPI Cards - Row 2: Platform Revenue (highlighted pairs) */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
         {/* Taxa da plataforma + Disponível para saque */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -834,6 +852,36 @@ export default function AdminDashboard() {
               </div>
               <p className="text-xl font-bold text-amber-600">{fmt(Math.max(0, serviceFeeAvailable))}</p>
               <p className="text-[0.55rem] text-amber-600/70">Clique para sacar →</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Taxa de saque + Taxa de saque disponível */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-xl border-2 border-violet-500/30 bg-gradient-to-br from-violet-500/5 via-card to-violet-500/10 p-1"
+        >
+          <div className="grid grid-cols-2 gap-1">
+            <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+              <div className="flex items-center gap-2">
+                <ArrowDownLeft className="h-4 w-4 text-violet-500" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-violet-500">Taxa de saque (total)</span>
+              </div>
+              <p className="text-xl font-bold text-violet-500">{fmt(totalWithdrawalFeesCollected)}</p>
+              <p className="text-[0.55rem] text-muted-foreground/70">R$ 5,00/saque acumulado</p>
+            </div>
+            <div
+              onClick={() => setWithdrawalFeeDialogOpen(true)}
+              className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1 cursor-pointer hover:bg-violet-500/10 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-violet-600" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-violet-600">Taxa saque disponível</span>
+              </div>
+              <p className="text-xl font-bold text-violet-600">{fmt(Math.max(0, withdrawalFeeAvailable))}</p>
+              <p className="text-[0.55rem] text-violet-600/70">Clique para sacar →</p>
             </div>
           </div>
         </motion.div>
@@ -1238,6 +1286,7 @@ export default function AdminDashboard() {
 
       <AdminProfitWithdrawDialog open={profitDialogOpen} onOpenChange={setProfitDialogOpen} availableProfit={netProfit} source="platform" />
       <AdminProfitWithdrawDialog open={serviceFeeDialogOpen} onOpenChange={setServiceFeeDialogOpen} availableProfit={Math.max(0, serviceFeeAvailable)} source="service-fee" />
+      <AdminProfitWithdrawDialog open={withdrawalFeeDialogOpen} onOpenChange={setWithdrawalFeeDialogOpen} availableProfit={Math.max(0, withdrawalFeeAvailable)} source="withdrawal-fee" />
       <AdminWithdrawHistoryDialog open={adminHistoryOpen} onOpenChange={setAdminHistoryOpen} transactions={allTransactions} totalWithdrawn={adminWithdrawals} />
       <PendingWithdrawalsDetailDialog open={pendingWdOpen} onOpenChange={setPendingWdOpen} withdrawals={withdrawals} profileMap={profileMap} />
       <TotalPaidOutDetailDialog open={totalPaidOpen} onOpenChange={setTotalPaidOpen} withdrawals={withdrawals} profileMap={profileMap} totalPaidOut={stats?.totalPaidOut ?? 0} />
