@@ -119,7 +119,16 @@ export default function Finance() {
           pix_key_type: pixKeyType,
         },
       });
-      if (error) throw error;
+      if (error) {
+        // Extract the actual error message from the edge function response
+        try {
+          const errorBody = error.context ? await error.context.json() : null;
+          if (errorBody?.error) throw new Error(errorBody.error);
+        } catch (parseErr) {
+          if (parseErr instanceof Error && parseErr.message !== error.message) throw parseErr;
+        }
+        throw new Error(error.message || "Erro ao processar saque");
+      }
       if (data?.error) throw new Error(data.error);
       return data;
     },
