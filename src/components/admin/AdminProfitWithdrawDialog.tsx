@@ -27,6 +27,7 @@ const fmt = (v: number) =>
 const sourceLabels = {
   platform: { title: "Sacar Lucro da Plataforma", label: "Lucro disponível", category: "admin-withdrawal" },
   "service-fee": { title: "Sacar Taxa de Serviço", label: "Taxa de serviço disponível", category: "admin-service-fee-withdrawal" },
+  "withdrawal-fee": { title: "Sacar Taxa de Saque", label: "Taxa de saque disponível", category: "admin-withdrawal-fee-withdrawal" },
 };
 
 export default function AdminProfitWithdrawDialog({
