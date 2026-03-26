@@ -76,7 +76,7 @@ export default function AdminTransactions() {
         .from("transactions")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(2000);
 
       if (error) throw error;
       return data || [];
