@@ -206,7 +206,7 @@ export default function AdminUsers() {
       return `${pct}% + R$${fixed.toFixed(2)}`;
     }
     if (user.card_plan === "d2") {
-      return "4.99% + R$2.49";
+      return "D+2";
     }
     return "Padrão";
   };
