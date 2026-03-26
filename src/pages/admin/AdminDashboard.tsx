@@ -794,7 +794,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* KPI Cards - Row 2: Platform Revenue (highlighted pairs) */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
         {/* Taxa da plataforma + Disponível para saque */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -851,6 +851,36 @@ export default function AdminDashboard() {
               </div>
               <p className="text-xl font-bold text-amber-600">{fmt(Math.max(0, serviceFeeAvailable))}</p>
               <p className="text-[0.55rem] text-amber-600/70">Clique para sacar →</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Taxa de saque + Taxa de saque disponível */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-xl border-2 border-violet-500/30 bg-gradient-to-br from-violet-500/5 via-card to-violet-500/10 p-1"
+        >
+          <div className="grid grid-cols-2 gap-1">
+            <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+              <div className="flex items-center gap-2">
+                <ArrowDownLeft className="h-4 w-4 text-violet-500" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-violet-500">Taxa de saque (total)</span>
+              </div>
+              <p className="text-xl font-bold text-violet-500">{fmt(totalWithdrawalFeesCollected)}</p>
+              <p className="text-[0.55rem] text-muted-foreground/70">R$ 5,00/saque acumulado</p>
+            </div>
+            <div
+              onClick={() => setWithdrawalFeeDialogOpen(true)}
+              className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1 cursor-pointer hover:bg-violet-500/10 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-violet-600" strokeWidth={1.5} />
+                <span className="text-xs font-medium text-violet-600">Taxa saque disponível</span>
+              </div>
+              <p className="text-xl font-bold text-violet-600">{fmt(Math.max(0, withdrawalFeeAvailable))}</p>
+              <p className="text-[0.55rem] text-violet-600/70">Clique para sacar →</p>
             </div>
           </div>
         </motion.div>
