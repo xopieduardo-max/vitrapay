@@ -3,20 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getAppServiceWorkerRegistration } from "@/lib/serviceWorker";
+import {
+  subscriptionToRecord,
+  subscriptionUsesVapidKey,
+  urlBase64ToUint8Array,
+} from "@/lib/pushSubscription";
 
 const VAPID_PUBLIC_KEY =
   "BPen0pq6mJgBGoWhI6U4O2sPeRgW3o4GpoLsnsBMKXj2LnYigOk2buRyS6kxR5iSKddEfi4yfDGtj1schFnbIr8";
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
 
 export function usePushNotifications() {
   const { user } = useAuth();
@@ -68,6 +62,54 @@ export function usePushNotifications() {
     return registration;
   }
 
+  async function ensureFreshSubscription(registration: ServiceWorkerRegistration) {
+    const existingSubscription = await registration.pushManager.getSubscription();
+
+    if (!existingSubscription) {
+      return registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    }
+
+    if (!subscriptionUsesVapidKey(existingSubscription, VAPID_PUBLIC_KEY)) {
+      console.log("[Push] Existing subscription uses old VAPID key, recreating...");
+      await existingSubscription.unsubscribe();
+
+      return registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    }
+
+    return existingSubscription;
+  }
+
+  async function persistSubscription(subscription: PushSubscription) {
+    if (!user) return;
+
+    const record = subscriptionToRecord(subscription);
+
+    await supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("user_id", user.id);
+
+    const { error } = await supabase.from("push_subscriptions").insert({
+      user_id: user.id,
+      endpoint: record.endpoint,
+      p256dh: record.p256dh,
+      auth: record.auth,
+    });
+
+    if (error) {
+      console.error("[Push] Database save error:", error);
+      throw error;
+    }
+
+    setIsSubscribed(true);
+  }
+
   async function checkExistingSubscription() {
     try {
       const registration = await getRegistration();
@@ -84,37 +126,10 @@ export function usePushNotifications() {
     if (!user) return;
     try {
       const registration = await getRegistration();
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
+      const subscription = await ensureFreshSubscription(registration);
       console.log("[Push] Auto-subscribed:", subscription.endpoint.slice(0, 60));
-
-      const subJson = subscription.toJSON();
-      const keys = subJson.keys!;
-
-      await supabase
-        .from("push_subscriptions")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("endpoint", subJson.endpoint!);
-
-      const { error } = await supabase
-        .from("push_subscriptions")
-        .insert({
-          user_id: user.id,
-          endpoint: subJson.endpoint!,
-          p256dh: keys.p256dh!,
-          auth: keys.auth!,
-        });
-
-      if (error) {
-        console.error("[Push] Auto-subscribe DB error:", error);
-        return;
-      }
-
+      await persistSubscription(subscription);
       console.log("[Push] Auto-subscribed and saved successfully");
-      setIsSubscribed(true);
     } catch (e) {
       console.error("[Push] Silent subscribe error:", e);
     }
@@ -146,41 +161,11 @@ export function usePushNotifications() {
       console.log("[Push] Waiting for SW ready...");
       const registration = await getRegistration();
       console.log("[Push] SW ready. Subscribing to push...");
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
+      const subscription = await ensureFreshSubscription(registration);
       console.log("[Push] Push subscription created:", subscription.endpoint.slice(0, 60));
-
-      const subJson = subscription.toJSON();
-      const keys = subJson.keys!;
-
       console.log("[Push] Saving to database for user:", user.id);
-
-      await supabase
-        .from("push_subscriptions")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("endpoint", subJson.endpoint!);
-
-      const { data, error } = await supabase
-        .from("push_subscriptions")
-        .insert({
-          user_id: user.id,
-          endpoint: subJson.endpoint!,
-          p256dh: keys.p256dh!,
-          auth: keys.auth!,
-        })
-        .select();
-
-      if (error) {
-        console.error("[Push] Database save error:", JSON.stringify(error));
-        throw error;
-      }
-
-      console.log("[Push] Saved successfully:", data);
-      setIsSubscribed(true);
+      await persistSubscription(subscription);
+      console.log("[Push] Saved successfully");
 
       if (!isAuto) {
         toast({ title: "Notificações ativadas! 🔔", description: "Você receberá alertas de vendas no celular." });
