@@ -18,7 +18,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   availableProfit: number; // centavos
-  source?: "platform" | "service-fee";
+  source?: "platform" | "service-fee" | "withdrawal-fee";
 }
 
 const fmt = (v: number) =>
