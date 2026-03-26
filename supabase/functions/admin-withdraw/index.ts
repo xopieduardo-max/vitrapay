@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         value: valueInReais,
         pixAddressKey: pix_key,
+        pixAddressKeyType: "CPF",
         description: `Saque Lucro VitraPay - Admin`,
       }),
     });
