@@ -60,11 +60,24 @@ export default function Finance() {
     enabled: !!user,
   });
 
+  // Get wallet balance (server-side calculated, prevents plan-switching exploits)
+  const { data: wallet } = useQuery({
+    queryKey: ["finance-wallet", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_available, balance_pending, balance_total")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const pixKey = profile?.pix_key || "";
   const pixKeyType = profile?.pix_key_type || "cpf";
   const profileIncomplete = !profile?.cpf || !profile?.phone || !profile?.display_name;
-  const cardPlan = profile?.card_plan || "d30";
-  const HOLDBACK_DAYS_CARD = cardPlan === "d2" ? 2 : 30;
 
   // Get sales for balance calc
   const { data: sales = [] } = useQuery({
