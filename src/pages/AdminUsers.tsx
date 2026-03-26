@@ -45,6 +45,7 @@ interface UserData {
   email: string;
   joined: string;
   role: string;
+  card_plan: string;
   custom_fee_percentage: number | null;
   custom_fee_fixed: number | null;
   productsCount: number;
@@ -68,7 +69,7 @@ export default function AdminUsers() {
     queryFn: async () => {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar_url, created_at, custom_fee_percentage, custom_fee_fixed")
+        .select("user_id, display_name, avatar_url, created_at, custom_fee_percentage, custom_fee_fixed, card_plan")
         .order("created_at", { ascending: false });
 
       if (!profiles) return [];
@@ -110,6 +111,7 @@ export default function AdminUsers() {
           email: emailsMap[p.user_id] || "",
           joined: format(new Date(p.created_at), "dd/MM/yyyy"),
           role,
+          card_plan: p.card_plan || "d30",
           custom_fee_percentage: p.custom_fee_percentage,
           custom_fee_fixed: p.custom_fee_fixed,
           productsCount: productsCountMap[p.user_id] || 0,
@@ -199,9 +201,12 @@ export default function AdminUsers() {
 
   const getFeeLabel = (user: UserData) => {
     if (user.custom_fee_percentage != null || user.custom_fee_fixed != null) {
-      const pct = user.custom_fee_percentage ?? 3.89;
+      const pct = user.custom_fee_percentage ?? (user.card_plan === "d2" ? 4.99 : 3.99);
       const fixed = user.custom_fee_fixed != null ? (user.custom_fee_fixed / 100) : 2.49;
       return `${pct}% + R$${fixed.toFixed(2)}`;
+    }
+    if (user.card_plan === "d2") {
+      return "4.99% + R$2.49";
     }
     return "Padrão";
   };
@@ -270,7 +275,7 @@ export default function AdminUsers() {
           </div>
           {paginated.map((user, i) => {
             const rc = roleConfig[user.role as keyof typeof roleConfig] || roleConfig.buyer;
-            const hasCustomFee = user.custom_fee_percentage != null || user.custom_fee_fixed != null;
+            const hasCustomFee = user.custom_fee_percentage != null || user.custom_fee_fixed != null || user.card_plan === "d2";
             return (
               <motion.div
                 key={user.id}
