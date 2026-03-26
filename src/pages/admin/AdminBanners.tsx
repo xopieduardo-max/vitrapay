@@ -178,6 +178,26 @@ export default function AdminBanners() {
         </p>
       </div>
 
+      {/* Rotation interval */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <h3 className="text-sm font-semibold">Velocidade do Carrossel</h3>
+        <p className="text-xs text-muted-foreground">Tempo de exibição de cada banner antes de trocar automaticamente.</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          {[1, 2, 3, 5, 7, 10].map((sec) => (
+            <Button
+              key={sec}
+              type="button"
+              variant={intervalSeconds === sec ? "default" : "outline"}
+              size="sm"
+              onClick={() => { setIntervalSeconds(sec); updateInterval.mutate(sec); }}
+              disabled={updateInterval.isPending}
+            >
+              {sec}s
+            </Button>
+          ))}
+        </div>
+      </div>
+
       {/* Add new */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <div className="flex items-center justify-between">
