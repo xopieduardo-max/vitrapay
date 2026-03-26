@@ -10,6 +10,8 @@ import {
   Filter,
   Download,
   Receipt,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,6 +65,8 @@ export default function AdminTransactions() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [balanceTypeFilter, setBalanceTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 25;
 
   // Fetch all transactions with user info
   const { data: transactions = [], isLoading } = useQuery({
@@ -72,7 +76,7 @@ export default function AdminTransactions() {
         .from("transactions")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(2000);
 
       if (error) throw error;
       return data || [];
@@ -126,6 +130,18 @@ export default function AdminTransactions() {
       return true;
     });
   }, [transactions, categoryFilter, typeFilter, statusFilter, balanceTypeFilter, searchQuery, profileMap]);
+
+  // Reset page when filters change
+  const filterKey = `${categoryFilter}-${typeFilter}-${statusFilter}-${balanceTypeFilter}-${searchQuery}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setCurrentPage(1);
+  }
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginatedItems = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   // Stats
   const totalCredits = filtered.filter((t) => t.type === "credit").reduce((s, t) => s + t.amount, 0);
@@ -302,7 +318,7 @@ export default function AdminTransactions() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((t) => (
+                  {paginatedItems.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="text-xs whitespace-nowrap">
                         {format(new Date(t.created_at), "dd/MM/yy HH:mm")}
@@ -362,6 +378,58 @@ export default function AdminTransactions() {
             </div>
           )}
         </CardContent>
+
+        {/* Pagination */}
+        {filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between border-t border-border px-4 py-3">
+            <p className="text-xs text-muted-foreground">
+              Mostrando {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} de {filtered.length}
+            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page: number;
+                if (totalPages <= 5) {
+                  page = i + 1;
+                } else if (currentPage <= 3) {
+                  page = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  page = totalPages - 4 + i;
+                } else {
+                  page = currentPage - 2 + i;
+                }
+                return (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="icon"
+                    className="h-8 w-8 text-xs"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
