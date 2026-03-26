@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import AdminProfitWithdrawDialog from "@/components/admin/AdminProfitWithdrawDialog";
+import AdminCombinedWithdrawDialog from "@/components/admin/AdminCombinedWithdrawDialog";
 import {
   AdminWithdrawHistoryDialog,
   PendingWithdrawalsDetailDialog,
@@ -170,6 +171,7 @@ export default function AdminDashboard() {
   const [checkoutsOpen, setCheckoutsOpen] = useState(false);
   const [serviceFeeDialogOpen, setServiceFeeDialogOpen] = useState(false);
   const [withdrawalFeeDialogOpen, setWithdrawalFeeDialogOpen] = useState(false);
+  const [combinedWithdrawOpen, setCombinedWithdrawOpen] = useState(false);
   // ── Data fetching ──
   const { data: allTransactions = [] } = useQuery({
     queryKey: ["admin-all-transactions"],
@@ -911,8 +913,8 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* KPI Cards - Row 4: Users + Margin */}
-      <div className="grid gap-4 grid-cols-2">
+      {/* KPI Cards - Row 4: Users + Margin + Total Disponível */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
         {[cards[9], cards[11]].filter(Boolean).map((card, i) => (
           <motion.div
             key={card.label}
@@ -929,6 +931,23 @@ export default function AdminDashboard() {
             {(card as any).desc && <p className="text-[0.55rem] text-muted-foreground/70 leading-tight">{(card as any).desc}</p>}
           </motion.div>
         ))}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          onClick={() => setCombinedWithdrawOpen(true)}
+          className="rounded-xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-card to-emerald-500/5 p-4 space-y-1 cursor-pointer hover:border-emerald-500/60 hover:shadow-lg transition-all"
+        >
+          <div className="flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-emerald-500" strokeWidth={1.5} />
+            <span className="text-xs font-medium text-emerald-500">Total disponível p/ saque</span>
+          </div>
+          <p className="text-2xl font-bold text-emerald-500">
+            {fmt(Math.max(0, netProfit) + Math.max(0, serviceFeeAvailable) + Math.max(0, withdrawalFeeAvailable))}
+          </p>
+          <p className="text-[0.55rem] text-muted-foreground/70">Plataforma + Serviço + Saque</p>
+          <p className="text-[0.6rem] text-emerald-500/70 mt-1">Clique para sacar →</p>
+        </motion.div>
       </div>
 
       {/* Revenue Chart */}
@@ -1288,6 +1307,13 @@ export default function AdminDashboard() {
       <AdminProfitWithdrawDialog open={serviceFeeDialogOpen} onOpenChange={setServiceFeeDialogOpen} availableProfit={Math.max(0, serviceFeeAvailable)} source="service-fee" />
       <AdminProfitWithdrawDialog open={withdrawalFeeDialogOpen} onOpenChange={setWithdrawalFeeDialogOpen} availableProfit={Math.max(0, withdrawalFeeAvailable)} source="withdrawal-fee" />
       <AdminWithdrawHistoryDialog open={adminHistoryOpen} onOpenChange={setAdminHistoryOpen} transactions={allTransactions} totalWithdrawn={adminWithdrawals} />
+      <AdminCombinedWithdrawDialog
+        open={combinedWithdrawOpen}
+        onOpenChange={setCombinedWithdrawOpen}
+        platformAvailable={Math.max(0, netProfit)}
+        serviceFeeAvailable={Math.max(0, serviceFeeAvailable)}
+        withdrawalFeeAvailable={Math.max(0, withdrawalFeeAvailable)}
+      />
       <PendingWithdrawalsDetailDialog open={pendingWdOpen} onOpenChange={setPendingWdOpen} withdrawals={withdrawals} profileMap={profileMap} />
       <TotalPaidOutDetailDialog open={totalPaidOpen} onOpenChange={setTotalPaidOpen} withdrawals={withdrawals} profileMap={profileMap} totalPaidOut={stats?.totalPaidOut ?? 0} />
       <PendingCheckoutsDetailDialog open={checkoutsOpen} onOpenChange={setCheckoutsOpen} checkouts={adminPendingCheckouts} />
