@@ -228,10 +228,13 @@ export default function Dashboard() {
   const pendingCheckoutsValue = pendingCheckouts.reduce((acc, p) => acc + p.amount, 0);
   const pendingSales = filteredSales.filter((s) => s.status === "pending").reduce((acc, s) => acc + s.amount, 0);
   const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((acc, w) => acc + w.amount, 0);
+  const WITHDRAWAL_FEE = 500;
+  const pendingWithdrawalsGross = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount + WITHDRAWAL_FEE, 0);
   const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount, 0);
 
-  // Available balance from wallet (server-side calculated, prevents plan-switching exploits)
-  const availableBalance = wallet?.balance_available ?? 0;
+  // Available balance from wallet, deducting pending withdrawal reserves (aligned with Finance page)
+  const walletAvailable = Number(wallet?.balance_available ?? 0);
+  const availableBalance = Math.max(0, walletAvailable - pendingWithdrawalsGross);
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = filteredSales.filter((s) => s.status === "refunded");
   const chargebackSales = filteredSales.filter((s) => s.status === "chargeback");

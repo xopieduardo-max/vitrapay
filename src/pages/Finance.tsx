@@ -476,6 +476,9 @@ export default function Finance() {
                       </span>
                     </p>
                     <p className="text-xs text-muted-foreground">
+                      <span className="font-mono text-[0.65rem] bg-muted px-1 py-0.5 rounded mr-1.5">
+                        #{w.id.substring(0, 8).toUpperCase()}
+                      </span>
                       {w.pix_key_type?.toUpperCase()} • {new Date(w.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
