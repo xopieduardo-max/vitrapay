@@ -201,9 +201,12 @@ export default function AdminUsers() {
 
   const getFeeLabel = (user: UserData) => {
     if (user.custom_fee_percentage != null || user.custom_fee_fixed != null) {
-      const pct = user.custom_fee_percentage ?? 3.89;
+      const pct = user.custom_fee_percentage ?? (user.card_plan === "d2" ? 4.99 : 3.99);
       const fixed = user.custom_fee_fixed != null ? (user.custom_fee_fixed / 100) : 2.49;
       return `${pct}% + R$${fixed.toFixed(2)}`;
+    }
+    if (user.card_plan === "d2") {
+      return "4.99% + R$2.49";
     }
     return "Padrão";
   };
