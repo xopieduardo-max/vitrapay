@@ -168,7 +168,7 @@ export default function AdminDashboard() {
   const [totalPaidOpen, setTotalPaidOpen] = useState(false);
   const [checkoutsOpen, setCheckoutsOpen] = useState(false);
   const [serviceFeeDialogOpen, setServiceFeeDialogOpen] = useState(false);
-
+  const [withdrawalFeeDialogOpen, setWithdrawalFeeDialogOpen] = useState(false);
   // ── Data fetching ──
   const { data: allTransactions = [] } = useQuery({
     queryKey: ["admin-all-transactions"],
