@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,20 +21,9 @@ import {
 } from "lucide-react";
 
 // ── Platform constants ──
-const HOLDBACK_DAYS_PIX = 0;    // PIX: D+0 (instant)
 const MIN_WITHDRAWAL = 1000;    // R$ 10.00 in cents
 const WITHDRAWAL_FEE = 500;     // R$ 5.00 in cents
 const AUTO_APPROVE_LIMIT = 10000; // R$ 100.00 — auto PIX
-
-function getHoldbackDays(provider: string | null, cardHoldDays: number) {
-  return provider === "pix" ? HOLDBACK_DAYS_PIX : cardHoldDays;
-}
-
-function addDays(date: string, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
 
 export default function Finance() {
   const { user } = useAuth();
@@ -60,64 +49,24 @@ export default function Finance() {
     enabled: !!user,
   });
 
+  // Get wallet balance (server-side calculated, prevents plan-switching exploits)
+  const { data: wallet } = useQuery({
+    queryKey: ["finance-wallet", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_available, balance_pending, balance_total")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const pixKey = profile?.pix_key || "";
   const pixKeyType = profile?.pix_key_type || "cpf";
   const profileIncomplete = !profile?.cpf || !profile?.phone || !profile?.display_name;
-  const cardPlan = profile?.card_plan || "d30";
-  const HOLDBACK_DAYS_CARD = cardPlan === "d2" ? 2 : 30;
-
-  // Get sales for balance calc
-  const { data: sales = [] } = useQuery({
-    queryKey: ["my-sales", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("sales")
-        .select("amount, platform_fee, status, created_at, payment_provider, payment_id")
-        .eq("producer_id", user.id)
-        .eq("status", "completed");
-      return data || [];
-    },
-    enabled: !!user,
-  });
-
-  const paymentIds = useMemo(
-    () => [...new Set(sales.map((sale: any) => sale.payment_id).filter(Boolean))],
-    [sales]
-  );
-
-  const { data: confirmedPaymentIds = [] } = useQuery({
-    queryKey: ["confirmed-sales", paymentIds],
-    queryFn: async () => {
-      if (paymentIds.length === 0) return [];
-      const { data } = await supabase
-        .from("pending_payments")
-        .select("asaas_payment_id")
-        .in("asaas_payment_id", paymentIds)
-        .eq("status", "confirmed");
-      return (data || []).map((payment: any) => payment.asaas_payment_id);
-    },
-    enabled: paymentIds.length > 0,
-  });
-
-  const verifiedSales = useMemo(() => {
-    const validIds = new Set(confirmedPaymentIds);
-    return sales.filter((sale: any) => sale.payment_id && validIds.has(sale.payment_id));
-  }, [sales, confirmedPaymentIds]);
-
-  // Get commissions earned as affiliate
-  const { data: commissions = [] } = useQuery({
-    queryKey: ["my-commissions", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("commissions")
-        .select("amount, status, created_at")
-        .eq("affiliate_id", user.id);
-      return data || [];
-    },
-    enabled: !!user,
-  });
 
   // Get withdrawals
   const { data: withdrawals = [], isLoading } = useQuery({
@@ -134,40 +83,7 @@ export default function Finance() {
     enabled: !!user,
   });
 
-  // ── Balance calculations ──
-  const now = new Date();
-
-  // Split sales into available vs held back
-  const salesNet = verifiedSales.map((s: any) => ({
-    net: s.amount - (s.platform_fee || 0),
-    availableAt: addDays(s.created_at, getHoldbackDays(s.payment_provider, HOLDBACK_DAYS_CARD)),
-    provider: s.payment_provider,
-  }));
-
-  const totalAvailableSales = salesNet
-    .filter((s) => s.availableAt <= now)
-    .reduce((acc, s) => acc + s.net, 0);
-
-  const totalHeldSales = salesNet
-    .filter((s) => s.availableAt > now)
-    .reduce((acc, s) => acc + s.net, 0);
-
-  // Commissions — apply card holdback (conservative)
-  const commissionsNet = commissions
-    .filter((c: any) => c.status !== "cancelled")
-    .map((c: any) => ({
-      amount: c.amount,
-      availableAt: addDays(c.created_at, HOLDBACK_DAYS_CARD),
-    }));
-
-  const totalAvailableCommissions = commissionsNet
-    .filter((c) => c.availableAt <= now)
-    .reduce((acc, c) => acc + c.amount, 0);
-
-  const totalHeldCommissions = commissionsNet
-    .filter((c) => c.availableAt > now)
-    .reduce((acc, c) => acc + c.amount, 0);
-
+  // ── Balance calculations (use wallet as source of truth) ──
   const totalWithdrawn = withdrawals
     .filter((w) => w.status === "completed")
     .reduce((acc, w) => acc + w.amount, 0);
@@ -175,15 +91,12 @@ export default function Finance() {
     .filter((w) => w.status === "pending" || w.status === "processing")
     .reduce((acc, w) => acc + w.amount, 0);
 
-  // Fees already paid
-  const totalFeesPaid = withdrawals
-    .filter((w) => w.status !== "rejected")
-    .length * WITHDRAWAL_FEE;
+  const availableBalance = wallet?.balance_available ?? 0;
+  const totalHeld = wallet?.balance_pending ?? 0;
+  const totalEarnings = (wallet?.balance_total ?? 0) + totalWithdrawn;
 
-  const totalAvailable = totalAvailableSales + totalAvailableCommissions;
-  const totalHeld = totalHeldSales + totalHeldCommissions;
-  const availableBalance = totalAvailable - totalWithdrawn - pendingWithdrawals - totalFeesPaid;
-  const totalEarnings = totalAvailable + totalHeld;
+  const cardPlan = profile?.card_plan || "d30";
+  const HOLDBACK_DAYS_CARD_LABEL = cardPlan === "d2" ? 2 : 30;
 
   // ── Withdrawal mutation (uses edge function) ──
   const requestWithdrawal = useMutation({
@@ -410,7 +323,7 @@ export default function Finance() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Saldo Disponível", value: Math.max(0, availableBalance), icon: Wallet, color: "text-emerald-500", cardClass: "border-emerald-500/30 bg-emerald-500/5", description: "Pronto para saque", clickAction: "available" as const },
-          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", cardClass: "", description: `Cartão: D+${HOLDBACK_DAYS_CARD} • PIX: D+0`, clickAction: "held" as const },
+          { label: "Saldo Retido", value: totalHeld, icon: Lock, color: "text-warning", cardClass: "", description: `Cartão: D+${HOLDBACK_DAYS_CARD_LABEL} • PIX: D+0`, clickAction: "held" as const },
           { label: "Total Ganho", value: totalEarnings, icon: TrendingUp, color: "text-accent", cardClass: "", description: "Vendas + comissões", clickAction: null },
           { label: "Total Sacado", value: totalWithdrawn, icon: DollarSign, color: "text-muted-foreground", cardClass: "", description: "Já transferido", clickAction: null },
         ].map((stat, i) => (
@@ -452,12 +365,8 @@ export default function Finance() {
           </h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Vendas liberadas</span>
-              <span className="font-medium text-primary">+ R$ {(totalAvailableSales / 100).toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <span className="text-muted-foreground">Comissões liberadas</span>
-              <span className="font-medium text-primary">+ R$ {(totalAvailableCommissions / 100).toFixed(2)}</span>
+              <span className="text-muted-foreground">Saldo disponível (carteira)</span>
+              <span className="font-medium text-primary">R$ {(availableBalance / 100).toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between text-xs border-b border-border pb-2">
               <span className="text-muted-foreground">Saques concluídos</span>
@@ -467,12 +376,6 @@ export default function Finance() {
               <div className="flex items-center justify-between text-xs border-b border-border pb-2">
                 <span className="text-muted-foreground">Saques pendentes</span>
                 <span className="font-medium text-warning">- R$ {(pendingWithdrawals / 100).toFixed(2)}</span>
-              </div>
-            )}
-            {totalFeesPaid > 0 && (
-              <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                <span className="text-muted-foreground">Taxas de saque</span>
-                <span className="font-medium text-destructive">- R$ {(totalFeesPaid / 100).toFixed(2)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-sm pt-1 font-bold">
@@ -500,28 +403,11 @@ export default function Finance() {
       {totalHeld > 0 && (
         <div className="rounded-xl border border-border bg-card p-4 space-y-3">
           <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Lock className="h-4 w-4 text-warning" /> Saldo Retido — Detalhamento
+            <Lock className="h-4 w-4 text-warning" /> Saldo Retido
           </h3>
-          <div className="space-y-1.5">
-            {salesNet.filter((s) => s.availableAt > now).map((s, i) => (
-              <div key={i} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Clock className="h-3 w-3" />
-                  Liberado em {s.availableAt.toLocaleDateString("pt-BR")}
-                </span>
-                <span className="font-medium">R$ {(s.net / 100).toFixed(2)}</span>
-              </div>
-            ))}
-            {commissionsNet.filter((c) => c.availableAt > now).map((c, i) => (
-              <div key={`c-${i}`} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Clock className="h-3 w-3" />
-                  Comissão • Liberado em {c.availableAt.toLocaleDateString("pt-BR")}
-                </span>
-                <span className="font-medium">R$ {(c.amount / 100).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs text-muted-foreground">
+            R$ {(totalHeld / 100).toFixed(2)} aguardando liberação conforme prazo do plano de recebimento.
+          </p>
         </div>
       )}
 

@@ -123,6 +123,20 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  const { data: wallet } = useQuery({
+    queryKey: ["dashboard-wallet", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_available, balance_pending, balance_total")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const { data: salesData = [] } = useQuery({
     queryKey: ["dashboard-sales", user?.id],
     queryFn: async () => {
@@ -216,23 +230,8 @@ export default function Dashboard() {
   const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((acc, w) => acc + w.amount, 0);
   const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount, 0);
 
-  // Available balance (global, not period-filtered)
-  const HOLDBACK_DAYS_CARD = (profile as any)?.card_plan === "d2" ? 2 : 30;
-  const HOLDBACK_DAYS_PIX = 0;
-  const WITHDRAWAL_FEE = 500;
-  const now = new Date();
-
-  const totalAvailableSales = completedSalesAll
-    .filter((s) => {
-      const holdDays = s.payment_provider === "pix" ? HOLDBACK_DAYS_PIX : HOLDBACK_DAYS_CARD;
-      const availableAt = new Date(s.created_at);
-      availableAt.setDate(availableAt.getDate() + holdDays);
-      return availableAt <= now;
-    })
-    .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
-
-  const totalFeesPaid = withdrawals.filter((w) => w.status !== "rejected").length * WITHDRAWAL_FEE;
-  const availableBalance = totalAvailableSales - totalWithdrawn - pendingWithdrawals - totalFeesPaid;
+  // Available balance from wallet (server-side calculated, prevents plan-switching exploits)
+  const availableBalance = wallet?.balance_available ?? 0;
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = filteredSales.filter((s) => s.status === "refunded");
   const chargebackSales = filteredSales.filter((s) => s.status === "chargeback");
