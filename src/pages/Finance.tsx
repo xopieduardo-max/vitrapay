@@ -228,9 +228,9 @@ export default function Finance() {
 
                 {/* Balance info at bottom */}
                 <div className="rounded-lg border border-border p-4 flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Saldo disponível</span>
+                  <span className="text-sm text-muted-foreground">Disponível para novo saque</span>
                   <span className="text-sm font-bold">
-                    R$ {(Math.max(0, availableBalance) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    R$ {(availableBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
 
