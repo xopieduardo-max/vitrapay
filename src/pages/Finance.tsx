@@ -234,6 +234,15 @@ export default function Finance() {
                   </span>
                 </div>
 
+                {pendingWithdrawals > 0 && (
+                  <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 flex items-start gap-2">
+                    <Clock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      Você já possui <strong>R$ {(pendingWithdrawals / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong> reservados em saque pendente. Aguarde a conclusão para liberar esse saldo novamente.
+                    </p>
+                  </div>
+                )}
+
                 {profileIncomplete && (
                   <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2">
                     <Lock className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
