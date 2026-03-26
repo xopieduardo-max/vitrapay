@@ -45,7 +45,7 @@ export default function AdminProfitWithdrawDialog({
     mutationFn: async (amount: number) => {
       const { data, error } = await supabase.functions.invoke(
         "admin-withdraw",
-        { body: { amount, pix_key: pixKey } }
+        { body: { amount, pix_key: pixKey, withdrawal_category: labels.category } }
       );
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
