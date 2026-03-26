@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import AdminProfitWithdrawDialog from "@/components/admin/AdminProfitWithdrawDialog";
+import AdminCombinedWithdrawDialog from "@/components/admin/AdminCombinedWithdrawDialog";
 import {
   AdminWithdrawHistoryDialog,
   PendingWithdrawalsDetailDialog,
