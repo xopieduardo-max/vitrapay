@@ -68,13 +68,13 @@ export default function BannerCarousel({
 
   const next = useCallback(() => {
     if (count <= 1) return;
-    goTo((current + 1) % count);
-  }, [count, current, goTo]);
+    setCurrent((c) => (c + 1) % count);
+  }, [count]);
 
   const prev = useCallback(() => {
     if (count <= 1) return;
-    goTo((current - 1 + count) % count);
-  }, [count, current, goTo]);
+    setCurrent((c) => (c - 1 + count) % count);
+  }, [count]);
 
   // Auto-rotate
   useEffect(() => {
