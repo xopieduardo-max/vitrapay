@@ -9,10 +9,9 @@ const corsHeaders = {
 };
 
 function initVapid() {
-  const pub = (Deno.env.get("VAPID_PUBLIC_KEY") || "").trim();
-  const priv = (Deno.env.get("VAPID_PRIVATE_KEY") || "").trim();
-  console.log("VAPID_PUBLIC_KEY length:", pub.length, "first 10 chars:", pub.slice(0, 10));
-  console.log("VAPID_PRIVATE_KEY length:", priv.length);
+  const pub = (Deno.env.get("VAPID_PUB") || Deno.env.get("VAPID_PUBLIC_KEY") || "").trim();
+  const priv = (Deno.env.get("VAPID_PRIV") || Deno.env.get("VAPID_PRIVATE_KEY") || "").trim();
+  console.log("VAPID pub length:", pub.length, "first 10:", pub.slice(0, 10));
   if (!pub || !priv) {
     throw new Error("VAPID keys not configured");
   }
