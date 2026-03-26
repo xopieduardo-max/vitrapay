@@ -109,7 +109,13 @@ export default function Finance() {
       if (!user) throw new Error("Not authenticated");
       if (isNaN(parsedAmount) || parsedAmount <= 0) throw new Error("Valor inválido");
       if (parsedAmount < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
-      if (parsedAmount > availableBalance) throw new Error("Saldo insuficiente");
+      if (parsedAmount > availableBalance) {
+        throw new Error(
+          availableBalance > 0
+            ? `Saldo disponível para novo saque: R$ ${(availableBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+            : "Você já possui um saque pendente em análise. Aguarde a conclusão para solicitar outro saque."
+        );
+      }
       if (netAfterFee <= 0) throw new Error("O valor do saque precisa ser maior que a taxa de R$ 5,00");
       if (!pixKey.trim()) throw new Error("Configure sua chave Pix em Ajustes");
 
