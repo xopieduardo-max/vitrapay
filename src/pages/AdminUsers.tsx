@@ -69,7 +69,7 @@ export default function AdminUsers() {
     queryFn: async () => {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar_url, created_at, custom_fee_percentage, custom_fee_fixed")
+        .select("user_id, display_name, avatar_url, created_at, custom_fee_percentage, custom_fee_fixed, card_plan")
         .order("created_at", { ascending: false });
 
       if (!profiles) return [];
