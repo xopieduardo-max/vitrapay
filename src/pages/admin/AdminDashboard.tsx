@@ -824,13 +824,16 @@ export default function AdminDashboard() {
               <p className="text-xl font-bold text-amber-500">{fmt(totalServiceFees)}</p>
               <p className="text-[0.55rem] text-muted-foreground/70">R$ 0,99/transação • Líq: {fmt(totalServiceFeesNet)}</p>
             </div>
-            <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+            <div
+              onClick={() => setServiceFeeDialogOpen(true)}
+              className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1 cursor-pointer hover:bg-amber-500/10 transition-colors"
+            >
               <div className="flex items-center gap-2">
                 <Banknote className="h-4 w-4 text-amber-600" strokeWidth={1.5} />
                 <span className="text-xs font-medium text-amber-600">Taxa serviço disponível</span>
               </div>
               <p className="text-xl font-bold text-amber-600">{fmt(Math.max(0, serviceFeeAvailable))}</p>
-              <p className="text-[0.55rem] text-muted-foreground/70">Acumulado menos saques</p>
+              <p className="text-[0.55rem] text-amber-600/70">Clique para sacar →</p>
             </div>
           </div>
         </motion.div>
