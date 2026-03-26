@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import marketplaceBanner from "@/assets/marketplace-banner.png";
+import BannerCarousel from "@/components/BannerCarousel";
 
 type Tab = "all" | "trending" | "top_commission" | "newest";
 
