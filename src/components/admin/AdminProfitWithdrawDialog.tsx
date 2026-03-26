@@ -33,7 +33,9 @@ export default function AdminProfitWithdrawDialog({
   open,
   onOpenChange,
   availableProfit,
+  source = "platform",
 }: Props) {
+  const labels = sourceLabels[source];
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [pixKey, setPixKey] = useState("");
