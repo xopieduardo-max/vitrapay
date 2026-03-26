@@ -434,15 +434,13 @@ export default function Dashboard() {
   return (
     <div className="space-y-5 pb-20 md:pb-6">
       
-      {/* Promotional Banner */}
-      <motion.div {...anim(0)} className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
-        <img
-          src={dashboardBanner}
-          alt="Banner promocional VitraPay"
-          className="w-full h-auto object-cover rounded-xl"
-          style={{ maxHeight: 160 }}
-          loading="lazy"
-          decoding="async"
+      {/* Promotional Banner Carousel */}
+      <motion.div {...anim(0)}>
+        <BannerCarousel
+          location="dashboard"
+          fallbackSrc={dashboardBanner}
+          fallbackAlt="Banner promocional VitraPay"
+          maxHeight={160}
         />
       </motion.div>
 
