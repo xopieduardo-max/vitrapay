@@ -9,12 +9,49 @@ const corsHeaders = {
 };
 
 function initVapid() {
-  const pub = (Deno.env.get("VAPID_PUB") || Deno.env.get("VAPID_PUBLIC_KEY") || "").trim();
-  const priv = (Deno.env.get("VAPID_PRIV") || Deno.env.get("VAPID_PRIVATE_KEY") || "").trim();
+  const decodeBase64Url = (value: string) => {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = "=".repeat((4 - (normalized.length % 4)) % 4);
+    return Uint8Array.from(atob(normalized + padding), (char) => char.charCodeAt(0));
+  };
+
+  const candidates = [
+    {
+      pub: (Deno.env.get("VAPID_PUB") || "").trim(),
+      priv: (Deno.env.get("VAPID_PRIV") || "").trim(),
+    },
+    {
+      pub: (Deno.env.get("VAPID_PUBLIC_KEY") || "").trim(),
+      priv: (Deno.env.get("VAPID_PRIVATE_KEY") || "").trim(),
+    },
+  ];
+
+  const selected = candidates.find(({ pub, priv }) => {
+    if (!pub || !priv) return false;
+    try {
+      return decodeBase64Url(pub).length === 65 && decodeBase64Url(priv).length === 32;
+    } catch {
+      return false;
+    }
+  });
+
+  const pub = selected?.pub || "";
+  const priv = selected?.priv || "";
   if (!pub || !priv) {
     throw new Error("VAPID keys not configured");
   }
   webpush.setVapidDetails("mailto:noreply@vitrapay.com.br", pub, priv);
+}
+
+function getPushErrorReason(errorBody: unknown) {
+  if (typeof errorBody !== "string") return null;
+
+  try {
+    const parsed = JSON.parse(errorBody);
+    return typeof parsed?.reason === "string" ? parsed.reason : null;
+  } catch {
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -73,6 +110,7 @@ serve(async (req) => {
     });
 
     let sent = 0;
+    let invalidated = 0;
 
     for (const sub of subscriptions) {
       try {
@@ -90,15 +128,17 @@ serve(async (req) => {
         sent++;
         console.log("Push sent to:", sub.endpoint.slice(0, 60));
       } catch (e: any) {
+        const reason = getPushErrorReason(e.body);
         console.error("Push send error:", e.statusCode, e.body);
-        if (e.statusCode === 410 || e.statusCode === 404) {
+        if (e.statusCode === 410 || e.statusCode === 404 || reason === "VapidPkHashMismatch") {
           await supabase.from("push_subscriptions").delete().eq("id", sub.id);
+          invalidated++;
           console.log("Removed expired subscription:", sub.id);
         }
       }
     }
 
-    return new Response(JSON.stringify({ sent, total: subscriptions.length }), {
+    return new Response(JSON.stringify({ sent, total: subscriptions.length, invalidated }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
