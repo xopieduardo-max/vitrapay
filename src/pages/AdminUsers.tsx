@@ -45,6 +45,7 @@ interface UserData {
   email: string;
   joined: string;
   role: string;
+  card_plan: string;
   custom_fee_percentage: number | null;
   custom_fee_fixed: number | null;
   productsCount: number;
