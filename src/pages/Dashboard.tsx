@@ -30,6 +30,7 @@ import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
+import BannerCarousel from "@/components/BannerCarousel";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
