@@ -8,7 +8,6 @@ interface BannerCarouselProps {
   location: "dashboard" | "marketplace";
   fallbackSrc?: string;
   fallbackAlt?: string;
-  maxHeight?: number;
   className?: string;
 }
 
