@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     await serviceClient.from("transactions").insert({
       user_id: user.id,
       type: "debit",
-      category: "admin-withdrawal",
+      category,
       amount,
       balance_type: "available",
       reference_id: asaasData.id || "admin-withdraw",
