@@ -63,6 +63,8 @@ export default function AdminTransactions() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [balanceTypeFilter, setBalanceTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 25;
 
   // Fetch all transactions with user info
   const { data: transactions = [], isLoading } = useQuery({
