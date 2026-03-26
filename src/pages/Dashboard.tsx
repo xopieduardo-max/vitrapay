@@ -123,6 +123,20 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  const { data: wallet } = useQuery({
+    queryKey: ["dashboard-wallet", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_available, balance_pending, balance_total")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const { data: salesData = [] } = useQuery({
     queryKey: ["dashboard-sales", user?.id],
     queryFn: async () => {
