@@ -271,7 +271,7 @@ export default function Finance() {
                   </Button>
                   <Button
                     className="flex-1 gap-2"
-                    disabled={parsedAmount < MIN_WITHDRAWAL || !pixKey || profileIncomplete}
+                    disabled={parsedAmount < MIN_WITHDRAWAL || parsedAmount > availableBalance || !pixKey || profileIncomplete}
                     onClick={() => setWithdrawStep(2)}
                   >
                     Prosseguir
