@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const AUTO_APPROVE_LIMIT = 10000; // R$ 100.00 in cents
+const AUTO_APPROVE_LIMIT = Infinity; // All withdrawals go directly to Asaas
 const MIN_WITHDRAWAL = 1000;      // R$ 10.00 in cents
 const WITHDRAWAL_FEE = 500;       // R$ 5.00 in cents
 const HOLDBACK_DAYS_PIX = 0;
