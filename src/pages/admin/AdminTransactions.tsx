@@ -74,6 +74,8 @@ export default function AdminTransactions() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [balanceTypeFilter, setBalanceTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 25;
 
