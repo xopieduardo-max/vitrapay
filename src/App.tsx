@@ -124,6 +124,7 @@ const App = () => {
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/help" element={<HelpCenter />} />
                   <Route path="/taxas" element={<Taxas />} />
+                  <Route path="/workspace" element={<WorkspaceSettings />} />
                 </Route>
               </Route>
 
