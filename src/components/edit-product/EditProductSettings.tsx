@@ -4,19 +4,38 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Image, Upload, FileText, Loader2, X } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Image, Upload, FileText, Loader2, X, Plus } from "lucide-react";
 
 interface Props {
   form: Record<string, any>;
   updateField: (field: string, value: any) => void;
+  productId?: string;
 }
 
-export default function EditProductSettings({ form, updateField }: Props) {
+export default function EditProductSettings({ form, updateField, productId }: Props) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+
+  // Fetch existing product files
+  const { data: existingFiles = [], isLoading: loadingFiles } = useQuery({
+    queryKey: ["product-files", productId],
+    queryFn: async () => {
+      if (!productId) return [];
+      const { data } = await supabase
+        .from("product_files")
+        .select("*")
+        .eq("product_id", productId)
+        .order("position");
+      return data || [];
+    },
+    enabled: !!productId,
+  });
 
   const uploadFile = async (file: File, folder: string) => {
     if (!user) return null;
@@ -42,21 +61,47 @@ export default function EditProductSettings({ form, updateField }: Props) {
     }
   };
 
-  const handleProductFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingFile(true);
+  const handleAddProductFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !productId) return;
+    setUploadingFiles(true);
     try {
-      const url = await uploadFile(file, "files");
-      if (url) {
-        updateField("file_url", url);
-        updateField("_file_name", file.name);
+      const maxPosition = existingFiles.length > 0
+        ? Math.max(...existingFiles.map((f: any) => f.position ?? 0)) + 1
+        : 0;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const url = await uploadFile(file, "files");
+        if (url) {
+          await supabase.from("product_files").insert({
+            product_id: productId,
+            file_url: url,
+            file_name: file.name,
+            file_size: file.size,
+            position: maxPosition + i,
+          });
+        }
       }
+
+      // Update legacy file_url with first file if empty
+      if (!form.file_url && files.length > 0) {
+        const firstUrl = await uploadFile(files[0], "files");
+        if (firstUrl) updateField("file_url", firstUrl);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["product-files", productId] });
     } catch {
       // silent
     } finally {
-      setUploadingFile(false);
+      setUploadingFiles(false);
+      e.target.value = "";
     }
+  };
+
+  const handleRemoveFile = async (fileId: string) => {
+    await supabase.from("product_files").delete().eq("id", fileId);
+    queryClient.invalidateQueries({ queryKey: ["product-files", productId] });
   };
 
   return (
@@ -126,37 +171,64 @@ export default function EditProductSettings({ form, updateField }: Props) {
           </div>
         </div>
 
-        {/* Product file */}
+        {/* Product files - multiple */}
         <div>
-          <Label className="text-xs">Arquivo do Produto (entregável)</Label>
-          <label className="mt-1 flex items-center gap-3 border-2 border-dashed border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
-            {uploadingFile ? (
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            ) : form.file_url ? (
-              <div className="flex items-center gap-2 w-full">
-                <FileText className="h-5 w-5 text-primary shrink-0" strokeWidth={1.5} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium truncate">{form._file_name || "Arquivo enviado"}</p>
-                  <p className="text-[0.6rem] text-muted-foreground truncate">{form.file_url}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); updateField("file_url", ""); updateField("_file_name", ""); }}
-                  className="shrink-0 rounded-full bg-background/80 p-1"
+          <div className="flex items-center justify-between mb-1">
+            <Label className="text-xs">Arquivos do Produto (entregáveis)</Label>
+            <span className="text-[0.6rem] text-muted-foreground">
+              {loadingFiles ? "..." : `${existingFiles.length} arquivo(s)`}
+            </span>
+          </div>
+
+          {/* Existing files list */}
+          {existingFiles.length > 0 && (
+            <div className="space-y-1.5 mb-2">
+              {existingFiles.map((f: any) => (
+                <div
+                  key={f.id}
+                  className="flex items-center gap-2 rounded-lg border border-border p-2.5 bg-muted/20"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
+                  <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium truncate">{f.file_name}</p>
+                    {f.file_size > 0 && (
+                      <p className="text-[0.6rem] text-muted-foreground">
+                        {(f.file_size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFile(f.id)}
+                    className="shrink-0 rounded-full p-1 hover:bg-muted transition-colors"
+                  >
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add files button */}
+          <label className="mt-1 flex items-center gap-3 border-2 border-dashed border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
+            {uploadingFiles ? (
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Upload className="h-5 w-5 shrink-0" strokeWidth={1} />
+                {existingFiles.length === 0 ? (
+                  <Upload className="h-5 w-5 shrink-0" strokeWidth={1} />
+                ) : (
+                  <Plus className="h-5 w-5 shrink-0" strokeWidth={1} />
+                )}
                 <div>
-                  <p className="text-xs">Enviar arquivo</p>
+                  <p className="text-xs">
+                    {existingFiles.length === 0 ? "Enviar arquivos" : "Adicionar mais arquivos"}
+                  </p>
                   <p className="text-[0.6rem]">PDF, ZIP, MP4, etc.</p>
                 </div>
               </div>
             )}
-            <input type="file" className="hidden" onChange={handleProductFileUpload} />
+            <input type="file" className="hidden" multiple onChange={handleAddProductFiles} />
           </label>
         </div>
 
