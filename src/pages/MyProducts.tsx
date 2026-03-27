@@ -204,7 +204,7 @@ export default function MyProducts() {
                   <DropdownMenuItem className="gap-2 text-sm" onClick={() => navigate(`/products/${product.id}/edit?tab=pixels`)}>
                     <BarChart3 className="h-4 w-4" strokeWidth={1.5} /> Pixels
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 text-sm text-destructive">
+                  <DropdownMenuItem className="gap-2 text-sm text-destructive" onClick={() => setDeleteId(product.id)}>
                     <Trash2 className="h-4 w-4" strokeWidth={1.5} /> Excluir
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -213,6 +213,23 @@ export default function MyProducts() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir produto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este produto? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? "Excluindo..." : "Sim, excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
