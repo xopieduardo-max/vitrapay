@@ -629,17 +629,39 @@ export default function EditProductContent({ productId }: Props) {
               />
             </div>
             <div>
-              <Label className="text-xs">URL do vídeo</Label>
-              <Input
-                value={lessonForm.video_url}
-                onChange={(e) =>
-                  setLessonForm((f) => ({ ...f, video_url: e.target.value }))
-                }
-                placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..."
-                className="mt-1"
-              />
+              <Label className="text-xs">Vídeo da aula</Label>
+              <div className="mt-1 space-y-2">
+                <Input
+                  value={lessonForm.video_url}
+                  onChange={(e) =>
+                    setLessonForm((f) => ({ ...f, video_url: e.target.value }))
+                  }
+                  placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..."
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-[0.6rem] text-muted-foreground">ou</span>
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-primary hover:underline">
+                    {uploadingVideo ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Upload className="h-3 w-3" />
+                    )}
+                    {uploadingVideo ? "Enviando..." : "Fazer upload de vídeo"}
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      disabled={uploadingVideo}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadVideo(file);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
               <p className="text-[0.6rem] text-muted-foreground mt-0.5">
-                YouTube, Vimeo ou link direto do vídeo
+                YouTube, Vimeo, link direto ou envie o arquivo
               </p>
             </div>
             <div>
