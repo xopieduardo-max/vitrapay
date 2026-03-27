@@ -128,7 +128,8 @@ function buildPlainText(params: PurchaseEmailParams): string {
   
   let credentialsText = "";
   if (temp_password) {
-    credentialsText = `\n\nSua conta foi criada automaticamente!\nE-mail: ${buyer_email}\nSenha provisória: ${temp_password}\n\nRecomendamos trocar sua senha após o primeiro acesso.`;
+    const passText = temp_password === "cpf" ? "os 6 primeiros dígitos do seu CPF" : temp_password;
+    credentialsText = `\n\nSua conta foi criada automaticamente!\nE-mail: ${buyer_email}\nSenha: ${passText}\n\nRecomendamos trocar sua senha após o primeiro acesso.`;
   }
   
   return `Olá ${buyer_name},\n\nSeu pagamento foi confirmado com sucesso!\n\nProduto: ${product_title}${credentialsText}\n\nAcesse seus produtos: ${accessLink}\n\nBom proveito!\nEquipe VitraPay`;

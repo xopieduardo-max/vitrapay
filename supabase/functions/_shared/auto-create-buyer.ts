@@ -2,20 +2,22 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /**
  * Auto-creates a buyer account if one doesn't exist for the given email.
- * Returns { userId, tempPassword } if account was created, or { userId, tempPassword: null } if it already existed.
+ * Uses the first 6 digits of the buyer's CPF as the password.
+ * Returns { userId, isNew } — if isNew, the password is the CPF-based one.
  */
 export async function autoCreateBuyerAccount(
   supabase: ReturnType<typeof createClient>,
   buyerEmail: string,
-  buyerName: string
+  buyerName: string,
+  buyerCpf: string | null = null
 ): Promise<{ userId: string | null; tempPassword: string | null; isNew: boolean }> {
   try {
-    // Simple approach: try to create the user. If it fails because email is taken, user exists.
-    const tempPassword = generateTempPassword();
-    
+    // Build password from CPF (first 6 digits) or fallback to random
+    const password = buildCpfPassword(buyerCpf);
+
     const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
       email: buyerEmail,
-      password: tempPassword,
+      password,
       email_confirm: true,
       user_metadata: {
         display_name: buyerName,
@@ -62,7 +64,7 @@ export async function autoCreateBuyerAccount(
 
       return {
         userId: newUser.user.id,
-        tempPassword,
+        tempPassword: buyerCpf ? "cpf" : password, // signal that password is CPF-based
         isNew: true,
       };
     }
@@ -74,7 +76,18 @@ export async function autoCreateBuyerAccount(
   }
 }
 
-function generateTempPassword(): string {
+/**
+ * Extracts the first 6 digits from a CPF string to use as password.
+ * If CPF is null/empty or has fewer than 6 digits, generates a random password.
+ */
+function buildCpfPassword(cpf: string | null): string {
+  if (cpf) {
+    const digits = cpf.replace(/\D/g, "");
+    if (digits.length >= 6) {
+      return digits.slice(0, 6);
+    }
+  }
+  // Fallback: random password if no CPF
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
   let password = "";
   for (let i = 0; i < 10; i++) {
