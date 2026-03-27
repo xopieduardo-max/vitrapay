@@ -85,6 +85,7 @@ export default function WorkspaceSettings() {
         description: workspace.description || "",
         logo_url: workspace.logo_url || "",
         banner_url: workspace.banner_url || "",
+        banner_position: (workspace as any).banner_position ?? 50,
         primary_color: workspace.primary_color || "#EAB308",
         secondary_color: workspace.secondary_color || "#1A1A1A",
         is_public: workspace.is_public ?? true,
