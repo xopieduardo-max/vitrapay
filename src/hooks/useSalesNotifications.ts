@@ -86,7 +86,7 @@ export function useSalesNotifications() {
             const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão de Crédito" : "Boleto";
             const paymentId = payload.new?.payment_id || "";
 
-            const title = `Venda Estornada ⚠️`;
+            const title = `Venda Estornada`;
             const description = `${methodLabel} • ${fmt} • ID: ${paymentId.slice(0, 12)}`;
 
             toast.error(title, { description, duration: 8000 });
