@@ -44,6 +44,8 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Taxas = lazy(() => import("./pages/Taxas"));
+const WorkspaceSettings = lazy(() => import("./pages/WorkspaceSettings"));
+const WorkspaceStorefront = lazy(() => import("./pages/WorkspaceStorefront"));
 
 
 // Admin pages
