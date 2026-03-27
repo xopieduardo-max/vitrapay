@@ -28,6 +28,23 @@ import {
 export default function MyProducts() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    const { error } = await supabase.from("products").delete().eq("id", deleteId);
+    setDeleting(false);
+    setDeleteId(null);
+    if (error) {
+      toast.error("Erro ao excluir produto");
+    } else {
+      toast.success("Produto excluído com sucesso");
+      queryClient.invalidateQueries({ queryKey: ["my-products"] });
+    }
+  };
 
   const { data: myProducts = [], isLoading } = useQuery({
     queryKey: ["my-products", user?.id],
