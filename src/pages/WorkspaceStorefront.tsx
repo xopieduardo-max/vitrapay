@@ -121,6 +121,7 @@ export default function WorkspaceStorefront() {
             src={workspace.banner_url}
             alt="Banner"
             className="w-full h-[200px] object-cover"
+            style={{ objectPosition: `center ${(workspace as any).banner_position ?? 50}%` }}
           />
         </div>
       ) : (
