@@ -97,6 +97,7 @@ const App = () => {
               <Route path="/install" element={<Install />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/minha-conta" element={<MinhaConta />} />
+              <Route path="/w/:slug" element={<WorkspaceStorefront />} />
 
               {/* Protected routes */}
               <Route element={<AuthGuard />}>
