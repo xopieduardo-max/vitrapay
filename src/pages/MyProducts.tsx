@@ -3,9 +3,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +28,23 @@ import {
 export default function MyProducts() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    const { error } = await supabase.from("products").delete().eq("id", deleteId);
+    setDeleting(false);
+    setDeleteId(null);
+    if (error) {
+      toast.error("Erro ao excluir produto");
+    } else {
+      toast.success("Produto excluído com sucesso");
+      queryClient.invalidateQueries({ queryKey: ["my-products"] });
+    }
+  };
 
   const { data: myProducts = [], isLoading } = useQuery({
     queryKey: ["my-products", user?.id],
@@ -175,7 +204,7 @@ export default function MyProducts() {
                   <DropdownMenuItem className="gap-2 text-sm" onClick={() => navigate(`/products/${product.id}/edit?tab=pixels`)}>
                     <BarChart3 className="h-4 w-4" strokeWidth={1.5} /> Pixels
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 text-sm text-destructive">
+                  <DropdownMenuItem className="gap-2 text-sm text-destructive" onClick={() => setDeleteId(product.id)}>
                     <Trash2 className="h-4 w-4" strokeWidth={1.5} /> Excluir
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -184,6 +213,23 @@ export default function MyProducts() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir produto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este produto? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? "Excluindo..." : "Sim, excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
