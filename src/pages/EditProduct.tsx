@@ -211,6 +211,12 @@ export default function EditProduct() {
           <EditProductSettings form={form} updateField={updateField} productId={id} />
         </TabsContent>
 
+        {product.type === "lms" && (
+          <TabsContent value="content" className="mt-6">
+            <EditProductContent productId={id!} />
+          </TabsContent>
+        )}
+
         <TabsContent value="checkout" className="mt-6">
           <EditProductCheckout
             productId={id!}
