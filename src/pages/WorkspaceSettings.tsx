@@ -24,10 +24,13 @@ export default function WorkspaceSettings() {
     description: "",
     logo_url: "",
     banner_url: "",
+    banner_position: 50,
     primary_color: "#EAB308",
     secondary_color: "#1A1A1A",
     is_public: true,
   });
+  const [editingBannerPos, setEditingBannerPos] = useState(false);
+  const bannerDragRef = useRef<{ startY: number; startPos: number } | null>(null);
 
   // Fetch or create workspace
   const { data: workspace, isLoading } = useQuery({
