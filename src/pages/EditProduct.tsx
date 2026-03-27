@@ -18,6 +18,7 @@ import {
   ShoppingCart,
   BarChart3,
   Zap,
+  BookOpen,
 } from "lucide-react";
 
 import EditProductSettings from "@/components/edit-product/EditProductSettings";
