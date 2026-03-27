@@ -1420,6 +1420,93 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_products: {
+        Row: {
+          created_at: string
+          id: string
+          is_visible: boolean | null
+          position: number | null
+          product_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean | null
+          position?: number | null
+          product_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean | null
+          position?: number | null
+          product_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_products_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          producer_id: string
+          secondary_color: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          producer_id: string
+          secondary_color?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          producer_id?: string
+          secondary_color?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
