@@ -12,6 +12,7 @@ import {
   Smartphone,
   Plug,
   Rocket,
+  Columns,
   Receipt,
   ChevronDown,
 } from "lucide-react";
