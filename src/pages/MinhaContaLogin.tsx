@@ -97,6 +97,7 @@ export default function MinhaContaLogin({ onAuth }: { onAuth: () => void }) {
                 <div className="text-center mb-4">
                   <h2 className="text-lg font-semibold">Entrar</h2>
                   <p className="text-sm text-muted-foreground">Acesse seus produtos comprados</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">Use o e-mail da compra e os 6 primeiros dígitos do seu CPF como senha</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">E-mail</Label>
