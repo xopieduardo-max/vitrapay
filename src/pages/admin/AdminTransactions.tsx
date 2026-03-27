@@ -138,12 +138,20 @@ export default function AdminTransactions() {
         const refId = (t.reference_id || "").toLowerCase();
         if (!name.includes(q) && !refId.includes(q) && !t.user_id.toLowerCase().includes(q)) return false;
       }
+      if (dateFrom) {
+        const from = startOfDay(dateFrom);
+        if (new Date(t.created_at) < from) return false;
+      }
+      if (dateTo) {
+        const to = endOfDay(dateTo);
+        if (new Date(t.created_at) > to) return false;
+      }
       return true;
     });
-  }, [transactions, categoryFilter, typeFilter, statusFilter, balanceTypeFilter, searchQuery, profileMap]);
+  }, [transactions, categoryFilter, typeFilter, statusFilter, balanceTypeFilter, searchQuery, profileMap, dateFrom, dateTo]);
 
   // Reset page when filters change
-  const filterKey = `${categoryFilter}-${typeFilter}-${statusFilter}-${balanceTypeFilter}-${searchQuery}`;
+  const filterKey = `${categoryFilter}-${typeFilter}-${statusFilter}-${balanceTypeFilter}-${searchQuery}-${dateFrom?.toISOString()}-${dateTo?.toISOString()}`;
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   if (filterKey !== prevFilterKey) {
     setPrevFilterKey(filterKey);
