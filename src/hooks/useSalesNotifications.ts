@@ -145,7 +145,7 @@ export function useSalesNotifications() {
           const amount = payload.new?.amount || 0;
           const fmtVal = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
-          const title = "Checkout Iniciado! 🛒";
+          const title = "Checkout Iniciado";
           const description = `${product.title} • ${fmtVal}`;
 
           toast.info(title, { description });
