@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,10 +24,13 @@ export default function WorkspaceSettings() {
     description: "",
     logo_url: "",
     banner_url: "",
+    banner_position: 50,
     primary_color: "#EAB308",
     secondary_color: "#1A1A1A",
     is_public: true,
   });
+  const [editingBannerPos, setEditingBannerPos] = useState(false);
+  const bannerDragRef = useRef<{ startY: number; startPos: number } | null>(null);
 
   // Fetch or create workspace
   const { data: workspace, isLoading } = useQuery({
@@ -82,6 +85,7 @@ export default function WorkspaceSettings() {
         description: workspace.description || "",
         logo_url: workspace.logo_url || "",
         banner_url: workspace.banner_url || "",
+        banner_position: (workspace as any).banner_position ?? 50,
         primary_color: workspace.primary_color || "#EAB308",
         secondary_color: workspace.secondary_color || "#1A1A1A",
         is_public: workspace.is_public ?? true,
@@ -295,28 +299,101 @@ export default function WorkspaceSettings() {
             {/* Banner */}
             <div>
               <Label className="text-xs">Banner (1920×320 recomendado)</Label>
-              <label className="mt-1 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 transition-colors">
-                {uploadingBanner ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                ) : form.banner_url ? (
-                  <div className="relative w-full">
-                    <img src={form.banner_url} alt="Banner" className="h-20 w-full object-cover rounded-md" />
+              {form.banner_url ? (
+                <div className="mt-1 space-y-2">
+                  <div
+                    className="relative w-full h-24 rounded-lg overflow-hidden border border-border group"
+                    style={{ cursor: editingBannerPos ? "grab" : "default" }}
+                    onMouseDown={(e) => {
+                      if (!editingBannerPos) return;
+                      e.preventDefault();
+                      bannerDragRef.current = { startY: e.clientY, startPos: form.banner_position };
+                      const onMove = (ev: MouseEvent) => {
+                        if (!bannerDragRef.current) return;
+                        const delta = bannerDragRef.current.startY - ev.clientY;
+                        const newPos = Math.min(100, Math.max(0, bannerDragRef.current.startPos + delta * 0.5));
+                        setForm(f => ({ ...f, banner_position: Math.round(newPos) }));
+                      };
+                      const onUp = () => {
+                        bannerDragRef.current = null;
+                        window.removeEventListener("mousemove", onMove);
+                        window.removeEventListener("mouseup", onUp);
+                      };
+                      window.addEventListener("mousemove", onMove);
+                      window.addEventListener("mouseup", onUp);
+                    }}
+                    onTouchStart={(e) => {
+                      if (!editingBannerPos) return;
+                      const touch = e.touches[0];
+                      bannerDragRef.current = { startY: touch.clientY, startPos: form.banner_position };
+                      const onMove = (ev: TouchEvent) => {
+                        if (!bannerDragRef.current) return;
+                        const delta = bannerDragRef.current.startY - ev.touches[0].clientY;
+                        const newPos = Math.min(100, Math.max(0, bannerDragRef.current.startPos + delta * 0.5));
+                        setForm(f => ({ ...f, banner_position: Math.round(newPos) }));
+                      };
+                      const onUp = () => {
+                        bannerDragRef.current = null;
+                        window.removeEventListener("touchmove", onMove);
+                        window.removeEventListener("touchend", onUp);
+                      };
+                      window.addEventListener("touchmove", onMove);
+                      window.addEventListener("touchend", onUp);
+                    }}
+                  >
+                    <img
+                      src={form.banner_url}
+                      alt="Banner"
+                      className="w-full h-full object-cover pointer-events-none select-none"
+                      style={{ objectPosition: `center ${form.banner_position}%` }}
+                      draggable={false}
+                    />
+                    {editingBannerPos && (
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <p className="text-white text-xs font-medium bg-black/50 px-3 py-1 rounded-full">
+                          ↕ Arraste para reposicionar
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant={editingBannerPos ? "default" : "outline"}
+                      size="sm"
+                      className="text-xs h-7"
+                      onClick={() => setEditingBannerPos(!editingBannerPos)}
+                    >
+                      {editingBannerPos ? "Concluir" : "Reposicionar"}
+                    </Button>
+                    <label className="cursor-pointer">
+                      <Button type="button" variant="outline" size="sm" className="text-xs h-7 pointer-events-none">
+                        Trocar imagem
+                      </Button>
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleUpload(e, "banner_url", setUploadingBanner)} />
+                    </label>
                     <button
                       type="button"
-                      onClick={e => { e.preventDefault(); setForm(f => ({ ...f, banner_url: "" })); }}
-                      className="absolute top-1 right-1 rounded-full bg-background/80 p-0.5"
+                      onClick={() => { setForm(f => ({ ...f, banner_url: "", banner_position: 50 })); setEditingBannerPos(false); }}
+                      className="ml-auto text-muted-foreground hover:text-destructive transition-colors"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1 text-muted-foreground py-2">
-                    <Image className="h-5 w-5" strokeWidth={1} />
-                    <span className="text-xs">Enviar banner</span>
-                  </div>
-                )}
-                <input type="file" accept="image/*" className="hidden" onChange={e => handleUpload(e, "banner_url", setUploadingBanner)} />
-              </label>
+                </div>
+              ) : (
+                <label className="mt-1 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-3 cursor-pointer hover:border-primary/50 transition-colors">
+                  {uploadingBanner ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-muted-foreground py-2">
+                      <Image className="h-5 w-5" strokeWidth={1} />
+                      <span className="text-xs">Enviar banner</span>
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={e => handleUpload(e, "banner_url", setUploadingBanner)} />
+                </label>
+              )}
             </div>
 
             {/* Colors */}

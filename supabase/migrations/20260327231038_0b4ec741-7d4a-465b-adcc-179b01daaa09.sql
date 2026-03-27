@@ -1,0 +1,1 @@
+ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS banner_position integer NOT NULL DEFAULT 50;
