@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -13,7 +14,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  CalendarIcon,
+  X,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +74,8 @@ export default function AdminTransactions() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [balanceTypeFilter, setBalanceTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 25;
 
@@ -127,12 +138,20 @@ export default function AdminTransactions() {
         const refId = (t.reference_id || "").toLowerCase();
         if (!name.includes(q) && !refId.includes(q) && !t.user_id.toLowerCase().includes(q)) return false;
       }
+      if (dateFrom) {
+        const from = startOfDay(dateFrom);
+        if (new Date(t.created_at) < from) return false;
+      }
+      if (dateTo) {
+        const to = endOfDay(dateTo);
+        if (new Date(t.created_at) > to) return false;
+      }
       return true;
     });
-  }, [transactions, categoryFilter, typeFilter, statusFilter, balanceTypeFilter, searchQuery, profileMap]);
+  }, [transactions, categoryFilter, typeFilter, statusFilter, balanceTypeFilter, searchQuery, profileMap, dateFrom, dateTo]);
 
   // Reset page when filters change
-  const filterKey = `${categoryFilter}-${typeFilter}-${statusFilter}-${balanceTypeFilter}-${searchQuery}`;
+  const filterKey = `${categoryFilter}-${typeFilter}-${statusFilter}-${balanceTypeFilter}-${searchQuery}-${dateFrom?.toISOString()}-${dateTo?.toISOString()}`;
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   if (filterKey !== prevFilterKey) {
     setPrevFilterKey(filterKey);
@@ -287,6 +306,66 @@ export default function AdminTransactions() {
                 <SelectItem value="pending">Pendente</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          {/* Date range filter */}
+          <div className="flex flex-wrap items-center gap-3 mt-3">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[160px] justify-start text-left text-xs font-normal",
+                    !dateFrom && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Data início"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateFrom}
+                  onSelect={setDateFrom}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[160px] justify-start text-left text-xs font-normal",
+                    !dateTo && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                  {dateTo ? format(dateTo, "dd/MM/yyyy") : "Data fim"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateTo}
+                  onSelect={setDateTo}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            {(dateFrom || dateTo) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-muted-foreground"
+                onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+              >
+                <X className="h-3.5 w-3.5 mr-1" />
+                Limpar datas
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
