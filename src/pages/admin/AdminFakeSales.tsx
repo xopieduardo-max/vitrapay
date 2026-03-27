@@ -152,7 +152,7 @@ export default function AdminFakeSales() {
         await supabase.functions.invoke("send-push", {
           body: {
             producer_id: producerId,
-            title: `Venda Aprovada! 🎉`,
+            title: `Venda Aprovada!`,
             body: `Pagamento via ${methodLabel}\nValor: ${fmt2}`,
             url: "/sales",
           },
