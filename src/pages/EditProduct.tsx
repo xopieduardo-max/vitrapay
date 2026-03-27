@@ -27,6 +27,7 @@ import EditProductCoupons from "@/components/edit-product/EditProductCoupons";
 import EditProductLinks from "@/components/edit-product/EditProductLinks";
 import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
 import EditProductPixels from "@/components/edit-product/EditProductPixels";
+import EditProductContent from "@/components/edit-product/EditProductContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PRODUCT_TABS = ["settings", "checkout", "funnel", "pixels", "coupons", "links"] as const;
