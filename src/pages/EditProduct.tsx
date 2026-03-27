@@ -203,7 +203,7 @@ export default function EditProduct() {
         </TabsList>
 
         <TabsContent value="settings" className="mt-6">
-          <EditProductSettings form={form} updateField={updateField} />
+          <EditProductSettings form={form} updateField={updateField} productId={id} />
         </TabsContent>
 
         <TabsContent value="checkout" className="mt-6">
