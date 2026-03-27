@@ -107,7 +107,7 @@ export function useSalesNotifications() {
               await supabase.functions.invoke("send-push", {
                 body: {
                   producer_id: user.id,
-                  title: `Venda Estornada ⚠️`,
+                  title: `Venda Estornada`,
                   body: `${methodLabel} • Valor: ${fmt} • ID: ${paymentId.slice(0, 12)}`,
                   url: "/sales",
                 },
