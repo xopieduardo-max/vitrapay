@@ -79,6 +79,7 @@ export default function EditProductContent({ productId }: Props) {
     is_free: false,
   });
   const [savingLesson, setSavingLesson] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   // Delete confirm
   const [deleteConfirm, setDeleteConfirm] = useState<{
