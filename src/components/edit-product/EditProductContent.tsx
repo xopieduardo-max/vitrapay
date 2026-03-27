@@ -232,9 +232,35 @@ export default function EditProductContent({ productId }: Props) {
     setLessonDialog({ open: true, moduleId: lesson.module_id, editing: lesson });
   };
 
+  // Upload video file
+  const uploadVideo = async (file: File) => {
+    setUploadingVideo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `lessons/${productId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("product-files")
+        .upload(path, file, { contentType: file.type });
+      if (error) throw error;
+      const { data } = supabase.storage
+        .from("product-files")
+        .getPublicUrl(path);
+      setLessonForm((f) => ({ ...f, video_url: data.publicUrl }));
+      toast.success("Vídeo enviado!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro no upload do vídeo");
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
   const saveLesson = async () => {
     if (!lessonForm.title.trim()) {
       toast.error("Nome da aula é obrigatório");
+      return;
+    }
+    if (!lessonDialog.moduleId && !lessonDialog.editing) {
+      toast.error("Módulo não identificado");
       return;
     }
     setSavingLesson(true);
@@ -265,12 +291,16 @@ export default function EditProductContent({ productId }: Props) {
           is_free: lessonForm.is_free,
           position: moduleLessons.length,
         });
-        if (error) throw error;
+        if (error) {
+          console.error("Lesson insert error:", error);
+          throw error;
+        }
         toast.success("Aula criada!");
       }
       setLessonDialog({ open: false });
       queryClient.invalidateQueries({ queryKey: ["product-lessons"] });
     } catch (e: any) {
+      console.error("Save lesson error:", e);
       toast.error(e.message || "Erro ao salvar aula");
     } finally {
       setSavingLesson(false);
