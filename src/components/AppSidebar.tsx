@@ -46,6 +46,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Meus Produtos", url: "/products", icon: Package },
+  { title: "Workspace", url: "/workspace", icon: Columns },
   { title: "Marketplace", url: "/marketplace", icon: Store },
   { title: "Minhas Compras", url: "/purchases", icon: FileText },
   { title: "Minhas Afiliações", url: "/affiliates", icon: Users },
