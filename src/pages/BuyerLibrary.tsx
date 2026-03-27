@@ -1,7 +1,8 @@
-import { Download, BookOpen, Play, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Download, BookOpen, Play, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,27 +10,25 @@ import { Link } from "react-router-dom";
 
 export default function BuyerLibrary() {
   const { user } = useAuth();
+  const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
 
   const { data: accessItems = [], isLoading } = useQuery({
     queryKey: ["buyer-library", user?.id, user?.email],
     queryFn: async () => {
       if (!user) return [];
 
-      // Fetch access by user_id
       const { data: accessById } = await supabase
         .from("product_access")
         .select("id, product_id, granted_at, sale_id")
         .eq("user_id", user.id)
         .order("granted_at", { ascending: false });
 
-      // Fetch access by email (for guest purchases before account creation)
       const { data: accessByEmail } = await supabase
         .from("product_access")
         .select("id, product_id, granted_at, sale_id")
         .eq("buyer_email", user.email!)
         .order("granted_at", { ascending: false });
 
-      // Merge and deduplicate by product_id
       const allAccess = [...(accessById || []), ...(accessByEmail || [])];
       const seen = new Set<string>();
       const access = allAccess.filter((a) => {
@@ -40,7 +39,6 @@ export default function BuyerLibrary() {
 
       if (!access.length) return [];
 
-      // Link email-based access to user_id (one-time migration)
       const emailOnly = (accessByEmail || []).filter(
         (a: any) => !a.user_id || a.user_id !== user.id
       );
@@ -61,6 +59,23 @@ export default function BuyerLibrary() {
 
       if (!products?.length) return [];
 
+      // Fetch product files
+      const downloadProductIds = products.filter(p => p.type === "download").map(p => p.id);
+      let productFilesMap: Record<string, any[]> = {};
+      if (downloadProductIds.length > 0) {
+        const { data: files } = await supabase
+          .from("product_files")
+          .select("*")
+          .in("product_id", downloadProductIds)
+          .order("position");
+        if (files) {
+          files.forEach((f: any) => {
+            if (!productFilesMap[f.product_id]) productFilesMap[f.product_id] = [];
+            productFilesMap[f.product_id].push(f);
+          });
+        }
+      }
+
       const producerIds = [...new Set(products.map((p) => p.producer_id))];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -77,7 +92,11 @@ export default function BuyerLibrary() {
         return {
           ...a,
           product: product
-            ? { ...product, producerName: profileMap.get(product.producer_id) || "Produtor" }
+            ? {
+                ...product,
+                producerName: profileMap.get(product.producer_id) || "Produtor",
+                files: productFilesMap[product.id] || [],
+              }
             : null,
         };
       }).filter((a) => a.product);
@@ -106,6 +125,9 @@ export default function BuyerLibrary() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {accessItems.map((item: any, i: number) => {
             const product = item.product;
+            const hasMultipleFiles = product.files && product.files.length > 1;
+            const isExpanded = expandedProduct === product.id;
+
             return (
               <motion.div
                 key={item.id}
@@ -133,9 +155,19 @@ export default function BuyerLibrary() {
                       {product.type === "download" ? "Download" : "Curso"}
                     </Badge>
                     {product.type === "download" ? (
-                      product.file_url ? (
+                      hasMultipleFiles ? (
+                        <Button
+                          size="sm"
+                          variant={isExpanded ? "secondary" : "default"}
+                          className="gap-1.5 h-8 text-xs"
+                          onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
+                        >
+                          <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
+                          {product.files.length} Arquivos
+                        </Button>
+                      ) : product.file_url ? (
                         <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
-                          <a href={product.file_url} target="_blank" rel="noopener noreferrer">
+                          <a href={product.files?.[0]?.file_url || product.file_url} target="_blank" rel="noopener noreferrer">
                             <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
                             Baixar
                           </a>
@@ -155,6 +187,32 @@ export default function BuyerLibrary() {
                       </Button>
                     )}
                   </div>
+
+                  {/* Expanded files list */}
+                  <AnimatePresence>
+                    {isExpanded && hasMultipleFiles && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-1.5 pt-2 border-t border-border"
+                      >
+                        {product.files.map((f: any) => (
+                          <a
+                            key={f.id}
+                            href={f.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors"
+                          >
+                            <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />
+                            <span className="text-xs font-medium truncate flex-1">{f.file_name}</span>
+                            <Download className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          </a>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Download, BookOpen, Play, LogOut, Package, AlertTriangle, Lock, Eye, EyeOff, Check } from "lucide-react";
+import { Loader2, Download, BookOpen, Play, LogOut, Package, AlertTriangle, Lock, Eye, EyeOff, Check, FileText, PartyPopper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ThemeLogo } from "@/components/ThemeLogo";
@@ -18,7 +18,6 @@ export default function MinhaConta() {
   const [authTrigger, setAuthTrigger] = useState(0);
   const { toast } = useToast();
 
-  // Check if user was auto-created (needs password change)
   const isAutoCreated = user?.user_metadata?.auto_created === true;
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -26,9 +25,8 @@ export default function MinhaConta() {
   const [showPass, setShowPass] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordChanged, setPasswordChanged] = useState(false);
-
-  // Dismiss banner if user already changed password in this session
   const [dismissed, setDismissed] = useState(false);
+  const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
 
   const handlePasswordChange = async () => {
     if (newPassword.length < 6) {
@@ -43,7 +41,6 @@ export default function MinhaConta() {
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      // Remove auto_created flag
       await supabase.auth.updateUser({ data: { auto_created: false } });
       setPasswordChanged(true);
       setShowPasswordChange(false);
@@ -83,7 +80,6 @@ export default function MinhaConta() {
 
       if (!access.length) return [];
 
-      // Link email-based access to user_id
       const emailOnly = (accessByEmail || []).filter((a: any) => !a.user_id || a.user_id !== user.id);
       if (emailOnly.length > 0) {
         for (const item of emailOnly) {
@@ -99,6 +95,23 @@ export default function MinhaConta() {
 
       if (!products?.length) return [];
 
+      // Fetch product files for download products
+      const downloadProductIds = products.filter(p => p.type === "download").map(p => p.id);
+      let productFilesMap: Record<string, any[]> = {};
+      if (downloadProductIds.length > 0) {
+        const { data: files } = await supabase
+          .from("product_files")
+          .select("*")
+          .in("product_id", downloadProductIds)
+          .order("position");
+        if (files) {
+          files.forEach((f: any) => {
+            if (!productFilesMap[f.product_id]) productFilesMap[f.product_id] = [];
+            productFilesMap[f.product_id].push(f);
+          });
+        }
+      }
+
       const producerIds = [...new Set(products.map((p) => p.producer_id))];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -113,7 +126,11 @@ export default function MinhaConta() {
         return {
           ...a,
           product: product
-            ? { ...product, producerName: profileMap.get(product.producer_id) || "Produtor" }
+            ? {
+                ...product,
+                producerName: profileMap.get(product.producer_id) || "Produtor",
+                files: productFilesMap[product.id] || [],
+              }
             : null,
         };
       }).filter((a) => a.product);
@@ -153,6 +170,29 @@ export default function MinhaConta() {
 
       {/* Content */}
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {/* Welcome Banner */}
+        {accessItems.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 p-6"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <PartyPopper className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">
+                  Parabéns pela sua compra!
+                </h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Aproveite seus produtos abaixo. Seus arquivos e cursos estão prontos para acesso.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Meus Produtos</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -274,6 +314,9 @@ export default function MinhaConta() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {accessItems.map((item: any, i: number) => {
               const product = item.product;
+              const hasMultipleFiles = product.files && product.files.length > 1;
+              const isExpanded = expandedProduct === product.id;
+
               return (
                 <motion.div
                   key={item.id}
@@ -304,9 +347,19 @@ export default function MinhaConta() {
                         {product.type === "download" ? "Download" : "Curso"}
                       </Badge>
                       {product.type === "download" ? (
-                        product.file_url ? (
+                        hasMultipleFiles ? (
+                          <Button
+                            size="sm"
+                            variant={isExpanded ? "secondary" : "default"}
+                            className="gap-1.5 h-8 text-xs"
+                            onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {product.files.length} Arquivos
+                          </Button>
+                        ) : product.file_url ? (
                           <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
-                            <a href={product.file_url} target="_blank" rel="noopener noreferrer">
+                            <a href={product.files?.[0]?.file_url || product.file_url} target="_blank" rel="noopener noreferrer">
                               <Download className="h-3.5 w-3.5" />
                               Baixar
                             </a>
@@ -325,6 +378,32 @@ export default function MinhaConta() {
                         </Button>
                       )}
                     </div>
+
+                    {/* Expanded files list */}
+                    <AnimatePresence>
+                      {isExpanded && hasMultipleFiles && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="space-y-1.5 pt-2 border-t border-border"
+                        >
+                          {product.files.map((f: any) => (
+                            <a
+                              key={f.id}
+                              href={f.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors"
+                            >
+                              <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />
+                              <span className="text-xs font-medium truncate flex-1">{f.file_name}</span>
+                              <Download className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            </a>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </motion.div>
               );
