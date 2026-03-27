@@ -18,6 +18,7 @@ import {
   ShoppingCart,
   BarChart3,
   Zap,
+  BookOpen,
 } from "lucide-react";
 
 import EditProductSettings from "@/components/edit-product/EditProductSettings";
@@ -26,9 +27,10 @@ import EditProductCoupons from "@/components/edit-product/EditProductCoupons";
 import EditProductLinks from "@/components/edit-product/EditProductLinks";
 import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
 import EditProductPixels from "@/components/edit-product/EditProductPixels";
+import EditProductContent from "@/components/edit-product/EditProductContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const PRODUCT_TABS = ["settings", "checkout", "funnel", "pixels", "coupons", "links"] as const;
+const PRODUCT_TABS = ["settings", "content", "checkout", "funnel", "pixels", "coupons", "links"] as const;
 type ProductTab = (typeof PRODUCT_TABS)[number];
 
 export default function EditProduct() {
@@ -186,6 +188,9 @@ export default function EditProduct() {
         <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-4 overflow-x-auto flex-nowrap">
           {[
             { value: "settings", icon: Settings, label: "Geral" },
+            ...(product.type === "lms"
+              ? [{ value: "content", icon: BookOpen, label: "Conteúdo" }]
+              : []),
             { value: "checkout", icon: ShoppingCart, label: "Checkout" },
             { value: "funnel", icon: Zap, label: "Upsell / Downsell" },
             { value: "pixels", icon: BarChart3, label: "Pixels" },
@@ -205,6 +210,12 @@ export default function EditProduct() {
         <TabsContent value="settings" className="mt-6">
           <EditProductSettings form={form} updateField={updateField} productId={id} />
         </TabsContent>
+
+        {product.type === "lms" && (
+          <TabsContent value="content" className="mt-6">
+            <EditProductContent productId={id!} />
+          </TabsContent>
+        )}
 
         <TabsContent value="checkout" className="mt-6">
           <EditProductCheckout
