@@ -17,8 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Upload, FileText, Image, Loader2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Image, Loader2, ShieldAlert, X, Plus } from "lucide-react";
 import { motion } from "framer-motion";
+
+type PendingFile = { file: File; id: string };
 
 export default function CreateProduct() {
   const { user } = useAuth();
@@ -47,8 +49,8 @@ export default function CreateProduct() {
   const [allowAffiliates, setAllowAffiliates] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [productFile, setProductFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [productFiles, setProductFiles] = useState<PendingFile[]>([]);
   const [loading, setLoading] = useState(false);
 
   if (checkingVerification) {
@@ -84,11 +86,19 @@ export default function CreateProduct() {
     }
   };
 
-  const handleProductFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProductFile(file);
-    }
+  const handleAddFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newFiles: PendingFile[] = Array.from(files).map((f) => ({
+      file: f,
+      id: crypto.randomUUID(),
+    }));
+    setProductFiles((prev) => [...prev, ...newFiles]);
+    e.target.value = "";
+  };
+
+  const removeFile = (id: string) => {
+    setProductFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const uploadFile = async (file: File, folder: string) => {
@@ -123,16 +133,18 @@ export default function CreateProduct() {
     setLoading(true);
     try {
       let coverUrl: string | null = null;
-      let fileUrl: string | null = null;
 
       if (coverFile) {
         coverUrl = await uploadFile(coverFile, "covers");
       }
-      if (productFile) {
-        fileUrl = await uploadFile(productFile, "files");
+
+      // Use first file as legacy file_url for backward compatibility
+      let firstFileUrl: string | null = null;
+      if (productFiles.length > 0) {
+        firstFileUrl = await uploadFile(productFiles[0].file, "files");
       }
 
-      const { error } = await supabase.from("products").insert({
+      const { data: newProduct, error } = await supabase.from("products").insert({
         producer_id: user.id,
         title: title.trim(),
         description: description.trim() || null,
@@ -142,10 +154,27 @@ export default function CreateProduct() {
         allow_affiliates: allowAffiliates,
         is_published: isPublished,
         cover_url: coverUrl,
-        file_url: fileUrl,
-      });
+        file_url: firstFileUrl,
+      }).select("id").single();
 
       if (error) throw error;
+
+      // Upload all files to product_files table
+      if (newProduct && productFiles.length > 0) {
+        const fileUploads = await Promise.all(
+          productFiles.map(async (pf, idx) => {
+            const url = idx === 0 && firstFileUrl ? firstFileUrl : await uploadFile(pf.file, "files");
+            return {
+              product_id: newProduct.id,
+              file_url: url!,
+              file_name: pf.file.name,
+              file_size: pf.file.size,
+              position: idx,
+            };
+          })
+        );
+        await supabase.from("product_files").insert(fileUploads);
+      }
 
       toast({ title: "Produto criado!", description: "Seu produto foi cadastrado com sucesso." });
       navigate("/products");
@@ -265,33 +294,62 @@ export default function CreateProduct() {
             </label>
           </div>
 
-          {/* Product file */}
+          {/* Product files - multiple */}
           <div className="space-y-2">
-            <Label>Arquivo do Produto</Label>
+            <div className="flex items-center justify-between">
+              <Label>Arquivos do Produto</Label>
+              <span className="text-xs text-muted-foreground">{productFiles.length} arquivo(s)</span>
+            </div>
+
+            {/* File list */}
+            {productFiles.length > 0 && (
+              <div className="space-y-2">
+                {productFiles.map((pf) => (
+                  <div
+                    key={pf.id}
+                    className="flex items-center gap-3 rounded-lg border border-border p-3 bg-muted/20"
+                  >
+                    <FileText className="h-5 w-5 text-primary shrink-0" strokeWidth={1.5} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{pf.file.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(pf.file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(pf.id)}
+                      className="shrink-0 rounded-full p-1 hover:bg-muted transition-colors"
+                    >
+                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add file button */}
             <label className="flex items-center gap-3 border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
-              {productFile ? (
-                <div className="flex items-center gap-3 w-full">
-                  <FileText className="h-6 w-6 text-primary shrink-0" strokeWidth={1.5} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{productFile.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(productFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3 text-muted-foreground w-full">
+              <div className="flex items-center gap-3 text-muted-foreground w-full">
+                {productFiles.length === 0 ? (
                   <Upload className="h-6 w-6 shrink-0" strokeWidth={1} />
-                  <div>
-                    <p className="text-sm">Clique para enviar o arquivo</p>
-                    <p className="text-xs">PDF, ZIP, MP4, etc. (max 20MB)</p>
-                  </div>
+                ) : (
+                  <Plus className="h-6 w-6 shrink-0" strokeWidth={1} />
+                )}
+                <div>
+                  <p className="text-sm">
+                    {productFiles.length === 0
+                      ? "Clique para enviar arquivos"
+                      : "Adicionar mais arquivos"}
+                  </p>
+                  <p className="text-xs">PDF, ZIP, MP4, etc. (max 20MB por arquivo)</p>
                 </div>
-              )}
+              </div>
               <input
                 type="file"
                 className="hidden"
-                onChange={handleProductFileChange}
+                multiple
+                onChange={handleAddFiles}
               />
             </label>
           </div>
