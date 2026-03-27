@@ -188,6 +188,9 @@ export default function EditProduct() {
         <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-4 overflow-x-auto flex-nowrap">
           {[
             { value: "settings", icon: Settings, label: "Geral" },
+            ...(product.type === "lms"
+              ? [{ value: "content", icon: BookOpen, label: "Conteúdo" }]
+              : []),
             { value: "checkout", icon: ShoppingCart, label: "Checkout" },
             { value: "funnel", icon: Zap, label: "Upsell / Downsell" },
             { value: "pixels", icon: BarChart3, label: "Pixels" },
