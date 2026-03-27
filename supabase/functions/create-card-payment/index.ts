@@ -431,7 +431,8 @@ Deno.serve(async (req) => {
           const accountResult = await autoCreateBuyerAccount(
             supabase,
             buyer_email,
-            buyer_name || "Cliente"
+            buyer_name || "Cliente",
+            buyer_cpf || null
           );
           tempPassword = accountResult.tempPassword;
 
