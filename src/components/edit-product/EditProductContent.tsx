@@ -233,16 +233,43 @@ export default function EditProductContent({ productId }: Props) {
     setLessonDialog({ open: true, moduleId: lesson.module_id, editing: lesson });
   };
 
-  // Upload video file
+  // Upload video file with progress
   const uploadVideo = async (file: File) => {
+    const maxSize = 500 * 1024 * 1024; // 500MB
+    if (file.size > maxSize) {
+      toast.error("Arquivo muito grande. Máximo: 500MB");
+      return;
+    }
     setUploadingVideo(true);
+    setUploadProgress(0);
     try {
       const ext = file.name.split(".").pop();
       const path = `lessons/${productId}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("product-files")
-        .upload(path, file, { contentType: file.type });
-      if (error) throw error;
+
+      // Use XMLHttpRequest for progress tracking
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || supabaseKey;
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        });
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload falhou: ${xhr.statusText}`));
+        });
+        xhr.addEventListener("error", () => reject(new Error("Erro de rede")));
+        xhr.open("POST", `${supabaseUrl}/storage/v1/object/product-files/${path}`);
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        xhr.setRequestHeader("x-upsert", "true");
+        xhr.send(file);
+      });
+
       const { data } = supabase.storage
         .from("product-files")
         .getPublicUrl(path);
@@ -252,6 +279,7 @@ export default function EditProductContent({ productId }: Props) {
       toast.error(e.message || "Erro no upload do vídeo");
     } finally {
       setUploadingVideo(false);
+      setUploadProgress(0);
     }
   };
 
