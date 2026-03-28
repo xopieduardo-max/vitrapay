@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, Download, PlayCircle, Lock } from "lucide-react";
+import { Loader2, Download, PlayCircle, Lock, ArrowLeft, Eye, EyeOff, Move } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
+import { toast } from "sonner";
 
 /** Returns true if the color is "light" (text should be dark) */
 function isLightColor(hex: string): boolean {
