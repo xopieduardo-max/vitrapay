@@ -247,7 +247,7 @@ export default function WorkspaceStorefront() {
                   <Button
                     size="sm"
                     className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
-                    onClick={saveBannerPosition}
+                    onClick={() => saveBannerPosition(workspace.id)}
                   >
                     Salvar
                   </Button>
