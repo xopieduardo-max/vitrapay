@@ -31,7 +31,7 @@ export default function AdminCartRecovery() {
       const startDate = getStartDate(timeRange);
       const { data, error } = await supabase
         .from("pending_payments")
-        .select("id, buyer_name, buyer_email, product_id, amount, status, created_at, recovery_notified_at")
+        .select("id, buyer_name, buyer_email, product_id, amount, status, created_at, recovery_notified_at, recovery_second_notified_at")
         .not("recovery_notified_at", "is", null)
         .gte("created_at", startDate)
         .order("recovery_notified_at", { ascending: false })
