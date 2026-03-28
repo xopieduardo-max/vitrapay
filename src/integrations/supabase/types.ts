@@ -1564,6 +1564,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_my_email: { Args: never; Returns: string }
       get_user_emails: {
         Args: never
         Returns: {
