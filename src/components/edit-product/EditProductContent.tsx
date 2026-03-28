@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Progress } from "@/components/ui/progress";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,7 @@ export default function EditProductContent({ productId }: Props) {
   });
   const [savingLesson, setSavingLesson] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Delete confirm
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -232,16 +234,43 @@ export default function EditProductContent({ productId }: Props) {
     setLessonDialog({ open: true, moduleId: lesson.module_id, editing: lesson });
   };
 
-  // Upload video file
+  // Upload video file with progress
   const uploadVideo = async (file: File) => {
+    const maxSize = 500 * 1024 * 1024; // 500MB
+    if (file.size > maxSize) {
+      toast.error("Arquivo muito grande. Máximo: 500MB");
+      return;
+    }
     setUploadingVideo(true);
+    setUploadProgress(0);
     try {
       const ext = file.name.split(".").pop();
       const path = `lessons/${productId}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("product-files")
-        .upload(path, file, { contentType: file.type });
-      if (error) throw error;
+
+      // Use XMLHttpRequest for progress tracking
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || supabaseKey;
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        });
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload falhou: ${xhr.statusText}`));
+        });
+        xhr.addEventListener("error", () => reject(new Error("Erro de rede")));
+        xhr.open("POST", `${supabaseUrl}/storage/v1/object/product-files/${path}`);
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        xhr.setRequestHeader("x-upsert", "true");
+        xhr.send(file);
+      });
+
       const { data } = supabase.storage
         .from("product-files")
         .getPublicUrl(path);
@@ -251,6 +280,7 @@ export default function EditProductContent({ productId }: Props) {
       toast.error(e.message || "Erro no upload do vídeo");
     } finally {
       setUploadingVideo(false);
+      setUploadProgress(0);
     }
   };
 
@@ -638,27 +668,32 @@ export default function EditProductContent({ productId }: Props) {
                   }
                   placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..."
                 />
-                <div className="flex items-center gap-2">
-                  <span className="text-[0.6rem] text-muted-foreground">ou</span>
-                  <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-primary hover:underline">
-                    {uploadingVideo ? (
+                {uploadingVideo ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-primary">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
+                      <span>Enviando... {uploadProgress}%</span>
+                    </div>
+                    <Progress value={uploadProgress} className="h-2" />
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[0.6rem] text-muted-foreground">ou</span>
+                    <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-primary hover:underline">
                       <Upload className="h-3 w-3" />
-                    )}
-                    {uploadingVideo ? "Enviando..." : "Fazer upload de vídeo"}
-                    <input
-                      type="file"
-                      accept="video/*"
-                      className="hidden"
-                      disabled={uploadingVideo}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) uploadVideo(file);
-                      }}
-                    />
-                  </label>
-                </div>
+                      Fazer upload de vídeo (até 500MB)
+                      <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadVideo(file);
+                        }}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
               <p className="text-[0.6rem] text-muted-foreground mt-0.5">
                 YouTube, Vimeo, link direto ou envie o arquivo
