@@ -36,8 +36,10 @@ export default function WorkspaceStorefront() {
   const [viewAsClient, setViewAsClient] = useState(false);
   const [editingBannerPos, setEditingBannerPos] = useState(false);
   const [bannerPos, setBannerPos] = useState<number | null>(null);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const bannerDragRef = useRef<{ startY: number; startPos: number } | null>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch workspace by slug
   const { data: workspace, isLoading: loadingWs } = useQuery({
