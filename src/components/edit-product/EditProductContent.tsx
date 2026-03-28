@@ -45,6 +45,8 @@ import {
   Pencil,
   Video,
   Eye,
+  Download,
+  Paperclip,
 } from "lucide-react";
 
 interface Props {
