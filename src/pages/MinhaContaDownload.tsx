@@ -199,7 +199,21 @@ export default function MinhaContaDownload() {
                 </div>
               )}
               <div className="flex-1 space-y-2">
-                <Badge variant="outline" className="text-[0.65rem]">Download</Badge>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-[0.65rem]">Download</Badge>
+                  {stats && (
+                    <>
+                      <Badge variant="secondary" className="text-[0.65rem] gap-1">
+                        <BarChart3 className="h-3 w-3" />
+                        {stats.download_count} download{stats.download_count !== 1 ? "s" : ""}
+                      </Badge>
+                      <Badge variant="secondary" className="text-[0.65rem] gap-1">
+                        <Clock className="h-3 w-3" />
+                        Último acesso {formatDistanceToNow(new Date(stats.last_accessed_at), { addSuffix: true, locale: ptBR })}
+                      </Badge>
+                    </>
+                  )}
+                </div>
                 <h1 className="text-2xl font-bold tracking-tight">{data.product.title}</h1>
                 <p className="text-sm text-muted-foreground">por {data.product.producerName}</p>
                 {data.product.description && (
