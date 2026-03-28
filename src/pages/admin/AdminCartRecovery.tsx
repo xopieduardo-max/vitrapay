@@ -63,8 +63,8 @@ export default function AdminCartRecovery() {
       const startDate = getStartDate(timeRange);
       const { data, error } = await supabase
         .from("email_send_log")
-        .select("id, message_id, recipient_email, status, created_at")
-        .eq("template_name", "cart_recovery")
+        .select("id, message_id, recipient_email, status, created_at, template_name")
+        .in("template_name", ["cart_recovery", "cart_recovery_2"])
         .gte("created_at", startDate)
         .order("created_at", { ascending: false })
         .limit(500);
