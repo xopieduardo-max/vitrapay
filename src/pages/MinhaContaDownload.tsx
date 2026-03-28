@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Download, FileText, Image, FileArchive, File, ExternalLink, Clock, BarChart3 } from "lucide-react";
+import { Loader2, ArrowLeft, Download, FileText, Image, FileArchive, File, ExternalLink, Clock, BarChart3, FileAudio, FileVideo, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import MinhaContaLogin from "./MinhaContaLogin";
@@ -17,6 +17,8 @@ function getFileIcon(name: string) {
   if (["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext)) return Image;
   if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) return FileArchive;
   if (["pdf"].includes(ext)) return FileText;
+  if (["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext)) return FileAudio;
+  if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return FileVideo;
   return File;
 }
 
@@ -37,12 +39,36 @@ function isImageFile(name: string) {
   return ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext);
 }
 
+function isAudioFile(name: string) {
+  const ext = name.split(".").pop()?.toLowerCase() || "";
+  return ["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext);
+}
+
+function isPdfFile(name: string) {
+  return name.split(".").pop()?.toLowerCase() === "pdf";
+}
+
+function isVideoFile(name: string) {
+  const ext = name.split(".").pop()?.toLowerCase() || "";
+  return ["mp4", "mov", "webm"].includes(ext);
+}
+
 export default function MinhaContaDownload() {
   const { productId } = useParams<{ productId: string }>();
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [authTrigger, setAuthTrigger] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [expandedPdfs, setExpandedPdfs] = useState<Set<string>>(new Set());
+
+  const togglePdf = (fileId: string) => {
+    setExpandedPdfs((prev) => {
+      const next = new Set(prev);
+      if (next.has(fileId)) next.delete(fileId);
+      else next.add(fileId);
+      return next;
+    });
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["minha-conta-download", productId, user?.id, user?.email, authTrigger],
@@ -256,8 +282,11 @@ export default function MinhaContaDownload() {
                 {data.files.length > 0 ? (
                   data.files.map((file: any, i: number) => {
                     const Icon = getFileIcon(file.file_name);
-                    const canPreview = isPreviewable(file.file_name);
                     const isImage = isImageFile(file.file_name);
+                    const isAudio = isAudioFile(file.file_name);
+                    const isPdf = isPdfFile(file.file_name);
+                    const isVideo = isVideoFile(file.file_name);
+                    const pdfExpanded = expandedPdfs.has(file.id);
 
                     return (
                       <motion.div
@@ -281,6 +310,33 @@ export default function MinhaContaDownload() {
                           </div>
                         )}
 
+                        {/* Audio player */}
+                        {isAudio && (
+                          <div className="px-4 pt-4">
+                            <audio
+                              controls
+                              preload="metadata"
+                              className="w-full h-10 rounded-lg"
+                              style={{ colorScheme: "dark" }}
+                            >
+                              <source src={file.file_url} />
+                            </audio>
+                          </div>
+                        )}
+
+                        {/* Video player */}
+                        {isVideo && (
+                          <div className="w-full bg-black/5">
+                            <video
+                              controls
+                              preload="metadata"
+                              className="w-full max-h-72 object-contain"
+                            >
+                              <source src={file.file_url} />
+                            </video>
+                          </div>
+                        )}
+
                         <div className="p-4 flex items-center gap-4">
                           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                             <Icon className="h-5 w-5 text-primary" />
@@ -292,17 +348,18 @@ export default function MinhaContaDownload() {
                             </p>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            {canPreview && !isImage && (
+                            {isPdf && (
                               <Button
                                 size="sm"
                                 variant="ghost"
                                 className="h-8 text-xs gap-1.5"
-                                asChild
+                                onClick={() => togglePdf(file.id)}
                               >
-                                <a href={file.file_url} target="_blank" rel="noopener noreferrer">
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                  Visualizar
-                                </a>
+                                {pdfExpanded ? (
+                                  <><EyeOff className="h-3.5 w-3.5" /> Fechar</>
+                                ) : (
+                                  <><Eye className="h-3.5 w-3.5" /> Visualizar</>
+                                )}
                               </Button>
                             )}
                             <Button
@@ -323,6 +380,17 @@ export default function MinhaContaDownload() {
                             </Button>
                           </div>
                         </div>
+
+                        {/* Embedded PDF viewer */}
+                        {isPdf && pdfExpanded && (
+                          <div className="border-t border-border">
+                            <iframe
+                              src={`${file.file_url}#toolbar=1&navpanes=0`}
+                              className="w-full h-[70vh] bg-muted/10"
+                              title={file.file_name}
+                            />
+                          </div>
+                        )}
                       </motion.div>
                     );
                   })
