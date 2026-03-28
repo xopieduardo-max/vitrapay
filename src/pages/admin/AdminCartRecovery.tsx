@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShoppingCart, Mail, CheckCircle, XCircle, TrendingUp, Clock } from "lucide-react";
+import { ShoppingCart, Mail, CheckCircle, XCircle, TrendingUp, Clock, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -31,7 +31,7 @@ export default function AdminCartRecovery() {
       const startDate = getStartDate(timeRange);
       const { data, error } = await supabase
         .from("pending_payments")
-        .select("id, buyer_name, buyer_email, product_id, amount, status, created_at, recovery_notified_at")
+        .select("id, buyer_name, buyer_email, product_id, amount, status, created_at, recovery_notified_at, recovery_second_notified_at")
         .not("recovery_notified_at", "is", null)
         .gte("created_at", startDate)
         .order("recovery_notified_at", { ascending: false })
@@ -63,8 +63,8 @@ export default function AdminCartRecovery() {
       const startDate = getStartDate(timeRange);
       const { data, error } = await supabase
         .from("email_send_log")
-        .select("id, message_id, recipient_email, status, created_at")
-        .eq("template_name", "cart_recovery")
+        .select("id, message_id, recipient_email, status, created_at, template_name")
+        .in("template_name", ["cart_recovery", "cart_recovery_2"])
         .gte("created_at", startDate)
         .order("created_at", { ascending: false })
         .limit(500);
@@ -106,8 +106,11 @@ export default function AdminCartRecovery() {
   // Metrics
   const totalAbandoned = allAbandoned.filter(p => p.status === "pending").length;
   const totalNotified = notifiedCarts.length;
+  const firstEmails = uniqueEmails.filter(e => e.template_name === "cart_recovery");
+  const secondEmails = uniqueEmails.filter(e => e.template_name === "cart_recovery_2");
   const emailsSent = uniqueEmails.filter(e => e.status === "sent").length;
   const emailsFailed = uniqueEmails.filter(e => e.status === "dlq" || e.status === "failed").length;
+  const secondNotified = notifiedCarts.filter(c => (c as any).recovery_second_notified_at).length;
   const recovered = notifiedCarts.filter(c => c.status === "confirmed" || c.status === "paid").length;
   const conversionRate = totalNotified > 0 ? ((recovered / totalNotified) * 100).toFixed(1) : "0.0";
 
@@ -158,7 +161,7 @@ export default function AdminCartRecovery() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
@@ -171,17 +174,26 @@ export default function AdminCartRecovery() {
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-amber-500" />
-              <span className="text-xs text-muted-foreground">Notificados</span>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">1º Lembrete</span>
             </div>
-            <p className="text-2xl font-bold">{totalNotified}</p>
+            <p className="text-2xl font-bold">{firstEmails.filter(e => e.status === "sent").length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
-              <Mail className="h-4 w-4 text-blue-500" />
-              <span className="text-xs text-muted-foreground">Emails Enviados</span>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">2º Lembrete</span>
+            </div>
+            <p className="text-2xl font-bold">{secondEmails.filter(e => e.status === "sent").length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 px-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Total Emails</span>
             </div>
             <p className="text-2xl font-bold">{emailsSent}</p>
           </CardContent>
@@ -198,7 +210,7 @@ export default function AdminCartRecovery() {
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <CheckCircle className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">Recuperados</span>
             </div>
             <p className="text-2xl font-bold">{recovered}</p>
@@ -233,11 +245,15 @@ export default function AdminCartRecovery() {
                     <TableHead>Produto</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Lembretes</TableHead>
                     <TableHead>Notificado em</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {notifiedCarts.map(cart => (
+                  {notifiedCarts.map(cart => {
+                    const c = cart as any;
+                    const reminderCount = c.recovery_second_notified_at ? 2 : 1;
+                    return (
                     <TableRow key={cart.id}>
                       <TableCell className="font-medium">{cart.buyer_name || "—"}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{cart.buyer_email || "—"}</TableCell>
@@ -246,13 +262,19 @@ export default function AdminCartRecovery() {
                         R$ {(cart.amount / 100).toFixed(2)}
                       </TableCell>
                       <TableCell>{statusBadge(cart.status)}</TableCell>
+                      <TableCell>
+                        <Badge variant={reminderCount === 2 ? "default" : "outline"} className="text-xs">
+                          {reminderCount}x
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {cart.recovery_notified_at
                           ? format(new Date(cart.recovery_notified_at), "dd/MM HH:mm", { locale: ptBR })
                           : "—"}
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
