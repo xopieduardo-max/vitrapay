@@ -20,8 +20,6 @@ export default function WorkspaceSettings() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   const [form, setForm] = useState({
     name: "Meu Workspace",
