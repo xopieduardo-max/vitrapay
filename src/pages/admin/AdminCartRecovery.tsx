@@ -245,11 +245,15 @@ export default function AdminCartRecovery() {
                     <TableHead>Produto</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Lembretes</TableHead>
                     <TableHead>Notificado em</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {notifiedCarts.map(cart => (
+                  {notifiedCarts.map(cart => {
+                    const c = cart as any;
+                    const reminderCount = c.recovery_second_notified_at ? 2 : 1;
+                    return (
                     <TableRow key={cart.id}>
                       <TableCell className="font-medium">{cart.buyer_name || "—"}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{cart.buyer_email || "—"}</TableCell>
@@ -258,13 +262,19 @@ export default function AdminCartRecovery() {
                         R$ {(cart.amount / 100).toFixed(2)}
                       </TableCell>
                       <TableCell>{statusBadge(cart.status)}</TableCell>
+                      <TableCell>
+                        <Badge variant={reminderCount === 2 ? "default" : "outline"} className="text-xs">
+                          {reminderCount}x
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {cart.recovery_notified_at
                           ? format(new Date(cart.recovery_notified_at), "dd/MM HH:mm", { locale: ptBR })
                           : "—"}
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
