@@ -106,8 +106,11 @@ export default function AdminCartRecovery() {
   // Metrics
   const totalAbandoned = allAbandoned.filter(p => p.status === "pending").length;
   const totalNotified = notifiedCarts.length;
+  const firstEmails = uniqueEmails.filter(e => e.template_name === "cart_recovery");
+  const secondEmails = uniqueEmails.filter(e => e.template_name === "cart_recovery_2");
   const emailsSent = uniqueEmails.filter(e => e.status === "sent").length;
   const emailsFailed = uniqueEmails.filter(e => e.status === "dlq" || e.status === "failed").length;
+  const secondNotified = notifiedCarts.filter(c => (c as any).recovery_second_notified_at).length;
   const recovered = notifiedCarts.filter(c => c.status === "confirmed" || c.status === "paid").length;
   const conversionRate = totalNotified > 0 ? ((recovered / totalNotified) * 100).toFixed(1) : "0.0";
 
