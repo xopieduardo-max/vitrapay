@@ -22,7 +22,20 @@ export function AuthGuard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  if (loading || loadingProfile) {
+  const { data: roles, isLoading: loadingRoles } = useQuery({
+    queryKey: ["user-roles-guard", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user!.id);
+      return (data || []).map((r) => r.role);
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (loading || loadingProfile || loadingRoles) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -34,7 +47,10 @@ export function AuthGuard() {
     return <Navigate to="/auth" replace />;
   }
 
-  if (profile && !profile.onboarding_completed && location.pathname !== "/onboarding") {
+  // Skip onboarding for buyer-only users (auto-created accounts)
+  const isBuyerOnly = roles && roles.length > 0 && roles.every((r) => r === "buyer");
+
+  if (profile && !profile.onboarding_completed && !isBuyerOnly && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
   }
 
