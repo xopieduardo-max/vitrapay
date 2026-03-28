@@ -759,7 +759,7 @@ export default function Checkout() {
                   color: "hsl(0,0%,10%)",
                   boxShadow: "0 4px 20px hsl(48,96%,53%,0.3)",
                 }}
-                onClick={() => toast({ title: "Acesse com seu email", description: "Faça login para acessar a área de membros." })}
+                onClick={() => navigate("/minha-conta")}
               >
                 Acessar Área de Membros
               </Button>
