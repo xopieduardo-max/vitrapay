@@ -144,6 +144,20 @@ export default function MemberArea() {
   if (view === "overview") {
     return (
       <div className="min-h-screen bg-background">
+        {/* Preview floating bar */}
+        {isPreview && (
+          <div className="sticky top-0 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between text-sm">
+            <span className="font-medium">👁 Modo Preview — é assim que seus alunos verão o curso</span>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-1.5"
+              onClick={() => navigate(`/products/${productId}/edit?tab=content`)}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao editor
+            </Button>
+          </div>
+        )}
         {/* Hero banner */}
         <div className="relative w-full overflow-hidden" style={{ minHeight: 280 }}>
           {product?.cover_url ? (
@@ -157,9 +171,11 @@ export default function MemberArea() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
           <div className="relative z-10 max-w-5xl mx-auto px-4 pt-6 pb-10 flex flex-col justify-end" style={{ minHeight: 280 }}>
-            <Link to="/minha-conta" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-6 w-fit">
-              <ArrowLeft className="h-3 w-3" /> Voltar
-            </Link>
+            {!isPreview && (
+              <Link to="/minha-conta" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-6 w-fit">
+                <ArrowLeft className="h-3 w-3" /> Voltar
+              </Link>
+            )}
             <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
               {product?.title}
             </h1>
