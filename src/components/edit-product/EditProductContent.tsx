@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +52,7 @@ interface Props {
 }
 
 export default function EditProductContent({ productId }: Props) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Module dialog state
@@ -366,7 +368,7 @@ export default function EditProductContent({ productId }: Props) {
             size="sm"
             variant="outline"
             className="gap-1.5"
-            onClick={() => window.open(`/learn/${productId}`, '_blank')}
+            onClick={() => navigate(`/learn/${productId}?preview=true`)}
           >
             <Eye className="h-3.5 w-3.5" /> Visualizar
           </Button>
