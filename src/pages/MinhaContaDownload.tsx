@@ -236,6 +236,7 @@ export default function MinhaContaDownload() {
                     variant="outline"
                     className="gap-1.5 text-xs"
                     onClick={() => {
+                      trackDownload();
                       data.files.forEach((f: any) => {
                         const a = document.createElement("a");
                         a.href = f.file_url;
