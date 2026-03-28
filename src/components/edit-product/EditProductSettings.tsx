@@ -14,6 +14,7 @@ interface Props {
   form: Record<string, any>;
   updateField: (field: string, value: any) => void;
   productId?: string;
+  productType?: string;
 }
 
 export default function EditProductSettings({ form, updateField, productId }: Props) {
