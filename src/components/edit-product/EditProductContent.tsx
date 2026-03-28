@@ -226,10 +226,11 @@ export default function EditProductContent({ productId }: Props) {
       duration_minutes: 0,
       is_free: false,
     });
+    setLessonFiles([]);
     setLessonDialog({ open: true, moduleId });
   };
 
-  const openEditLesson = (lesson: any) => {
+  const openEditLesson = async (lesson: any) => {
     setLessonForm({
       title: lesson.title,
       description: lesson.description || "",
@@ -238,6 +239,18 @@ export default function EditProductContent({ productId }: Props) {
       duration_minutes: lesson.duration_minutes || 0,
       is_free: lesson.is_free || false,
     });
+    // Load existing files for this lesson
+    const { data: files } = await supabase
+      .from("lesson_files")
+      .select("*")
+      .eq("lesson_id", lesson.id)
+      .order("position");
+    setLessonFiles((files || []).map((f: any) => ({
+      id: f.id,
+      file_name: f.file_name,
+      file_url: f.file_url,
+      file_size: f.file_size || 0,
+    })));
     setLessonDialog({ open: true, moduleId: lesson.module_id, editing: lesson });
   };
 
