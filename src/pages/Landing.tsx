@@ -20,6 +20,7 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
 import logoCard from "@/assets/logo-vitrapay-card.png";
+import celularVitra from "@/assets/celular_vitra.png";
 import {
   Accordion,
   AccordionContent,
