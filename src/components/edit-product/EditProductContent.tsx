@@ -667,27 +667,32 @@ export default function EditProductContent({ productId }: Props) {
                   }
                   placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..."
                 />
-                <div className="flex items-center gap-2">
-                  <span className="text-[0.6rem] text-muted-foreground">ou</span>
-                  <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-primary hover:underline">
-                    {uploadingVideo ? (
+                {uploadingVideo ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-primary">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
+                      <span>Enviando... {uploadProgress}%</span>
+                    </div>
+                    <Progress value={uploadProgress} className="h-2" />
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[0.6rem] text-muted-foreground">ou</span>
+                    <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-primary hover:underline">
                       <Upload className="h-3 w-3" />
-                    )}
-                    {uploadingVideo ? "Enviando..." : "Fazer upload de vídeo"}
-                    <input
-                      type="file"
-                      accept="video/*"
-                      className="hidden"
-                      disabled={uploadingVideo}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) uploadVideo(file);
-                      }}
-                    />
-                  </label>
-                </div>
+                      Fazer upload de vídeo (até 500MB)
+                      <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadVideo(file);
+                        }}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
               <p className="text-[0.6rem] text-muted-foreground mt-0.5">
                 YouTube, Vimeo, link direto ou envie o arquivo
