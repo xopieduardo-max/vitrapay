@@ -161,7 +161,7 @@ export default function AdminCartRecovery() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
@@ -174,17 +174,26 @@ export default function AdminCartRecovery() {
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-amber-500" />
-              <span className="text-xs text-muted-foreground">Notificados</span>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">1º Lembrete</span>
             </div>
-            <p className="text-2xl font-bold">{totalNotified}</p>
+            <p className="text-2xl font-bold">{firstEmails.filter(e => e.status === "sent").length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
-              <Mail className="h-4 w-4 text-blue-500" />
-              <span className="text-xs text-muted-foreground">Emails Enviados</span>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">2º Lembrete</span>
+            </div>
+            <p className="text-2xl font-bold">{secondEmails.filter(e => e.status === "sent").length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 px-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Total Emails</span>
             </div>
             <p className="text-2xl font-bold">{emailsSent}</p>
           </CardContent>
@@ -201,7 +210,7 @@ export default function AdminCartRecovery() {
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <CheckCircle className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">Recuperados</span>
             </div>
             <p className="text-2xl font-bold">{recovered}</p>
