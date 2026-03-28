@@ -338,11 +338,16 @@ export default function MinhaContaDownload() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">Arquivo do produto</p>
                     </div>
-                    <Button size="sm" className="h-8 text-xs gap-1.5" asChild>
-                      <a href={data.product.file_url} target="_blank" rel="noopener noreferrer" download>
-                        <Download className="h-3.5 w-3.5" />
-                        Baixar
-                      </a>
+                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => {
+                      trackDownload();
+                      const a = document.createElement("a");
+                      a.href = data.product.file_url!;
+                      a.target = "_blank";
+                      a.download = "arquivo";
+                      a.click();
+                    }}>
+                      <Download className="h-3.5 w-3.5" />
+                      Baixar
                     </Button>
                   </motion.div>
                 ) : (
