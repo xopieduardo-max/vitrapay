@@ -43,6 +43,7 @@ import {
   FileText,
   Pencil,
   Video,
+  Eye,
 } from "lucide-react";
 
 interface Props {
