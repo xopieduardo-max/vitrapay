@@ -29,6 +29,14 @@ export default function WorkspaceStorefront() {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Producer controls
+  const [viewAsClient, setViewAsClient] = useState(false);
+  const [editingBannerPos, setEditingBannerPos] = useState(false);
+  const [bannerPos, setBannerPos] = useState<number | null>(null);
+  const bannerDragRef = useRef<{ startY: number; startPos: number } | null>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   // Fetch workspace by slug
   const { data: workspace, isLoading: loadingWs } = useQuery({
