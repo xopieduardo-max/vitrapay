@@ -4,6 +4,25 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, Download, PlayCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
+
+/** Returns true if the color is "light" (text should be dark) */
+function isLightColor(hex: string): boolean {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  // Relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55;
+}
+
+function formatPrice(cents: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(cents / 100);
+}
 
 export default function WorkspaceStorefront() {
   const { slug } = useParams<{ slug: string }>();
@@ -17,7 +36,7 @@ export default function WorkspaceStorefront() {
       const { data } = await supabase
         .from("workspaces")
         .select("*")
-        .eq("slug", slug)
+        .eq("slug", slug!)
         .maybeSingle();
       return data;
     },
@@ -43,23 +62,30 @@ export default function WorkspaceStorefront() {
     enabled: !!workspace,
   });
 
-  // Fetch buyer's access
+  // Stable product IDs for dependent queries
+  const productIds = useMemo(() => items.map((i: any) => i.id).sort().join(","), [items]);
+
+  // Fetch buyer's access — guard against missing email
   const { data: accessList = [] } = useQuery({
     queryKey: ["buyer-access", user?.id],
     queryFn: async () => {
       if (!user) return [];
+      const filters = [`user_id.eq.${user.id}`];
+      if (user.email) {
+        filters.push(`buyer_email.eq.${user.email}`);
+      }
       const { data } = await supabase
         .from("product_access")
         .select("product_id")
-        .or(`user_id.eq.${user.id},buyer_email.eq.${user.email}`);
+        .or(filters.join(","));
       return (data || []).map((a: any) => a.product_id);
     },
     enabled: !!user,
   });
 
-  // Fetch product files for download products
+  // Fetch product files for download products — stable query key
   const { data: filesMap = {} } = useQuery({
-    queryKey: ["workspace-product-files", items.map((i: any) => i.id).join(",")],
+    queryKey: ["workspace-product-files", productIds],
     queryFn: async () => {
       if (items.length === 0) return {};
       const downloadProducts = items.filter((p: any) => p.type === "download" && accessList.includes(p.id));
@@ -96,6 +122,18 @@ export default function WorkspaceStorefront() {
     );
   }
 
+  const bgColor = workspace.secondary_color || "#1A1A1A";
+  const accentColor = workspace.primary_color || "#EAB308";
+  const lightBg = isLightColor(bgColor);
+  const textColor = lightBg ? "#1A1A1A" : "#FFFFFF";
+  const textMuted = lightBg ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)";
+  const textSecondary = lightBg ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.7)";
+  const cardBg = lightBg ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)";
+  const cardBorder = lightBg ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
+  const cardBorderHover = lightBg ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)";
+  const lightAccent = isLightColor(accentColor);
+  const accentTextColor = lightAccent ? "#000" : "#FFF";
+
   const hasAccess = (productId: string) => accessList.includes(productId);
 
   const handleProductClick = (product: any) => {
@@ -110,10 +148,7 @@ export default function WorkspaceStorefront() {
   };
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: workspace.secondary_color || "#1A1A1A" }}
-    >
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: bgColor }}>
       {/* Banner */}
       {workspace.banner_url ? (
         <div className="w-full max-h-[200px] overflow-hidden">
@@ -128,27 +163,36 @@ export default function WorkspaceStorefront() {
         <div
           className="w-full h-[120px]"
           style={{
-            background: `linear-gradient(135deg, ${workspace.primary_color || "#EAB308"}, ${workspace.secondary_color || "#1A1A1A"})`,
+            background: `linear-gradient(135deg, ${accentColor}, ${bgColor})`,
           }}
         />
       )}
 
       {/* Header */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-8 relative z-10 flex-1 w-full">
         <div className="flex items-end gap-4 mb-6">
           {workspace.logo_url && (
             <img
               src={workspace.logo_url}
               alt="Logo"
-              className="h-16 w-16 rounded-xl border-4 border-background object-contain bg-background shadow-lg"
+              className="h-16 w-16 rounded-xl border-4 object-contain shadow-lg"
+              style={{
+                borderColor: bgColor,
+                backgroundColor: bgColor,
+              }}
             />
           )}
           <div className="pb-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-white drop-shadow-sm">
+            <h1
+              className="text-xl sm:text-2xl font-bold drop-shadow-sm"
+              style={{ color: textColor }}
+            >
               {workspace.name}
             </h1>
             {workspace.description && (
-              <p className="text-sm text-white/70 mt-0.5 line-clamp-2">{workspace.description}</p>
+              <p className="text-sm mt-0.5 line-clamp-2" style={{ color: textSecondary }}>
+                {workspace.description}
+              </p>
             )}
           </div>
         </div>
@@ -156,7 +200,7 @@ export default function WorkspaceStorefront() {
         {/* Products grid */}
         {items.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-white/50">Nenhum conteúdo disponível</p>
+            <p style={{ color: textMuted }}>Nenhum conteúdo disponível</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-12">
@@ -167,7 +211,13 @@ export default function WorkspaceStorefront() {
               return (
                 <div key={product.id} className="group">
                   <div
-                    className="rounded-xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm hover:border-white/20 transition-all cursor-pointer"
+                    className="rounded-xl overflow-hidden transition-all cursor-pointer"
+                    style={{
+                      border: `1px solid ${cardBorder}`,
+                      backgroundColor: cardBg,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = cardBorderHover)}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = cardBorder)}
                     onClick={() => handleProductClick(product)}
                   >
                     {/* Cover */}
@@ -181,12 +231,12 @@ export default function WorkspaceStorefront() {
                       ) : (
                         <div
                           className="w-full h-full flex items-center justify-center"
-                          style={{ backgroundColor: workspace.primary_color + "22" }}
+                          style={{ backgroundColor: accentColor + "22" }}
                         >
                           {product.type === "lms" ? (
-                            <PlayCircle className="h-10 w-10 text-white/30" />
+                            <PlayCircle className="h-10 w-10" style={{ color: textMuted }} />
                           ) : (
-                            <Download className="h-10 w-10 text-white/30" />
+                            <Download className="h-10 w-10" style={{ color: textMuted }} />
                           )}
                         </div>
                       )}
@@ -194,13 +244,19 @@ export default function WorkspaceStorefront() {
                       <div className="absolute top-2 right-2">
                         {owned ? (
                           <span
-                            className="text-[0.6rem] font-semibold px-2 py-0.5 rounded-full text-black"
-                            style={{ backgroundColor: workspace.primary_color || "#EAB308" }}
+                            className="text-[0.6rem] font-semibold px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: accentColor, color: accentTextColor }}
                           >
                             {product.type === "lms" ? "ACESSAR" : "LIBERADO"}
                           </span>
                         ) : (
-                          <span className="text-[0.6rem] font-semibold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm flex items-center gap-1">
+                          <span
+                            className="text-[0.6rem] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm flex items-center gap-1"
+                            style={{
+                              backgroundColor: lightBg ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.2)",
+                              color: textColor,
+                            }}
+                          >
                             <Lock className="h-2.5 w-2.5" />
                             COMPRAR
                           </span>
@@ -210,10 +266,19 @@ export default function WorkspaceStorefront() {
 
                     {/* Info */}
                     <div className="p-3">
-                      <h3 className="text-sm font-semibold text-white truncate">{product.title}</h3>
-                      <p className="text-[0.65rem] text-white/50 mt-0.5">
-                        {product.type === "lms" ? "Curso" : "Entregável"}
-                      </p>
+                      <h3 className="text-sm font-semibold truncate" style={{ color: textColor }}>
+                        {product.title}
+                      </h3>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <p className="text-[0.65rem]" style={{ color: textMuted }}>
+                          {product.type === "lms" ? "Curso" : "Entregável"}
+                        </p>
+                        {!owned && product.price > 0 && (
+                          <p className="text-xs font-bold" style={{ color: accentColor }}>
+                            {formatPrice(product.price)}
+                          </p>
+                        )}
+                      </div>
 
                       {/* Show download files if owned & is download */}
                       {owned && product.type === "download" && files.length > 0 && (
@@ -224,8 +289,8 @@ export default function WorkspaceStorefront() {
                               href={f.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-xs hover:underline rounded px-2 py-1 hover:bg-white/10 transition-colors"
-                              style={{ color: workspace.primary_color || "#EAB308" }}
+                              className="flex items-center gap-1.5 text-xs hover:underline rounded px-2 py-1 transition-colors"
+                              style={{ color: accentColor }}
                             >
                               <Download className="h-3 w-3 shrink-0" />
                               <span className="truncate">{f.file_name}</span>
@@ -242,14 +307,30 @@ export default function WorkspaceStorefront() {
         )}
       </div>
 
+      {/* Footer */}
+      <footer className="mt-auto py-6 text-center" style={{ borderTop: `1px solid ${cardBorder}` }}>
+        <p className="text-[0.65rem]" style={{ color: textMuted }}>
+          Powered by{" "}
+          <a
+            href="/"
+            className="font-semibold hover:underline"
+            style={{ color: accentColor }}
+          >
+            VitraPay
+          </a>
+        </p>
+      </footer>
+
       {/* Login prompt if not authenticated */}
       {!user && (
         <div className="fixed bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
           <div className="max-w-md mx-auto text-center">
-            <p className="text-white/80 text-sm mb-3">Faça login para acessar seus produtos</p>
+            <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.8)" }}>
+              Faça login para acessar seus produtos
+            </p>
             <Button
               onClick={() => navigate("/minha-conta")}
-              style={{ backgroundColor: workspace.primary_color || "#EAB308", color: "#000" }}
+              style={{ backgroundColor: accentColor, color: accentTextColor }}
             >
               Entrar na minha conta
             </Button>
