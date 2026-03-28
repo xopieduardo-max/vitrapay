@@ -206,11 +206,31 @@ export default function WorkspaceSettings() {
         </div>
         <div className="flex gap-2">
           {previewUrl && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                <Eye className="h-4 w-4 mr-1" /> Visualizar
-              </a>
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => {
+                  const fullUrl = `${window.location.origin}${previewUrl}`;
+                  navigator.clipboard.writeText(fullUrl);
+                  setCopied(true);
+                  toast.success("Link copiado!");
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? "Copiado" : "Copiar link"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => navigate(previewUrl)}
+              >
+                <Eye className="h-4 w-4" /> Visualizar
+              </Button>
+            </>
           )}
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
