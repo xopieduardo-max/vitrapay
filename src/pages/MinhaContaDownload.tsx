@@ -310,31 +310,26 @@ export default function MinhaContaDownload() {
                           </div>
                         )}
 
-                        {/* Audio player */}
-                        {isAudio && (
-                          <div className="px-4 pt-4">
-                            <audio
-                              controls
-                              preload="metadata"
-                              className="w-full h-10 rounded-lg"
-                              style={{ colorScheme: "dark" }}
-                            >
-                              <source src={file.file_url} />
-                            </audio>
-                          </div>
+                        {/* Audio player with progress tracking */}
+                        {isAudio && user && (
+                          <MediaPlayer
+                            type="audio"
+                            fileUrl={file.file_url}
+                            fileId={file.id}
+                            productId={productId!}
+                            userId={user.id}
+                          />
                         )}
 
-                        {/* Video player */}
-                        {isVideo && (
-                          <div className="w-full bg-black/5">
-                            <video
-                              controls
-                              preload="metadata"
-                              className="w-full max-h-72 object-contain"
-                            >
-                              <source src={file.file_url} />
-                            </video>
-                          </div>
+                        {/* Video player with progress tracking */}
+                        {isVideo && user && (
+                          <MediaPlayer
+                            type="video"
+                            fileUrl={file.file_url}
+                            fileId={file.id}
+                            productId={productId!}
+                            userId={user.id}
+                          />
                         )}
 
                         <div className="p-4 flex items-center gap-4">
