@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Download, BookOpen, Play, LogOut, Package, AlertTriangle, Lock, Eye, EyeOff, Check, FileText, PartyPopper } from "lucide-react";
+import { Loader2, Download, BookOpen, Play, LogOut, Package, AlertTriangle, Lock, Eye, EyeOff, Check, PartyPopper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ThemeLogo } from "@/components/ThemeLogo";
