@@ -14,9 +14,10 @@ interface Props {
   form: Record<string, any>;
   updateField: (field: string, value: any) => void;
   productId?: string;
+  productType?: string;
 }
 
-export default function EditProductSettings({ form, updateField, productId }: Props) {
+export default function EditProductSettings({ form, updateField, productId, productType }: Props) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -171,7 +172,8 @@ export default function EditProductSettings({ form, updateField, productId }: Pr
           </div>
         </div>
 
-        {/* Product files - multiple */}
+        {/* Product files - only show for LMS type (download files managed in Content tab) */}
+        {productType === "lms" && (
         <div>
           <div className="flex items-center justify-between mb-1">
             <Label className="text-xs">Arquivos do Produto (entregáveis)</Label>
@@ -231,6 +233,7 @@ export default function EditProductSettings({ form, updateField, productId }: Pr
             <input type="file" className="hidden" multiple onChange={handleAddProductFiles} />
           </label>
         </div>
+        )}
 
         {/* Affiliate toggle */}
         <div className="flex items-center justify-between rounded-lg border border-border p-3">
