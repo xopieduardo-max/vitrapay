@@ -1,0 +1,1 @@
+ALTER TABLE public.pending_payments ADD COLUMN IF NOT EXISTS recovery_second_notified_at timestamptz DEFAULT NULL;
