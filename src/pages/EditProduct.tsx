@@ -189,9 +189,7 @@ export default function EditProduct() {
         <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-4 overflow-x-auto flex-nowrap">
           {[
             { value: "settings", icon: Settings, label: "Geral" },
-            ...(product.type === "lms"
-              ? [{ value: "content", icon: BookOpen, label: "Conteúdo" }]
-              : []),
+            { value: "content", icon: BookOpen, label: "Conteúdo" },
             { value: "checkout", icon: ShoppingCart, label: "Checkout" },
             { value: "funnel", icon: Zap, label: "Upsell / Downsell" },
             { value: "pixels", icon: BarChart3, label: "Pixels" },
@@ -209,14 +207,16 @@ export default function EditProduct() {
         </TabsList>
 
         <TabsContent value="settings" className="mt-6">
-          <EditProductSettings form={form} updateField={updateField} productId={id} />
+          <EditProductSettings form={form} updateField={updateField} productId={id} productType={product.type} />
         </TabsContent>
 
-        {product.type === "lms" && (
-          <TabsContent value="content" className="mt-6">
+        <TabsContent value="content" className="mt-6">
+          {product.type === "lms" ? (
             <EditProductContent productId={id!} />
-          </TabsContent>
-        )}
+          ) : (
+            <EditProductDownloadContent productId={id!} />
+          )}
+        </TabsContent>
 
         <TabsContent value="checkout" className="mt-6">
           <EditProductCheckout
