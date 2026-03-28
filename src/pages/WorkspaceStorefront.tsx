@@ -223,7 +223,7 @@ export default function WorkspaceStorefront() {
           ref={bannerRef}
           className="w-full max-h-[200px] overflow-hidden relative"
           style={{ cursor: editingBannerPos ? "ns-resize" : undefined }}
-          onMouseDown={handleBannerMouseDown}
+          onMouseDown={(e) => handleBannerMouseDown(e, currentBannerPos)}
         >
           <img
             src={workspace.banner_url}
