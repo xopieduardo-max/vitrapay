@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, Download, FileText, Image, FileArchive, File, ExternalLink, Clock, BarChart3, FileAudio, FileVideo, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
+import { MediaPlayer } from "@/components/download/MediaPlayer";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import MinhaContaLogin from "./MinhaContaLogin";
 import { useState, useCallback } from "react";
