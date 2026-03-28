@@ -114,6 +114,36 @@ export default function WorkspaceStorefront() {
     enabled: items.length > 0 && accessList.length > 0,
   });
 
+  const handleBannerMouseDown = useCallback((e: React.MouseEvent, pos: number) => {
+    if (!editingBannerPos) return;
+    e.preventDefault();
+    bannerDragRef.current = { startY: e.clientY, startPos: pos };
+    const onMove = (ev: MouseEvent) => {
+      if (!bannerDragRef.current) return;
+      const delta = ev.clientY - bannerDragRef.current.startY;
+      const newPos = Math.max(0, Math.min(100, bannerDragRef.current.startPos + delta * 0.5));
+      setBannerPos(Math.round(newPos));
+    };
+    const onUp = () => {
+      bannerDragRef.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [editingBannerPos]);
+
+  const saveBannerPosition = useCallback(async (workspaceId: string) => {
+    if (bannerPos === null) return;
+    await supabase
+      .from("workspaces")
+      .update({ banner_position: bannerPos })
+      .eq("id", workspaceId);
+    queryClient.invalidateQueries({ queryKey: ["workspace-storefront", slug] });
+    setEditingBannerPos(false);
+    toast.success("Posição do banner salva!");
+  }, [bannerPos, queryClient, slug]);
+
   if (loadingWs || loadingItems) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -147,36 +177,6 @@ export default function WorkspaceStorefront() {
   const accentTextColor = lightAccent ? "#000" : "#FFF";
 
   const currentBannerPos = bannerPos ?? (workspace.banner_position ?? 50);
-
-  const handleBannerMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!editingBannerPos) return;
-    e.preventDefault();
-    bannerDragRef.current = { startY: e.clientY, startPos: currentBannerPos };
-    const onMove = (ev: MouseEvent) => {
-      if (!bannerDragRef.current) return;
-      const delta = ev.clientY - bannerDragRef.current.startY;
-      const newPos = Math.max(0, Math.min(100, bannerDragRef.current.startPos + delta * 0.5));
-      setBannerPos(Math.round(newPos));
-    };
-    const onUp = () => {
-      bannerDragRef.current = null;
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-  }, [editingBannerPos, currentBannerPos]);
-
-  const saveBannerPosition = async () => {
-    if (bannerPos === null) return;
-    await supabase
-      .from("workspaces")
-      .update({ banner_position: bannerPos })
-      .eq("id", workspace.id);
-    queryClient.invalidateQueries({ queryKey: ["workspace-storefront", slug] });
-    setEditingBannerPos(false);
-    toast.success("Posição do banner salva!");
-  };
 
   const hasAccess = (productId: string) => accessList.includes(productId);
 
