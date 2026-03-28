@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Download, FileText, Image, FileArchive, File, ExternalLink, Clock, BarChart3 } from "lucide-react";
+import { Loader2, ArrowLeft, Download, FileText, Image, FileArchive, File, ExternalLink, Clock, BarChart3, FileAudio, FileVideo, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import MinhaContaLogin from "./MinhaContaLogin";
