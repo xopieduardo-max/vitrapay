@@ -921,6 +921,41 @@ export type Database = {
           },
         ]
       }
+      product_download_stats: {
+        Row: {
+          created_at: string
+          download_count: number
+          id: string
+          last_accessed_at: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          download_count?: number
+          id?: string
+          last_accessed_at?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          download_count?: number
+          id?: string
+          last_accessed_at?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_download_stats_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_files: {
         Row: {
           created_at: string
