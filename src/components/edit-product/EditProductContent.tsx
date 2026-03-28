@@ -361,9 +361,19 @@ export default function EditProductContent({ productId }: Props) {
             Organize o conteúdo do seu curso em módulos e aulas
           </p>
         </div>
-        <Button size="sm" onClick={openNewModule} className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" /> Novo Módulo
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => window.open(`/learn/${productId}`, '_blank')}
+          >
+            <Eye className="h-3.5 w-3.5" /> Visualizar
+          </Button>
+          <Button size="sm" onClick={openNewModule} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> Novo Módulo
+          </Button>
+        </div>
       </div>
 
       {modules.length === 0 ? (
