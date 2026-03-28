@@ -282,8 +282,11 @@ export default function MinhaContaDownload() {
                 {data.files.length > 0 ? (
                   data.files.map((file: any, i: number) => {
                     const Icon = getFileIcon(file.file_name);
-                    const canPreview = isPreviewable(file.file_name);
                     const isImage = isImageFile(file.file_name);
+                    const isAudio = isAudioFile(file.file_name);
+                    const isPdf = isPdfFile(file.file_name);
+                    const isVideo = isVideoFile(file.file_name);
+                    const pdfExpanded = expandedPdfs.has(file.id);
 
                     return (
                       <motion.div
@@ -307,6 +310,33 @@ export default function MinhaContaDownload() {
                           </div>
                         )}
 
+                        {/* Audio player */}
+                        {isAudio && (
+                          <div className="px-4 pt-4">
+                            <audio
+                              controls
+                              preload="metadata"
+                              className="w-full h-10 rounded-lg"
+                              style={{ colorScheme: "dark" }}
+                            >
+                              <source src={file.file_url} />
+                            </audio>
+                          </div>
+                        )}
+
+                        {/* Video player */}
+                        {isVideo && (
+                          <div className="w-full bg-black/5">
+                            <video
+                              controls
+                              preload="metadata"
+                              className="w-full max-h-72 object-contain"
+                            >
+                              <source src={file.file_url} />
+                            </video>
+                          </div>
+                        )}
+
                         <div className="p-4 flex items-center gap-4">
                           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                             <Icon className="h-5 w-5 text-primary" />
@@ -318,17 +348,18 @@ export default function MinhaContaDownload() {
                             </p>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            {canPreview && !isImage && (
+                            {isPdf && (
                               <Button
                                 size="sm"
                                 variant="ghost"
                                 className="h-8 text-xs gap-1.5"
-                                asChild
+                                onClick={() => togglePdf(file.id)}
                               >
-                                <a href={file.file_url} target="_blank" rel="noopener noreferrer">
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                  Visualizar
-                                </a>
+                                {pdfExpanded ? (
+                                  <><EyeOff className="h-3.5 w-3.5" /> Fechar</>
+                                ) : (
+                                  <><Eye className="h-3.5 w-3.5" /> Visualizar</>
+                                )}
                               </Button>
                             )}
                             <Button
@@ -349,6 +380,17 @@ export default function MinhaContaDownload() {
                             </Button>
                           </div>
                         </div>
+
+                        {/* Embedded PDF viewer */}
+                        {isPdf && pdfExpanded && (
+                          <div className="border-t border-border">
+                            <iframe
+                              src={`${file.file_url}#toolbar=1&navpanes=0`}
+                              className="w-full h-[70vh] bg-muted/10"
+                              title={file.file_name}
+                            />
+                          </div>
+                        )}
                       </motion.div>
                     );
                   })
