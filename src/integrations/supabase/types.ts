@@ -1561,6 +1561,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      user_can_access_lesson: {
+        Args: { _module_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "producer" | "buyer"
