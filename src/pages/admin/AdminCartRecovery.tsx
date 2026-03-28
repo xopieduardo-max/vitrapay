@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { ShoppingCart, Mail, CheckCircle, XCircle, TrendingUp, Clock, RefreshCw } from "lucide-react";
-import { format } from "date-fns";
+import { format, eachDayOfInterval, startOfDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 type TimeRange = "24h" | "7d" | "30d" | "all";
