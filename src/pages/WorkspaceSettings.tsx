@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Image, Upload, X, Eye, GripVertical, ExternalLink } from "lucide-react";
+import { Loader2, Image, Upload, X, Eye, GripVertical, ExternalLink, Copy, Check } from "lucide-react";
 
 export default function WorkspaceSettings() {
   const { user } = useAuth();
