@@ -116,6 +116,49 @@ export default function AdminCartRecovery() {
   const recovered = notifiedCarts.filter(c => c.status === "confirmed" || c.status === "paid").length;
   const conversionRate = totalNotified > 0 ? ((recovered / totalNotified) * 100).toFixed(1) : "0.0";
 
+  // Build daily chart data
+  const chartData = useMemo(() => {
+    const startDate = new Date(getStartDate(timeRange));
+    const endDate = new Date();
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+    return days.map(day => {
+      const dayStr = format(day, "yyyy-MM-dd");
+      const dayStart = startOfDay(day);
+      const dayEnd = new Date(dayStart.getTime() + 86400000);
+
+      const abandoned = allAbandoned.filter(p => {
+        const d = new Date(p.created_at);
+        return d >= dayStart && d < dayEnd && p.status === "pending";
+      }).length;
+
+      const recoveredDay = notifiedCarts.filter(c => {
+        const d = new Date(c.created_at);
+        return d >= dayStart && d < dayEnd && (c.status === "confirmed" || c.status === "paid");
+      }).length;
+
+      const notifiedDay = notifiedCarts.filter(c => {
+        if (!c.recovery_notified_at) return false;
+        const d = new Date(c.recovery_notified_at);
+        return d >= dayStart && d < dayEnd;
+      }).length;
+
+      return {
+        date: dayStr,
+        label: format(day, "dd/MM", { locale: ptBR }),
+        abandonados: abandoned,
+        notificados: notifiedDay,
+        recuperados: recoveredDay,
+      };
+    });
+  }, [allAbandoned, notifiedCarts, timeRange]);
+
+  const chartConfig = {
+    abandonados: { label: "Abandonados", color: "hsl(var(--destructive))" },
+    notificados: { label: "Notificados", color: "hsl(var(--muted-foreground))" },
+    recuperados: { label: "Recuperados", color: "hsl(var(--primary))" },
+  };
+
   const timeRangeOptions: { label: string; value: TimeRange }[] = [
     { label: "24h", value: "24h" },
     { label: "7 dias", value: "7d" },
