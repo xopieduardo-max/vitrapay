@@ -52,6 +52,7 @@ interface Props {
 }
 
 export default function EditProductContent({ productId }: Props) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Module dialog state
