@@ -260,43 +260,43 @@ export default function WorkspaceStorefront() {
             style={{ objectPosition: `center ${currentBannerPos}%` }}
             draggable={false}
           />
-          {showProducerControls && (
+          {showProducerControls && !editingBannerPos && (
             <div className="absolute top-2 left-2 flex gap-1.5">
-                <Button
-                  size="sm"
-                  className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
-                  onClick={() => { setEditingBannerPos(true); setBannerPos(currentBannerPos); }}
-                >
-                  <Move className="h-3 w-3" /> Ajustar posição
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
-                  disabled={uploadingBanner}
-                  onClick={() => bannerInputRef.current?.click()}
-                >
-                  {uploadingBanner ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
-                  Trocar banner
-                </Button>
-              </div>
-              ) : (
-              <div className="absolute top-2 left-2 flex gap-1.5">
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
-                    onClick={() => saveBannerPosition(workspace.id)}
-                  >
-                    Salvar
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs bg-black/60 hover:bg-black/80 text-white border-0"
-                    onClick={() => { setEditingBannerPos(false); setBannerPos(null); }}
-                  >
-                    Cancelar
-                  </Button>
-              </div>
-              )}
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                onClick={() => { setEditingBannerPos(true); setBannerPos(currentBannerPos); }}
+              >
+                <Move className="h-3 w-3" /> Ajustar posição
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                disabled={uploadingBanner}
+                onClick={() => bannerInputRef.current?.click()}
+              >
+                {uploadingBanner ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+                Trocar banner
+              </Button>
+            </div>
+          )}
+          {showProducerControls && editingBannerPos && (
+            <div className="absolute top-2 left-2 flex gap-1.5">
+              <Button
+                size="sm"
+                className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
+                onClick={() => saveBannerPosition(workspace.id)}
+              >
+                Salvar
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-xs bg-black/60 hover:bg-black/80 text-white border-0"
+                onClick={() => { setEditingBannerPos(false); setBannerPos(null); }}
+              >
+                Cancelar
+              </Button>
+            </div>
           )}
           {editingBannerPos && (
             <div className="absolute inset-0 border-2 border-dashed border-white/50 pointer-events-none flex items-center justify-center">
