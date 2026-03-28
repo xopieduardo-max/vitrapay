@@ -14,6 +14,8 @@ import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 import iphoneMockup3d from "@/assets/iphone-mockup-3d.png";
 import iphone3dMockup from "@/assets/iphone-3d-mockup.png";
+import membroBlack1 from "@/assets/membro-black-1.png";
+import membroBlack2 from "@/assets/membro-black-2.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
@@ -133,6 +135,65 @@ const FloatingParticles = React.memo(function FloatingParticles() {
     </div>);
 
 });
+
+/* ─── Membros Black Carousel ─── */
+const membrosBlack = [
+  { name: "Pobre ADS", image: membroBlack1 },
+  { name: "Eu Padre", image: membroBlack2 },
+];
+
+function MembrosBlackCarousel() {
+  const [current, setCurrent] = useState(0);
+  const total = membrosBlack.length;
+
+  useEffect(() => {
+    if (total <= 1) return;
+    const timer = setInterval(() => setCurrent(p => (p + 1) % total), 4000);
+    return () => clearInterval(timer);
+  }, [total]);
+
+  return (
+    <div className="relative max-w-sm mx-auto">
+      <div className="overflow-hidden rounded-3xl border border-border/50 shadow-2xl shadow-primary/10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: 80 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -80 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            <img
+              src={membrosBlack[current].image}
+              alt={`Membro Black — ${membrosBlack[current].name}`}
+              className="w-full aspect-[4/5] object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Navigation dots */}
+      {total > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-6">
+          {membrosBlack.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                i === current
+                  ? "w-8 bg-primary"
+                  : "w-2.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+              }`}
+              aria-label={`Ver membro ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ─── Floating WhatsApp Button ─── */
 function FloatingWhatsApp() {
@@ -910,6 +971,21 @@ export default function Landing() {
             )}
           </div>
         </div>
+      </section>
+
+      {/* ─── Membros Black Carousel ─── */}
+      <section className="container py-20 md:py-28">
+        <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
+          <span className="text-xs font-medium uppercase tracking-widest text-primary">Comunidade</span>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            Nossos <span className="text-gradient-primary">Membros Black</span>
+          </h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Conheça quem já faz parte da elite VitraPay e está escalando resultados todos os dias.
+          </p>
+        </motion.div>
+
+        <MembrosBlackCarousel />
       </section>
 
       {/* ─── FAQ Section ─── */}
