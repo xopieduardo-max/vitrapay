@@ -146,6 +146,7 @@ const App = () => {
                 <Route path="/admin/disputes" element={<AdminDisputes />} />
                 <Route path="/admin/transactions" element={<AdminTransactions />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/cart-recovery" element={<AdminCartRecovery />} />
                 <Route path="/admin/product/:productId" element={<AdminProductDetail />} />
               </Route>
 

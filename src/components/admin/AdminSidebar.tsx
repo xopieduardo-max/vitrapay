@@ -20,6 +20,7 @@ const navItems = [
   { title: "GV +", url: "/admin/fake-sales", icon: ShoppingBag },
   { title: "Simulador de Taxas", url: "/admin/fee-simulator", icon: Calculator },
   { title: "Transações", url: "/admin/transactions", icon: Receipt },
+  { title: "Recuperação", url: "/admin/cart-recovery", icon: ShoppingCart },
   { title: "Disputas", url: "/admin/disputes", icon: ShieldAlert },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
 ];
