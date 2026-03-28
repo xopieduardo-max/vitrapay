@@ -10,7 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Image, Upload, X, Eye, GripVertical, ExternalLink, Copy, Check } from "lucide-react";
+import { Loader2, Image, Upload, X, Eye, GripVertical, ExternalLink, Copy, Check, Plus, Store, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function WorkspaceSettings() {
   const { user } = useAuth();
@@ -20,6 +31,8 @@ export default function WorkspaceSettings() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [form, setForm] = useState({
     name: "Meu Workspace",
@@ -35,20 +48,29 @@ export default function WorkspaceSettings() {
   const [editingBannerPos, setEditingBannerPos] = useState(false);
   const bannerDragRef = useRef<{ startY: number; startPos: number } | null>(null);
 
-  // Fetch or create workspace
-  const { data: workspace, isLoading } = useQuery({
-    queryKey: ["my-workspace", user?.id],
+  // Fetch ALL workspaces for this producer
+  const { data: workspaces = [], isLoading } = useQuery({
+    queryKey: ["my-workspaces", user?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user) return [];
       const { data } = await supabase
         .from("workspaces")
         .select("*")
         .eq("producer_id", user.id)
-        .maybeSingle();
-      return data;
+        .order("created_at");
+      return data || [];
     },
     enabled: !!user,
   });
+
+  const selectedWorkspace = workspaces.find((w: any) => w.id === selectedId) || null;
+
+  // Auto-select first workspace
+  useEffect(() => {
+    if (workspaces.length > 0 && !selectedId) {
+      setSelectedId(workspaces[0].id);
+    }
+  }, [workspaces, selectedId]);
 
   // Fetch producer products
   const { data: products = [] } = useQuery({
@@ -65,39 +87,37 @@ export default function WorkspaceSettings() {
     enabled: !!user,
   });
 
-  // Fetch workspace-product links
+  // Fetch workspace-product links for selected workspace
   const { data: linkedProducts = [] } = useQuery({
-    queryKey: ["workspace-linked-products", workspace?.id],
+    queryKey: ["workspace-linked-products", selectedId],
     queryFn: async () => {
-      if (!workspace) return [];
+      if (!selectedId) return [];
       const { data } = await supabase
         .from("workspace_products")
         .select("*")
-        .eq("workspace_id", workspace.id)
+        .eq("workspace_id", selectedId)
         .order("position");
       return data || [];
     },
-    enabled: !!workspace,
+    enabled: !!selectedId,
   });
 
+  // Sync form when selected workspace changes
   useEffect(() => {
-    if (workspace) {
+    if (selectedWorkspace) {
       setForm({
-        name: workspace.name || "Meu Workspace",
-        slug: workspace.slug || "",
-        description: workspace.description || "",
-        logo_url: workspace.logo_url || "",
-        banner_url: workspace.banner_url || "",
-        banner_position: (workspace as any).banner_position ?? 50,
-        primary_color: workspace.primary_color || "#EAB308",
-        secondary_color: workspace.secondary_color || "#1A1A1A",
-        is_public: workspace.is_public ?? true,
+        name: selectedWorkspace.name || "Meu Workspace",
+        slug: selectedWorkspace.slug || "",
+        description: selectedWorkspace.description || "",
+        logo_url: selectedWorkspace.logo_url || "",
+        banner_url: selectedWorkspace.banner_url || "",
+        banner_position: (selectedWorkspace as any).banner_position ?? 50,
+        primary_color: selectedWorkspace.primary_color || "#EAB308",
+        secondary_color: selectedWorkspace.secondary_color || "#1A1A1A",
+        is_public: selectedWorkspace.is_public ?? true,
       });
-    } else if (user && !isLoading) {
-      // Auto-generate slug from user id
-      setForm(f => ({ ...f, slug: user.id.slice(0, 8) }));
     }
-  }, [workspace, user, isLoading]);
+  }, [selectedId, selectedWorkspace]);
 
   const uploadFile = async (file: File, folder: string) => {
     if (!user) return null;
@@ -138,20 +158,23 @@ export default function WorkspaceSettings() {
         return;
       }
 
-      if (workspace) {
+      if (selectedWorkspace) {
         const { error } = await supabase
           .from("workspaces")
           .update({ ...form, slug, updated_at: new Date().toISOString() })
-          .eq("id", workspace.id);
+          .eq("id", selectedWorkspace.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data: newWs, error } = await supabase
           .from("workspaces")
-          .insert({ ...form, slug, producer_id: user.id });
+          .insert({ ...form, slug, producer_id: user.id })
+          .select()
+          .single();
         if (error) throw error;
+        if (newWs) setSelectedId(newWs.id);
       }
 
-      queryClient.invalidateQueries({ queryKey: ["my-workspace"] });
+      queryClient.invalidateQueries({ queryKey: ["my-workspaces"] });
       toast.success("Workspace salvo!");
     } catch (err: any) {
       if (err?.message?.includes("duplicate")) {
@@ -164,8 +187,41 @@ export default function WorkspaceSettings() {
     }
   };
 
+  const handleCreateNew = () => {
+    setSelectedId(null);
+    setForm({
+      name: "Novo Workspace",
+      slug: user?.id?.slice(0, 8) + "-" + (workspaces.length + 1) || "",
+      description: "",
+      logo_url: "",
+      banner_url: "",
+      banner_position: 50,
+      primary_color: "#EAB308",
+      secondary_color: "#1A1A1A",
+      is_public: true,
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!selectedWorkspace) return;
+    setDeleting(true);
+    try {
+      // Delete linked products first
+      await supabase.from("workspace_products").delete().eq("workspace_id", selectedWorkspace.id);
+      const { error } = await supabase.from("workspaces").delete().eq("id", selectedWorkspace.id);
+      if (error) throw error;
+      setSelectedId(null);
+      queryClient.invalidateQueries({ queryKey: ["my-workspaces"] });
+      toast.success("Workspace excluído!");
+    } catch {
+      toast.error("Erro ao excluir workspace");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const toggleProduct = async (productId: string) => {
-    if (!workspace) {
+    if (!selectedWorkspace) {
       toast.error("Salve o workspace primeiro");
       return;
     }
@@ -174,7 +230,7 @@ export default function WorkspaceSettings() {
       await supabase.from("workspace_products").delete().eq("id", existing.id);
     } else {
       await supabase.from("workspace_products").insert({
-        workspace_id: workspace.id,
+        workspace_id: selectedWorkspace.id,
         product_id: productId,
         position: linkedProducts.length,
       });
@@ -195,17 +251,23 @@ export default function WorkspaceSettings() {
     );
   }
 
-  const previewUrl = workspace ? `/w/${workspace.slug}` : form.slug ? `/w/${form.slug}` : null;
+  const previewUrl = selectedWorkspace
+    ? `/w/${selectedWorkspace.slug}`
+    : form.slug
+      ? `/w/${form.slug}`
+      : null;
+
+  const isNewMode = !selectedWorkspace;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Workspace</h1>
-          <p className="text-sm text-muted-foreground">Configure sua vitrine para os compradores</p>
+          <h1 className="text-2xl font-bold">Workspaces</h1>
+          <p className="text-sm text-muted-foreground">Gerencie suas vitrines para os compradores</p>
         </div>
         <div className="flex gap-2">
-          {previewUrl && (
+          {previewUrl && selectedWorkspace && (
             <>
               <Button
                 variant="outline"
@@ -234,16 +296,68 @@ export default function WorkspaceSettings() {
           )}
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-            Salvar
+            {isNewMode ? "Criar" : "Salvar"}
           </Button>
         </div>
+      </div>
+
+      {/* Workspace selector */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {workspaces.map((w: any) => (
+          <button
+            key={w.id}
+            onClick={() => setSelectedId(w.id)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors shrink-0 ${
+              selectedId === w.id
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border hover:border-primary/40 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Store className="h-4 w-4" />
+            <span className="truncate max-w-[120px]">{w.name}</span>
+          </button>
+        ))}
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 shrink-0"
+          onClick={handleCreateNew}
+        >
+          <Plus className="h-4 w-4" /> Novo Workspace
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Basic info */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Informações</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Informações</CardTitle>
+              {selectedWorkspace && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive h-7 gap-1 text-xs">
+                      <Trash2 className="h-3.5 w-3.5" /> Excluir
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir workspace?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        O workspace "{selectedWorkspace.name}" e todos os produtos vinculados serão removidos. Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                        Excluir
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -459,59 +573,69 @@ export default function WorkspaceSettings() {
       </div>
 
       {/* Products in workspace */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Produtos na Vitrine</CardTitle>
-          <CardDescription>Escolha quais produtos aparecem para os compradores</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {products.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Você ainda não tem produtos</p>
-          ) : (
-            <div className="space-y-2">
-              {products.map((p: any) => {
-                const linked = linkedProducts.find((lp: any) => lp.product_id === p.id);
-                return (
-                  <div
-                    key={p.id}
-                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/20 transition-colors"
-                  >
-                    {p.cover_url ? (
-                      <img src={p.cover_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
-                    ) : (
-                      <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0">
-                        <Image className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{p.title}</p>
-                      <p className="text-[0.6rem] text-muted-foreground">
-                        {p.type === "lms" ? "Área de Membros" : "Download"}
-                        {!p.is_published && " · Rascunho"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {linked && (
-                        <button
-                          onClick={() => toggleVisibility(linked.id, linked.is_visible)}
-                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                          title={linked.is_visible ? "Visível" : "Oculto"}
-                        >
-                          <Eye className={`h-4 w-4 ${linked.is_visible ? "text-primary" : "text-muted-foreground/40"}`} />
-                        </button>
+      {selectedWorkspace && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Produtos na Vitrine</CardTitle>
+            <CardDescription>Escolha quais produtos aparecem para os compradores</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {products.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">Você ainda não tem produtos</p>
+            ) : (
+              <div className="space-y-2">
+                {products.map((p: any) => {
+                  const linked = linkedProducts.find((lp: any) => lp.product_id === p.id);
+                  return (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/20 transition-colors"
+                    >
+                      {p.cover_url ? (
+                        <img src={p.cover_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
+                      ) : (
+                        <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0">
+                          <Image className="h-4 w-4 text-muted-foreground" />
+                        </div>
                       )}
-                      <Switch
-                        checked={!!linked}
-                        onCheckedChange={() => toggleProduct(p.id)}
-                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{p.title}</p>
+                        <p className="text-[0.6rem] text-muted-foreground">
+                          {p.type === "lms" ? "Área de Membros" : "Download"}
+                          {!p.is_published && " · Rascunho"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {linked && (
+                          <button
+                            onClick={() => toggleVisibility(linked.id, linked.is_visible)}
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            title={linked.is_visible ? "Visível" : "Oculto"}
+                          >
+                            <Eye className={`h-4 w-4 ${linked.is_visible ? "text-primary" : "text-muted-foreground/40"}`} />
+                          </button>
+                        )}
+                        <Switch
+                          checked={!!linked}
+                          onCheckedChange={() => toggleProduct(p.id)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {isNewMode && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-sm text-muted-foreground">Salve o workspace primeiro para vincular produtos</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
