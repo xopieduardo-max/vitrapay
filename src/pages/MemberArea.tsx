@@ -421,6 +421,38 @@ export default function MemberArea() {
                   </div>
                 </>
               )}
+
+              {/* Downloadable materials */}
+              {lessonFiles[selectedLesson.id]?.length > 0 && (
+                <>
+                  <Separator />
+                  <div>
+                    <h3 className="text-sm font-semibold flex items-center gap-1.5 mb-3">
+                      <Paperclip className="h-4 w-4" />
+                      Material complementar
+                    </h3>
+                    <div className="space-y-2">
+                      {lessonFiles[selectedLesson.id].map((file) => (
+                        <a
+                          key={file.id}
+                          href={file.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/30 transition-colors group"
+                        >
+                          <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                            <Download className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="text-sm flex-1 truncate">{file.file_name}</span>
+                          <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
+                            Baixar
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         ) : (
