@@ -1124,8 +1124,8 @@ export default function Landing() {
 
       {/* ─── Footer ─── */}
       <footer className="relative bg-[#080808] overflow-hidden">
-        {/* Yellow glow from bottom */}
-        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[hsl(48,96%,53%)]/[0.15] rounded-full blur-[120px] pointer-events-none" />
+        {/* Yellow glow — subtle, only peeking from bottom */}
+        <div className="absolute -bottom-[350px] left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-[hsl(48,96%,53%)]/[0.12] rounded-full blur-[100px] pointer-events-none" />
 
         <div className="container relative z-10 pt-20 pb-8">
           {/* Main footer grid */}
