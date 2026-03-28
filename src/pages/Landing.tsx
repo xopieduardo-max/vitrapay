@@ -136,61 +136,70 @@ const FloatingParticles = React.memo(function FloatingParticles() {
 
 });
 
-/* ─── Membros Black Carousel ─── */
+/* ─── Membros Black Carousel (marquee rows) ─── */
 const membrosBlack = [
   { name: "Pobre ADS", image: membroBlack1 },
   { name: "Eu Padre", image: membroBlack2 },
 ];
 
+// Duplicate items to fill rows
+const row1 = [...membrosBlack, ...membrosBlack, ...membrosBlack, ...membrosBlack];
+const row2 = [...membrosBlack.reverse(), ...membrosBlack, ...membrosBlack, ...membrosBlack];
+
 function MembrosBlackCarousel() {
-  const [current, setCurrent] = useState(0);
-  const total = membrosBlack.length;
-
-  useEffect(() => {
-    if (total <= 1) return;
-    const timer = setInterval(() => setCurrent(p => (p + 1) % total), 4000);
-    return () => clearInterval(timer);
-  }, [total]);
-
   return (
-    <div className="relative max-w-sm mx-auto">
-      <div className="overflow-hidden rounded-3xl border border-border/50 shadow-2xl shadow-primary/10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current}
-            initial={{ opacity: 0, x: 80 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -80 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
+    <div className="space-y-4 overflow-hidden -mx-4 md:-mx-8">
+      {/* Row 1 – scrolls left */}
+      <motion.div
+        className="flex gap-4"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+      >
+        {row1.map((m, i) => (
+          <div
+            key={`r1-${i}`}
+            className="shrink-0 w-[200px] md:w-[240px] rounded-2xl border border-border/50 overflow-hidden shadow-lg shadow-primary/5 hover:border-primary/30 transition-colors duration-300"
           >
             <img
-              src={membrosBlack[current].image}
-              alt={`Membro Black — ${membrosBlack[current].name}`}
+              src={m.image}
+              alt={`Membro Black — ${m.name}`}
               className="w-full aspect-[4/5] object-cover"
               loading="lazy"
               decoding="async"
             />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            <div className="p-3 bg-card text-center">
+              <p className="text-sm font-semibold truncate">{m.name}</p>
+              <p className="text-[11px] text-primary font-medium">Membro Black ⚡</p>
+            </div>
+          </div>
+        ))}
+      </motion.div>
 
-      {/* Navigation dots */}
-      {total > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
-          {membrosBlack.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              className={`h-2.5 rounded-full transition-all duration-300 ${
-                i === current
-                  ? "w-8 bg-primary"
-                  : "w-2.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-              }`}
-              aria-label={`Ver membro ${i + 1}`}
+      {/* Row 2 – scrolls right */}
+      <motion.div
+        className="flex gap-4"
+        animate={{ x: ["-50%", "0%"] }}
+        transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+      >
+        {row2.map((m, i) => (
+          <div
+            key={`r2-${i}`}
+            className="shrink-0 w-[200px] md:w-[240px] rounded-2xl border border-border/50 overflow-hidden shadow-lg shadow-primary/5 hover:border-primary/30 transition-colors duration-300"
+          >
+            <img
+              src={m.image}
+              alt={`Membro Black — ${m.name}`}
+              className="w-full aspect-[4/5] object-cover"
+              loading="lazy"
+              decoding="async"
             />
-          ))}
-        </div>
-      )}
+            <div className="p-3 bg-card text-center">
+              <p className="text-sm font-semibold truncate">{m.name}</p>
+              <p className="text-[11px] text-primary font-medium">Membro Black ⚡</p>
+            </div>
+          </div>
+        ))}
+      </motion.div>
     </div>
   );
 }
