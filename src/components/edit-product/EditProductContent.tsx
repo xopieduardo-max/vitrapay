@@ -809,6 +809,58 @@ export default function EditProductContent({ productId }: Props) {
                 placeholder="Texto complementar, links, materiais..."
               />
             </div>
+
+            {/* Material complementar */}
+            <div>
+              <Label className="text-xs">Material complementar (opcional)</Label>
+              <p className="text-[0.6rem] text-muted-foreground mb-2">
+                Arquivos para download que os alunos podem baixar nesta aula
+              </p>
+
+              {lessonFiles.length > 0 && (
+                <div className="space-y-1.5 mb-2">
+                  {lessonFiles.map((file, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs"
+                    >
+                      <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="flex-1 truncate">{file.file_name}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        {file.file_size > 0 ? `${(file.file_size / 1024 / 1024).toFixed(1)}MB` : ""}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeLessonFile(i)}
+                        className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {uploadingLessonFile ? (
+                <div className="flex items-center gap-2 text-xs text-primary py-2">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>Enviando arquivo...</span>
+                </div>
+              ) : (
+                <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-primary hover:underline">
+                  <Upload className="h-3 w-3" />
+                  Anexar arquivo
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadLessonFile(file);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Duração (minutos)</Label>
