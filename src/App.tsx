@@ -64,6 +64,7 @@ const AdminFeeSimulator = lazy(() => import("./pages/admin/AdminFeeSimulator"));
 const AdminDisputes = lazy(() => import("./pages/admin/AdminDisputes"));
 const AdminTransactions = lazy(() => import("./pages/admin/AdminTransactions"));
 const AdminProductDetail = lazy(() => import("./pages/admin/AdminProductDetail"));
+const AdminCartRecovery = lazy(() => import("./pages/admin/AdminCartRecovery"));
 
 const queryClient = new QueryClient();
 
