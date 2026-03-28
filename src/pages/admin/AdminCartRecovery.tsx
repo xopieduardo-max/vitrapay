@@ -272,6 +272,30 @@ export default function AdminCartRecovery() {
         </Card>
       </div>
 
+      {/* Evolution Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Evolução Diária</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {chartData.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Sem dados no período</p>
+          ) : (
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line type="monotone" dataKey="abandonados" stroke="var(--color-abandonados)" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="notificados" stroke="var(--color-notificados)" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="recuperados" stroke="var(--color-recuperados)" strokeWidth={2} dot={{ r: 3 }} />
+              </LineChart>
+            </ChartContainer>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Notified Carts Table */}
       <Card>
         <CardHeader>
