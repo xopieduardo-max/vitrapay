@@ -44,6 +44,7 @@ export default function MemberArea() {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"overview" | "lesson">("overview");
+  const [lessonFiles, setLessonFiles] = useState<Record<string, { id: string; file_name: string; file_url: string }[]>>({});
 
   useEffect(() => {
     if (!productId || !user) return;
