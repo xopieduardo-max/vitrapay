@@ -98,6 +98,46 @@ export default function MinhaContaDownload() {
     enabled: !!user && !!productId,
   });
 
+  // Download stats
+  const { data: stats } = useQuery({
+    queryKey: ["download-stats", productId, user?.id],
+    queryFn: async () => {
+      if (!user || !productId) return null;
+      const { data } = await supabase
+        .from("product_download_stats")
+        .select("download_count, last_accessed_at")
+        .eq("user_id", user.id)
+        .eq("product_id", productId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user && !!productId,
+  });
+
+  const trackDownload = useCallback(async () => {
+    if (!user || !productId) return;
+    if (stats) {
+      await supabase
+        .from("product_download_stats")
+        .update({
+          download_count: (stats.download_count || 0) + 1,
+          last_accessed_at: new Date().toISOString(),
+        } as any)
+        .eq("user_id", user.id)
+        .eq("product_id", productId);
+    } else {
+      await supabase
+        .from("product_download_stats")
+        .insert({
+          user_id: user.id,
+          product_id: productId,
+          download_count: 1,
+          last_accessed_at: new Date().toISOString(),
+        } as any);
+    }
+    queryClient.invalidateQueries({ queryKey: ["download-stats", productId, user.id] });
+  }, [user, productId, stats, queryClient]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
