@@ -115,9 +115,18 @@ export default function MemberArea() {
     setProgress((prev) => ({ ...prev, [lessonId]: true }));
   };
 
-  const openLesson = (lesson: Lesson) => {
+  const openLesson = async (lesson: Lesson) => {
     setSelectedLesson(lesson);
     setView("lesson");
+    // Fetch files if not already loaded
+    if (!lessonFiles[lesson.id]) {
+      const { data } = await supabase
+        .from("lesson_files")
+        .select("id, file_name, file_url")
+        .eq("lesson_id", lesson.id)
+        .order("position");
+      setLessonFiles(prev => ({ ...prev, [lesson.id]: data || [] }));
+    }
   };
 
   const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
