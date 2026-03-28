@@ -17,7 +17,7 @@ interface Props {
   productType?: string;
 }
 
-export default function EditProductSettings({ form, updateField, productId }: Props) {
+export default function EditProductSettings({ form, updateField, productId, productType }: Props) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [uploadingCover, setUploadingCover] = useState(false);
