@@ -59,6 +59,16 @@ export default function MinhaContaDownload() {
   const queryClient = useQueryClient();
   const [authTrigger, setAuthTrigger] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [expandedPdfs, setExpandedPdfs] = useState<Set<string>>(new Set());
+
+  const togglePdf = (fileId: string) => {
+    setExpandedPdfs((prev) => {
+      const next = new Set(prev);
+      if (next.has(fileId)) next.delete(fileId);
+      else next.add(fileId);
+      return next;
+    });
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["minha-conta-download", productId, user?.id, user?.email, authTrigger],
