@@ -308,9 +308,16 @@ export default function MinhaContaDownload() {
                             <Button
                               size="sm"
                               className="h-8 text-xs gap-1.5"
-                              asChild
+                              onClick={() => {
+                                trackDownload();
+                                const a = document.createElement("a");
+                                a.href = file.file_url;
+                                a.target = "_blank";
+                                a.rel = "noopener noreferrer";
+                                a.download = file.file_name;
+                                a.click();
+                              }}
                             >
-                              <a href={file.file_url} target="_blank" rel="noopener noreferrer" download>
                                 <Download className="h-3.5 w-3.5" />
                                 Baixar
                               </a>
