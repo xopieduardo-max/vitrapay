@@ -80,6 +80,7 @@ export default function EditProductContent({ productId }: Props) {
   });
   const [savingLesson, setSavingLesson] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Delete confirm
   const [deleteConfirm, setDeleteConfirm] = useState<{
