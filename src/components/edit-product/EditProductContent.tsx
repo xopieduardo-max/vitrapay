@@ -304,6 +304,32 @@ export default function EditProductContent({ productId }: Props) {
     }
   };
 
+  // Upload lesson material file
+  const uploadLessonFile = async (file: File) => {
+    setUploadingLessonFile(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `lesson-materials/${productId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("product-files").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("product-files").getPublicUrl(path);
+      setLessonFiles(prev => [...prev, {
+        file_name: file.name,
+        file_url: data.publicUrl,
+        file_size: file.size,
+      }]);
+      toast.success("Arquivo anexado!");
+    } catch {
+      toast.error("Erro no upload do arquivo");
+    } finally {
+      setUploadingLessonFile(false);
+    }
+  };
+
+  const removeLessonFile = (index: number) => {
+    setLessonFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const saveLesson = async () => {
     if (!lessonForm.title.trim()) {
       toast.error("Nome da aula é obrigatório");
@@ -315,7 +341,10 @@ export default function EditProductContent({ productId }: Props) {
     }
     setSavingLesson(true);
     try {
+      let lessonId: string;
+
       if (lessonDialog.editing) {
+        lessonId = lessonDialog.editing.id;
         const { error } = await supabase
           .from("lessons")
           .update({
@@ -326,12 +355,36 @@ export default function EditProductContent({ productId }: Props) {
             duration_minutes: lessonForm.duration_minutes || 0,
             is_free: lessonForm.is_free,
           })
-          .eq("id", lessonDialog.editing.id);
+          .eq("id", lessonId);
         if (error) throw error;
+
+        // Sync files: delete removed, insert new
+        const existingIds = lessonFiles.filter(f => f.id).map(f => f.id!);
+        // Delete files that were removed
+        await supabase
+          .from("lesson_files")
+          .delete()
+          .eq("lesson_id", lessonId)
+          .not("id", "in", `(${existingIds.length > 0 ? existingIds.join(",") : "00000000-0000-0000-0000-000000000000"})`);
+
+        // Insert new files (no id)
+        const newFiles = lessonFiles.filter(f => !f.id);
+        if (newFiles.length > 0) {
+          await supabase.from("lesson_files").insert(
+            newFiles.map((f, i) => ({
+              lesson_id: lessonId,
+              file_name: f.file_name,
+              file_url: f.file_url,
+              file_size: f.file_size,
+              position: existingIds.length + i,
+            }))
+          );
+        }
+
         toast.success("Aula atualizada!");
       } else {
         const moduleLessons = getLessonsForModule(lessonDialog.moduleId!);
-        const { error } = await supabase.from("lessons").insert({
+        const { data: newLesson, error } = await supabase.from("lessons").insert({
           module_id: lessonDialog.moduleId!,
           title: lessonForm.title,
           description: lessonForm.description || null,
@@ -340,11 +393,26 @@ export default function EditProductContent({ productId }: Props) {
           duration_minutes: lessonForm.duration_minutes || 0,
           is_free: lessonForm.is_free,
           position: moduleLessons.length,
-        });
+        }).select("id").single();
         if (error) {
           console.error("Lesson insert error:", error);
           throw error;
         }
+        lessonId = newLesson.id;
+
+        // Insert files
+        if (lessonFiles.length > 0) {
+          await supabase.from("lesson_files").insert(
+            lessonFiles.map((f, i) => ({
+              lesson_id: lessonId,
+              file_name: f.file_name,
+              file_url: f.file_url,
+              file_size: f.file_size,
+              position: i,
+            }))
+          );
+        }
+
         toast.success("Aula criada!");
       }
       setLessonDialog({ open: false });
