@@ -26,7 +26,7 @@ export default function MinhaConta() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
+  
 
   const handlePasswordChange = async () => {
     if (newPassword.length < 6) {
