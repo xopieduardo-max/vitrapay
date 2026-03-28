@@ -87,6 +87,8 @@ export default function EditProductContent({ productId }: Props) {
   const [savingLesson, setSavingLesson] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [lessonFiles, setLessonFiles] = useState<{ id?: string; file_name: string; file_url: string; file_size: number }[]>([]);
+  const [uploadingLessonFile, setUploadingLessonFile] = useState(false);
 
   // Delete confirm
   const [deleteConfirm, setDeleteConfirm] = useState<{
