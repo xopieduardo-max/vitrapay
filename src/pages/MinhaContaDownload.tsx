@@ -1,14 +1,16 @@
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Download, FileText, Image, FileArchive, File, ExternalLink } from "lucide-react";
+import { Loader2, ArrowLeft, Download, FileText, Image, FileArchive, File, ExternalLink, Clock, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import MinhaContaLogin from "./MinhaContaLogin";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 function getFileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase() || "";
@@ -38,6 +40,7 @@ function isImageFile(name: string) {
 export default function MinhaContaDownload() {
   const { productId } = useParams<{ productId: string }>();
   const { user, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [authTrigger, setAuthTrigger] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -94,6 +97,46 @@ export default function MinhaContaDownload() {
     },
     enabled: !!user && !!productId,
   });
+
+  // Download stats
+  const { data: stats } = useQuery({
+    queryKey: ["download-stats", productId, user?.id],
+    queryFn: async () => {
+      if (!user || !productId) return null;
+      const { data } = await supabase
+        .from("product_download_stats")
+        .select("download_count, last_accessed_at")
+        .eq("user_id", user.id)
+        .eq("product_id", productId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user && !!productId,
+  });
+
+  const trackDownload = useCallback(async () => {
+    if (!user || !productId) return;
+    if (stats) {
+      await supabase
+        .from("product_download_stats")
+        .update({
+          download_count: (stats.download_count || 0) + 1,
+          last_accessed_at: new Date().toISOString(),
+        } as any)
+        .eq("user_id", user.id)
+        .eq("product_id", productId);
+    } else {
+      await supabase
+        .from("product_download_stats")
+        .insert({
+          user_id: user.id,
+          product_id: productId,
+          download_count: 1,
+          last_accessed_at: new Date().toISOString(),
+        } as any);
+    }
+    queryClient.invalidateQueries({ queryKey: ["download-stats", productId, user.id] });
+  }, [user, productId, stats, queryClient]);
 
   if (authLoading) {
     return (
@@ -156,7 +199,21 @@ export default function MinhaContaDownload() {
                 </div>
               )}
               <div className="flex-1 space-y-2">
-                <Badge variant="outline" className="text-[0.65rem]">Download</Badge>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-[0.65rem]">Download</Badge>
+                  {stats && (
+                    <>
+                      <Badge variant="secondary" className="text-[0.65rem] gap-1">
+                        <BarChart3 className="h-3 w-3" />
+                        {stats.download_count} download{stats.download_count !== 1 ? "s" : ""}
+                      </Badge>
+                      <Badge variant="secondary" className="text-[0.65rem] gap-1">
+                        <Clock className="h-3 w-3" />
+                        Último acesso {formatDistanceToNow(new Date(stats.last_accessed_at), { addSuffix: true, locale: ptBR })}
+                      </Badge>
+                    </>
+                  )}
+                </div>
                 <h1 className="text-2xl font-bold tracking-tight">{data.product.title}</h1>
                 <p className="text-sm text-muted-foreground">por {data.product.producerName}</p>
                 {data.product.description && (
@@ -179,6 +236,7 @@ export default function MinhaContaDownload() {
                     variant="outline"
                     className="gap-1.5 text-xs"
                     onClick={() => {
+                      trackDownload();
                       data.files.forEach((f: any) => {
                         const a = document.createElement("a");
                         a.href = f.file_url;
@@ -250,12 +308,18 @@ export default function MinhaContaDownload() {
                             <Button
                               size="sm"
                               className="h-8 text-xs gap-1.5"
-                              asChild
+                              onClick={() => {
+                                trackDownload();
+                                const a = document.createElement("a");
+                                a.href = file.file_url;
+                                a.target = "_blank";
+                                a.rel = "noopener noreferrer";
+                                a.download = file.file_name;
+                                a.click();
+                              }}
                             >
-                              <a href={file.file_url} target="_blank" rel="noopener noreferrer" download>
-                                <Download className="h-3.5 w-3.5" />
-                                Baixar
-                              </a>
+                              <Download className="h-3.5 w-3.5" />
+                              Baixar
                             </Button>
                           </div>
                         </div>
@@ -274,11 +338,16 @@ export default function MinhaContaDownload() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">Arquivo do produto</p>
                     </div>
-                    <Button size="sm" className="h-8 text-xs gap-1.5" asChild>
-                      <a href={data.product.file_url} target="_blank" rel="noopener noreferrer" download>
-                        <Download className="h-3.5 w-3.5" />
-                        Baixar
-                      </a>
+                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => {
+                      trackDownload();
+                      const a = document.createElement("a");
+                      a.href = data.product.file_url!;
+                      a.target = "_blank";
+                      a.download = "arquivo";
+                      a.click();
+                    }}>
+                      <Download className="h-3.5 w-3.5" />
+                      Baixar
                     </Button>
                   </motion.div>
                 ) : (
