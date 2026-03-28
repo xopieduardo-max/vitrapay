@@ -306,12 +306,35 @@ export default function WorkspaceStorefront() {
         </div>
       ) : (
         <div
-          className="w-full h-[120px]"
+          className="w-full h-[120px] relative"
           style={{
             background: `linear-gradient(135deg, ${accentColor}, ${bgColor})`,
           }}
-        />
+        >
+          {showProducerControls && (
+            <div className="absolute top-2 left-2">
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                disabled={uploadingBanner}
+                onClick={() => bannerInputRef.current?.click()}
+              >
+                {uploadingBanner ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+                Adicionar banner
+              </Button>
+            </div>
+          )}
+        </div>
       )}
+
+      {/* Hidden banner file input */}
+      <input
+        ref={bannerInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => workspace && handleBannerUpload(e, workspace.id)}
+      />
 
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-8 relative z-10 flex-1 w-full">
