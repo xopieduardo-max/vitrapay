@@ -318,9 +318,8 @@ export default function MinhaContaDownload() {
                                 a.click();
                               }}
                             >
-                                <Download className="h-3.5 w-3.5" />
-                                Baixar
-                              </a>
+                              <Download className="h-3.5 w-3.5" />
+                              Baixar
                             </Button>
                           </div>
                         </div>
