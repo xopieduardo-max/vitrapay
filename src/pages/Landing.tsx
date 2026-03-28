@@ -20,6 +20,7 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
 import logoCard from "@/assets/logo-vitrapay-card.png";
+import celularVitra from "@/assets/celular_vitra.png";
 import {
   Accordion,
   AccordionContent,
@@ -927,65 +928,16 @@ export default function Landing() {
               </div>
             </motion.div>
 
-            {/* Right – Phone mockup with notifications */}
+            {/* Right – Phone mockup image */}
             <motion.div
               {...fadeUp}
               transition={{ delay: 0.2, duration: 0.6 }}
               className="flex justify-center">
-              <div className="relative">
-                {/* Phone frame */}
-                <div className="relative w-[260px] md:w-[300px] rounded-[2.5rem] border-[6px] border-border/60 bg-background/80 backdrop-blur-sm shadow-2xl overflow-hidden">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-border/60 rounded-b-2xl z-10" />
-                  <div className="pt-8 pb-6 px-4 space-y-3">
-                    {[
-                      { name: "VitraPay", desc: "Venda Aprovada no Cartão!", amount: "R$ 2.098,00", pedido: "77845", delay: 0 },
-                      { name: "VitraPay", desc: "Venda Aprovada no Cartão!", amount: "R$ 997,79", pedido: "15845", delay: 0.1 },
-                      { name: "VitraPay", desc: "Venda Aprovada no Cartão!", amount: "R$ 328,80", pedido: "38844", delay: 0.2 },
-                      { name: "VitraPay", desc: "Venda Aprovada via Pix!", amount: "R$ 147,00", pedido: "92103", delay: 0.3 },
-                    ].map((notif, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: notif.delay + 0.3, duration: 0.5 }}
-                        className="rounded-xl border border-border/50 bg-card p-3 shadow-sm">
-                        <div className="flex items-start gap-3">
-                          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                            <img src={logoIcon} alt="VitraPay" className="h-6 w-6 rounded" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold">{notif.name}</span>
-                              <span className="text-[10px] text-muted-foreground">{i === 0 ? "Agora" : `${(i * 5) + 10} min`}</span>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground truncate">{notif.desc}</p>
-                            <p className="text-[11px] text-muted-foreground">Comissão: {notif.amount} | Pedido: {notif.pedido}</p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Floating bank/payment icons */}
-                {[
-                  { label: "Visa", pos: "-right-6 top-8", bg: "bg-blue-600", icon: "V" },
-                  { label: "Master", pos: "-right-4 top-[140px]", bg: "bg-red-500", icon: "M" },
-                  { label: "Pix", pos: "-left-6 top-[100px]", bg: "bg-emerald-500", icon: "₱" },
-                  { label: "Elo", pos: "-left-4 top-[200px]", bg: "bg-yellow-500", icon: "E" },
-                ].map((badge, i) => (
-                  <motion.div
-                    key={badge.label}
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.6 + i * 0.1, type: "spring", stiffness: 300 }}
-                    className={`absolute ${badge.pos} h-10 w-10 rounded-full ${badge.bg} flex items-center justify-center text-white font-bold text-sm shadow-lg ring-4 ring-background`}>
-                    {badge.icon}
-                  </motion.div>
-                ))}
-              </div>
+              <img
+                src={celularVitra}
+                alt="VitraPay - Vendas aprovadas com sistema inteligente"
+                className="w-[320px] md:w-[420px] drop-shadow-2xl"
+              />
             </motion.div>
           </div>
         </div>
