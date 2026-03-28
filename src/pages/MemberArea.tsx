@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import {
-  Play, CheckCircle2, ChevronDown, ChevronRight, Clock, Loader2, ArrowLeft, BookOpen, Layers,
+  Play, CheckCircle2, ChevronDown, ChevronRight, Clock, Loader2, ArrowLeft, BookOpen, Layers, Download, Paperclip,
 } from "lucide-react";
 
 type Module = {
