@@ -147,7 +147,31 @@ export default function WorkspaceStorefront() {
     toast.success("Posição do banner salva!");
   }, [bannerPos, queryClient, slug]);
 
-  if (loadingWs || loadingItems) {
+  const handleBannerUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, workspaceId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBanner(true);
+    try {
+      const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 600, quality: 0.85 });
+      const ext = compressed.type === "image/webp" ? "webp" : "jpg";
+      const path = `workspace-banners/${workspaceId}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("checkout-images")
+        .upload(path, compressed, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("checkout-images").getPublicUrl(path);
+      const banner_url = urlData.publicUrl + "?t=" + Date.now();
+      await supabase.from("workspaces").update({ banner_url }).eq("id", workspaceId);
+      queryClient.invalidateQueries({ queryKey: ["workspace-storefront", slug] });
+      toast.success("Banner atualizado!");
+    } catch (err: any) {
+      toast.error("Erro ao enviar banner: " + err.message);
+    } finally {
+      setUploadingBanner(false);
+      if (bannerInputRef.current) bannerInputRef.current.value = "";
+    }
+  }, [queryClient, slug]);
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
