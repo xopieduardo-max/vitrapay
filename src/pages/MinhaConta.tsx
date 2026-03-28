@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Download, BookOpen, Play, LogOut, Package, AlertTriangle, Lock, Eye, EyeOff, Check, FileText, PartyPopper } from "lucide-react";
+import { Loader2, Download, BookOpen, Play, LogOut, Package, AlertTriangle, Lock, Eye, EyeOff, Check, PartyPopper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ThemeLogo } from "@/components/ThemeLogo";
@@ -26,7 +26,7 @@ export default function MinhaConta() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
+  
 
   const handlePasswordChange = async () => {
     if (newPassword.length < 6) {
@@ -314,8 +314,6 @@ export default function MinhaConta() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {accessItems.map((item: any, i: number) => {
               const product = item.product;
-              const hasMultipleFiles = product.files && product.files.length > 1;
-              const isExpanded = expandedProduct === product.id;
 
               return (
                 <motion.div
@@ -347,28 +345,12 @@ export default function MinhaConta() {
                         {product.type === "download" ? "Download" : "Curso"}
                       </Badge>
                       {product.type === "download" ? (
-                        hasMultipleFiles ? (
-                          <Button
-                            size="sm"
-                            variant={isExpanded ? "secondary" : "default"}
-                            className="gap-1.5 h-8 text-xs"
-                            onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
-                          >
+                        <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
+                          <Link to={`/minha-conta/download/${product.id}`}>
                             <Download className="h-3.5 w-3.5" />
-                            {product.files.length} Arquivos
-                          </Button>
-                        ) : product.file_url ? (
-                          <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
-                            <a href={product.files?.[0]?.file_url || product.file_url} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-3.5 w-3.5" />
-                              Baixar
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button size="sm" className="gap-1.5 h-8 text-xs" disabled>
-                            Indisponível
-                          </Button>
-                        )
+                            {product.files?.length > 1 ? `${product.files.length} Arquivos` : "Baixar"}
+                          </Link>
+                        </Button>
                       ) : (
                         <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
                           <Link to={`/learn/${product.id}`}>
@@ -379,31 +361,6 @@ export default function MinhaConta() {
                       )}
                     </div>
 
-                    {/* Expanded files list */}
-                    <AnimatePresence>
-                      {isExpanded && hasMultipleFiles && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="space-y-1.5 pt-2 border-t border-border"
-                        >
-                          {product.files.map((f: any) => (
-                            <a
-                              key={f.id}
-                              href={f.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors"
-                            >
-                              <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />
-                              <span className="text-xs font-medium truncate flex-1">{f.file_name}</span>
-                              <Download className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                            </a>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                 </motion.div>
               );

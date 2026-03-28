@@ -42,6 +42,7 @@ const Integrations = lazy(() => import("./pages/Integrations"));
 const Install = lazy(() => import("./pages/Install"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
+const MinhaContaDownload = lazy(() => import("./pages/MinhaContaDownload"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Taxas = lazy(() => import("./pages/Taxas"));
 const WorkspaceSettings = lazy(() => import("./pages/WorkspaceSettings"));
@@ -97,6 +98,7 @@ const App = () => {
               <Route path="/install" element={<Install />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/minha-conta" element={<MinhaConta />} />
+              <Route path="/minha-conta/download/:productId" element={<MinhaContaDownload />} />
               <Route path="/w/:slug" element={<WorkspaceStorefront />} />
 
               {/* Protected routes */}
