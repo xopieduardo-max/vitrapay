@@ -368,7 +368,7 @@ export default function EditProductContent({ productId }: Props) {
             size="sm"
             variant="outline"
             className="gap-1.5"
-            onClick={() => window.open(`/learn/${productId}`, '_blank')}
+            onClick={() => navigate(`/learn/${productId}?preview=true`)}
           >
             <Eye className="h-3.5 w-3.5" /> Visualizar
           </Button>
