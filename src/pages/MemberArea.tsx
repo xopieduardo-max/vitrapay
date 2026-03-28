@@ -35,7 +35,8 @@ export default function MemberArea() {
   const { productId } = useParams<{ productId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-
+  const [searchParams] = useSearchParams();
+  const isPreview = searchParams.get("preview") === "true";
   const [product, setProduct] = useState<any>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [progress, setProgress] = useState<Record<string, boolean>>({});
