@@ -347,28 +347,12 @@ export default function MinhaConta() {
                         {product.type === "download" ? "Download" : "Curso"}
                       </Badge>
                       {product.type === "download" ? (
-                        hasMultipleFiles ? (
-                          <Button
-                            size="sm"
-                            variant={isExpanded ? "secondary" : "default"}
-                            className="gap-1.5 h-8 text-xs"
-                            onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
-                          >
+                        <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
+                          <Link to={`/minha-conta/download/${product.id}`}>
                             <Download className="h-3.5 w-3.5" />
-                            {product.files.length} Arquivos
-                          </Button>
-                        ) : product.file_url ? (
-                          <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
-                            <a href={product.files?.[0]?.file_url || product.file_url} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-3.5 w-3.5" />
-                              Baixar
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button size="sm" className="gap-1.5 h-8 text-xs" disabled>
-                            Indisponível
-                          </Button>
-                        )
+                            {product.files?.length > 1 ? `${product.files.length} Arquivos` : "Baixar"}
+                          </Link>
+                        </Button>
                       ) : (
                         <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
                           <Link to={`/learn/${product.id}`}>
