@@ -1199,7 +1199,7 @@ export default function Landing() {
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="px-2.5 py-0.5 text-[10px] font-bold rounded border border-white/10 text-white/50 tracking-wider">CNPJ</span>
-              <span className="text-[12px] text-white/25">XX.XXX.XXX/0001-XX</span>
+              <span className="text-[12px] text-white/25">63.662.008/0001-33</span>
             </div>
             <span className="text-[12px] text-white/25">© 2026 VitraPay Tecnologia Ltda. Todos os direitos reservados.</span>
           </div>
