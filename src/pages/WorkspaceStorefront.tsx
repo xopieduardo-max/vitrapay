@@ -262,7 +262,6 @@ export default function WorkspaceStorefront() {
           />
           {showProducerControls && (
             <div className="absolute top-2 left-2 flex gap-1.5">
-              {!editingBannerPos ? (
                 <Button
                   size="sm"
                   className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
@@ -270,8 +269,18 @@ export default function WorkspaceStorefront() {
                 >
                   <Move className="h-3 w-3" /> Ajustar posição
                 </Button>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                  disabled={uploadingBanner}
+                  onClick={() => bannerInputRef.current?.click()}
+                >
+                  {uploadingBanner ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+                  Trocar banner
+                </Button>
+              </div>
               ) : (
-                <>
+              <div className="absolute top-2 left-2 flex gap-1.5">
                   <Button
                     size="sm"
                     className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
@@ -286,9 +295,8 @@ export default function WorkspaceStorefront() {
                   >
                     Cancelar
                   </Button>
-                </>
+              </div>
               )}
-            </div>
           )}
           {editingBannerPos && (
             <div className="absolute inset-0 border-2 border-dashed border-white/50 pointer-events-none flex items-center justify-center">
