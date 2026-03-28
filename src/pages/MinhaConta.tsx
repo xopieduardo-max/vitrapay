@@ -314,8 +314,6 @@ export default function MinhaConta() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {accessItems.map((item: any, i: number) => {
               const product = item.product;
-              const hasMultipleFiles = product.files && product.files.length > 1;
-              const isExpanded = expandedProduct === product.id;
 
               return (
                 <motion.div
