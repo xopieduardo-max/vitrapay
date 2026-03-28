@@ -2,7 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, Download, PlayCircle, Lock, ArrowLeft, Eye, EyeOff, Move } from "lucide-react";
+import { Loader2, Download, PlayCircle, Lock, ArrowLeft, Eye, EyeOff, Move, ImagePlus } from "lucide-react";
+import { compressImage } from "@/lib/imageCompressor";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
@@ -35,8 +36,10 @@ export default function WorkspaceStorefront() {
   const [viewAsClient, setViewAsClient] = useState(false);
   const [editingBannerPos, setEditingBannerPos] = useState(false);
   const [bannerPos, setBannerPos] = useState<number | null>(null);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const bannerDragRef = useRef<{ startY: number; startPos: number } | null>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch workspace by slug
   const { data: workspace, isLoading: loadingWs } = useQuery({
@@ -144,6 +147,31 @@ export default function WorkspaceStorefront() {
     toast.success("Posição do banner salva!");
   }, [bannerPos, queryClient, slug]);
 
+  const handleBannerUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, workspaceId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBanner(true);
+    try {
+      const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 600, quality: 0.85 });
+      const ext = compressed.type === "image/webp" ? "webp" : "jpg";
+      const path = `workspace-banners/${workspaceId}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("checkout-images")
+        .upload(path, compressed, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("checkout-images").getPublicUrl(path);
+      const banner_url = urlData.publicUrl + "?t=" + Date.now();
+      await supabase.from("workspaces").update({ banner_url }).eq("id", workspaceId);
+      queryClient.invalidateQueries({ queryKey: ["workspace-storefront", slug] });
+      toast.success("Banner atualizado!");
+    } catch (err: any) {
+      toast.error("Erro ao enviar banner: " + err.message);
+    } finally {
+      setUploadingBanner(false);
+      if (bannerInputRef.current) bannerInputRef.current.value = "";
+    }
+  }, [queryClient, slug]);
+
   if (loadingWs || loadingItems) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -232,34 +260,42 @@ export default function WorkspaceStorefront() {
             style={{ objectPosition: `center ${currentBannerPos}%` }}
             draggable={false}
           />
-          {showProducerControls && (
+          {showProducerControls && !editingBannerPos && (
             <div className="absolute top-2 left-2 flex gap-1.5">
-              {!editingBannerPos ? (
-                <Button
-                  size="sm"
-                  className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
-                  onClick={() => { setEditingBannerPos(true); setBannerPos(currentBannerPos); }}
-                >
-                  <Move className="h-3 w-3" /> Ajustar posição
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
-                    onClick={() => saveBannerPosition(workspace.id)}
-                  >
-                    Salvar
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs bg-black/60 hover:bg-black/80 text-white border-0"
-                    onClick={() => { setEditingBannerPos(false); setBannerPos(null); }}
-                  >
-                    Cancelar
-                  </Button>
-                </>
-              )}
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                onClick={() => { setEditingBannerPos(true); setBannerPos(currentBannerPos); }}
+              >
+                <Move className="h-3 w-3" /> Ajustar posição
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                disabled={uploadingBanner}
+                onClick={() => bannerInputRef.current?.click()}
+              >
+                {uploadingBanner ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+                Trocar banner
+              </Button>
+            </div>
+          )}
+          {showProducerControls && editingBannerPos && (
+            <div className="absolute top-2 left-2 flex gap-1.5">
+              <Button
+                size="sm"
+                className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
+                onClick={() => saveBannerPosition(workspace.id)}
+              >
+                Salvar
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-xs bg-black/60 hover:bg-black/80 text-white border-0"
+                onClick={() => { setEditingBannerPos(false); setBannerPos(null); }}
+              >
+                Cancelar
+              </Button>
             </div>
           )}
           {editingBannerPos && (
@@ -270,12 +306,35 @@ export default function WorkspaceStorefront() {
         </div>
       ) : (
         <div
-          className="w-full h-[120px]"
+          className="w-full h-[120px] relative"
           style={{
             background: `linear-gradient(135deg, ${accentColor}, ${bgColor})`,
           }}
-        />
+        >
+          {showProducerControls && (
+            <div className="absolute top-2 left-2">
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                disabled={uploadingBanner}
+                onClick={() => bannerInputRef.current?.click()}
+              >
+                {uploadingBanner ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+                Adicionar banner
+              </Button>
+            </div>
+          )}
+        </div>
       )}
+
+      {/* Hidden banner file input */}
+      <input
+        ref={bannerInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => workspace && handleBannerUpload(e, workspace.id)}
+      />
 
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-8 relative z-10 flex-1 w-full">
