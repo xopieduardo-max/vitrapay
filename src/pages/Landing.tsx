@@ -1125,7 +1125,7 @@ export default function Landing() {
       {/* ─── Footer ─── */}
       <footer className="relative bg-[#080808] overflow-hidden">
         {/* Subtle warm glow from bottom */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[250px] bg-[hsl(48,96%,53%)]/[0.03] rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[hsl(48,96%,53%)]/[0.06] rounded-full blur-[150px] pointer-events-none" />
 
         <div className="container relative z-10 pt-20 pb-8">
           {/* Main footer grid */}
