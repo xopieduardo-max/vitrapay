@@ -131,6 +131,9 @@ export default function WorkspaceStorefront() {
     );
   }
 
+  const isProducer = !!user && workspace.producer_id === user.id;
+  const showProducerControls = isProducer && !viewAsClient;
+
   const bgColor = workspace.secondary_color || "#1A1A1A";
   const accentColor = workspace.primary_color || "#EAB308";
   const lightBg = isLightColor(bgColor);
@@ -143,6 +146,38 @@ export default function WorkspaceStorefront() {
   const lightAccent = isLightColor(accentColor);
   const accentTextColor = lightAccent ? "#000" : "#FFF";
 
+  const currentBannerPos = bannerPos ?? (workspace.banner_position ?? 50);
+
+  const handleBannerMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!editingBannerPos) return;
+    e.preventDefault();
+    bannerDragRef.current = { startY: e.clientY, startPos: currentBannerPos };
+    const onMove = (ev: MouseEvent) => {
+      if (!bannerDragRef.current) return;
+      const delta = ev.clientY - bannerDragRef.current.startY;
+      const newPos = Math.max(0, Math.min(100, bannerDragRef.current.startPos + delta * 0.5));
+      setBannerPos(Math.round(newPos));
+    };
+    const onUp = () => {
+      bannerDragRef.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [editingBannerPos, currentBannerPos]);
+
+  const saveBannerPosition = async () => {
+    if (bannerPos === null) return;
+    await supabase
+      .from("workspaces")
+      .update({ banner_position: bannerPos })
+      .eq("id", workspace.id);
+    queryClient.invalidateQueries({ queryKey: ["workspace-storefront", slug] });
+    setEditingBannerPos(false);
+    toast.success("Posição do banner salva!");
+  };
+
   const hasAccess = (productId: string) => accessList.includes(productId);
 
   const handleProductClick = (product: any) => {
@@ -153,20 +188,85 @@ export default function WorkspaceStorefront() {
     if (product.type === "lms") {
       navigate(`/learn/${product.id}`);
     }
-    // Download products show files inline
   };
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: bgColor }}>
+      {/* Producer toolbar */}
+      {isProducer && (
+        <div className="sticky top-0 z-50 flex items-center gap-2 px-4 py-2 bg-black/90 backdrop-blur-sm text-white text-sm">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-white hover:text-white hover:bg-white/10 gap-1.5"
+            onClick={() => navigate("/workspace")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+          <div className="flex-1" />
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-white hover:text-white hover:bg-white/10 gap-1.5"
+            onClick={() => setViewAsClient(!viewAsClient)}
+          >
+            {viewAsClient ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {viewAsClient ? "Visão produtor" : "Visão cliente"}
+          </Button>
+        </div>
+      )}
+
       {/* Banner */}
       {workspace.banner_url ? (
-        <div className="w-full max-h-[200px] overflow-hidden">
+        <div
+          ref={bannerRef}
+          className="w-full max-h-[200px] overflow-hidden relative"
+          style={{ cursor: editingBannerPos ? "ns-resize" : undefined }}
+          onMouseDown={handleBannerMouseDown}
+        >
           <img
             src={workspace.banner_url}
             alt="Banner"
-            className="w-full h-[200px] object-cover"
-            style={{ objectPosition: `center ${(workspace as any).banner_position ?? 50}%` }}
+            className="w-full h-[200px] object-cover select-none"
+            style={{ objectPosition: `center ${currentBannerPos}%` }}
+            draggable={false}
           />
+          {showProducerControls && (
+            <div className="absolute top-2 left-2 flex gap-1.5">
+              {!editingBannerPos ? (
+                <Button
+                  size="sm"
+                  className="h-7 text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0"
+                  onClick={() => { setEditingBannerPos(true); setBannerPos(currentBannerPos); }}
+                >
+                  <Move className="h-3 w-3" /> Ajustar posição
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    size="sm"
+                    className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-0"
+                    onClick={saveBannerPosition}
+                  >
+                    Salvar
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-7 text-xs bg-black/60 hover:bg-black/80 text-white border-0"
+                    onClick={() => { setEditingBannerPos(false); setBannerPos(null); }}
+                  >
+                    Cancelar
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+          {editingBannerPos && (
+            <div className="absolute inset-0 border-2 border-dashed border-white/50 pointer-events-none flex items-center justify-center">
+              <span className="bg-black/60 text-white text-xs px-2 py-1 rounded">Arraste para reposicionar</span>
+            </div>
+          )}
         </div>
       ) : (
         <div
