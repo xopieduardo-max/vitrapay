@@ -363,31 +363,6 @@ export default function MinhaConta() {
                       )}
                     </div>
 
-                    {/* Expanded files list */}
-                    <AnimatePresence>
-                      {isExpanded && hasMultipleFiles && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="space-y-1.5 pt-2 border-t border-border"
-                        >
-                          {product.files.map((f: any) => (
-                            <a
-                              key={f.id}
-                              href={f.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors"
-                            >
-                              <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />
-                              <span className="text-xs font-medium truncate flex-1">{f.file_name}</span>
-                              <Download className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                            </a>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                 </motion.div>
               );
