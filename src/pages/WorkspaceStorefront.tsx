@@ -209,6 +209,12 @@ export default function WorkspaceStorefront() {
   const hasAccess = (productId: string) => accessList.includes(productId);
 
   const handleProductClick = (product: any) => {
+    // Producer view: open product edit page
+    if (showProducerControls) {
+      navigate(`/products/${product.id}/edit`);
+      return;
+    }
+    // Client view (or actual client): checkout or access
     if (!hasAccess(product.id)) {
       navigate(`/checkout/${product.id}`);
       return;
