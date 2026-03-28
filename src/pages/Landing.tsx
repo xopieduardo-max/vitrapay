@@ -14,6 +14,8 @@ import dashboardPreview from "@/assets/dashboard-preview.png";
 import appMockup from "@/assets/app-mockup.png";
 import iphoneMockup3d from "@/assets/iphone-mockup-3d.png";
 import iphone3dMockup from "@/assets/iphone-3d-mockup.png";
+import membroBlack1 from "@/assets/membro-black-1.png";
+import membroBlack2 from "@/assets/membro-black-2.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
