@@ -17,6 +17,8 @@ function getFileIcon(name: string) {
   if (["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext)) return Image;
   if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) return FileArchive;
   if (["pdf"].includes(ext)) return FileText;
+  if (["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext)) return FileAudio;
+  if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return FileVideo;
   return File;
 }
 
@@ -35,6 +37,20 @@ function isPreviewable(name: string) {
 function isImageFile(name: string) {
   const ext = name.split(".").pop()?.toLowerCase() || "";
   return ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext);
+}
+
+function isAudioFile(name: string) {
+  const ext = name.split(".").pop()?.toLowerCase() || "";
+  return ["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext);
+}
+
+function isPdfFile(name: string) {
+  return name.split(".").pop()?.toLowerCase() === "pdf";
+}
+
+function isVideoFile(name: string) {
+  const ext = name.split(".").pop()?.toLowerCase() || "";
+  return ["mp4", "mov", "webm"].includes(ext);
 }
 
 export default function MinhaContaDownload() {
