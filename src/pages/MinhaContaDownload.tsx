@@ -40,6 +40,7 @@ function isImageFile(name: string) {
 export default function MinhaContaDownload() {
   const { productId } = useParams<{ productId: string }>();
   const { user, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [authTrigger, setAuthTrigger] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
