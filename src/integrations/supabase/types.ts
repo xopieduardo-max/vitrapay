@@ -779,6 +779,7 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
+          recovery_notified_at: string | null
           status: string
           utm_campaign: string | null
           utm_content: string | null
@@ -796,6 +797,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
+          recovery_notified_at?: string | null
           status?: string
           utm_campaign?: string | null
           utm_content?: string | null
@@ -813,6 +815,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
+          recovery_notified_at?: string | null
           status?: string
           utm_campaign?: string | null
           utm_content?: string | null
