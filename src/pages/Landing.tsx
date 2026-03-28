@@ -1197,9 +1197,9 @@ export default function Landing() {
 
           {/* Bottom bar */}
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="px-2.5 py-0.5 text-[10px] font-bold rounded border border-white/10 text-white/50 tracking-wider">CNPJ</span>
-              <span className="text-[12px] text-white/25">63.662.008/0001-33</span>
+            <div className="flex items-center gap-2 bg-white/[0.06] rounded-full pl-1 pr-4 py-1">
+              <span className="px-3 py-1 text-[10px] font-bold rounded-full bg-[hsl(48,96%,53%)] text-black tracking-wider">CNPJ</span>
+              <span className="text-[12px] text-white/40">63.662.008/0001-33</span>
             </div>
             <span className="text-[12px] text-white/25">© 2026 VitraPay Tecnologia Ltda. Todos os direitos reservados.</span>
           </div>
