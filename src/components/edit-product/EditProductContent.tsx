@@ -45,6 +45,8 @@ import {
   Pencil,
   Video,
   Eye,
+  Download,
+  Paperclip,
 } from "lucide-react";
 
 interface Props {
@@ -85,6 +87,8 @@ export default function EditProductContent({ productId }: Props) {
   const [savingLesson, setSavingLesson] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [lessonFiles, setLessonFiles] = useState<{ id?: string; file_name: string; file_url: string; file_size: number }[]>([]);
+  const [uploadingLessonFile, setUploadingLessonFile] = useState(false);
 
   // Delete confirm
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -222,10 +226,11 @@ export default function EditProductContent({ productId }: Props) {
       duration_minutes: 0,
       is_free: false,
     });
+    setLessonFiles([]);
     setLessonDialog({ open: true, moduleId });
   };
 
-  const openEditLesson = (lesson: any) => {
+  const openEditLesson = async (lesson: any) => {
     setLessonForm({
       title: lesson.title,
       description: lesson.description || "",
@@ -234,6 +239,18 @@ export default function EditProductContent({ productId }: Props) {
       duration_minutes: lesson.duration_minutes || 0,
       is_free: lesson.is_free || false,
     });
+    // Load existing files for this lesson
+    const { data: files } = await supabase
+      .from("lesson_files")
+      .select("*")
+      .eq("lesson_id", lesson.id)
+      .order("position");
+    setLessonFiles((files || []).map((f: any) => ({
+      id: f.id,
+      file_name: f.file_name,
+      file_url: f.file_url,
+      file_size: f.file_size || 0,
+    })));
     setLessonDialog({ open: true, moduleId: lesson.module_id, editing: lesson });
   };
 
@@ -287,6 +304,32 @@ export default function EditProductContent({ productId }: Props) {
     }
   };
 
+  // Upload lesson material file
+  const uploadLessonFile = async (file: File) => {
+    setUploadingLessonFile(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `lesson-materials/${productId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("product-files").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("product-files").getPublicUrl(path);
+      setLessonFiles(prev => [...prev, {
+        file_name: file.name,
+        file_url: data.publicUrl,
+        file_size: file.size,
+      }]);
+      toast.success("Arquivo anexado!");
+    } catch {
+      toast.error("Erro no upload do arquivo");
+    } finally {
+      setUploadingLessonFile(false);
+    }
+  };
+
+  const removeLessonFile = (index: number) => {
+    setLessonFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const saveLesson = async () => {
     if (!lessonForm.title.trim()) {
       toast.error("Nome da aula é obrigatório");
@@ -298,7 +341,10 @@ export default function EditProductContent({ productId }: Props) {
     }
     setSavingLesson(true);
     try {
+      let lessonId: string;
+
       if (lessonDialog.editing) {
+        lessonId = lessonDialog.editing.id;
         const { error } = await supabase
           .from("lessons")
           .update({
@@ -309,12 +355,36 @@ export default function EditProductContent({ productId }: Props) {
             duration_minutes: lessonForm.duration_minutes || 0,
             is_free: lessonForm.is_free,
           })
-          .eq("id", lessonDialog.editing.id);
+          .eq("id", lessonId);
         if (error) throw error;
+
+        // Sync files: delete removed, insert new
+        const existingIds = lessonFiles.filter(f => f.id).map(f => f.id!);
+        // Delete files that were removed
+        await supabase
+          .from("lesson_files")
+          .delete()
+          .eq("lesson_id", lessonId)
+          .not("id", "in", `(${existingIds.length > 0 ? existingIds.join(",") : "00000000-0000-0000-0000-000000000000"})`);
+
+        // Insert new files (no id)
+        const newFiles = lessonFiles.filter(f => !f.id);
+        if (newFiles.length > 0) {
+          await supabase.from("lesson_files").insert(
+            newFiles.map((f, i) => ({
+              lesson_id: lessonId,
+              file_name: f.file_name,
+              file_url: f.file_url,
+              file_size: f.file_size,
+              position: existingIds.length + i,
+            }))
+          );
+        }
+
         toast.success("Aula atualizada!");
       } else {
         const moduleLessons = getLessonsForModule(lessonDialog.moduleId!);
-        const { error } = await supabase.from("lessons").insert({
+        const { data: newLesson, error } = await supabase.from("lessons").insert({
           module_id: lessonDialog.moduleId!,
           title: lessonForm.title,
           description: lessonForm.description || null,
@@ -323,11 +393,26 @@ export default function EditProductContent({ productId }: Props) {
           duration_minutes: lessonForm.duration_minutes || 0,
           is_free: lessonForm.is_free,
           position: moduleLessons.length,
-        });
+        }).select("id").single();
         if (error) {
           console.error("Lesson insert error:", error);
           throw error;
         }
+        lessonId = newLesson.id;
+
+        // Insert files
+        if (lessonFiles.length > 0) {
+          await supabase.from("lesson_files").insert(
+            lessonFiles.map((f, i) => ({
+              lesson_id: lessonId,
+              file_name: f.file_name,
+              file_url: f.file_url,
+              file_size: f.file_size,
+              position: i,
+            }))
+          );
+        }
+
         toast.success("Aula criada!");
       }
       setLessonDialog({ open: false });
@@ -723,6 +808,58 @@ export default function EditProductContent({ productId }: Props) {
                 className="mt-1"
                 placeholder="Texto complementar, links, materiais..."
               />
+            </div>
+
+            {/* Material complementar */}
+            <div>
+              <Label className="text-xs">Material complementar (opcional)</Label>
+              <p className="text-[0.6rem] text-muted-foreground mb-2">
+                Arquivos para download que os alunos podem baixar nesta aula
+              </p>
+
+              {lessonFiles.length > 0 && (
+                <div className="space-y-1.5 mb-2">
+                  {lessonFiles.map((file, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs"
+                    >
+                      <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="flex-1 truncate">{file.file_name}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        {file.file_size > 0 ? `${(file.file_size / 1024 / 1024).toFixed(1)}MB` : ""}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeLessonFile(i)}
+                        className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {uploadingLessonFile ? (
+                <div className="flex items-center gap-2 text-xs text-primary py-2">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>Enviando arquivo...</span>
+                </div>
+              ) : (
+                <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-primary hover:underline">
+                  <Upload className="h-3 w-3" />
+                  Anexar arquivo
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadLessonFile(file);
+                    }}
+                  />
+                </label>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
