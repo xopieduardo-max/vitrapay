@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -9,14 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Image, Upload, X, Eye, GripVertical, ExternalLink } from "lucide-react";
+import { Loader2, Image, Upload, X, Eye, GripVertical, ExternalLink, Copy, Check } from "lucide-react";
 
 export default function WorkspaceSettings() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [form, setForm] = useState({
     name: "Meu Workspace",
@@ -203,11 +206,31 @@ export default function WorkspaceSettings() {
         </div>
         <div className="flex gap-2">
           {previewUrl && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                <Eye className="h-4 w-4 mr-1" /> Visualizar
-              </a>
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => {
+                  const fullUrl = `${window.location.origin}${previewUrl}`;
+                  navigator.clipboard.writeText(fullUrl);
+                  setCopied(true);
+                  toast.success("Link copiado!");
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? "Copiado" : "Copiar link"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => navigate(previewUrl)}
+              >
+                <Eye className="h-4 w-4" /> Visualizar
+              </Button>
+            </>
           )}
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
