@@ -294,6 +294,46 @@ Deno.serve(async (req) => {
         await supabase.from("transactions").insert(refundTxns)
           .catch((err: any) => console.error(`${txnCategory} transaction error:`, err));
 
+        // Deduct from producer wallet
+        const { data: producerWallet } = await supabase
+          .from("wallets")
+          .select("id, balance_available, balance_pending, balance_total")
+          .eq("user_id", sale.producer_id)
+          .maybeSingle();
+
+        if (producerWallet) {
+          const deductAvailable = Math.min(sale.amount, Number(producerWallet.balance_available));
+          const deductPending = Math.min(sale.amount - deductAvailable, Number(producerWallet.balance_pending));
+          await supabase.from("wallets").update({
+            balance_available: Math.max(0, Number(producerWallet.balance_available) - deductAvailable),
+            balance_pending: Math.max(0, Number(producerWallet.balance_pending) - deductPending),
+            balance_total: Math.max(0, Number(producerWallet.balance_total) - sale.amount),
+          }).eq("id", producerWallet.id);
+          console.log(`Wallet deducted for producer ${sale.producer_id}: -${sale.amount}`);
+        }
+
+        // Deduct affiliate commissions from their wallets
+        if (saleCommissions) {
+          for (const c of saleCommissions) {
+            const { data: affWallet } = await supabase
+              .from("wallets")
+              .select("id, balance_available, balance_pending, balance_total")
+              .eq("user_id", c.affiliate_id)
+              .maybeSingle();
+
+            if (affWallet) {
+              const affDeductAvailable = Math.min(c.amount, Number(affWallet.balance_available));
+              const affDeductPending = Math.min(c.amount - affDeductAvailable, Number(affWallet.balance_pending));
+              await supabase.from("wallets").update({
+                balance_available: Math.max(0, Number(affWallet.balance_available) - affDeductAvailable),
+                balance_pending: Math.max(0, Number(affWallet.balance_pending) - affDeductPending),
+                balance_total: Math.max(0, Number(affWallet.balance_total) - c.amount),
+              }).eq("id", affWallet.id);
+              console.log(`Wallet deducted for affiliate ${c.affiliate_id}: -${c.amount}`);
+            }
+          }
+        }
+
         console.log(`Sale ${saleStatus}:`, sale.id);
 
         // Send push notification to producer about refund/chargeback
