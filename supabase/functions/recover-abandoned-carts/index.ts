@@ -105,7 +105,7 @@ async function sendRecoveryEmail(
   now: Date,
 ): Promise<boolean> {
   const buyerEmail = cart.buyer_email!;
-  const checkoutLink = `https://vitrapay.lovable.app/checkout/${cart.product_id}`;
+  const checkoutLink = `https://www.vitrapay.com.br/checkout/${cart.product_id}`;
 
   if (await isSuppressed(supabase, buyerEmail)) {
     console.log(`Skipping suppressed email: ${buyerEmail}`);

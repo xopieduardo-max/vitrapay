@@ -25,7 +25,7 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
   const { buyer_name, product_title, product_type, product_id, temp_password, buyer_email } = params;
 
   // Always direct to /minha-conta — the buyer's portal
-  const accessLink = `https://vitrapay.lovable.app/minha-conta`;
+  const accessLink = `https://www.vitrapay.com.br/minha-conta`;
   const accessText = product_type === "course" ? "Acessar Meu Curso" : "Acessar Meus Produtos";
 
   // Account credentials section (only shown for new accounts)
@@ -124,7 +124,7 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
 
 function buildPlainText(params: PurchaseEmailParams): string {
   const { buyer_name, product_title, temp_password, buyer_email } = params;
-  const accessLink = `https://vitrapay.lovable.app/minha-conta`;
+  const accessLink = `https://www.vitrapay.com.br/minha-conta`;
   
   let credentialsText = "";
   if (temp_password) {
