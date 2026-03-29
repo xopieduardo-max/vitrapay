@@ -59,6 +59,14 @@ serve(async (req) => {
       });
     }
 
+    const validKeyTypes = ["cpf", "cnpj", "email", "phone", "random_key"];
+    if (!pix_key_type || !validKeyTypes.includes(pix_key_type)) {
+      return new Response(JSON.stringify({ error: "Tipo de chave Pix inválido" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check profile completeness before allowing withdrawal

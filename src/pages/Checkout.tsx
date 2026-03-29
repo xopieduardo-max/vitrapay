@@ -404,6 +404,10 @@ export default function Checkout() {
       toast({ title: "CPF/CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
       return;
     }
+    if (!form.phone || form.phone.replace(/\D/g, "").length < 10) {
+      toast({ title: "Telefone é obrigatório", description: "Informe um telefone com DDD.", variant: "destructive" });
+      return;
+    }
     if (paymentMethod === "card") {
       if (!form.cardNumber || !form.cardExpiry || !form.cardCvv || !form.cardHolder) {
         toast({ title: "Preencha todos os dados do cartão", variant: "destructive" });

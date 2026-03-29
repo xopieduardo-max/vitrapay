@@ -108,8 +108,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const phoneClean = (buyer_phone || "").replace(/\D/g, "") || "11999999999";
-    const postalCode = (buyer_postal_code || "").replace(/\D/g, "") || "69000000";
+    const phoneClean = (buyer_phone || "").replace(/\D/g, "");
+    if (!phoneClean || phoneClean.length < 10) {
+      return new Response(JSON.stringify({ error: "Telefone é obrigatório" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const postalCode = (buyer_postal_code || "").replace(/\D/g, "");
+    if (!postalCode || postalCode.length < 8) {
+      return new Response(JSON.stringify({ error: "CEP é obrigatório para pagamento com cartão" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Create or find customer
     let customerId: string | null = null;
@@ -360,50 +371,21 @@ Deno.serve(async (req) => {
         await supabase.from("transactions").insert(txns)
           .catch((err: any) => console.error("Transaction insert error:", err));
 
-        // ── Update wallet: Card = balance_pending (D+2) ──
+        // ── Update wallet: Card = balance_pending (D+2) — atomic to prevent race conditions ──
         console.log(`Updating wallet for producer ${product.producer_id}: +${producerNet} pending (release: ${releaseDateStr})`);
 
-        const { data: existingWallet } = await supabase
-          .from("wallets")
-          .select("id, balance_pending, balance_total")
-          .eq("user_id", product.producer_id)
-          .maybeSingle();
+        await supabase.rpc("increment_wallet", {
+          p_user_id: product.producer_id,
+          p_pending_delta: producerNet,
+          p_total_delta: producerNet,
+        }).then(({ error }) => { if (error) console.error("Wallet increment error (producer):", error); });
 
-        if (existingWallet) {
-          await supabase.from("wallets").update({
-            balance_pending: Number(existingWallet.balance_pending) + producerNet,
-            balance_total: Number(existingWallet.balance_total) + producerNet,
-          }).eq("id", existingWallet.id);
-        } else {
-          await supabase.from("wallets").insert({
-            user_id: product.producer_id,
-            balance_available: 0,
-            balance_pending: producerNet,
-            balance_total: producerNet,
-          });
-        }
-
-        // Update affiliate wallet if applicable
         if (affiliateId && commissionAmount > 0) {
-          const { data: affWallet } = await supabase
-            .from("wallets")
-            .select("id, balance_pending, balance_total")
-            .eq("user_id", affiliateId)
-            .maybeSingle();
-
-          if (affWallet) {
-            await supabase.from("wallets").update({
-              balance_pending: Number(affWallet.balance_pending) + commissionAmount,
-              balance_total: Number(affWallet.balance_total) + commissionAmount,
-            }).eq("id", affWallet.id);
-          } else {
-            await supabase.from("wallets").insert({
-              user_id: affiliateId,
-              balance_available: 0,
-              balance_pending: commissionAmount,
-              balance_total: commissionAmount,
-            });
-          }
+          await supabase.rpc("increment_wallet", {
+            p_user_id: affiliateId,
+            p_pending_delta: commissionAmount,
+            p_total_delta: commissionAmount,
+          }).then(({ error }) => { if (error) console.error("Wallet increment error (affiliate):", error); });
         }
 
         console.log(`Sale processed: Card D+2, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDateStr}`);

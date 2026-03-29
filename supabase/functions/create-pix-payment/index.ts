@@ -18,8 +18,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!Number.isInteger(amount) || amount <= 0) {
-      return new Response(JSON.stringify({ error: "Invalid amount" }), {
+    const MIN_PIX_AMOUNT = 100; // R$ 1,00
+    if (!Number.isInteger(amount) || amount < MIN_PIX_AMOUNT) {
+      return new Response(JSON.stringify({ error: "Valor mínimo para PIX é R$ 1,00" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

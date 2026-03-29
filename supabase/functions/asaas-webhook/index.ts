@@ -621,51 +621,21 @@ Deno.serve(async (req) => {
       .then(() => console.log("Transactions recorded:", txns.length))
       .catch((err: any) => console.error("Transaction insert error:", err));
 
-    // ── Update wallet: PIX = balance_available (D+0) ──
+    // ── Update wallet: PIX = balance_available (D+0) — atomic to prevent race conditions ──
     console.log(`Updating wallet for producer ${product.producer_id}: +${producerNet} available`);
-    
-    // Upsert wallet - create if not exists
-    const { data: existingWallet } = await supabase
-      .from("wallets")
-      .select("id, balance_available, balance_total")
-      .eq("user_id", product.producer_id)
-      .maybeSingle();
 
-    if (existingWallet) {
-      await supabase.from("wallets").update({
-        balance_available: Number(existingWallet.balance_available) + producerNet,
-        balance_total: Number(existingWallet.balance_total) + producerNet,
-      }).eq("id", existingWallet.id);
-    } else {
-      await supabase.from("wallets").insert({
-        user_id: product.producer_id,
-        balance_available: producerNet,
-        balance_pending: 0,
-        balance_total: producerNet,
-      });
-    }
+    await supabase.rpc("increment_wallet", {
+      p_user_id: product.producer_id,
+      p_available_delta: producerNet,
+      p_total_delta: producerNet,
+    }).then(({ error }: any) => { if (error) console.error("Wallet increment error (producer):", error); });
 
-    // Update affiliate wallet if applicable
     if (affiliateUserId && commissionAmount > 0) {
-      const { data: affWallet } = await supabase
-        .from("wallets")
-        .select("id, balance_available, balance_total")
-        .eq("user_id", affiliateUserId)
-        .maybeSingle();
-
-      if (affWallet) {
-        await supabase.from("wallets").update({
-          balance_available: Number(affWallet.balance_available) + commissionAmount,
-          balance_total: Number(affWallet.balance_total) + commissionAmount,
-        }).eq("id", affWallet.id);
-      } else {
-        await supabase.from("wallets").insert({
-          user_id: affiliateUserId,
-          balance_available: commissionAmount,
-          balance_pending: 0,
-          balance_total: commissionAmount,
-        });
-      }
+      await supabase.rpc("increment_wallet", {
+        p_user_id: affiliateUserId,
+        p_available_delta: commissionAmount,
+        p_total_delta: commissionAmount,
+      }).then(({ error }: any) => { if (error) console.error("Wallet increment error (affiliate):", error); });
     }
 
     console.log(`Sale processed: PIX D+0, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDate}`);
