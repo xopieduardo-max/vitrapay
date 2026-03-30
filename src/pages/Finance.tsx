@@ -18,6 +18,7 @@ import { motion } from "framer-motion";
 import {
   Wallet, ArrowDownToLine, ArrowUpRight, TrendingUp, Clock, Loader2, DollarSign,
   AlertCircle, Lock, Info, ShieldCheck, ArrowLeft, ArrowRight, CheckCircle2,
+  QrCode, Copy, Check,
 } from "lucide-react";
 
 // ── Platform constants ──
@@ -33,6 +34,14 @@ export default function Finance() {
   const [withdrawStep, setWithdrawStep] = useState(1);
   const [detailView, setDetailView] = useState<"available" | "held" | null>(null);
   const [amount, setAmount] = useState("");
+
+  // ── Gerar Pix Avulso ──
+  const [pixOpen, setPixOpen] = useState(false);
+  const [pixAmount, setPixAmount] = useState("");
+  const [pixDesc, setPixDesc] = useState("");
+  const [pixResult, setPixResult] = useState<{ qrCode: string; copyPaste: string; value: number; dueDate: string } | null>(null);
+  const [pixCopied, setPixCopied] = useState(false);
+  const [pixGenerating, setPixGenerating] = useState(false);
 
   // Get saved pix key from profile
   const { data: profile } = useQuery({
@@ -154,6 +163,57 @@ export default function Finance() {
     },
   });
 
+  async function handleGeneratePix() {
+    const parsedPixAmount = Math.round(parseFloat((pixAmount || "0").replace(",", ".")) * 100);
+    if (isNaN(parsedPixAmount) || parsedPixAmount < 100) {
+      toast({ title: "Valor inválido", description: "Informe um valor de pelo menos R$ 1,00.", variant: "destructive" });
+      return;
+    }
+    setPixGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-pix-avulso", {
+        body: {
+          amount: parsedPixAmount,
+          description: pixDesc.trim() || undefined,
+        },
+      });
+      if (error) {
+        const body = error.context ? await error.context.json().catch(() => null) : null;
+        throw new Error(body?.error || error.message || "Erro ao gerar Pix");
+      }
+      if (data?.error) throw new Error(data.error);
+      if (!data?.pix_copy_paste) throw new Error("QR Code não retornado pelo gateway");
+      setPixResult({
+        qrCode: data.pix_qr_code || "",
+        copyPaste: data.pix_copy_paste,
+        value: data.value,
+        dueDate: data.due_date,
+      });
+    } catch (err: any) {
+      toast({ title: "Erro ao gerar Pix", description: err.message, variant: "destructive" });
+    } finally {
+      setPixGenerating(false);
+    }
+  }
+
+  function handleCopyPix() {
+    if (!pixResult) return;
+    navigator.clipboard.writeText(pixResult.copyPaste);
+    setPixCopied(true);
+    toast({ title: "Copiado!", description: "Código Pix copiado para a área de transferência." });
+    setTimeout(() => setPixCopied(false), 3000);
+  }
+
+  function handlePixDialogClose(open: boolean) {
+    setPixOpen(open);
+    if (!open) {
+      setPixAmount("");
+      setPixDesc("");
+      setPixResult(null);
+      setPixCopied(false);
+    }
+  }
+
   const statusColors: Record<string, string> = {
     pending: "bg-warning/10 text-warning border-warning/20",
     processing: "bg-primary/10 text-primary border-primary/20",
@@ -175,6 +235,151 @@ export default function Finance() {
           <h1 className="text-2xl font-bold tracking-tight">Financeiro</h1>
           <p className="text-sm text-muted-foreground mt-1">Gerencie seus ganhos e saques</p>
         </div>
+        <div className="flex items-center gap-2">
+          {/* ── Gerar Pix Avulso ── */}
+          <Dialog open={pixOpen} onOpenChange={handlePixDialogClose}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <QrCode className="h-4 w-4" strokeWidth={1.5} />
+                Gerar Pix
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Gerar Pix Avulso</DialogTitle>
+                <p className="text-sm text-muted-foreground">
+                  Gere um QR Code Pix para enviar diretamente ao seu cliente.
+                </p>
+              </DialogHeader>
+
+              {!pixResult ? (
+                <div className="space-y-5 pt-1">
+                  <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 flex items-center gap-2">
+                    <Info className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <p className="text-xs text-muted-foreground">
+                      O valor será cobrado via Pix e creditado na sua carteira VitraPay após o pagamento.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Valor <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="flex items-center rounded-md border border-input bg-background overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+                      <span className="px-3 text-sm text-muted-foreground font-medium bg-muted/50 h-10 flex items-center border-r border-input">
+                        R$
+                      </span>
+                      <Input
+                        placeholder="50,00"
+                        value={pixAmount}
+                        onChange={(e) => setPixAmount(e.target.value)}
+                        className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Descrição <span className="text-muted-foreground text-xs font-normal">(opcional)</span>
+                    </Label>
+                    <Input
+                      placeholder="Ex: Consultoria, Produto X..."
+                      value={pixDesc}
+                      onChange={(e) => setPixDesc(e.target.value)}
+                      maxLength={72}
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-1">
+                    <Button variant="outline" className="flex-1" onClick={() => setPixOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="flex-1 gap-2"
+                      disabled={!pixAmount || pixGenerating}
+                      onClick={handleGeneratePix}
+                    >
+                      {pixGenerating ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <QrCode className="h-4 w-4" />
+                          Gerar Pix
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-5 pt-1">
+                  {/* QR Code */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="rounded-2xl border border-border p-4 bg-white">
+                      {pixResult.qrCode ? (
+                        <img
+                          src={`data:image/png;base64,${pixResult.qrCode}`}
+                          alt="QR Code Pix"
+                          className="w-52 h-52 rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-52 h-52 flex items-center justify-center text-muted-foreground text-xs">
+                          QR Code indisponível
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold">
+                        R$ {pixResult.value?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </p>
+                      {pixResult.dueDate && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Válido até {new Date(pixResult.dueDate + "T12:00:00").toLocaleDateString("pt-BR")}
+                        </p>
+                      )}
+                      {pixDesc && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{pixDesc}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Copia e cola */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Código Pix (copia e cola)</Label>
+                    <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs font-mono text-muted-foreground break-all leading-relaxed max-h-20 overflow-y-auto">
+                      {pixResult.copyPaste}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1 gap-2"
+                      onClick={() => setPixResult(null)}
+                    >
+                      Gerar Novo
+                    </Button>
+                    <Button
+                      className="flex-1 gap-2"
+                      onClick={handleCopyPix}
+                    >
+                      {pixCopied ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Copiado!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          Copiar Código
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
         <Dialog open={withdrawOpen} onOpenChange={(open) => {
           setWithdrawOpen(open);
           if (!open) { setWithdrawStep(1); setAmount(""); }
@@ -342,6 +547,7 @@ export default function Finance() {
             )}
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Stats */}

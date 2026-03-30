@@ -460,6 +460,65 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Avulso payment (no product_id) ──
+    if (!pending.product_id) {
+      const producerId = pending.producer_id;
+      if (!producerId) {
+        console.error("Avulso payment missing producer_id:", asaasPaymentId);
+        await supabase.from("pending_payments").update({ status: "error" }).eq("id", pending.id);
+        return new Response(JSON.stringify({ status: "avulso_missing_producer" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Fee: same platform PIX fee
+      const FEE_PIX_PLATFORM = 249;
+      const producerNet = Math.max(0, pending.amount - FEE_PIX_PLATFORM);
+
+      // Record transaction
+      await supabase.from("transactions").insert({
+        user_id: producerId,
+        type: "credit",
+        category: "sale",
+        amount: producerNet,
+        balance_type: "available",
+        reference_id: pending.id,
+        release_date: new Date().toISOString(),
+        status: "completed",
+      }).catch((e: any) => console.error("Avulso transaction error:", e));
+
+      // Credit wallet (D+0)
+      await supabase.rpc("increment_wallet", {
+        p_user_id: producerId,
+        p_available_delta: producerNet,
+        p_total_delta: producerNet,
+      }).then(({ error: e }: any) => { if (e) console.error("Avulso wallet increment error:", e); });
+
+      await supabase.from("pending_payments").update({ status: "confirmed" }).eq("id", pending.id);
+
+      console.log(`Avulso payment confirmed for producer ${producerId}: net=${producerNet}`);
+
+      // Push notification — same style as regular sale
+      try {
+        const fmtValue = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
+        const buyerLabel = pending.buyer_name ? ` de ${pending.buyer_name}` : "";
+        await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            producer_id: producerId,
+            title: "Nova venda! 🎉",
+            body: `Pix${buyerLabel} de ${fmtValue} confirmado.`,
+            url: "/sales",
+          }),
+        });
+      } catch (_) { /* non-critical */ }
+
+      return new Response(JSON.stringify({ status: "avulso_confirmed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Check if sale already exists
     const { data: existingSale } = await supabase
       .from("sales")
