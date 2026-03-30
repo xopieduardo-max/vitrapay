@@ -1672,6 +1672,15 @@ export type Database = {
         Args: { affiliate_id: string }
         Returns: undefined
       }
+      increment_wallet: {
+        Args: {
+          p_available_delta?: number
+          p_pending_delta?: number
+          p_total_delta?: number
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
