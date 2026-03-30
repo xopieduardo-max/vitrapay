@@ -818,7 +818,8 @@ export type Database = {
           buyer_phone: string | null
           created_at: string
           id: string
-          product_id: string
+          producer_id: string | null
+          product_id: string | null
           recovery_notified_at: string | null
           recovery_second_notified_at: string | null
           status: string
@@ -840,7 +841,8 @@ export type Database = {
           buyer_phone?: string | null
           created_at?: string
           id?: string
-          product_id: string
+          producer_id?: string | null
+          product_id?: string | null
           recovery_notified_at?: string | null
           recovery_second_notified_at?: string | null
           status?: string
@@ -862,7 +864,8 @@ export type Database = {
           buyer_phone?: string | null
           created_at?: string
           id?: string
-          product_id?: string
+          producer_id?: string | null
+          product_id?: string | null
           recovery_notified_at?: string | null
           recovery_second_notified_at?: string | null
           status?: string
