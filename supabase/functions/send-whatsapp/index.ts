@@ -80,8 +80,8 @@ Deno.serve(async (req) => {
           Authorization: `Bearer ${WHATSAPP_JWT}`,
         },
         body: JSON.stringify({
-          jid,
-          message: { text: message },
+          chat_id: jid,
+          text: message,
         }),
       }
     );
