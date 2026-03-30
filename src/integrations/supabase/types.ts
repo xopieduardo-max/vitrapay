@@ -49,6 +49,45 @@ export type Database = {
           },
         ]
       }
+      cart_recovery_settings: {
+        Row: {
+          email_enabled: boolean
+          first_delay_minutes: number
+          id: number
+          max_age_hours: number
+          second_delay_hours: number
+          updated_at: string
+          whatsapp_enabled: boolean
+          whatsapp_first_message: string
+          whatsapp_image_url: string | null
+          whatsapp_second_message: string
+        }
+        Insert: {
+          email_enabled?: boolean
+          first_delay_minutes?: number
+          id?: number
+          max_age_hours?: number
+          second_delay_hours?: number
+          updated_at?: string
+          whatsapp_enabled?: boolean
+          whatsapp_first_message?: string
+          whatsapp_image_url?: string | null
+          whatsapp_second_message?: string
+        }
+        Update: {
+          email_enabled?: boolean
+          first_delay_minutes?: number
+          id?: number
+          max_age_hours?: number
+          second_delay_hours?: number
+          updated_at?: string
+          whatsapp_enabled?: boolean
+          whatsapp_first_message?: string
+          whatsapp_image_url?: string | null
+          whatsapp_second_message?: string
+        }
+        Relationships: []
+      }
       checkout_blocks: {
         Row: {
           block_type: string
@@ -776,6 +815,7 @@ export type Database = {
           buyer_cpf: string | null
           buyer_email: string | null
           buyer_name: string | null
+          buyer_phone: string | null
           created_at: string
           id: string
           product_id: string
@@ -787,6 +827,8 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          whatsapp_notified_at: string | null
+          whatsapp_second_notified_at: string | null
         }
         Insert: {
           affiliate_ref?: string | null
@@ -795,6 +837,7 @@ export type Database = {
           buyer_cpf?: string | null
           buyer_email?: string | null
           buyer_name?: string | null
+          buyer_phone?: string | null
           created_at?: string
           id?: string
           product_id: string
@@ -806,6 +849,8 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          whatsapp_notified_at?: string | null
+          whatsapp_second_notified_at?: string | null
         }
         Update: {
           affiliate_ref?: string | null
@@ -814,6 +859,7 @@ export type Database = {
           buyer_cpf?: string | null
           buyer_email?: string | null
           buyer_name?: string | null
+          buyer_phone?: string | null
           created_at?: string
           id?: string
           product_id?: string
@@ -825,6 +871,8 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          whatsapp_notified_at?: string | null
+          whatsapp_second_notified_at?: string | null
         }
         Relationships: []
       }

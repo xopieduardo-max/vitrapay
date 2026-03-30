@@ -5,19 +5,10 @@ const SENDER_DOMAIN = "notify.vitrapay.com.br";
 const FROM_DOMAIN = "vitrapay.com.br";
 const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png";
 
-// First reminder: 30min–23h; Second reminder: 6h after first, still within 23h
-const FIRST_MIN_AGE_MINUTES = 30;
-const MAX_AGE_HOURS = 23;
-const SECOND_REMINDER_DELAY_HOURS = 6;
-
 function buildRecoveryEmailHtml(buyerName: string, productTitle: string, checkoutLink: string, isSecond: boolean): string {
   const name = buyerName || "Cliente";
-  const headline = isSecond
-    ? "⏰ Última chance! Seu pedido vai expirar"
-    : "🛒 Seu pedido está esperando!";
-  const subtitle = isSecond
-    ? "O link de pagamento expira em breve"
-    : "Notamos que você não finalizou seu pagamento";
+  const headline = isSecond ? "⏰ Última chance! Seu pedido vai expirar" : "🛒 Seu pedido está esperando!";
+  const subtitle = isSecond ? "O link de pagamento expira em breve" : "Notamos que você não finalizou seu pagamento";
   const bodyText = isSecond
     ? "Este é nosso último lembrete — o link de pagamento do produto abaixo expira em poucas horas:"
     : "Percebemos que você iniciou a compra do produto abaixo, mas o pagamento ainda não foi confirmado:";
@@ -78,10 +69,7 @@ function buildPlainText(buyerName: string, productTitle: string, checkoutLink: s
 
 async function getOrCreateUnsubToken(supabase: any, email: string): Promise<string> {
   const { data: existing } = await supabase
-    .from("email_unsubscribe_tokens")
-    .select("token")
-    .eq("email", email)
-    .maybeSingle();
+    .from("email_unsubscribe_tokens").select("token").eq("email", email).maybeSingle();
   if (existing?.token) return existing.token;
   const token = crypto.randomUUID();
   await supabase.from("email_unsubscribe_tokens").insert({ email, token });
@@ -89,20 +77,50 @@ async function getOrCreateUnsubToken(supabase: any, email: string): Promise<stri
 }
 
 async function isSuppressed(supabase: any, email: string): Promise<boolean> {
-  const { data } = await supabase
-    .from("suppressed_emails")
-    .select("id")
-    .eq("email", email)
-    .maybeSingle();
+  const { data } = await supabase.from("suppressed_emails").select("id").eq("email", email).maybeSingle();
   return !!data;
 }
 
+async function getRecoverySettings(supabase: any) {
+  const { data } = await supabase.from("cart_recovery_settings").select("*").eq("id", 1).maybeSingle();
+  return data || {
+    whatsapp_enabled: true,
+    email_enabled: true,
+    first_delay_minutes: 30,
+    second_delay_hours: 6,
+    max_age_hours: 23,
+    whatsapp_first_message: "🛒 *Olá, {nome}!*\n\nNotamos que você iniciou a compra do produto *{produto}*, mas o pagamento ainda não foi confirmado.\n\nFinalize sua compra aqui:\n{link}\n\nSe já pagou, desconsidere esta mensagem.\n\n_Equipe VitraPay_",
+    whatsapp_second_message: "⏰ *Última chance, {nome}!*\n\nO link de pagamento do produto *{produto}* vai expirar em breve.\n\nFinalize agora antes que expire:\n{link}\n\nSe já pagou, desconsidere esta mensagem.\n\n_Equipe VitraPay_",
+    whatsapp_image_url: null,
+  };
+}
+
+function buildWhatsAppMessage(template: string, buyerName: string, productTitle: string, checkoutLink: string): string {
+  return template
+    .replace(/{nome}/g, buyerName || "Cliente")
+    .replace(/{produto}/g, productTitle)
+    .replace(/{link}/g, checkoutLink);
+}
+
+async function sendWhatsApp(supabase: any, phone: string, message: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+      body: { phone, custom_message: message },
+    });
+    if (error) {
+      console.error("WhatsApp invoke error:", error);
+      return false;
+    }
+    console.log("WhatsApp sent successfully to", phone);
+    return true;
+  } catch (err) {
+    console.error("WhatsApp send error:", err);
+    return false;
+  }
+}
+
 async function sendRecoveryEmail(
-  supabase: any,
-  cart: any,
-  productTitle: string,
-  isSecond: boolean,
-  now: Date,
+  supabase: any, cart: any, productTitle: string, isSecond: boolean, now: Date,
 ): Promise<boolean> {
   const buyerEmail = cart.buyer_email!;
   const checkoutLink = `https://www.vitrapay.com.br/checkout/${cart.product_id}`;
@@ -127,26 +145,15 @@ async function sendRecoveryEmail(
     : `${cart.buyer_name || "Ei"}, sua compra está esperando! ${subjectEmoji}`;
 
   await supabase.from("email_send_log").insert({
-    message_id: messageId,
-    template_name: templateName,
-    recipient_email: buyerEmail,
-    status: "pending",
+    message_id: messageId, template_name: templateName, recipient_email: buyerEmail, status: "pending",
   });
 
   const { error: enqueueError } = await supabase.rpc("enqueue_email", {
     queue_name: "transactional_emails",
     payload: {
-      message_id: messageId,
-      idempotency_key: idempotencyKey,
-      unsubscribe_token: unsubscribeToken,
-      to: buyerEmail,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-      sender_domain: SENDER_DOMAIN,
-      subject: subjectText,
-      html,
-      text,
-      purpose: "transactional",
-      label,
+      message_id: messageId, idempotency_key: idempotencyKey, unsubscribe_token: unsubscribeToken,
+      to: buyerEmail, from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`, sender_domain: SENDER_DOMAIN,
+      subject: subjectText, html, text, purpose: "transactional", label,
       queued_at: new Date().toISOString(),
     },
   });
@@ -165,18 +172,11 @@ async function sendRecoveryEmail(
     const buyerUser = (userEmails || []).find((u: any) => u.email === buyerEmail);
     if (buyerUser) {
       const { data: subs } = await supabase
-        .from("push_subscriptions")
-        .select("endpoint, p256dh, auth")
-        .eq("user_id", buyerUser.user_id);
+        .from("push_subscriptions").select("endpoint, p256dh, auth").eq("user_id", buyerUser.user_id);
       if (subs && subs.length > 0) {
         const pushTitle = isSecond ? "Última chance! ⏰" : "Sua compra está esperando! 🛒";
         await supabase.functions.invoke("send-push", {
-          body: {
-            subscriptions: subs,
-            title: pushTitle,
-            body: `Finalize a compra de "${productTitle}"`,
-            url: `/checkout/${cart.product_id}`,
-          },
+          body: { subscriptions: subs, title: pushTitle, body: `Finalize a compra de "${productTitle}"`, url: `/checkout/${cart.product_id}` },
         });
       }
     }
@@ -195,16 +195,21 @@ Deno.serve(async (_req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const now = new Date();
+    const settings = await getRecoverySettings(supabase);
+
+    const FIRST_MIN_AGE_MINUTES = settings.first_delay_minutes || 30;
+    const MAX_AGE_HOURS = settings.max_age_hours || 23;
+    const SECOND_REMINDER_DELAY_HOURS = settings.second_delay_hours || 6;
+
     const firstMinAge = new Date(now.getTime() - FIRST_MIN_AGE_MINUTES * 60 * 1000).toISOString();
     const maxAge = new Date(now.getTime() - MAX_AGE_HOURS * 60 * 60 * 1000).toISOString();
 
-    let firstSent = 0;
-    let secondSent = 0;
+    let firstSent = 0, secondSent = 0, whatsappSent = 0;
 
-    // === FIRST REMINDER: pending, not notified, 30min–23h old ===
+    // === FIRST REMINDER ===
     const { data: firstBatch, error: e1 } = await supabase
       .from("pending_payments")
-      .select("id, buyer_name, buyer_email, product_id, amount, created_at")
+      .select("id, buyer_name, buyer_email, buyer_phone, product_id, amount, created_at")
       .eq("status", "pending")
       .is("recovery_notified_at", null)
       .lt("created_at", firstMinAge)
@@ -217,11 +222,11 @@ Deno.serve(async (_req) => {
       return new Response(JSON.stringify({ error: e1.message }), { status: 500 });
     }
 
-    // === SECOND REMINDER: notified 6h+ ago, still pending, within 23h, not yet second-notified ===
+    // === SECOND REMINDER ===
     const secondMinDelay = new Date(now.getTime() - SECOND_REMINDER_DELAY_HOURS * 60 * 60 * 1000).toISOString();
     const { data: secondBatch, error: e2 } = await supabase
       .from("pending_payments")
-      .select("id, buyer_name, buyer_email, product_id, amount, created_at, recovery_notified_at")
+      .select("id, buyer_name, buyer_email, buyer_phone, product_id, amount, created_at, recovery_notified_at")
       .eq("status", "pending")
       .not("recovery_notified_at", "is", null)
       .lt("recovery_notified_at", secondMinDelay)
@@ -242,36 +247,50 @@ Deno.serve(async (_req) => {
 
     if (allCarts.length === 0) {
       console.log("No abandoned carts to recover");
-      return new Response(JSON.stringify({ first: 0, second: 0 }), { status: 200 });
+      return new Response(JSON.stringify({ first: 0, second: 0, whatsapp: 0 }), { status: 200 });
     }
 
     // Get product titles
     const productIds = [...new Set(allCarts.map(c => c.product_id))];
-    const { data: products } = await supabase
-      .from("products")
-      .select("id, title")
-      .in("id", productIds);
+    const { data: products } = await supabase.from("products").select("id, title").in("id", productIds);
     const productMap = new Map((products || []).map(p => [p.id, p.title]));
 
-    console.log(`Found ${firstBatch?.length || 0} first reminders, ${secondBatch?.length || 0} second reminders`);
+    console.log(`Found ${firstBatch?.length || 0} first, ${secondBatch?.length || 0} second reminders`);
 
     for (const cart of allCarts) {
       const productTitle = productMap.get(cart.product_id) || "Produto";
+      const checkoutLink = `https://www.vitrapay.com.br/checkout/${cart.product_id}`;
+
       try {
-        const sent = await sendRecoveryEmail(supabase, cart, productTitle, cart.isSecond, now);
-        if (sent) {
-          if (cart.isSecond) secondSent++;
-          else firstSent++;
+        // === EMAIL ===
+        if (settings.email_enabled) {
+          const sent = await sendRecoveryEmail(supabase, cart, productTitle, cart.isSecond, now);
+          if (sent) {
+            if (cart.isSecond) secondSent++;
+            else firstSent++;
+          }
+        }
+
+        // === WHATSAPP ===
+        if (settings.whatsapp_enabled && cart.buyer_phone) {
+          const whatsappCol = cart.isSecond ? "whatsapp_second_notified_at" : "whatsapp_notified_at";
+          const template = cart.isSecond ? settings.whatsapp_second_message : settings.whatsapp_first_message;
+          const message = buildWhatsAppMessage(template, cart.buyer_name || "", productTitle, checkoutLink);
+          
+          const waSent = await sendWhatsApp(supabase, cart.buyer_phone, message);
+          if (waSent) {
+            whatsappSent++;
+            await supabase.from("pending_payments").update({ [whatsappCol]: now.toISOString() }).eq("id", cart.id);
+          }
         }
       } catch (err) {
         console.error(`Error processing cart ${cart.id}:`, err);
       }
     }
 
-    console.log(`Recovery complete: ${firstSent} first, ${secondSent} second reminders sent`);
-    return new Response(JSON.stringify({ first: firstSent, second: secondSent }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+    console.log(`Recovery complete: ${firstSent} first, ${secondSent} second emails, ${whatsappSent} WhatsApp`);
+    return new Response(JSON.stringify({ first: firstSent, second: secondSent, whatsapp: whatsappSent }), {
+      status: 200, headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("Fatal error in recover-abandoned-carts:", err);
