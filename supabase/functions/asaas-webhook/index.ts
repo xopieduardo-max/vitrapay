@@ -460,9 +460,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Avulso payment (no product_id) — v2 ──
+    // ── Avulso payment (no product_id) — v3 ──
     if (!pending.product_id) {
       const producerId = pending.producer_id;
+      console.log("Avulso payment detected. producer_id:", producerId, "pending.id:", pending.id, "amount:", pending.amount);
+
       if (!producerId) {
         console.error("Avulso payment missing producer_id:", asaasPaymentId);
         await supabase.from("pending_payments").update({ status: "error" }).eq("id", pending.id);
@@ -473,10 +475,12 @@ Deno.serve(async (req) => {
 
       // Fee: same platform PIX fee
       const FEE_PIX_PLATFORM = 249;
-      const producerNet = Math.max(0, pending.amount - FEE_PIX_PLATFORM);
+      const SERVICE_FEE = 99;
+      const producerNet = Math.max(0, pending.amount - FEE_PIX_PLATFORM - SERVICE_FEE);
+      console.log(`Avulso fees: amount=${pending.amount}, platform=${FEE_PIX_PLATFORM}, service=${SERVICE_FEE}, net=${producerNet}`);
 
       // Record transaction
-      await supabase.from("transactions").insert({
+      const { error: txnErr } = await supabase.from("transactions").insert({
         user_id: producerId,
         type: "credit",
         category: "sale",
@@ -485,14 +489,18 @@ Deno.serve(async (req) => {
         reference_id: pending.id,
         release_date: new Date().toISOString(),
         status: "completed",
-      }).catch((e: any) => console.error("Avulso transaction error:", e));
+      });
+      if (txnErr) console.error("Avulso transaction error:", JSON.stringify(txnErr));
+      else console.log("Avulso transaction recorded ok");
 
       // Credit wallet (D+0)
-      await supabase.rpc("increment_wallet", {
+      const { error: walletErr } = await supabase.rpc("increment_wallet", {
         p_user_id: producerId,
         p_available_delta: producerNet,
         p_total_delta: producerNet,
-      }).then(({ error: e }: any) => { if (e) console.error("Avulso wallet increment error:", e); });
+      });
+      if (walletErr) console.error("Avulso wallet increment error:", JSON.stringify(walletErr));
+      else console.log("Avulso wallet incremented ok");
 
       await supabase.from("pending_payments").update({ status: "confirmed" }).eq("id", pending.id);
 
