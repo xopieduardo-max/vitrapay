@@ -26,11 +26,17 @@ Deno.serve(async (req) => {
 
     const { amount, description, buyer_name, buyer_cpf, buyer_email } = await req.json();
 
+    // amount = valor informado pelo produtor (em centavos)
+    // totalCharged = valor cobrado do cliente (valor + R$0,99 taxa de serviço)
+    const SERVICE_FEE = 99; // R$ 0,99
+
     if (!amount || !Number.isInteger(amount) || amount < 100) {
       return new Response(JSON.stringify({ error: "Valor mínimo de R$ 1,00" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const totalCharged = amount + SERVICE_FEE; // o que o cliente paga
 
     const ASAAS_API_KEY = Deno.env.get("ASAAS_API_KEY");
     if (!ASAAS_API_KEY) {
@@ -94,7 +100,8 @@ Deno.serve(async (req) => {
     }
 
     // Create Pix charge — externalReference identifies it as avulso
-    const valueInReais = amount / 100;
+    // Client pays amount + R$0,99 service fee
+    const valueInReais = totalCharged / 100;
     const paymentRes = await fetch("https://api.asaas.com/v3/payments", {
       method: "POST",
       headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
@@ -116,7 +123,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Save to pending_payments with producer_id and no product_id
+    // Save to pending_payments — amount = totalCharged (includes service fee, same as checkout)
     await supabase.from("pending_payments").insert({
       asaas_payment_id: paymentData.id,
       product_id: null,
@@ -124,7 +131,7 @@ Deno.serve(async (req) => {
       buyer_name: buyer_name || null,
       buyer_email: buyer_email || null,
       buyer_cpf: cpfClean || null,
-      amount,
+      amount: totalCharged,
       status: "pending",
     }).then(({ error: e }: any) => { if (e) console.error("pending_payments insert error:", e); });
 
@@ -136,7 +143,7 @@ Deno.serve(async (req) => {
 
     // Push notification to producer
     try {
-      const fmtValue = `R$ ${valueInReais.toFixed(2).replace(".", ",")}`;
+      const fmtValue = `R$ ${(amount / 100).toFixed(2).replace(".", ",")}`;
       await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

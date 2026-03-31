@@ -254,11 +254,28 @@ export default function Finance() {
 
               {!pixResult ? (
                 <div className="space-y-5 pt-1">
-                  <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 flex items-center gap-2">
-                    <Info className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <p className="text-xs text-muted-foreground">
-                      O valor será cobrado via Pix e creditado na sua carteira VitraPay após o pagamento.
-                    </p>
+                  {/* Fee breakdown */}
+                  <div className="rounded-lg border border-border bg-muted/30 divide-y divide-border">
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Valor informado</span>
+                      <span className="text-xs font-medium">
+                        R$ {pixAmount ? parseFloat((pixAmount || "0").replace(",", ".")).toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : "0,00"}
+                      </span>
+                    </div>
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Taxa de serviço (cliente paga)</span>
+                      <span className="text-xs text-muted-foreground">+ R$ 0,99</span>
+                    </div>
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Taxa da plataforma (Pix)</span>
+                      <span className="text-xs text-muted-foreground">- R$ 2,49</span>
+                    </div>
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-xs font-semibold">Você recebe</span>
+                      <span className="text-xs font-bold text-primary">
+                        R$ {pixAmount ? Math.max(0, parseFloat((pixAmount || "0").replace(",", ".")) - 2.49).toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : "0,00"}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
