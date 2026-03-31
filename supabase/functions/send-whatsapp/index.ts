@@ -15,7 +15,13 @@ function formatPhoneJid(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   // Add country code if missing
   const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
-  return `${withCountry}@s.whatsapp.net`;
+  // Remove the extra 9 after DDD: 55 + 2-digit DDD + 9 + 8 digits → 55 + DDD + 8 digits
+  // Brazilian mobile numbers with 9th digit: 55 + DD + 9XXXX-XXXX (13 digits total)
+  // We need to send as 55 + DD + XXXX-XXXX (12 digits) removing the leading 9
+  const formatted = withCountry.length === 13 && withCountry.charAt(4) === "9"
+    ? withCountry.slice(0, 4) + withCountry.slice(5)
+    : withCountry;
+  return `${formatted}@s.whatsapp.net`;
 }
 
 function buildRecoveryMessage(
