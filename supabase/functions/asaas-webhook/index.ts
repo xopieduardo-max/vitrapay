@@ -460,10 +460,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Avulso payment (no product_id) — v3 ──
+    // ── Avulso payment (no product_id) — v4 ──
     if (!pending.product_id) {
       const producerId = pending.producer_id;
-      console.log("Avulso payment detected. producer_id:", producerId, "pending.id:", pending.id, "amount:", pending.amount);
+      console.log("[AVULSO-V4] Payment detected. producer_id:", producerId, "pending.id:", pending.id, "amount:", pending.amount);
 
       if (!producerId) {
         console.error("Avulso payment missing producer_id:", asaasPaymentId);
