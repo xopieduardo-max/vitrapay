@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const WHATSAPP_ENGINE_URL =
   "https://whatsapp-saas-engine-production.up.railway.app";
-const WHATSAPP_SESSION_ID = "1db814c9-f587-43cd-854d-1e4c498e48ba";
+const WHATSAPP_SESSION_ID = "1cd24a0e-6647-4a11-a8d5-f775264b39bf";
 
 function formatPhoneJid(phone: string): string {
   // Remove non-digits
