@@ -460,7 +460,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Avulso payment (no product_id) ──
+    // ── Avulso payment (no product_id) — v2 ──
     if (!pending.product_id) {
       const producerId = pending.producer_id;
       if (!producerId) {
