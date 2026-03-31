@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { product_id, buyer_name, buyer_email, buyer_cpf, amount, service_fee, description, affiliate_ref, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
+    const { product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, amount, service_fee, description, affiliate_ref, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
 
     if (!product_id || !amount || !buyer_cpf) {
