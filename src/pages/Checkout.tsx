@@ -438,6 +438,7 @@ export default function Checkout() {
             buyer_name: form.name,
             buyer_email: form.email,
             buyer_cpf: form.cpf,
+            buyer_phone: form.phone,
             amount: totalCharged,
             service_fee: SERVICE_FEE,
             description: `Compra na VitraPay`,

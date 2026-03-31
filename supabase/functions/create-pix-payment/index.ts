@@ -171,6 +171,7 @@ Deno.serve(async (req) => {
       buyer_email: buyer_email || null,
       buyer_cpf: cpfClean || null,
       amount,
+      buyer_phone: buyer_phone || null,
       affiliate_ref: affiliate_ref || null,
       status: "pending",
       utm_source: utm_source || null,
