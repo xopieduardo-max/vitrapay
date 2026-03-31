@@ -39,15 +39,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Get producer profile as fallback for customer data
+    const { data: producerProfile } = await supabase
+      .from("profiles")
+      .select("display_name, cpf, pix_key")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
     // Due date: 3 days from now
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 3);
     const dueDateStr = dueDate.toISOString().split("T")[0];
 
-    // Create or find Asaas customer
-    const cpfClean = (buyer_cpf || "").replace(/\D/g, "");
+    // Use buyer CPF if provided, otherwise use producer's CPF
+    const cpfClean = (buyer_cpf || producerProfile?.cpf || "").replace(/\D/g, "");
+    const customerName = buyer_name || producerProfile?.display_name || "Cliente Avulso";
+    const customerEmail = buyer_email || `${user.id.substring(0, 8)}@vitrapay.com`;
+
     let customerId: string | null = null;
 
+    // Try to find existing customer by CPF
     if (cpfClean) {
       const searchRes = await fetch(
         `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`,
@@ -60,16 +71,19 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
+      const customerBody: any = {
+        name: customerName,
+        email: customerEmail,
+      };
+      if (cpfClean) customerBody.cpfCnpj = cpfClean;
+
       const customerRes = await fetch("https://api.asaas.com/v3/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
-        body: JSON.stringify({
-          name: buyer_name || "Cliente Avulso",
-          email: buyer_email || `avulso+${Date.now()}@vitrapay.com`,
-          cpfCnpj: cpfClean || "00000000000",
-        }),
+        body: JSON.stringify(customerBody),
       });
       const customerData = await customerRes.json();
+      console.log("Asaas customer create response:", JSON.stringify(customerData));
       customerId = customerData?.id ?? null;
     }
 
