@@ -47,7 +47,7 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Taxas = lazy(() => import("./pages/Taxas"));
 const WorkspaceSettings = lazy(() => import("./pages/WorkspaceSettings"));
 const WorkspaceStorefront = lazy(() => import("./pages/WorkspaceStorefront"));
-const HeroTest = lazy(() => import("./pages/HeroTest"));
+
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
