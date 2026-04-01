@@ -97,6 +97,7 @@ const App = () => {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/purchase-terms" element={<PurchaseTerms />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/hero-test" element={<HeroTest />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/minha-conta" element={<MinhaConta />} />
               <Route path="/minha-conta/download/:productId" element={<MinhaContaDownload />} />
