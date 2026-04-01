@@ -47,7 +47,7 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Taxas = lazy(() => import("./pages/Taxas"));
 const WorkspaceSettings = lazy(() => import("./pages/WorkspaceSettings"));
 const WorkspaceStorefront = lazy(() => import("./pages/WorkspaceStorefront"));
-
+const HeroTest = lazy(() => import("./pages/HeroTest"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -97,6 +97,7 @@ const App = () => {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/purchase-terms" element={<PurchaseTerms />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/hero-test" element={<HeroTest />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/minha-conta" element={<MinhaConta />} />
               <Route path="/minha-conta/download/:productId" element={<MinhaContaDownload />} />
