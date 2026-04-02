@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -10,17 +8,21 @@ const WHATSAPP_ENGINE_URL =
   "https://whatsapp-saas-engine-production.up.railway.app";
 const WHATSAPP_SESSION_ID = "1cd24a0e-6647-4a11-a8d5-f775264b39bf";
 
-function formatPhoneJid(phone: string): string {
+type NinthDigitMode = "auto" | "keep" | "remove";
+
+function formatPhoneJid(phone: string, mode: NinthDigitMode = "auto"): string {
   // Remove non-digits
   const digits = phone.replace(/\D/g, "");
   // Add country code if missing
   const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
-  // Remove the extra 9 after DDD: 55 + 2-digit DDD + 9 + 8 digits → 55 + DDD + 8 digits
-  // Brazilian mobile numbers with 9th digit: 55 + DD + 9XXXX-XXXX (13 digits total)
-  // We need to send as 55 + DD + XXXX-XXXX (12 digits) removing the leading 9
-  const formatted = withCountry.length === 13 && withCountry.charAt(4) === "9"
-    ? withCountry.slice(0, 4) + withCountry.slice(5)
-    : withCountry;
+  const canRemoveNinthDigit =
+    withCountry.length === 13 && withCountry.charAt(4) === "9";
+  const formatted = mode === "keep"
+    ? withCountry
+    : mode === "remove" || (mode === "auto" && canRemoveNinthDigit)
+      ? withCountry.slice(0, 4) + withCountry.slice(5)
+      : withCountry;
+
   return `${formatted}@s.whatsapp.net`;
 }
 
@@ -56,6 +58,7 @@ Deno.serve(async (req) => {
       checkout_link,
       is_second,
       custom_message,
+      ninth_digit_mode,
     } = body;
 
     if (!phone) {
@@ -65,7 +68,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    const jid = formatPhoneJid(phone);
+    const digitMode: NinthDigitMode =
+      ninth_digit_mode === "keep" || ninth_digit_mode === "remove"
+        ? ninth_digit_mode
+        : "auto";
+
+    const jid = formatPhoneJid(phone, digitMode);
     const message =
       custom_message ||
       buildRecoveryMessage(
@@ -75,7 +83,9 @@ Deno.serve(async (req) => {
         is_second || false
       );
 
-    console.log(`Sending WhatsApp to ${jid}: ${message.substring(0, 50)}...`);
+    console.log(
+      `Sending WhatsApp [mode=${digitMode}] to ${jid}: ${message.substring(0, 50)}...`
+    );
 
     const res = await fetch(
       `${WHATSAPP_ENGINE_URL}/${WHATSAPP_SESSION_ID}/send`,
@@ -114,7 +124,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, data: responseData }),
+      JSON.stringify({ success: true, jid, mode: digitMode, data: responseData }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
