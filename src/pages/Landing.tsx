@@ -461,14 +461,6 @@ export default function Landing() {
               <Link to="/" className="flex items-center gap-2 shrink-0">
                 <ThemeLogo variant="horizontal" className="h-6 sm:h-7 object-contain" />
               </Link>
-              <div className="hidden md:block w-px h-5 bg-border/60" />
-              <div className="hidden md:flex items-center gap-5 text-sm text-muted-foreground">
-                <a href="#features" className="hover:text-foreground transition-colors">Sobre nós</a>
-                <a href="#pricing" className="hover:text-foreground transition-colors">Taxas</a>
-                <a href="#testimonials" className="hover:text-foreground transition-colors">Depoimentos</a>
-                <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
-                <Link to="/marketplace" className="hover:text-foreground transition-colors">Marketplace</Link>
-              </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               <CountrySelector />
