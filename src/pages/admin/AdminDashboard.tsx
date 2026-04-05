@@ -173,7 +173,21 @@ export default function AdminDashboard() {
   const [withdrawalFeeDialogOpen, setWithdrawalFeeDialogOpen] = useState(false);
   const [combinedWithdrawOpen, setCombinedWithdrawOpen] = useState(false);
   // ── Data fetching ──
-  const { data: allTransactions = [] } = useQuery({
+  // Fetch fake sale IDs to exclude from admin transaction calculations
+  const { data: fakeSaleIds = [] } = useQuery({
+    queryKey: ["admin-fake-sale-ids"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sales")
+        .select("id")
+        .like("payment_id", "fake_%");
+      return (data || []).map((s: any) => s.id);
+    },
+  });
+
+  const fakeSaleIdSet = useMemo(() => new Set(fakeSaleIds), [fakeSaleIds]);
+
+  const { data: allTransactionsRaw = [] } = useQuery({
     queryKey: ["admin-all-transactions"],
     queryFn: async () => {
       const { data } = await supabase
@@ -184,6 +198,14 @@ export default function AdminDashboard() {
       return data || [];
     },
   });
+
+  // Exclude transactions linked to fake sales from admin view
+  const allTransactions = useMemo(() => {
+    return allTransactionsRaw.filter((t: any) => {
+      if (!t.reference_id) return true;
+      return !fakeSaleIdSet.has(t.reference_id);
+    });
+  }, [allTransactionsRaw, fakeSaleIdSet]);
 
   const { data: allSales = [] } = useQuery({
     queryKey: ["admin-all-sales"],
