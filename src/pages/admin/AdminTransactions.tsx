@@ -79,8 +79,22 @@ export default function AdminTransactions() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 25;
 
+  // Fetch fake sale IDs to exclude from admin view
+  const { data: fakeSaleIds = [] } = useQuery({
+    queryKey: ["admin-fake-sale-ids"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sales")
+        .select("id")
+        .like("payment_id", "fake_%");
+      return (data || []).map((s: any) => s.id);
+    },
+  });
+
+  const fakeSaleIdSet = useMemo(() => new Set(fakeSaleIds), [fakeSaleIds]);
+
   // Fetch all transactions with user info
-  const { data: transactions = [], isLoading } = useQuery({
+  const { data: transactionsRaw = [], isLoading } = useQuery({
     queryKey: ["admin-all-transactions"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -93,6 +107,14 @@ export default function AdminTransactions() {
       return data || [];
     },
   });
+
+  // Exclude transactions linked to fake sales
+  const transactions = useMemo(() => {
+    return transactionsRaw.filter((t: any) => {
+      if (!t.reference_id) return true;
+      return !fakeSaleIdSet.has(t.reference_id);
+    });
+  }, [transactionsRaw, fakeSaleIdSet]);
 
   // Fetch profiles for display names
   const userIds = useMemo(
