@@ -190,8 +190,9 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("sales")
-        .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider")
+        .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider, payment_id")
         .eq("status", "completed")
+        .not("payment_id", "like", "fake_%")
         .order("created_at", { ascending: false })
         .limit(1000);
       return data || [];
@@ -215,13 +216,14 @@ export default function AdminDashboard() {
         await Promise.all([
           supabase.from("profiles").select("id", { count: "exact", head: true }),
           supabase.from("products").select("id", { count: "exact", head: true }),
-          supabase.from("sales").select("amount, platform_fee, status").eq("status", "completed"),
+          supabase.from("sales").select("amount, platform_fee, status, payment_id").eq("status", "completed"),
           supabase.from("withdrawals").select("amount, status"),
         ]);
 
-      const sales = salesRes.data || [];
-      const totalRevenue = sales.reduce((a, s) => a + s.amount, 0);
-      const totalPlatformFees = sales.reduce((a, s) => a + (s.platform_fee || 0), 0);
+      // Exclude fake sales from admin stats
+      const sales = (salesRes.data || []).filter((s: any) => !s.payment_id?.startsWith("fake_"));
+      const totalRevenue = sales.reduce((a: number, s: any) => a + s.amount, 0);
+      const totalPlatformFees = sales.reduce((a: number, s: any) => a + (s.platform_fee || 0), 0);
       const wds = withdrawalsRes.data || [];
       const pendingWithdrawals = wds
         .filter((w) => w.status === "pending" || w.status === "processing")
