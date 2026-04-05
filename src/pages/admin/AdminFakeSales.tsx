@@ -145,8 +145,26 @@ export default function AdminFakeSales() {
         if (error) throw error;
       }
 
-      // Create transactions and update wallet for each sale
-      const transactionsToInsert = salesToInsert.map((sale) => ({
+      // Create pending_payments records (status "confirmed") so checkout conversion metrics work
+      const pendingPaymentsToInsert = salesToInsert.map((sale: any) => ({
+        asaas_payment_id: sale.payment_id,
+        amount: sale.amount,
+        status: "confirmed",
+        product_id: sale.product_id,
+        producer_id: sale.producer_id,
+        buyer_name: `Cliente Simulado`,
+        buyer_email: `fake_${sale.id.slice(0, 6)}@vitrapay.com`,
+        created_at: sale.created_at,
+      }));
+
+      for (let i = 0; i < pendingPaymentsToInsert.length; i += 50) {
+        const batch = pendingPaymentsToInsert.slice(i, i + 50);
+        const { error } = await supabase.from("pending_payments").insert(batch);
+        if (error) console.error("[FakeSales] PendingPayment insert error:", error);
+      }
+
+      // Create sale credit transactions
+      const transactionsToInsert: any[] = salesToInsert.map((sale: any) => ({
         user_id: producerId,
         type: "credit",
         category: "sale",
@@ -157,13 +175,29 @@ export default function AdminFakeSales() {
         created_at: sale.created_at,
       }));
 
-      for (let i = 0; i < transactionsToInsert.length; i += 50) {
-        const batch = transactionsToInsert.slice(i, i + 50);
+      // Create platform fee debit transactions (like real sales)
+      const feeTransactions = salesToInsert
+        .filter((sale: any) => sale.platform_fee > 0)
+        .map((sale: any) => ({
+          user_id: producerId,
+          type: "debit",
+          category: "fee",
+          amount: sale.platform_fee,
+          status: "completed",
+          balance_type: "available",
+          reference_id: sale.id,
+          created_at: sale.created_at,
+        }));
+
+      const allTransactions = [...transactionsToInsert, ...feeTransactions];
+
+      for (let i = 0; i < allTransactions.length; i += 50) {
+        const batch = allTransactions.slice(i, i + 50);
         const { error } = await supabase.from("transactions").insert(batch);
         if (error) console.error("[FakeSales] Transaction insert error:", error);
       }
 
-      // Update wallet balance
+      // Update wallet balance (net amount after fees)
       const totalNet = salesToInsert.reduce((acc: number, s: any) => acc + (s.amount - s.platform_fee), 0);
       const { error: walletError } = await supabase.rpc("increment_wallet", {
         p_user_id: producerId,
