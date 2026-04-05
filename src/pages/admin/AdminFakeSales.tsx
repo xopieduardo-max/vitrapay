@@ -114,18 +114,21 @@ export default function AdminFakeSales() {
         for (const { method, count, fee } of methods) {
           for (let i = 0; i < count; i++) {
             const saleDate = new Date(day.date + "T12:00:00");
-            // Random hour between 7:00 and 22:59
             saleDate.setHours(7 + Math.floor(Math.random() * 16));
             saleDate.setMinutes(Math.floor(Math.random() * 60));
             saleDate.setSeconds(Math.floor(Math.random() * 60));
 
+            const saleId = crypto.randomUUID();
+            const platformFee = fee(price);
+
             salesToInsert.push({
+              id: saleId,
               product_id: productId,
               producer_id: producerId,
               buyer_id: null,
               affiliate_id: null,
               amount: price,
-              platform_fee: fee(price),
+              platform_fee: platformFee,
               payment_provider: method,
               payment_id: `fake_${crypto.randomUUID().slice(0, 8)}`,
               status: "completed",
@@ -135,31 +138,61 @@ export default function AdminFakeSales() {
         }
       }
 
-      // Insert in batches of 50
+      // Insert sales in batches of 50
       for (let i = 0; i < salesToInsert.length; i += 50) {
         const batch = salesToInsert.slice(i, i + 50);
         const { error } = await supabase.from("sales").insert(batch);
         if (error) throw error;
       }
 
-      // Send push notification to the producer
-      try {
-        const product = products.find((p: any) => p.id === productId);
-        const price = customPrice ? Math.round(parseFloat(customPrice) * 100) : (product?.price || 0);
-        const fmt2 = `R$ ${(price / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-        const methodLabel = salesToInsert[0]?.payment_provider === "card" ? "Cartão de Crédito" : salesToInsert[0]?.payment_provider === "boleto" ? "Boleto" : "Pix";
-        
-        await supabase.functions.invoke("send-push", {
-          body: {
-            producer_id: producerId,
-            title: `Venda Aprovada!`,
-            body: `Pagamento via ${methodLabel}\nValor: ${fmt2}`,
-            url: "/sales",
-          },
-        });
-        console.log("[FakeSales] Push sent to producer:", producerId);
-      } catch (e) {
-        console.error("[FakeSales] Push send error:", e);
+      // Create transactions and update wallet for each sale
+      const transactionsToInsert = salesToInsert.map((sale) => ({
+        user_id: producerId,
+        type: "credit",
+        category: "sale",
+        amount: sale.amount - sale.platform_fee,
+        status: "completed",
+        balance_type: "available",
+        reference_id: sale.id,
+        created_at: sale.created_at,
+      }));
+
+      for (let i = 0; i < transactionsToInsert.length; i += 50) {
+        const batch = transactionsToInsert.slice(i, i + 50);
+        const { error } = await supabase.from("transactions").insert(batch);
+        if (error) console.error("[FakeSales] Transaction insert error:", error);
+      }
+
+      // Update wallet balance
+      const totalNet = salesToInsert.reduce((acc: number, s: any) => acc + (s.amount - s.platform_fee), 0);
+      const { error: walletError } = await supabase.rpc("increment_wallet", {
+        p_user_id: producerId,
+        p_available_delta: totalNet,
+        p_total_delta: totalNet,
+      });
+      if (walletError) console.error("[FakeSales] Wallet update error:", walletError);
+
+      // Send individual push notifications for each sale
+      const methodLabels: Record<string, string> = {
+        card: "Cartão de Crédito",
+        boleto: "Boleto",
+        pix: "Pix",
+      };
+
+      for (const sale of salesToInsert) {
+        try {
+          const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+          await supabase.functions.invoke("send-push", {
+            body: {
+              producer_id: producerId,
+              title: `Venda Aprovada!`,
+              body: `Pagamento via ${methodLabels[sale.payment_provider] || sale.payment_provider}\nValor: ${fmt2}`,
+              url: "/sales",
+            },
+          });
+        } catch (e) {
+          console.error("[FakeSales] Push send error:", e);
+        }
       }
 
       return salesToInsert.length;
