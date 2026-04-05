@@ -114,7 +114,12 @@ export default function AdminFakeSales() {
         for (const { method, count, fee } of methods) {
           for (let i = 0; i < count; i++) {
             const saleDate = new Date(day.date + "T12:00:00");
-            saleDate.setHours(7 + Math.floor(Math.random() * 16));
+            const now = new Date();
+            const isToday = day.date === now.toISOString().split("T")[0];
+            const maxHour = isToday ? Math.max(0, now.getHours() - 1) : 22;
+            const minHour = 7;
+            const hour = maxHour <= minHour ? minHour : minHour + Math.floor(Math.random() * (maxHour - minHour + 1));
+            saleDate.setHours(hour);
             saleDate.setMinutes(Math.floor(Math.random() * 60));
             saleDate.setSeconds(Math.floor(Math.random() * 60));
 

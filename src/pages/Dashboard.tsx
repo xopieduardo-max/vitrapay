@@ -71,11 +71,12 @@ const periodLabels: Record<PeriodKey, string> = {
 function getDateRange(period: PeriodKey, customFrom?: Date, customTo?: Date): { from: Date | null; to: Date } {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const to = now;
+  // Use end-of-today for standard periods so sales generated later today are included
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
   switch (period) {
     case "today":
-      return { from: todayStart, to };
+      return { from: todayStart, to: todayEnd };
     case "yesterday": {
       const yStart = new Date(todayStart);
       yStart.setDate(yStart.getDate() - 1);
@@ -84,19 +85,19 @@ function getDateRange(period: PeriodKey, customFrom?: Date, customTo?: Date): { 
     case "7d": {
       const d = new Date(todayStart);
       d.setDate(d.getDate() - 7);
-      return { from: d, to };
+      return { from: d, to: todayEnd };
     }
     case "30d": {
       const d = new Date(todayStart);
       d.setDate(d.getDate() - 30);
-      return { from: d, to };
+      return { from: d, to: todayEnd };
     }
     case "all":
-      return { from: null, to };
+      return { from: null, to: todayEnd };
     case "custom":
       return { from: customFrom || todayStart, to: customTo || now };
     default:
-      return { from: null, to };
+      return { from: null, to: todayEnd };
   }
 }
 
