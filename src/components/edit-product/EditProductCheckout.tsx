@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon, Bell, Palette } from "lucide-react";
+import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon, Bell, Palette, User, Mail, Phone, FileText } from "lucide-react";
 
 const COLOR_THEMES = [
   { id: "classic", label: "Clássico", color: "hsl(0, 0%, 15%)" },
@@ -172,6 +172,85 @@ export default function EditProductCheckout({ productId, form, updateField, chec
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Modelo de Informações de Contato */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-sm font-bold flex items-center gap-1.5">
+          <User className="h-4 w-4" /> Informações de Contato
+        </h3>
+        <p className="text-xs text-muted-foreground">
+          Escolha quais campos o comprador deverá preencher no checkout.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Modelo 1 */}
+          <button
+            onClick={() => updateField("checkout_contact_model", 1)}
+            className="rounded-xl p-4 text-left transition-all space-y-3"
+            style={{
+              border: (form.checkout_contact_model || 1) === 1
+                ? "2px solid hsl(48, 96%, 53%)"
+                : "2px solid hsl(var(--border))",
+              background: (form.checkout_contact_model || 1) === 1
+                ? "hsl(48, 96%, 53%, 0.06)"
+                : "transparent",
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold">Modelo 1</span>
+              {(form.checkout_contact_model || 1) === 1 && (
+                <span className="text-[0.6rem] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(48, 96%, 53%)", color: "hsl(0,0%,10%)" }}>
+                  Padrão
+                </span>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+                <User className="h-3 w-3" /> Nome completo
+              </div>
+              <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+                <Mail className="h-3 w-3" /> Email
+              </div>
+              <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+                <FileText className="h-3 w-3" /> CPF / CNPJ
+              </div>
+              <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+                <Phone className="h-3 w-3" /> Celular
+              </div>
+            </div>
+          </button>
+
+          {/* Modelo 2 */}
+          <button
+            onClick={() => updateField("checkout_contact_model", 2)}
+            className="rounded-xl p-4 text-left transition-all space-y-3"
+            style={{
+              border: form.checkout_contact_model === 2
+                ? "2px solid hsl(48, 96%, 53%)"
+                : "2px solid hsl(var(--border))",
+              background: form.checkout_contact_model === 2
+                ? "hsl(48, 96%, 53%, 0.06)"
+                : "transparent",
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold">Modelo 2</span>
+              {form.checkout_contact_model === 2 && (
+                <span className="text-[0.6rem] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(48, 96%, 53%)", color: "hsl(0,0%,10%)" }}>
+                  Ativo
+                </span>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+                <Mail className="h-3 w-3" /> Email
+              </div>
+              <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+                <Phone className="h-3 w-3" /> Celular
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 

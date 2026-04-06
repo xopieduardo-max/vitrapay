@@ -78,6 +78,7 @@ export default function EditProduct() {
       checkout_social_proof: (product as any).checkout_social_proof || false,
       checkout_social_proof_interval: (product as any).checkout_social_proof_interval || 30,
       checkout_sidebar_banner_url: (product as any).checkout_sidebar_banner_url || "",
+      checkout_contact_model: (product as any).checkout_contact_model || 1,
     });
   }
 
@@ -119,6 +120,7 @@ export default function EditProduct() {
           checkout_social_proof: form.checkout_social_proof || false,
           checkout_social_proof_interval: form.checkout_social_proof_interval || 30,
           checkout_sidebar_banner_url: form.checkout_sidebar_banner_url || null,
+          checkout_contact_model: form.checkout_contact_model || 1,
         } as any)
         .eq("id", product.id);
       if (error) throw error;

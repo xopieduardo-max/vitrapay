@@ -1146,6 +1146,7 @@ export type Database = {
           allow_affiliates: boolean
           checkout_banner_url: string | null
           checkout_color_theme: string
+          checkout_contact_model: number
           checkout_headline: string | null
           checkout_sidebar_banner_url: string | null
           checkout_social_proof: boolean
@@ -1170,6 +1171,7 @@ export type Database = {
           allow_affiliates?: boolean
           checkout_banner_url?: string | null
           checkout_color_theme?: string
+          checkout_contact_model?: number
           checkout_headline?: string | null
           checkout_sidebar_banner_url?: string | null
           checkout_social_proof?: boolean
@@ -1194,6 +1196,7 @@ export type Database = {
           allow_affiliates?: boolean
           checkout_banner_url?: string | null
           checkout_color_theme?: string
+          checkout_contact_model?: number
           checkout_headline?: string | null
           checkout_sidebar_banner_url?: string | null
           checkout_social_proof?: boolean
