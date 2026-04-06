@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      return new Response(JSON.stringify({ error: "Não foi possível criar o cliente." }),
+      return new Response(JSON.stringify({ error: "Não foi possível criar o cliente." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
