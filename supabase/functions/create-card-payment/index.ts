@@ -238,8 +238,8 @@ Deno.serve(async (req) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             producer_id: product.producer_id,
-            title: "Cartão Gerado! 💳",
-            body: `Pagamento de ${fmtValue} via cartão gerado para ${product.title}`,
+            title: "Venda aprovada no Cartão!",
+            body: `Sua comissão: ${fmtValue}`,
             url: "/sales",
           }),
         });

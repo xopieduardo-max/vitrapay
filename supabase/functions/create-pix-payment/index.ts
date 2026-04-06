@@ -194,8 +194,8 @@ Deno.serve(async (req) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           producer_id: product.producer_id,
-          title: "Pix Gerado! 💰",
-          body: `Pix de ${fmtValue} gerado para ${product.title}`,
+          title: "Venda aprovada no Pix!",
+          body: `Sua comissão: ${fmtValue}`,
           url: "/sales",
         }),
       });
