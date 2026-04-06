@@ -915,19 +915,22 @@ export default function Checkout() {
                 Informações de Contato
               </h3>
               <div className="space-y-3">
-                <div>
-                  <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Nome completo</Label>
-                  <div className="relative mt-1">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
-                    <Input
-                      placeholder="Preencha seu nome completo"
-                      value={form.name}
-                      onChange={(e) => updateForm("name", e.target.value)}
-                      className="pl-10 border-0 h-11"
-                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
-                    />
+                {/* Nome completo - only Model 1 */}
+                {(product?.checkout_contact_model || 1) === 1 && (
+                  <div>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Nome completo</Label>
+                    <div className="relative mt-1">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
+                      <Input
+                        placeholder="Preencha seu nome completo"
+                        value={form.name}
+                        onChange={(e) => updateForm("name", e.target.value)}
+                        className="pl-10 border-0 h-11"
+                        style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
                 <div>
                   <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Email</Label>
                   <div className="relative mt-1">
@@ -942,20 +945,41 @@ export default function Checkout() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CPF / CNPJ</Label>
-                    <div className="relative mt-1">
-                      <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
-                      <Input
-                        placeholder="000.000.000-00"
-                        value={form.cpf}
-                        onChange={(e) => updateForm("cpf", formatCPF(e.target.value))}
-                        className="pl-10 border-0 h-11"
-                        style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
-                      />
+                {(product?.checkout_contact_model || 1) === 1 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CPF / CNPJ</Label>
+                      <div className="relative mt-1">
+                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
+                        <Input
+                          placeholder="000.000.000-00"
+                          value={form.cpf}
+                          onChange={(e) => updateForm("cpf", formatCPF(e.target.value))}
+                          className="pl-10 border-0 h-11"
+                          style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Celular</Label>
+                      <div className="flex gap-1.5 mt-1">
+                        <div className="flex items-center gap-1 rounded-md px-3 text-xs shrink-0 h-11" style={{ background: "var(--ck-input)", color: "var(--ck-subtle)" }}>
+                          🇧🇷 +55
+                        </div>
+                        <div className="relative flex-1">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
+                          <Input
+                            placeholder="(00) 00000-0000"
+                            value={form.phone}
+                            onChange={(e) => updateForm("phone", formatPhone(e.target.value))}
+                            className="pl-10 border-0 h-11"
+                            style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
+                ) : (
                   <div>
                     <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Celular</Label>
                     <div className="flex gap-1.5 mt-1">
@@ -974,7 +998,7 @@ export default function Checkout() {
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
