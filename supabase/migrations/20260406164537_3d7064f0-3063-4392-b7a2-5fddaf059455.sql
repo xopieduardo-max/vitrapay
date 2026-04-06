@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN checkout_contact_model integer NOT NULL DEFAULT 1;
