@@ -72,8 +72,8 @@ serve(async (req) => {
     }
 
     const payload = JSON.stringify({
-      title: title || "Nova venda!",
-      body: body || "Você acabou de receber uma nova venda.",
+      title: title || "Venda aprovada!",
+      body: body || "Você recebeu uma nova venda.",
       url: url || "/dashboard",
       icon: "/pwa-192x192.png",
       badge: "/badge-icon.png",

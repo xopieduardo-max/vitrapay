@@ -338,7 +338,7 @@ Deno.serve(async (req) => {
 
         // Send push notification to producer about refund/chargeback
         const amountFormatted = `R$ ${(sale.amount / 100).toFixed(2).replace(".", ",")}`;
-        const pushTitle = isChargeback ? "⚠️ Chargeback Recebido!" : isMED ? "🏦 MED Pix Recebido!" : "🔄 Estorno Realizado";
+        const pushTitle = isChargeback ? "Chargeback Recebido" : isMED ? "MED Pix Recebido" : "Estorno Realizado";
         const pushBody = isChargeback
           ? `Um chargeback de ${amountFormatted} foi aberto. Verifique sua conta.`
           : isMED
@@ -508,15 +508,14 @@ Deno.serve(async (req) => {
 
       // Push notification — same style as regular sale
       try {
-        const fmtValue = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
-        const buyerLabel = pending.buyer_name ? ` de ${pending.buyer_name}` : "";
+        const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
         await fetch(`${supabaseUrl}/functions/v1/send-push`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             producer_id: producerId,
-            title: "Nova venda! 🎉",
-            body: `Pix${buyerLabel} de ${fmtValue} confirmado.`,
+            title: "Venda aprovada no Pix!",
+            body: `Sua comissão: ${fmtNet}`,
             url: "/sales",
           }),
         });
@@ -706,6 +705,21 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Sale processed: PIX D+0, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDate}`);
+
+    // ✅ Send push notification for confirmed sale
+    try {
+      const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
+      await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producer_id: product.producer_id,
+          title: "Venda aprovada no Pix!",
+          body: `Sua comissão: ${fmtNet}`,
+          url: "/sales",
+        }),
+      });
+    } catch (_) { /* non-critical */ }
 
     // ✅ Grant product access
     await grantProductAccess(supabase, pending.product_id, pending.buyer_email, sale.id);

@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           producer_id: user.id,
-          title: "Pix Avulso Gerado 💰",
+          title: "Pix Avulso Gerado",
           body: `Cobrança de ${fmtValue} criada. Aguardando pagamento.`,
           url: "/finance",
         }),
