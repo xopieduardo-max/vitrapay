@@ -392,17 +392,24 @@ export default function Checkout() {
   const isCardDisabled = paymentMethod === "card" && calculateTotal() < 500;
 
   const handlePurchase = async () => {
-    if (!form.name || !form.email) {
-      toast({ title: "Preencha seus dados", variant: "destructive" });
+    const contactModel = product?.checkout_contact_model || 1;
+    if (contactModel === 1 && !form.name) {
+      toast({ title: "Preencha seu nome", variant: "destructive" });
       return;
     }
-    if (!form.cpf.replace(/\D/g, "")) {
-      toast({ title: "CPF/CNPJ é obrigatório", variant: "destructive" });
+    if (!form.email) {
+      toast({ title: "Preencha seu email", variant: "destructive" });
       return;
     }
-    if (!validateCPF(form.cpf)) {
-      toast({ title: "CPF/CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
-      return;
+    if (contactModel === 1) {
+      if (!form.cpf.replace(/\D/g, "")) {
+        toast({ title: "CPF/CNPJ é obrigatório", variant: "destructive" });
+        return;
+      }
+      if (!validateCPF(form.cpf)) {
+        toast({ title: "CPF/CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
+        return;
+      }
     }
     if (!form.phone || form.phone.replace(/\D/g, "").length < 10) {
       toast({ title: "Telefone é obrigatório", description: "Informe um telefone com DDD.", variant: "destructive" });
