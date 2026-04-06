@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon, Bell, Palette, User, Mail, Phone, FileText } from "lucide-react";
+import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon, Bell, Palette } from "lucide-react";
 
 const COLOR_THEMES = [
   { id: "classic", label: "Clássico", color: "hsl(0, 0%, 15%)" },
