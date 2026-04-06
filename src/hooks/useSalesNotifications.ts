@@ -33,10 +33,10 @@ export function useSalesNotifications() {
           const amount = payload.new?.amount || 0;
           const method = payload.new?.payment_provider || "pix";
           const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-          const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão de Crédito" : "Boleto";
+          const methodLabel = method === "pix" ? "Pix" : "Cartão";
 
-          const title = `Venda Aprovada!`;
-          const description = `Pagamento via ${methodLabel} • Valor: ${fmt}`;
+          const title = `Venda aprovada no ${methodLabel}!`;
+          const description = `Sua comissão: ${fmt}`;
 
           toast.success(title, { description });
 
@@ -56,8 +56,8 @@ export function useSalesNotifications() {
             await supabase.functions.invoke("send-push", {
               body: {
                 producer_id: user.id,
-                title: `Venda Aprovada!`,
-                body: `Pagamento via ${methodLabel} • Valor: ${fmt}`,
+                title,
+                body: description,
                 url: "/sales",
               },
             });
@@ -83,7 +83,7 @@ export function useSalesNotifications() {
             const amount = payload.new?.amount || 0;
             const method = payload.new?.payment_provider || "pix";
             const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-            const methodLabel = method === "pix" ? "Pix" : method === "card" ? "Cartão de Crédito" : "Boleto";
+            const methodLabel = method === "pix" ? "Pix" : "Cartão";
             const paymentId = payload.new?.payment_id || "";
 
             const title = `Venda Estornada`;
@@ -108,7 +108,7 @@ export function useSalesNotifications() {
                 body: {
                   producer_id: user.id,
                   title: `Venda Estornada`,
-                  body: `${methodLabel} • Valor: ${fmt} • ID: ${paymentId.slice(0, 12)}`,
+                  body: `${methodLabel} • ${fmt} • ID: ${paymentId.slice(0, 12)}`,
                   url: "/sales",
                 },
               });
