@@ -49,8 +49,8 @@ Deno.serve(async (req) => {
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
     const productAmount = amount - SERVICE_FEE; // Amount without service fee for fee calculation
 
-    if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
-      return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_cpf, buyer_name, buyer_email" }), {
+    if (!product_id || !amount || !buyer_email) {
+      return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_email" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -73,8 +73,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const cpfClean = buyer_cpf.replace(/\D/g, "");
-    if (!isValidCPF(cpfClean)) {
+    const cpfClean = (buyer_cpf || "").replace(/\D/g, "");
+    if (cpfClean && !isValidCPF(cpfClean)) {
       return new Response(JSON.stringify({ error: "CPF/CNPJ inválido. Verifique os dados e tente novamente." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -126,24 +126,33 @@ Deno.serve(async (req) => {
     let customerId: string | null = null;
     console.log(`Looking up customer with CPF: ${cpfClean.slice(0, 3)}***`);
 
-    const searchRes = await fetch(
-      `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`,
-      { headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY } }
-    );
+    let searchUrl: string;
+    if (cpfClean) {
+      searchUrl = `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`;
+    } else {
+      searchUrl = `https://api.asaas.com/v3/customers?email=${encodeURIComponent(buyer_email)}`;
+    }
+    const searchRes = await fetch(searchUrl, {
+      headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
+    });
     const searchData = await searchRes.json();
 
     if (searchData?.data?.length > 0) {
       customerId = searchData.data[0].id;
+      const updateBody: Record<string, string> = { name: buyer_name, email: buyer_email };
+      if (cpfClean) updateBody.cpfCnpj = cpfClean;
       await fetch(`https://api.asaas.com/v3/customers/${customerId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
-        body: JSON.stringify({ name: buyer_name, email: buyer_email, cpfCnpj: cpfClean }),
+        body: JSON.stringify(updateBody),
       });
     } else {
+      const createBody: Record<string, string> = { name: buyer_name || "Cliente VitraPay", email: buyer_email };
+      if (cpfClean) createBody.cpfCnpj = cpfClean;
       const customerRes = await fetch("https://api.asaas.com/v3/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
-        body: JSON.stringify({ name: buyer_name, email: buyer_email, cpfCnpj: cpfClean }),
+        body: JSON.stringify(createBody),
       });
       const customerData = await customerRes.json();
       if (customerData?.id) {
@@ -157,7 +166,7 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      return new Response(JSON.stringify({ error: "CPF/CNPJ inválido." }), {
+      return new Response(JSON.stringify({ error: "Não foi possível criar o cliente." }),
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

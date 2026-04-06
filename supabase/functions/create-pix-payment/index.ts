@@ -12,8 +12,8 @@ Deno.serve(async (req) => {
     const { product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, amount, service_fee, description, affiliate_ref, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
 
-    if (!product_id || !amount || !buyer_cpf) {
-      return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount, buyer_cpf)" }), {
+    if (!product_id || !amount) {
+      return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount)" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -65,44 +65,38 @@ Deno.serve(async (req) => {
     let customerId: string | null = null;
     const cpfClean = buyer_cpf?.replace(/\D/g, "") || "";
     
-    if (buyer_name && buyer_email) {
-      const searchRes = await fetch(
-        `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "access_token": ASAAS_API_KEY,
-          },
-        }
-      );
+    // Search customer by CPF (if provided) or by email
+    if (buyer_email) {
+      let searchUrl: string;
+      if (cpfClean) {
+        searchUrl = `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`;
+      } else {
+        searchUrl = `https://api.asaas.com/v3/customers?email=${encodeURIComponent(buyer_email)}`;
+      }
+      const searchRes = await fetch(searchUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          "access_token": ASAAS_API_KEY,
+        },
+      });
       const searchData = await searchRes.json();
       console.log("Asaas customer search response:", JSON.stringify(searchData));
       if (searchData?.data?.length > 0) {
         customerId = searchData.data[0].id;
+        const updateBody: Record<string, string> = { name: buyer_name || "Cliente VitraPay", email: buyer_email };
+        if (cpfClean) updateBody.cpfCnpj = cpfClean;
         await fetch(`https://api.asaas.com/v3/customers/${customerId}`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "access_token": ASAAS_API_KEY,
-          },
-          body: JSON.stringify({
-            name: buyer_name,
-            email: buyer_email,
-            cpfCnpj: cpfClean,
-          }),
+          headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
+          body: JSON.stringify(updateBody),
         });
       } else {
+        const createBody: Record<string, string> = { name: buyer_name || "Cliente VitraPay", email: buyer_email };
+        if (cpfClean) createBody.cpfCnpj = cpfClean;
         const customerRes = await fetch("https://api.asaas.com/v3/customers", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "access_token": ASAAS_API_KEY,
-          },
-          body: JSON.stringify({
-            name: buyer_name || "Cliente VitraPay",
-            email: buyer_email,
-            cpfCnpj: cpfClean,
-          }),
+          headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
+          body: JSON.stringify(createBody),
         });
         const customerData = await customerRes.json();
         if (customerData?.id) customerId = customerData.id;
@@ -110,17 +104,12 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
+      const createBody: Record<string, string> = { name: buyer_name || "Cliente VitraPay", email: buyer_email || "cliente@vitrapay.com" };
+      if (cpfClean) createBody.cpfCnpj = cpfClean;
       const fallbackRes = await fetch("https://api.asaas.com/v3/customers", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "access_token": ASAAS_API_KEY,
-        },
-        body: JSON.stringify({
-          name: buyer_name || "Cliente VitraPay",
-          email: buyer_email || "cliente@vitrapay.com",
-          cpfCnpj: cpfClean,
-        }),
+        headers: { "Content-Type": "application/json", "access_token": ASAAS_API_KEY },
+        body: JSON.stringify(createBody),
       });
       const fallbackData = await fallbackRes.json();
       console.log("Asaas customer fallback response:", JSON.stringify(fallbackData));
@@ -128,7 +117,7 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      return new Response(JSON.stringify({ error: "CPF/CNPJ inválido. Verifique os dados e tente novamente." }), {
+      return new Response(JSON.stringify({ error: "Não foi possível criar o cliente. Verifique os dados e tente novamente." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
