@@ -498,15 +498,6 @@ export default function Landing() {
             transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
             className="max-w-4xl mx-auto text-center space-y-6">
             
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-1.5 text-sm text-white/60">
-              
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>A plataforma que acelera seus resultados</span>
-            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
