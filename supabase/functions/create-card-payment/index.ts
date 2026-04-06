@@ -49,8 +49,8 @@ Deno.serve(async (req) => {
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
     const productAmount = amount - SERVICE_FEE; // Amount without service fee for fee calculation
 
-    if (!product_id || !amount || !buyer_email) {
-      return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_email" }), {
+    if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
+      return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_cpf, buyer_name, buyer_email" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -73,8 +73,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const cpfClean = (buyer_cpf || "").replace(/\D/g, "");
-    if (cpfClean && !isValidCPF(cpfClean)) {
+    const cpfClean = buyer_cpf.replace(/\D/g, "");
+    if (!isValidCPF(cpfClean)) {
       return new Response(JSON.stringify({ error: "CPF/CNPJ inválido. Verifique os dados e tente novamente." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
