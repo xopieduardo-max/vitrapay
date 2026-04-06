@@ -388,7 +388,22 @@ Deno.serve(async (req) => {
           }).then(({ error }) => { if (error) console.error("Wallet increment error (affiliate):", error); });
         }
 
-        console.log(`Sale processed: Card D+2, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDateStr}`);
+        console.log(`Sale processed: Card ${cardPlan}, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDateStr}`);
+
+        // ✅ Send push notification for confirmed card sale
+        try {
+          const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace('.', ',')}`;
+          await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              producer_id: product.producer_id,
+              title: "Venda aprovada no Cartão!",
+              body: `Sua comissão: ${fmtNet}`,
+              url: "/sales",
+            }),
+          });
+        } catch (_) { /* non-critical */ }
       }
 
       // ✅ Grant product access
