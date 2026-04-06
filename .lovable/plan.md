@@ -1,49 +1,59 @@
 
 
-# Melhorar a Página de Instalação PWA (`/install`)
+## Padronizar Notificações Push de Venda
 
-## O que será feito
+### Situação Atual
 
-Redesign da página `/install` para ficar mais moderna, visualmente rica e alinhada com a identidade visual do VitraPay (tema escuro, amarelo como cor primária).
+As notificações push estão espalhadas em **6 locais** com formatos inconsistentes e emojis:
 
-## Melhorias planejadas
+| Local | Título atual | Corpo atual |
+|-------|-------------|-------------|
+| `create-pix-payment` | "Pix Gerado! 💰" | "Pix de R$ XX gerado para [produto]" |
+| `create-card-payment` | "Cartão Gerado! 💳" | "Pagamento de R$ XX via cartão gerado para [produto]" |
+| `asaas-webhook` (avulso confirmado) | "Nova venda! 🎉" | "Pix de [nome] de R$ XX confirmado" |
+| `asaas-webhook` (estorno/chargeback) | "⚠️ Chargeback..." / "🔄 Estorno..." | Texto com valor |
+| `useSalesNotifications.ts` (realtime INSERT) | "Venda Aprovada!" | "Pagamento via Pix • Valor: R$ XX" |
+| `useSalesNotifications.ts` (realtime UPDATE refund) | "Venda Estornada" | "Pix • R$ XX • ID: ..." |
+| `create-pix-avulso` | "Pix Avulso Gerado 💰" | "Cobrança de R$ XX criada..." |
 
-### 1. Hero mais impactante
-- Usar o mockup `celular_vitra.png` ou `iphone-3d-mockup.png` (assets 3D já existentes) no lugar do `app-mockup.png` dentro do IPhoneFrame
-- Adicionar glow amarelo sutil atrás do celular (consistente com o estilo da Landing)
-- Logo VitraPay no topo em vez do ícone genérico
+### Novo Formato Padronizado
 
-### 2. Steps com visual melhorado
-- Adicionar uma **timeline vertical** conectando os passos (linha contínua com dots numerados)
-- Step ativo com animação de pulse no indicador
-- Ícones maiores e mais distintos para cada passo (usar ícones reais do iOS/Android em vez de caracteres texto como "↑", "⋮")
+**Vendas confirmadas (push + toast):**
+- Título: `Venda aprovada no Pix!` ou `Venda aprovada no Cartão!`
+- Corpo: `Sua comissão: R$ XX,XX`
 
-### 3. Seção de benefícios redesenhada
-- Layout em lista horizontal scrollável em mobile (carrossel) em vez de grid 2x2
-- Cards com gradiente sutil e ícone com glow
+**Pagamentos gerados (PIX/Cartão pendentes):**
+- Título: `Venda aprovada no Pix!` ou `Venda aprovada no Cartão!`
+- Corpo: `Sua comissão: R$ XX,XX` (usando valor bruto pois a comissão líquida ainda não é conhecida nesse momento — será o valor do produto)
 
-### 4. Botão de instalação nativo (beforeinstallprompt)
-- Capturar o evento `beforeinstallprompt` do navegador (Android/Chrome)
-- Mostrar um botão "Instalar agora" que dispara o prompt nativo quando disponível
-- Fallback para as instruções manuais quando o prompt não está disponível
+**Estornos/Chargebacks (sem emojis):**
+- Título: `Chargeback Recebido` / `MED Pix Recebido` / `Estorno Realizado`
+- Corpo: mantém o texto atual sem emojis
 
-### 5. Animações e polish
-- Fundo escuro com gradiente radial amarelo sutil (consistente com Landing)
-- Transição suave entre plataformas iOS/Android
-- Progress indicator mostrando em qual passo o usuário está
+**Pix Avulso:**
+- Título: `Pix Avulso Gerado`
+- Corpo: sem emoji
 
-## Arquivos modificados
+### Arquivos a Alterar
 
-| Arquivo | Mudança |
-|---|---|
-| `src/pages/Install.tsx` | Redesign completo da página |
-| `src/components/IPhoneFrame.tsx` | Sem alteração (reutilizado) |
+1. **`supabase/functions/create-pix-payment/index.ts`** — Alterar título para "Venda aprovada no Pix!" e corpo para "Sua comissão: R$ XX,XX"
 
-## Detalhes técnicos
+2. **`supabase/functions/create-card-payment/index.ts`** — Alterar título para "Venda aprovada no Cartão!" e corpo para "Sua comissão: R$ XX,XX"
 
-- Captura do `beforeinstallprompt` via `useEffect` + `useState` para armazenar o evento
-- Timeline vertical usando CSS (border-left + circles posicionados)
-- Manter detecção automática de plataforma existente
-- Manter verificação de `display-mode: standalone` para estado "já instalado"
-- Usar assets 3D existentes (`iphone-3d-mockup.png`) para o hero
+3. **`supabase/functions/asaas-webhook/index.ts`** — Duas alterações:
+   - Linha ~341: remover emojis dos títulos de estorno/chargeback
+   - Linha ~518: alterar "Nova venda! 🎉" para "Venda aprovada no Pix!" e corpo para "Sua comissão: R$ XX,XX" (usando `producerNet`)
+   - Adicionar push de venda confirmada para vendas regulares (~linha 708, após processar a venda) com o mesmo formato
+
+4. **`supabase/functions/create-pix-avulso/index.ts`** — Remover emoji, alterar para "Pix Avulso Gerado"
+
+5. **`src/hooks/useSalesNotifications.ts`** — Alterar toast e push:
+   - INSERT: título "Venda aprovada no Pix!" ou "Venda aprovada no Cartão!", corpo "Sua comissão: R$ XX,XX"
+   - UPDATE (refund): remover emojis, manter formato limpo
+
+6. **`supabase/functions/send-push/index.ts`** — Alterar fallback default de "Nova venda!" para "Venda aprovada!"
+
+### Observação Importante
+
+Nos pontos de **geração** de pagamento (`create-pix-payment`, `create-card-payment`), o valor líquido do produtor ainda não é conhecido com precisão (depende de taxas e comissões de afiliado). Nesses casos, usaremos o valor bruto como aproximação da comissão, ou alternativamente podemos mostrar apenas o valor da venda. O valor exato da comissão só é calculado no `asaas-webhook` quando o pagamento é confirmado.
 
