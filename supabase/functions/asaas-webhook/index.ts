@@ -706,6 +706,21 @@ Deno.serve(async (req) => {
 
     console.log(`Sale processed: PIX D+0, producer_net=${producerNet}, profit=${netProfit}, release=${releaseDate}`);
 
+    // ✅ Send push notification for confirmed sale
+    try {
+      const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
+      await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producer_id: product.producer_id,
+          title: "Venda aprovada no Pix!",
+          body: `Sua comissão: ${fmtNet}`,
+          url: "/sales",
+        }),
+      });
+    } catch (_) { /* non-critical */ }
+
     // ✅ Grant product access
     await grantProductAccess(supabase, pending.product_id, pending.buyer_email, sale.id);
 
