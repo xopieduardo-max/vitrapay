@@ -301,14 +301,6 @@ export default function AdminFakeSales() {
   const selectedProduct = products.find((p: any) => p.id === productId);
   const fmt = (v: number) => `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
-  const formatDateLabel = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr + "T12:00:00");
-      return format(d, "dd/MM (EEEE)", { locale: ptBR });
-    } catch {
-      return dateStr;
-    }
-  };
 
   return (
     <div className="space-y-6">
