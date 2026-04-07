@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X, Bell, Timer,
+  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X, Bell, Timer, CheckCircle, Send,
 } from "lucide-react";
 
 interface DaySchedule {
