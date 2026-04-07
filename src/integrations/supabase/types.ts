@@ -1427,6 +1427,39 @@ export type Database = {
           },
         ]
       }
+      scheduled_fake_pushes: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          producer_id: string
+          scheduled_at: string
+          sent_at: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          producer_id: string
+          scheduled_at: string
+          sent_at?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          producer_id?: string
+          scheduled_at?: string
+          sent_at?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
