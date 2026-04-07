@@ -277,7 +277,7 @@ export default function AdminFakeSales() {
       return salesToInsert.length;
     },
     onSuccess: (count) => {
-      toast({ title: `✅ ${count} venda(s) gerada(s) com sucesso!` });
+      toast({ title: `✅ ${count} venda(s) gerada(s)${scheduleEnabled ? " — notificações agendadas!" : " com sucesso!"}` });
       setDays([{ id: crypto.randomUUID(), date: new Date().toISOString().split("T")[0], pix: 1, card: 0, boleto: 0, startHour: 9, endHour: 18 }]);
       setCustomPrice("");
       queryClient.invalidateQueries({ queryKey: ["admin-recent-fakes"] });
