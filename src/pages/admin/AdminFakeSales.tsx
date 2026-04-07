@@ -619,6 +619,75 @@ export default function AdminFakeSales() {
           })
         )}
       </div>
+
+      {/* Scheduled Pushes Queue */}
+      {scheduledPushes.length > 0 && (() => {
+        const pending = scheduledPushes.filter((p: any) => !p.sent_at);
+        const sent = scheduledPushes.filter((p: any) => p.sent_at);
+        return (
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="text-sm font-semibold flex items-center gap-2">
+                <Timer className="h-3.5 w-3.5 text-primary" />
+                Fila de notificações agendadas
+              </h2>
+              <div className="flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1 text-amber-500">
+                  <Send className="h-3 w-3" />
+                  {pending.length} pendente{pending.length !== 1 ? "s" : ""}
+                </span>
+                <span className="flex items-center gap-1 text-emerald-500">
+                  <CheckCircle className="h-3 w-3" />
+                  {sent.length} enviado{sent.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto">
+              {scheduledPushes.map((p: any, i: number) => {
+                const user = KNOWN_USERS.find((u) => u.id === p.producer_id);
+                const isPending = !p.sent_at;
+                const isPast = new Date(p.scheduled_at) <= new Date();
+                return (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.015 }}
+                    className={`flex items-center justify-between px-4 py-2 border-b border-border last:border-0 transition-colors ${isPending ? "bg-amber-500/5" : "bg-emerald-500/5"}`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {isPending ? (
+                        <div className={`h-2 w-2 rounded-full shrink-0 ${isPast ? "bg-amber-500 animate-pulse" : "bg-amber-400"}`} />
+                      ) : (
+                        <CheckCircle className="h-3 w-3 text-emerald-500 shrink-0" />
+                      )}
+                      <span className="text-[0.65rem] text-muted-foreground whitespace-nowrap">
+                        {format(new Date(p.scheduled_at), "dd/MM HH:mm")}
+                      </span>
+                      <span className="text-xs truncate">{p.title}</span>
+                      <span className="text-[0.6rem] text-muted-foreground truncate hidden sm:inline">{p.body}</span>
+                      {user && (
+                        <span className="text-[0.6rem] text-muted-foreground hidden md:inline">→ {user.label}</span>
+                      )}
+                    </div>
+                    <div className="shrink-0 ml-2">
+                      {isPending ? (
+                        <span className="text-[0.6rem] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium">
+                          {isPast ? "Processando..." : "Agendado"}
+                        </span>
+                      ) : (
+                        <span className="text-[0.6rem] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium">
+                          Enviado {format(new Date(p.sent_at), "HH:mm")}
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
