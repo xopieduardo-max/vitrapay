@@ -387,12 +387,27 @@ export default function AdminFakeSales() {
           </div>
 
           <div className="space-y-2">
+            {/* Schedule toggle */}
+            <div className="flex items-center gap-3 pb-2">
+              <Switch
+                id="schedule-toggle"
+                checked={scheduleEnabled}
+                onCheckedChange={setScheduleEnabled}
+              />
+              <Label htmlFor="schedule-toggle" className="text-xs flex items-center gap-1.5 cursor-pointer">
+                <Timer className="h-3.5 w-3.5 text-primary" />
+                Agendar notificações push (distribuir ao longo do dia)
+              </Label>
+            </div>
+
             {/* Header */}
-            <div className="hidden sm:grid grid-cols-[140px_1fr_1fr_1fr_40px] gap-2 text-[0.65rem] text-muted-foreground uppercase tracking-label px-1">
+            <div className={`hidden sm:grid gap-2 text-[0.65rem] text-muted-foreground uppercase tracking-label px-1 ${scheduleEnabled ? "grid-cols-[140px_1fr_1fr_1fr_70px_70px_40px]" : "grid-cols-[140px_1fr_1fr_1fr_40px]"}`}>
               <span>Data</span>
               <span>Pix</span>
               <span>Cartão</span>
               <span>Boleto</span>
+              {scheduleEnabled && <span>Início</span>}
+              {scheduleEnabled && <span>Fim</span>}
               <span />
             </div>
 
@@ -403,7 +418,7 @@ export default function AdminFakeSales() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-2 sm:grid-cols-[140px_1fr_1fr_1fr_40px] gap-2 items-end"
+                  className={`grid grid-cols-2 gap-2 items-end ${scheduleEnabled ? "sm:grid-cols-[140px_1fr_1fr_1fr_70px_70px_40px]" : "sm:grid-cols-[140px_1fr_1fr_1fr_40px]"}`}
                 >
                   <div className="col-span-2 sm:col-span-1 space-y-1">
                     <Label className="text-[0.6rem] sm:hidden text-muted-foreground">Data</Label>
@@ -450,6 +465,36 @@ export default function AdminFakeSales() {
                       placeholder="0"
                     />
                   </div>
+                  {scheduleEnabled && (
+                    <div className="space-y-1">
+                      <Label className="text-[0.6rem] sm:hidden text-muted-foreground">Início</Label>
+                      <Select value={String(day.startHour)} onValueChange={(v) => updateDay(day.id, "startHour", parseInt(v))}>
+                        <SelectTrigger className="h-9 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={String(i)}>{String(i).padStart(2, "0")}:00</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  {scheduleEnabled && (
+                    <div className="space-y-1">
+                      <Label className="text-[0.6rem] sm:hidden text-muted-foreground">Fim</Label>
+                      <Select value={String(day.endHour)} onValueChange={(v) => updateDay(day.id, "endHour", parseInt(v))}>
+                        <SelectTrigger className="h-9 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={String(i)} disabled={i <= day.startHour}>{String(i).padStart(2, "0")}:00</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -465,7 +510,7 @@ export default function AdminFakeSales() {
           </div>
 
           {/* Summary */}
-          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 flex-wrap">
             <span>
               Total: <strong className="text-foreground">{totalSales} venda(s)</strong>
             </span>
@@ -478,6 +523,12 @@ export default function AdminFakeSales() {
             <span>
               Boleto: <strong className="text-primary">{days.reduce((a, d) => a + d.boleto, 0)}</strong>
             </span>
+            {scheduleEnabled && (
+              <span className="text-primary">
+                <Timer className="h-3 w-3 inline mr-1" />
+                Notificações agendadas
+              </span>
+            )}
             {selectedProduct && (
               <span className="ml-auto">
                 Valor total: <strong className="text-foreground">
