@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X, Bell,
+  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X, Bell, Timer,
 } from "lucide-react";
 
 interface DaySchedule {
@@ -19,6 +20,8 @@ interface DaySchedule {
   pix: number;
   card: number;
   boleto: number;
+  startHour: number;
+  endHour: number;
 }
 
 const KNOWN_USERS = [
