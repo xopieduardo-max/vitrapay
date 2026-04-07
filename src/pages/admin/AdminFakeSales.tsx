@@ -217,26 +217,60 @@ export default function AdminFakeSales() {
       });
       if (walletError) console.error("[FakeSales] Wallet update error:", walletError);
 
-      // Send individual push notifications for each sale
+      // Push notifications: schedule or send immediately
       const methodLabels: Record<string, string> = {
         card: "Cartão de Crédito",
         boleto: "Boleto",
         pix: "Pix",
       };
 
-      for (const sale of salesToInsert) {
-        try {
-          const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-          await supabase.functions.invoke("send-push", {
-            body: {
+      if (scheduleEnabled) {
+        // Schedule pushes distributed across the time range per day
+        const scheduledPushes: any[] = [];
+        for (const day of days) {
+          const daySales = salesToInsert.filter((s: any) => s.created_at.startsWith(day.date));
+          const rangeMinutes = (day.endHour - day.startHour) * 60;
+
+          daySales.forEach((sale: any) => {
+            const schedDate = new Date(day.date + "T00:00:00");
+            const randomMinute = Math.floor(Math.random() * Math.max(1, rangeMinutes));
+            schedDate.setHours(day.startHour, 0, 0, 0);
+            schedDate.setMinutes(schedDate.getMinutes() + randomMinute);
+            schedDate.setSeconds(Math.floor(Math.random() * 60));
+
+            const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+            scheduledPushes.push({
               producer_id: producerId,
-              title: `Venda Aprovada!`,
-              body: `Pagamento via ${methodLabels[sale.payment_provider] || sale.payment_provider}\nValor: ${fmt2}`,
+              title: `Venda aprovada no ${methodLabels[sale.payment_provider] || sale.payment_provider}!`,
+              body: `Sua comissão: ${fmt2}`,
               url: "/sales",
-            },
+              scheduled_at: schedDate.toISOString(),
+            });
           });
-        } catch (e) {
-          console.error("[FakeSales] Push send error:", e);
+        }
+
+        // Insert scheduled pushes in batches
+        for (let i = 0; i < scheduledPushes.length; i += 50) {
+          const batch = scheduledPushes.slice(i, i + 50);
+          const { error } = await supabase.from("scheduled_fake_pushes").insert(batch);
+          if (error) console.error("[FakeSales] Scheduled push insert error:", error);
+        }
+      } else {
+        // Send immediately (existing behavior)
+        for (const sale of salesToInsert) {
+          try {
+            const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+            await supabase.functions.invoke("send-push", {
+              body: {
+                producer_id: producerId,
+                title: `Venda aprovada no ${methodLabels[sale.payment_provider] || sale.payment_provider}!`,
+                body: `Sua comissão: ${fmt2}`,
+                url: "/sales",
+              },
+            });
+          } catch (e) {
+            console.error("[FakeSales] Push send error:", e);
+          }
         }
       }
 
