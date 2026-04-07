@@ -71,6 +71,19 @@ export default function AdminFakeSales() {
     },
   });
 
+  const { data: scheduledPushes = [] } = useQuery({
+    queryKey: ["admin-scheduled-pushes"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("scheduled_fake_pushes")
+        .select("id, title, body, scheduled_at, sent_at, producer_id")
+        .order("scheduled_at", { ascending: true })
+        .limit(50);
+      return data || [];
+    },
+    refetchInterval: 30000,
+  });
+
   const addDay = () => {
     const lastDate = days.length > 0 ? days[days.length - 1].date : new Date().toISOString().split("T")[0];
     const nextDate = new Date(lastDate + "T12:00:00");
