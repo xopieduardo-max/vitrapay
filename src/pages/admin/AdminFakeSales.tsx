@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X, Bell,
+  Plus, Loader2, Zap, ShoppingBag, Trash2, Clock, Calendar, X, Bell, Timer,
 } from "lucide-react";
 
 interface DaySchedule {
@@ -19,6 +20,8 @@ interface DaySchedule {
   pix: number;
   card: number;
   boleto: number;
+  startHour: number;
+  endHour: number;
 }
 
 const KNOWN_USERS = [
@@ -34,8 +37,9 @@ export default function AdminFakeSales() {
   const [producerId, setProducerId] = useState("");
   const [productId, setProductId] = useState("");
   const [customPrice, setCustomPrice] = useState("");
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [days, setDays] = useState<DaySchedule[]>([
-    { id: crypto.randomUUID(), date: new Date().toISOString().split("T")[0], pix: 1, card: 0, boleto: 0 },
+    { id: crypto.randomUUID(), date: new Date().toISOString().split("T")[0], pix: 1, card: 0, boleto: 0, startHour: 9, endHour: 18 },
   ]);
 
   const { data: products = [] } = useQuery({
@@ -77,6 +81,8 @@ export default function AdminFakeSales() {
       pix: 0,
       card: 0,
       boleto: 0,
+      startHour: 9,
+      endHour: 18,
     }]);
   };
 
@@ -211,34 +217,68 @@ export default function AdminFakeSales() {
       });
       if (walletError) console.error("[FakeSales] Wallet update error:", walletError);
 
-      // Send individual push notifications for each sale
+      // Push notifications: schedule or send immediately
       const methodLabels: Record<string, string> = {
         card: "Cartão de Crédito",
         boleto: "Boleto",
         pix: "Pix",
       };
 
-      for (const sale of salesToInsert) {
-        try {
-          const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-          await supabase.functions.invoke("send-push", {
-            body: {
+      if (scheduleEnabled) {
+        // Schedule pushes distributed across the time range per day
+        const scheduledPushes: any[] = [];
+        for (const day of days) {
+          const daySales = salesToInsert.filter((s: any) => s.created_at.startsWith(day.date));
+          const rangeMinutes = (day.endHour - day.startHour) * 60;
+
+          daySales.forEach((sale: any) => {
+            const schedDate = new Date(day.date + "T00:00:00");
+            const randomMinute = Math.floor(Math.random() * Math.max(1, rangeMinutes));
+            schedDate.setHours(day.startHour, 0, 0, 0);
+            schedDate.setMinutes(schedDate.getMinutes() + randomMinute);
+            schedDate.setSeconds(Math.floor(Math.random() * 60));
+
+            const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+            scheduledPushes.push({
               producer_id: producerId,
-              title: `Venda Aprovada!`,
-              body: `Pagamento via ${methodLabels[sale.payment_provider] || sale.payment_provider}\nValor: ${fmt2}`,
+              title: `Venda aprovada no ${methodLabels[sale.payment_provider] || sale.payment_provider}!`,
+              body: `Sua comissão: ${fmt2}`,
               url: "/sales",
-            },
+              scheduled_at: schedDate.toISOString(),
+            });
           });
-        } catch (e) {
-          console.error("[FakeSales] Push send error:", e);
+        }
+
+        // Insert scheduled pushes in batches
+        for (let i = 0; i < scheduledPushes.length; i += 50) {
+          const batch = scheduledPushes.slice(i, i + 50);
+          const { error } = await supabase.from("scheduled_fake_pushes").insert(batch);
+          if (error) console.error("[FakeSales] Scheduled push insert error:", error);
+        }
+      } else {
+        // Send immediately (existing behavior)
+        for (const sale of salesToInsert) {
+          try {
+            const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+            await supabase.functions.invoke("send-push", {
+              body: {
+                producer_id: producerId,
+                title: `Venda aprovada no ${methodLabels[sale.payment_provider] || sale.payment_provider}!`,
+                body: `Sua comissão: ${fmt2}`,
+                url: "/sales",
+              },
+            });
+          } catch (e) {
+            console.error("[FakeSales] Push send error:", e);
+          }
         }
       }
 
       return salesToInsert.length;
     },
     onSuccess: (count) => {
-      toast({ title: `✅ ${count} venda(s) gerada(s) com sucesso!` });
-      setDays([{ id: crypto.randomUUID(), date: new Date().toISOString().split("T")[0], pix: 1, card: 0, boleto: 0 }]);
+      toast({ title: `✅ ${count} venda(s) gerada(s)${scheduleEnabled ? " — notificações agendadas!" : " com sucesso!"}` });
+      setDays([{ id: crypto.randomUUID(), date: new Date().toISOString().split("T")[0], pix: 1, card: 0, boleto: 0, startHour: 9, endHour: 18 }]);
       setCustomPrice("");
       queryClient.invalidateQueries({ queryKey: ["admin-recent-fakes"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
@@ -261,14 +301,6 @@ export default function AdminFakeSales() {
   const selectedProduct = products.find((p: any) => p.id === productId);
   const fmt = (v: number) => `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
-  const formatDateLabel = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr + "T12:00:00");
-      return format(d, "dd/MM (EEEE)", { locale: ptBR });
-    } catch {
-      return dateStr;
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -347,12 +379,27 @@ export default function AdminFakeSales() {
           </div>
 
           <div className="space-y-2">
+            {/* Schedule toggle */}
+            <div className="flex items-center gap-3 pb-2">
+              <Switch
+                id="schedule-toggle"
+                checked={scheduleEnabled}
+                onCheckedChange={setScheduleEnabled}
+              />
+              <Label htmlFor="schedule-toggle" className="text-xs flex items-center gap-1.5 cursor-pointer">
+                <Timer className="h-3.5 w-3.5 text-primary" />
+                Agendar notificações push (distribuir ao longo do dia)
+              </Label>
+            </div>
+
             {/* Header */}
-            <div className="hidden sm:grid grid-cols-[140px_1fr_1fr_1fr_40px] gap-2 text-[0.65rem] text-muted-foreground uppercase tracking-label px-1">
+            <div className={`hidden sm:grid gap-2 text-[0.65rem] text-muted-foreground uppercase tracking-label px-1 ${scheduleEnabled ? "grid-cols-[140px_1fr_1fr_1fr_70px_70px_40px]" : "grid-cols-[140px_1fr_1fr_1fr_40px]"}`}>
               <span>Data</span>
               <span>Pix</span>
               <span>Cartão</span>
               <span>Boleto</span>
+              {scheduleEnabled && <span>Início</span>}
+              {scheduleEnabled && <span>Fim</span>}
               <span />
             </div>
 
@@ -363,7 +410,7 @@ export default function AdminFakeSales() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-2 sm:grid-cols-[140px_1fr_1fr_1fr_40px] gap-2 items-end"
+                  className={`grid grid-cols-2 gap-2 items-end ${scheduleEnabled ? "sm:grid-cols-[140px_1fr_1fr_1fr_70px_70px_40px]" : "sm:grid-cols-[140px_1fr_1fr_1fr_40px]"}`}
                 >
                   <div className="col-span-2 sm:col-span-1 space-y-1">
                     <Label className="text-[0.6rem] sm:hidden text-muted-foreground">Data</Label>
@@ -410,6 +457,36 @@ export default function AdminFakeSales() {
                       placeholder="0"
                     />
                   </div>
+                  {scheduleEnabled && (
+                    <div className="space-y-1">
+                      <Label className="text-[0.6rem] sm:hidden text-muted-foreground">Início</Label>
+                      <Select value={String(day.startHour)} onValueChange={(v) => updateDay(day.id, "startHour", parseInt(v))}>
+                        <SelectTrigger className="h-9 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={String(i)}>{String(i).padStart(2, "0")}:00</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  {scheduleEnabled && (
+                    <div className="space-y-1">
+                      <Label className="text-[0.6rem] sm:hidden text-muted-foreground">Fim</Label>
+                      <Select value={String(day.endHour)} onValueChange={(v) => updateDay(day.id, "endHour", parseInt(v))}>
+                        <SelectTrigger className="h-9 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={String(i)} disabled={i <= day.startHour}>{String(i).padStart(2, "0")}:00</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -425,7 +502,7 @@ export default function AdminFakeSales() {
           </div>
 
           {/* Summary */}
-          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 flex-wrap">
             <span>
               Total: <strong className="text-foreground">{totalSales} venda(s)</strong>
             </span>
@@ -438,6 +515,12 @@ export default function AdminFakeSales() {
             <span>
               Boleto: <strong className="text-primary">{days.reduce((a, d) => a + d.boleto, 0)}</strong>
             </span>
+            {scheduleEnabled && (
+              <span className="text-primary">
+                <Timer className="h-3 w-3 inline mr-1" />
+                Notificações agendadas
+              </span>
+            )}
             {selectedProduct && (
               <span className="ml-auto">
                 Valor total: <strong className="text-foreground">

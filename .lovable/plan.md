@@ -1,59 +1,32 @@
 
+## Agendamento de Notificações no GV+
 
-## Padronizar Notificações Push de Venda
+### Objetivo
+Permitir que as vendas simuladas tenham suas notificações push distribuídas ao longo de um período (ex: 9h às 18h), em vez de disparar todas de uma vez.
 
-### Situação Atual
+### Abordagem
 
-As notificações push estão espalhadas em **6 locais** com formatos inconsistentes e emojis:
+**1. Nova tabela `scheduled_fake_pushes`**
+- Armazena cada notificação push agendada com horário de disparo
+- Campos: `id`, `producer_id`, `title`, `body`, `url`, `scheduled_at`, `sent_at`, `created_at`
 
-| Local | Título atual | Corpo atual |
-|-------|-------------|-------------|
-| `create-pix-payment` | "Pix Gerado! 💰" | "Pix de R$ XX gerado para [produto]" |
-| `create-card-payment` | "Cartão Gerado! 💳" | "Pagamento de R$ XX via cartão gerado para [produto]" |
-| `asaas-webhook` (avulso confirmado) | "Nova venda! 🎉" | "Pix de [nome] de R$ XX confirmado" |
-| `asaas-webhook` (estorno/chargeback) | "⚠️ Chargeback..." / "🔄 Estorno..." | Texto com valor |
-| `useSalesNotifications.ts` (realtime INSERT) | "Venda Aprovada!" | "Pagamento via Pix • Valor: R$ XX" |
-| `useSalesNotifications.ts` (realtime UPDATE refund) | "Venda Estornada" | "Pix • R$ XX • ID: ..." |
-| `create-pix-avulso` | "Pix Avulso Gerado 💰" | "Cobrança de R$ XX criada..." |
+**2. Atualizar UI do GV+ (`AdminFakeSales.tsx`)**
+- Adicionar campos de "Horário início" e "Horário fim" em cada linha de dia
+- Padrão: 09:00 às 18:00
+- Toggle "Agendar notificações" (se desligado, envia tudo imediatamente como hoje)
+- Quando agendado: as vendas são inseridas normalmente (instantâneo), mas as notificações push são salvas na tabela com horários distribuídos aleatoriamente no intervalo
 
-### Novo Formato Padronizado
+**3. Nova Edge Function `process-scheduled-pushes`**
+- Executada a cada minuto via cron job
+- Busca pushes com `scheduled_at <= now()` e `sent_at IS NULL`
+- Envia cada push via `send-push` e marca como enviado
 
-**Vendas confirmadas (push + toast):**
-- Título: `Venda aprovada no Pix!` ou `Venda aprovada no Cartão!`
-- Corpo: `Sua comissão: R$ XX,XX`
+### Fluxo
+1. Admin configura 20 Pix + 10 Cartão, horário 9h-18h
+2. Clica "Gerar" → vendas são inseridas no banco instantaneamente
+3. 30 registros são criados em `scheduled_fake_pushes` com horários aleatórios entre 9h-18h
+4. Cron a cada minuto verifica e dispara os pushes no horário certo
 
-**Pagamentos gerados (PIX/Cartão pendentes):**
-- Título: `Venda aprovada no Pix!` ou `Venda aprovada no Cartão!`
-- Corpo: `Sua comissão: R$ XX,XX` (usando valor bruto pois a comissão líquida ainda não é conhecida nesse momento — será o valor do produto)
-
-**Estornos/Chargebacks (sem emojis):**
-- Título: `Chargeback Recebido` / `MED Pix Recebido` / `Estorno Realizado`
-- Corpo: mantém o texto atual sem emojis
-
-**Pix Avulso:**
-- Título: `Pix Avulso Gerado`
-- Corpo: sem emoji
-
-### Arquivos a Alterar
-
-1. **`supabase/functions/create-pix-payment/index.ts`** — Alterar título para "Venda aprovada no Pix!" e corpo para "Sua comissão: R$ XX,XX"
-
-2. **`supabase/functions/create-card-payment/index.ts`** — Alterar título para "Venda aprovada no Cartão!" e corpo para "Sua comissão: R$ XX,XX"
-
-3. **`supabase/functions/asaas-webhook/index.ts`** — Duas alterações:
-   - Linha ~341: remover emojis dos títulos de estorno/chargeback
-   - Linha ~518: alterar "Nova venda! 🎉" para "Venda aprovada no Pix!" e corpo para "Sua comissão: R$ XX,XX" (usando `producerNet`)
-   - Adicionar push de venda confirmada para vendas regulares (~linha 708, após processar a venda) com o mesmo formato
-
-4. **`supabase/functions/create-pix-avulso/index.ts`** — Remover emoji, alterar para "Pix Avulso Gerado"
-
-5. **`src/hooks/useSalesNotifications.ts`** — Alterar toast e push:
-   - INSERT: título "Venda aprovada no Pix!" ou "Venda aprovada no Cartão!", corpo "Sua comissão: R$ XX,XX"
-   - UPDATE (refund): remover emojis, manter formato limpo
-
-6. **`supabase/functions/send-push/index.ts`** — Alterar fallback default de "Nova venda!" para "Venda aprovada!"
-
-### Observação Importante
-
-Nos pontos de **geração** de pagamento (`create-pix-payment`, `create-card-payment`), o valor líquido do produtor ainda não é conhecido com precisão (depende de taxas e comissões de afiliado). Nesses casos, usaremos o valor bruto como aproximação da comissão, ou alternativamente podemos mostrar apenas o valor da venda. O valor exato da comissão só é calculado no `asaas-webhook` quando o pagamento é confirmado.
-
+### Vantagem
+- Vendas aparecem no dashboard imediatamente (para métricas)
+- Notificações chegam gradualmente ao longo do dia (natural)
