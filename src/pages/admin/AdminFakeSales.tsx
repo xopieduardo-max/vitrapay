@@ -37,8 +37,9 @@ export default function AdminFakeSales() {
   const [producerId, setProducerId] = useState("");
   const [productId, setProductId] = useState("");
   const [customPrice, setCustomPrice] = useState("");
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [days, setDays] = useState<DaySchedule[]>([
-    { id: crypto.randomUUID(), date: new Date().toISOString().split("T")[0], pix: 1, card: 0, boleto: 0 },
+    { id: crypto.randomUUID(), date: new Date().toISOString().split("T")[0], pix: 1, card: 0, boleto: 0, startHour: 9, endHour: 18 },
   ]);
 
   const { data: products = [] } = useQuery({
