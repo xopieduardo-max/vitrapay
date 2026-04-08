@@ -44,7 +44,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const REVENUE_GOAL = 1000000;
+const MILESTONES = [1000000, 10000000, 25000000, 50000000, 100000000];
+function getCurrentGoal(revenue: number) {
+  for (const m of MILESTONES) {
+    if (revenue < m) return m;
+  }
+  return MILESTONES[MILESTONES.length - 1];
+}
 
 const paymentMethods = [
   { name: "Cartão de crédito", key: "card", icon: CreditCard },
@@ -261,7 +267,8 @@ export default function Dashboard() {
     : "0";
   const checkoutConversionColor = parseFloat(checkoutConversionRate) >= 3 ? "text-primary" : parseFloat(checkoutConversionRate) >= 1 ? "text-warning" : "text-destructive";
 
-  const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
+  const currentGoal = getCurrentGoal(totalRevenue);
+  const revenueProgress = Math.min((totalRevenue / currentGoal) * 100, 100);
 
   // Achievement level (global)
   const totalRevenueAll = completedSalesAll.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
