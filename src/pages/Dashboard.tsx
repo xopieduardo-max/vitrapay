@@ -100,8 +100,11 @@ function getDateRange(period: PeriodKey, customFrom?: Date, customTo?: Date): { 
     }
     case "all":
       return { from: null, to: todayEnd };
-    case "custom":
-      return { from: customFrom || todayStart, to: customTo || now };
+    case "custom": {
+      const cfrom = customFrom || todayStart;
+      const cto = customTo ? new Date(customTo.getFullYear(), customTo.getMonth(), customTo.getDate(), 23, 59, 59, 999) : todayEnd;
+      return { from: cfrom, to: cto };
+    }
     default:
       return { from: null, to: todayEnd };
   }
