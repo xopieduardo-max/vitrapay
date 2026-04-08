@@ -31,6 +31,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
 import BannerCarousel from "@/components/BannerCarousel";
+import { MilestoneCelebration } from "@/components/MilestoneCelebration";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -446,6 +447,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
+      <MilestoneCelebration revenue={totalRevenueAll} milestones={MILESTONES} />
       
       {/* Promotional Banner Carousel */}
       <motion.div {...anim(0)}>
