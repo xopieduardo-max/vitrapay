@@ -62,7 +62,14 @@ const salesSubItems = [
   { title: "Extrato", url: "/transactions", icon: Receipt },
 ];
 
-const REVENUE_GOAL = 1000000;
+const MILESTONES = [1000000, 10000000, 25000000, 50000000, 100000000]; // 10k, 100k, 250k, 500k, 1M in cents
+
+function getCurrentGoal(revenue: number) {
+  for (const m of MILESTONES) {
+    if (revenue < m) return m;
+  }
+  return MILESTONES[MILESTONES.length - 1];
+}
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -122,7 +129,8 @@ export function AppSidebar() {
     setBecomingProducer(false);
   };
 
-  const revenueProgress = Math.min((totalRevenue / REVENUE_GOAL) * 100, 100);
+  const currentGoal = getCurrentGoal(totalRevenue);
+  const revenueProgress = Math.min((totalRevenue / currentGoal) * 100, 100);
   const fmt = (v: number) =>
     `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
@@ -148,7 +156,7 @@ export function AppSidebar() {
               <div>
                 <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Faturamento</p>
                 <p className="text-sm font-bold">
-                  {fmt(totalRevenue)} <span className="text-xs font-normal text-muted-foreground">/ {fmt(REVENUE_GOAL)}</span>
+                  {fmt(totalRevenue)} <span className="text-xs font-normal text-muted-foreground">/ {fmt(currentGoal)}</span>
                 </p>
               </div>
             </div>
