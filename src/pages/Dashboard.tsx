@@ -898,7 +898,7 @@ export default function Dashboard() {
                 <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                   <div className="w-full flex items-end gap-0.5 h-32">
                     {comparisonData.showPrevious && (
-                      <div className="flex-1 relative group">
+                      <div className="flex-1 h-full relative group flex flex-col justify-end">
                         <div
                           className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
                           style={{ height: `${d.previousPct}%` }}
@@ -908,7 +908,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                     )}
-                    <div className={`${comparisonData.showPrevious ? "flex-1" : "w-full"} relative group`}>
+                    <div className={`${comparisonData.showPrevious ? "flex-1" : "w-full"} h-full relative group flex flex-col justify-end`}>
                       <div
                         className={`w-full rounded-t transition-colors ${d.isFuture ? "bg-primary/10" : "bg-primary/60 hover:bg-primary/80"}`}
                         style={{ height: d.isFuture ? "3%" : `${d.currentPct}%` }}
