@@ -1771,7 +1771,68 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      product_pixels_public: {
+        Row: {
+          config: Json | null
+          id: string | null
+          is_active: boolean | null
+          pixel_id: string | null
+          platform: string | null
+          product_id: string | null
+        }
+        Insert: {
+          config?: Json | null
+          id?: string | null
+          is_active?: boolean | null
+          pixel_id?: string | null
+          platform?: string | null
+          product_id?: string | null
+        }
+        Update: {
+          config?: Json | null
+          id?: string | null
+          is_active?: boolean | null
+          pixel_id?: string | null
+          platform?: string | null
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_pixels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
