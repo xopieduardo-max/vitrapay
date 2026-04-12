@@ -5,6 +5,7 @@ import {
   ArrowLeft, Package, Download, BookOpen, Image, FileDown, Users,
   TrendingUp, DollarSign, ShoppingCart, Loader2, Eye, ExternalLink,
 } from "lucide-react";
+import { downloadFile } from "@/lib/downloadFile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -324,15 +325,14 @@ export default function AdminProductDetail() {
                       {product.file_url.split("/").pop()}
                     </p>
                   </div>
-                  <a
-                    href={product.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => downloadFile(product.file_url!, product.file_url!.split("/").pop() || "arquivo")}
                   >
-                    <Button size="sm" variant="outline" className="gap-1.5">
-                      <Download className="h-3.5 w-3.5" /> Baixar
-                    </Button>
-                  </a>
+                    <Download className="h-3.5 w-3.5" /> Baixar
+                  </Button>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
