@@ -186,7 +186,7 @@ export default function Checkout() {
         supabase.from("funnel_steps").select("*, offer_product:offer_product_id(id, title, price, cover_url, description, file_url, type)").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
         supabase.from("checkout_testimonials").select("*").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
         supabase.from("checkout_blocks").select("*").eq("product_id", id).eq("is_active", true).order("position", { ascending: true }),
-        supabase.from("product_pixels").select("*").eq("product_id", id).eq("is_active", true),
+        supabase.from("product_pixels_public").select("*").eq("product_id", id).eq("is_active", true),
       ]);
 
       if (prod) {
