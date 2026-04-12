@@ -325,52 +325,173 @@ export default function Dashboard() {
     return vals.map((v) => Math.max((v / max) * 95, 5));
   }, [completedSalesAll]);
 
-  // Week-over-week comparison data
-  const weekComparison = useMemo(() => {
-    const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  // Chart comparison mode
+  const [chartMode, setChartMode] = useState<"week" | "month" | "day" | "hour">("week");
+
+  // Unified comparison data
+  const comparisonData = useMemo(() => {
     const now = new Date();
+
+    if (chartMode === "hour") {
+      // Hourly breakdown for today
+      const hours = Array.from({ length: 24 }, (_, i) => i);
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const hourData = hours.map((h) => {
+        const total = completedSalesAll
+          .filter((s) => {
+            const d = new Date(s.created_at);
+            return d >= todayStart && d.getHours() === h;
+          })
+          .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+        return { label: `${h}h`, current: total, previous: 0, isFuture: h > now.getHours() };
+      });
+      const max = Math.max(...hourData.map((d) => d.current), 1);
+      return {
+        items: hourData.map((d) => ({
+          ...d,
+          currentPct: Math.max((d.current / max) * 95, 3),
+          previousPct: 3,
+        })),
+        currentTotal: hourData.reduce((a, d) => a + d.current, 0),
+        previousTotal: 0,
+        currentLabel: "Hoje por hora",
+        previousLabel: "",
+        showPrevious: false,
+      };
+    }
+
+    if (chartMode === "day") {
+      // Last 7 days vs previous 7 days
+      const labels: string[] = [];
+      const current: number[] = [];
+      const previous: number[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        const dayName = d.toLocaleDateString("pt-BR", { weekday: "short" }).slice(0, 3);
+        labels.push(dayName);
+
+        const prev = new Date(d);
+        prev.setDate(prev.getDate() - 7);
+        const prevKey = prev.toISOString().slice(0, 10);
+
+        current.push(
+          completedSalesAll
+            .filter((s) => new Date(s.created_at).toISOString().slice(0, 10) === key)
+            .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
+        );
+        previous.push(
+          completedSalesAll
+            .filter((s) => new Date(s.created_at).toISOString().slice(0, 10) === prevKey)
+            .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
+        );
+      }
+      const allVals = [...current, ...previous];
+      const max = Math.max(...allVals, 1);
+      return {
+        items: labels.map((label, i) => ({
+          label,
+          current: current[i],
+          previous: previous[i],
+          currentPct: Math.max((current[i] / max) * 95, 3),
+          previousPct: Math.max((previous[i] / max) * 95, 3),
+          isFuture: false,
+        })),
+        currentTotal: current.reduce((a, b) => a + b, 0),
+        previousTotal: previous.reduce((a, b) => a + b, 0),
+        currentLabel: "Últimos 7 dias",
+        previousLabel: "7 dias anteriores",
+        showPrevious: true,
+      };
+    }
+
+    if (chartMode === "month") {
+      // This month vs last month, by week
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+      const weeks = ["Sem 1", "Sem 2", "Sem 3", "Sem 4", "Sem 5"];
+      const current = Array(5).fill(0);
+      const previous = Array(5).fill(0);
+
+      completedSalesAll.forEach((s) => {
+        const d = new Date(s.created_at);
+        const net = s.amount - (s.platform_fee || 0);
+        if (d >= thisMonthStart) {
+          const week = Math.min(Math.floor((d.getDate() - 1) / 7), 4);
+          current[week] += net;
+        } else if (d >= lastMonthStart && d <= lastMonthEnd) {
+          const week = Math.min(Math.floor((d.getDate() - 1) / 7), 4);
+          previous[week] += net;
+        }
+      });
+
+      const allVals = [...current, ...previous];
+      const max = Math.max(...allVals, 1);
+      return {
+        items: weeks.map((label, i) => ({
+          label,
+          current: current[i],
+          previous: previous[i],
+          currentPct: Math.max((current[i] / max) * 95, 3),
+          previousPct: Math.max((previous[i] / max) * 95, 3),
+          isFuture: false,
+        })),
+        currentTotal: current.reduce((a, b) => a + b, 0),
+        previousTotal: previous.reduce((a, b) => a + b, 0),
+        currentLabel: "Este mês",
+        previousLabel: "Mês passado",
+        showPrevious: true,
+      };
+    }
+
+    // Default: week mode
+    const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
     const todayDow = now.getDay();
-    
-    // Current week start (Sunday)
     const thisWeekStart = new Date(now);
     thisWeekStart.setDate(now.getDate() - todayDow);
     thisWeekStart.setHours(0, 0, 0, 0);
-    
-    // Last week start
     const lastWeekStart = new Date(thisWeekStart);
     lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    
+
     const thisWeek = Array(7).fill(0);
     const lastWeek = Array(7).fill(0);
-    
+
     completedSalesAll.forEach((s) => {
       const d = new Date(s.created_at);
       const net = s.amount - (s.platform_fee || 0);
       const dow = d.getDay();
-      
       if (d >= thisWeekStart) {
         thisWeek[dow] += net;
       } else if (d >= lastWeekStart && d < thisWeekStart) {
         lastWeek[dow] += net;
       }
     });
-    
+
     const allVals = [...thisWeek, ...lastWeek];
     const max = Math.max(...allVals, 1);
-    
-    return dayNames.map((name, i) => ({
-      day: name,
-      thisWeek: thisWeek[i],
-      lastWeek: lastWeek[i],
-      thisWeekPct: Math.max((thisWeek[i] / max) * 95, 3),
-      lastWeekPct: Math.max((lastWeek[i] / max) * 95, 3),
-      isFuture: i > todayDow,
-    }));
-  }, [completedSalesAll]);
+    return {
+      items: dayNames.map((label, i) => ({
+        label,
+        current: thisWeek[i],
+        previous: lastWeek[i],
+        currentPct: Math.max((thisWeek[i] / max) * 95, 3),
+        previousPct: Math.max((lastWeek[i] / max) * 95, 3),
+        isFuture: i > todayDow,
+      })),
+      currentTotal: thisWeek.reduce((a, b) => a + b, 0),
+      previousTotal: lastWeek.reduce((a, b) => a + b, 0),
+      currentLabel: "Esta semana",
+      previousLabel: "Semana passada",
+      showPrevious: true,
+    };
+  }, [completedSalesAll, chartMode]);
 
-  const thisWeekTotal = weekComparison.reduce((a, d) => a + d.thisWeek, 0);
-  const lastWeekTotal = weekComparison.reduce((a, d) => a + d.lastWeek, 0);
-  const weekChange = lastWeekTotal > 0 ? (((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100).toFixed(0) : thisWeekTotal > 0 ? "+100" : "0";
+  const weekChange = comparisonData.previousTotal > 0
+    ? (((comparisonData.currentTotal - comparisonData.previousTotal) / comparisonData.previousTotal) * 100).toFixed(0)
+    : comparisonData.currentTotal > 0 ? "+100" : "0";
 
   const quickLinks = [
     { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
