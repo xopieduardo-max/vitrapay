@@ -205,7 +205,7 @@ export default function Checkout() {
         }
         // Producer name fetch — non-blocking, runs in background
         supabase
-          .from("profiles")
+          .from("profiles_public")
           .select("display_name")
           .eq("user_id", prod.producer_id)
           .maybeSingle()
