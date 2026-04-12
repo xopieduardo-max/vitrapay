@@ -121,6 +121,12 @@ export default function AdminFakeSales() {
 
       const price = customPrice ? Math.round(parseFloat(customPrice) * 100) : product.price;
 
+      const methodLabels: Record<string, string> = {
+        card: "Cartão de Crédito",
+        boleto: "Boleto",
+        pix: "Pix",
+      };
+
       const salesToInsert: any[] = [];
 
       for (const day of days) {
@@ -162,104 +168,55 @@ export default function AdminFakeSales() {
         }
       }
 
-      // Insert sales in batches of 50
-      for (let i = 0; i < salesToInsert.length; i += 50) {
-        const batch = salesToInsert.slice(i, i + 50);
-        const { error } = await supabase.from("sales").insert(batch);
-        if (error) throw error;
-      }
-
-      // Create pending_payments records (status "confirmed") so checkout conversion metrics work
-      const pendingPaymentsToInsert = salesToInsert.map((sale: any) => ({
-        asaas_payment_id: sale.payment_id,
-        amount: sale.amount,
-        status: "confirmed",
-        product_id: sale.product_id,
-        producer_id: sale.producer_id,
-        buyer_name: `Cliente Simulado`,
-        buyer_email: `fake_${sale.id.slice(0, 6)}@vitrapay.com`,
-        created_at: sale.created_at,
-      }));
-
-      for (let i = 0; i < pendingPaymentsToInsert.length; i += 50) {
-        const batch = pendingPaymentsToInsert.slice(i, i + 50);
-        const { error } = await supabase.from("pending_payments").insert(batch);
-        if (error) console.error("[FakeSales] PendingPayment insert error:", error);
-      }
-
-      // Create sale credit transactions
-      const transactionsToInsert: any[] = salesToInsert.map((sale: any) => ({
-        user_id: producerId,
-        type: "credit",
-        category: "sale",
-        amount: sale.amount - sale.platform_fee,
-        status: "completed",
-        balance_type: "available",
-        reference_id: sale.id,
-        created_at: sale.created_at,
-      }));
-
-      // Create platform fee debit transactions (like real sales)
-      const feeTransactions = salesToInsert
-        .filter((sale: any) => sale.platform_fee > 0)
-        .map((sale: any) => ({
-          user_id: producerId,
-          type: "debit",
-          category: "fee",
-          amount: sale.platform_fee,
-          status: "completed",
-          balance_type: "available",
-          reference_id: sale.id,
-          created_at: sale.created_at,
-        }));
-
-      const allTransactions = [...transactionsToInsert, ...feeTransactions];
-
-      for (let i = 0; i < allTransactions.length; i += 50) {
-        const batch = allTransactions.slice(i, i + 50);
-        const { error } = await supabase.from("transactions").insert(batch);
-        if (error) console.error("[FakeSales] Transaction insert error:", error);
-      }
-
-      // Update wallet balance (net amount after fees)
-      const totalNet = salesToInsert.reduce((acc: number, s: any) => acc + (s.amount - s.platform_fee), 0);
-      const { error: walletError } = await supabase.rpc("increment_wallet", {
-        p_user_id: producerId,
-        p_available_delta: totalNet,
-        p_total_delta: totalNet,
-      });
-      if (walletError) console.error("[FakeSales] Wallet update error:", walletError);
-
-      // Push notifications: schedule or send immediately
-      const methodLabels: Record<string, string> = {
-        card: "Cartão de Crédito",
-        boleto: "Boleto",
-        pix: "Pix",
-      };
-
       if (scheduleEnabled) {
-        // Schedule pushes distributed across the time range per day
+        // ── SCHEDULED MODE: save sales + pushes for gradual insertion by cron ──
+        const scheduledSales: any[] = [];
         const scheduledPushes: any[] = [];
+
         for (const day of days) {
           const daySales = salesToInsert.filter((s: any) => s.created_at.startsWith(day.date));
           const rangeMinutes = (day.endHour - day.startHour) * 60;
 
           daySales.forEach((sale: any) => {
+            // Calculate scheduled time within the day's range
             const schedDate = new Date(day.date + "T00:00:00");
             const randomMinute = Math.floor(Math.random() * Math.max(1, rangeMinutes));
             schedDate.setHours(day.startHour, 0, 0, 0);
             schedDate.setMinutes(schedDate.getMinutes() + randomMinute);
             schedDate.setSeconds(Math.floor(Math.random() * 60));
 
+            const scheduledAt = schedDate.toISOString();
+
+            // Schedule the sale for gradual insertion
+            scheduledSales.push({
+              id: sale.id,
+              producer_id: producerId,
+              product_id: productId,
+              amount: sale.amount,
+              platform_fee: sale.platform_fee,
+              payment_provider: sale.payment_provider,
+              payment_id: sale.payment_id,
+              sale_date: sale.created_at,
+              scheduled_at: scheduledAt,
+            });
+
+            // Schedule the push notification at the same time
             const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
             scheduledPushes.push({
               producer_id: producerId,
               title: `Venda aprovada no ${methodLabels[sale.payment_provider] || sale.payment_provider}!`,
               body: `Sua comissão: ${fmt2}`,
               url: "/sales",
-              scheduled_at: schedDate.toISOString(),
+              scheduled_at: scheduledAt,
             });
           });
+        }
+
+        // Insert scheduled sales in batches
+        for (let i = 0; i < scheduledSales.length; i += 50) {
+          const batch = scheduledSales.slice(i, i + 50);
+          const { error } = await supabase.from("scheduled_fake_sales").insert(batch);
+          if (error) console.error("[FakeSales] Scheduled sale insert error:", error);
         }
 
         // Insert scheduled pushes in batches
@@ -269,7 +226,76 @@ export default function AdminFakeSales() {
           if (error) console.error("[FakeSales] Scheduled push insert error:", error);
         }
       } else {
-        // Send immediately (existing behavior)
+        // ── IMMEDIATE MODE: insert sales right away (existing behavior) ──
+
+        // Insert sales in batches of 50
+        for (let i = 0; i < salesToInsert.length; i += 50) {
+          const batch = salesToInsert.slice(i, i + 50);
+          const { error } = await supabase.from("sales").insert(batch);
+          if (error) throw error;
+        }
+
+        // Create pending_payments records
+        const pendingPaymentsToInsert = salesToInsert.map((sale: any) => ({
+          asaas_payment_id: sale.payment_id,
+          amount: sale.amount,
+          status: "confirmed",
+          product_id: sale.product_id,
+          producer_id: sale.producer_id,
+          buyer_name: `Cliente Simulado`,
+          buyer_email: `fake_${sale.id.slice(0, 6)}@vitrapay.com`,
+          created_at: sale.created_at,
+        }));
+
+        for (let i = 0; i < pendingPaymentsToInsert.length; i += 50) {
+          const batch = pendingPaymentsToInsert.slice(i, i + 50);
+          const { error } = await supabase.from("pending_payments").insert(batch);
+          if (error) console.error("[FakeSales] PendingPayment insert error:", error);
+        }
+
+        // Create transactions
+        const transactionsToInsert: any[] = salesToInsert.map((sale: any) => ({
+          user_id: producerId,
+          type: "credit",
+          category: "sale",
+          amount: sale.amount - sale.platform_fee,
+          status: "completed",
+          balance_type: "available",
+          reference_id: sale.id,
+          created_at: sale.created_at,
+        }));
+
+        const feeTransactions = salesToInsert
+          .filter((sale: any) => sale.platform_fee > 0)
+          .map((sale: any) => ({
+            user_id: producerId,
+            type: "debit",
+            category: "fee",
+            amount: sale.platform_fee,
+            status: "completed",
+            balance_type: "available",
+            reference_id: sale.id,
+            created_at: sale.created_at,
+          }));
+
+        const allTransactions = [...transactionsToInsert, ...feeTransactions];
+
+        for (let i = 0; i < allTransactions.length; i += 50) {
+          const batch = allTransactions.slice(i, i + 50);
+          const { error } = await supabase.from("transactions").insert(batch);
+          if (error) console.error("[FakeSales] Transaction insert error:", error);
+        }
+
+        // Update wallet balance
+        const totalNet = salesToInsert.reduce((acc: number, s: any) => acc + (s.amount - s.platform_fee), 0);
+        const { error: walletError } = await supabase.rpc("increment_wallet", {
+          p_user_id: producerId,
+          p_available_delta: totalNet,
+          p_total_delta: totalNet,
+        });
+        if (walletError) console.error("[FakeSales] Wallet update error:", walletError);
+
+        // Send push notifications immediately
         for (const sale of salesToInsert) {
           try {
             const fmt2 = `R$ ${(sale.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;

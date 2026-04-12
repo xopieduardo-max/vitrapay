@@ -325,52 +325,173 @@ export default function Dashboard() {
     return vals.map((v) => Math.max((v / max) * 95, 5));
   }, [completedSalesAll]);
 
-  // Week-over-week comparison data
-  const weekComparison = useMemo(() => {
-    const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  // Chart comparison mode
+  const [chartMode, setChartMode] = useState<"week" | "month" | "day" | "hour">("week");
+
+  // Unified comparison data
+  const comparisonData = useMemo(() => {
     const now = new Date();
+
+    if (chartMode === "hour") {
+      // Hourly breakdown for today
+      const hours = Array.from({ length: 24 }, (_, i) => i);
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const hourData = hours.map((h) => {
+        const total = completedSalesAll
+          .filter((s) => {
+            const d = new Date(s.created_at);
+            return d >= todayStart && d.getHours() === h;
+          })
+          .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+        return { label: `${h}h`, current: total, previous: 0, isFuture: h > now.getHours() };
+      });
+      const max = Math.max(...hourData.map((d) => d.current), 1);
+      return {
+        items: hourData.map((d) => ({
+          ...d,
+          currentPct: Math.max((d.current / max) * 95, 3),
+          previousPct: 3,
+        })),
+        currentTotal: hourData.reduce((a, d) => a + d.current, 0),
+        previousTotal: 0,
+        currentLabel: "Hoje por hora",
+        previousLabel: "",
+        showPrevious: false,
+      };
+    }
+
+    if (chartMode === "day") {
+      // Last 7 days vs previous 7 days
+      const labels: string[] = [];
+      const current: number[] = [];
+      const previous: number[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        const dayName = d.toLocaleDateString("pt-BR", { weekday: "short" }).slice(0, 3);
+        labels.push(dayName);
+
+        const prev = new Date(d);
+        prev.setDate(prev.getDate() - 7);
+        const prevKey = prev.toISOString().slice(0, 10);
+
+        current.push(
+          completedSalesAll
+            .filter((s) => new Date(s.created_at).toISOString().slice(0, 10) === key)
+            .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
+        );
+        previous.push(
+          completedSalesAll
+            .filter((s) => new Date(s.created_at).toISOString().slice(0, 10) === prevKey)
+            .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
+        );
+      }
+      const allVals = [...current, ...previous];
+      const max = Math.max(...allVals, 1);
+      return {
+        items: labels.map((label, i) => ({
+          label,
+          current: current[i],
+          previous: previous[i],
+          currentPct: Math.max((current[i] / max) * 95, 3),
+          previousPct: Math.max((previous[i] / max) * 95, 3),
+          isFuture: false,
+        })),
+        currentTotal: current.reduce((a, b) => a + b, 0),
+        previousTotal: previous.reduce((a, b) => a + b, 0),
+        currentLabel: "Últimos 7 dias",
+        previousLabel: "7 dias anteriores",
+        showPrevious: true,
+      };
+    }
+
+    if (chartMode === "month") {
+      // This month vs last month, by week
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+      const weeks = ["Sem 1", "Sem 2", "Sem 3", "Sem 4", "Sem 5"];
+      const current = Array(5).fill(0);
+      const previous = Array(5).fill(0);
+
+      completedSalesAll.forEach((s) => {
+        const d = new Date(s.created_at);
+        const net = s.amount - (s.platform_fee || 0);
+        if (d >= thisMonthStart) {
+          const week = Math.min(Math.floor((d.getDate() - 1) / 7), 4);
+          current[week] += net;
+        } else if (d >= lastMonthStart && d <= lastMonthEnd) {
+          const week = Math.min(Math.floor((d.getDate() - 1) / 7), 4);
+          previous[week] += net;
+        }
+      });
+
+      const allVals = [...current, ...previous];
+      const max = Math.max(...allVals, 1);
+      return {
+        items: weeks.map((label, i) => ({
+          label,
+          current: current[i],
+          previous: previous[i],
+          currentPct: Math.max((current[i] / max) * 95, 3),
+          previousPct: Math.max((previous[i] / max) * 95, 3),
+          isFuture: false,
+        })),
+        currentTotal: current.reduce((a, b) => a + b, 0),
+        previousTotal: previous.reduce((a, b) => a + b, 0),
+        currentLabel: "Este mês",
+        previousLabel: "Mês passado",
+        showPrevious: true,
+      };
+    }
+
+    // Default: week mode
+    const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
     const todayDow = now.getDay();
-    
-    // Current week start (Sunday)
     const thisWeekStart = new Date(now);
     thisWeekStart.setDate(now.getDate() - todayDow);
     thisWeekStart.setHours(0, 0, 0, 0);
-    
-    // Last week start
     const lastWeekStart = new Date(thisWeekStart);
     lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    
+
     const thisWeek = Array(7).fill(0);
     const lastWeek = Array(7).fill(0);
-    
+
     completedSalesAll.forEach((s) => {
       const d = new Date(s.created_at);
       const net = s.amount - (s.platform_fee || 0);
       const dow = d.getDay();
-      
       if (d >= thisWeekStart) {
         thisWeek[dow] += net;
       } else if (d >= lastWeekStart && d < thisWeekStart) {
         lastWeek[dow] += net;
       }
     });
-    
+
     const allVals = [...thisWeek, ...lastWeek];
     const max = Math.max(...allVals, 1);
-    
-    return dayNames.map((name, i) => ({
-      day: name,
-      thisWeek: thisWeek[i],
-      lastWeek: lastWeek[i],
-      thisWeekPct: Math.max((thisWeek[i] / max) * 95, 3),
-      lastWeekPct: Math.max((lastWeek[i] / max) * 95, 3),
-      isFuture: i > todayDow,
-    }));
-  }, [completedSalesAll]);
+    return {
+      items: dayNames.map((label, i) => ({
+        label,
+        current: thisWeek[i],
+        previous: lastWeek[i],
+        currentPct: Math.max((thisWeek[i] / max) * 95, 3),
+        previousPct: Math.max((lastWeek[i] / max) * 95, 3),
+        isFuture: i > todayDow,
+      })),
+      currentTotal: thisWeek.reduce((a, b) => a + b, 0),
+      previousTotal: lastWeek.reduce((a, b) => a + b, 0),
+      currentLabel: "Esta semana",
+      previousLabel: "Semana passada",
+      showPrevious: true,
+    };
+  }, [completedSalesAll, chartMode]);
 
-  const thisWeekTotal = weekComparison.reduce((a, d) => a + d.thisWeek, 0);
-  const lastWeekTotal = weekComparison.reduce((a, d) => a + d.lastWeek, 0);
-  const weekChange = lastWeekTotal > 0 ? (((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100).toFixed(0) : thisWeekTotal > 0 ? "+100" : "0";
+  const weekChange = comparisonData.previousTotal > 0
+    ? (((comparisonData.currentTotal - comparisonData.previousTotal) / comparisonData.previousTotal) * 100).toFixed(0)
+    : comparisonData.currentTotal > 0 ? "+100" : "0";
 
   const quickLinks = [
     { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
@@ -722,59 +843,84 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Week Comparison Chart + Conversion by Payment */}
+        {/* Comparison Chart + Conversion by Payment */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <motion.div {...anim(0.25)} className="lg:col-span-3 rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between mb-1">
               <div>
-                <p className="text-xs text-muted-foreground">Semana atual vs anterior</p>
-                <p className="text-2xl font-bold mt-1">{fmt(thisWeekTotal)}</p>
+                <p className="text-xs text-muted-foreground">{comparisonData.currentLabel}{comparisonData.showPrevious ? ` vs ${comparisonData.previousLabel.toLowerCase()}` : ""}</p>
+                <p className="text-2xl font-bold mt-1">{fmt(comparisonData.currentTotal)}</p>
               </div>
               <div className="text-right">
-                <span className={`text-sm font-bold ${Number(weekChange) >= 0 ? "text-primary" : "text-destructive"}`}>
-                  {Number(weekChange) >= 0 ? "+" : ""}{weekChange}%
-                </span>
-                <p className="text-[0.6rem] text-muted-foreground">vs semana passada</p>
+                {comparisonData.showPrevious && (
+                  <>
+                    <span className={`text-sm font-bold ${Number(weekChange) >= 0 ? "text-primary" : "text-destructive"}`}>
+                      {Number(weekChange) >= 0 ? "+" : ""}{weekChange}%
+                    </span>
+                    <p className="text-[0.6rem] text-muted-foreground">vs {comparisonData.previousLabel.toLowerCase()}</p>
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex items-center gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
-                <span className="text-[0.6rem] text-muted-foreground">Esta semana</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-sm bg-muted-foreground/30" />
-                <span className="text-[0.6rem] text-muted-foreground">Semana passada</span>
-              </div>
+            {/* Chart mode selector */}
+            <div className="flex items-center gap-1 mb-3">
+              {(["day", "week", "month", "hour"] as const).map((mode) => {
+                const labels = { day: "Dia", week: "Semana", month: "Mês", hour: "Horário" };
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => setChartMode(mode)}
+                    className={`px-2 py-1 rounded text-[0.6rem] font-medium transition-colors ${
+                      chartMode === mode
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {labels[mode]}
+                  </button>
+                );
+              })}
             </div>
-            <div className="h-40 flex items-end gap-2">
-              {weekComparison.map((d, i) => (
+            {comparisonData.showPrevious && (
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
+                  <span className="text-[0.6rem] text-muted-foreground">{comparisonData.currentLabel}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-sm bg-muted-foreground/30" />
+                  <span className="text-[0.6rem] text-muted-foreground">{comparisonData.previousLabel}</span>
+                </div>
+              </div>
+            )}
+            <div className="h-40 flex items-end gap-1">
+              {comparisonData.items.map((d, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                   <div className="w-full flex items-end gap-0.5 h-32">
-                    {/* Last week bar */}
-                    <div className="flex-1 relative group">
-                      <div
-                        className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
-                        style={{ height: `${d.lastWeekPct}%` }}
-                      />
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        {fmt(d.lastWeek)}
+                    {comparisonData.showPrevious && (
+                      <div className="flex-1 relative group">
+                        <div
+                          className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
+                          style={{ height: `${d.previousPct}%` }}
+                        />
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          {fmt(d.previous)}
+                        </div>
                       </div>
-                    </div>
-                    {/* This week bar */}
-                    <div className="flex-1 relative group">
+                    )}
+                    <div className={`${comparisonData.showPrevious ? "flex-1" : "w-full"} relative group`}>
                       <div
                         className={`w-full rounded-t transition-colors ${d.isFuture ? "bg-primary/10" : "bg-primary/60 hover:bg-primary/80"}`}
-                        style={{ height: d.isFuture ? "3%" : `${d.thisWeekPct}%` }}
+                        style={{ height: d.isFuture ? "3%" : `${d.currentPct}%` }}
                       />
                       {!d.isFuture && (
                         <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          {fmt(d.thisWeek)}
+                          {fmt(d.current)}
                         </div>
                       )}
                     </div>
                   </div>
-                  <span className="text-[0.55rem] text-muted-foreground">{d.day}</span>
+                  <span className="text-[0.5rem] text-muted-foreground">{d.label}</span>
                 </div>
               ))}
             </div>

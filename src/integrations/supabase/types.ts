@@ -1460,6 +1460,48 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_fake_sales: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          inserted_at: string | null
+          payment_id: string
+          payment_provider: string
+          platform_fee: number
+          producer_id: string
+          product_id: string
+          sale_date: string
+          scheduled_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          inserted_at?: string | null
+          payment_id: string
+          payment_provider?: string
+          platform_fee?: number
+          producer_id: string
+          product_id: string
+          sale_date: string
+          scheduled_at: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          inserted_at?: string | null
+          payment_id?: string
+          payment_provider?: string
+          platform_fee?: number
+          producer_id?: string
+          product_id?: string
+          sale_date?: string
+          scheduled_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
