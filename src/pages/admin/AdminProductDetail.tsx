@@ -325,14 +325,24 @@ export default function AdminProductDetail() {
                       {product.file_url.split("/").pop()}
                     </p>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5"
-                    onClick={() => downloadFile(product.file_url!, product.file_url!.split("/").pop() || "arquivo")}
-                  >
-                    <Download className="h-3.5 w-3.5" /> Baixar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => window.open(product.file_url!, "_blank")}
+                    >
+                      <Eye className="h-3.5 w-3.5" /> Visualizar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => downloadFile(product.file_url!, product.file_url!.split("/").pop() || "arquivo")}
+                    >
+                      <Download className="h-3.5 w-3.5" /> Baixar
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
