@@ -843,59 +843,84 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Week Comparison Chart + Conversion by Payment */}
+        {/* Comparison Chart + Conversion by Payment */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <motion.div {...anim(0.25)} className="lg:col-span-3 rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between mb-1">
               <div>
-                <p className="text-xs text-muted-foreground">Semana atual vs anterior</p>
-                <p className="text-2xl font-bold mt-1">{fmt(thisWeekTotal)}</p>
+                <p className="text-xs text-muted-foreground">{comparisonData.currentLabel}{comparisonData.showPrevious ? ` vs ${comparisonData.previousLabel.toLowerCase()}` : ""}</p>
+                <p className="text-2xl font-bold mt-1">{fmt(comparisonData.currentTotal)}</p>
               </div>
               <div className="text-right">
-                <span className={`text-sm font-bold ${Number(weekChange) >= 0 ? "text-primary" : "text-destructive"}`}>
-                  {Number(weekChange) >= 0 ? "+" : ""}{weekChange}%
-                </span>
-                <p className="text-[0.6rem] text-muted-foreground">vs semana passada</p>
+                {comparisonData.showPrevious && (
+                  <>
+                    <span className={`text-sm font-bold ${Number(weekChange) >= 0 ? "text-primary" : "text-destructive"}`}>
+                      {Number(weekChange) >= 0 ? "+" : ""}{weekChange}%
+                    </span>
+                    <p className="text-[0.6rem] text-muted-foreground">vs {comparisonData.previousLabel.toLowerCase()}</p>
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex items-center gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
-                <span className="text-[0.6rem] text-muted-foreground">Esta semana</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-sm bg-muted-foreground/30" />
-                <span className="text-[0.6rem] text-muted-foreground">Semana passada</span>
-              </div>
+            {/* Chart mode selector */}
+            <div className="flex items-center gap-1 mb-3">
+              {(["day", "week", "month", "hour"] as const).map((mode) => {
+                const labels = { day: "Dia", week: "Semana", month: "Mês", hour: "Horário" };
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => setChartMode(mode)}
+                    className={`px-2 py-1 rounded text-[0.6rem] font-medium transition-colors ${
+                      chartMode === mode
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {labels[mode]}
+                  </button>
+                );
+              })}
             </div>
-            <div className="h-40 flex items-end gap-2">
-              {weekComparison.map((d, i) => (
+            {comparisonData.showPrevious && (
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
+                  <span className="text-[0.6rem] text-muted-foreground">{comparisonData.currentLabel}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-sm bg-muted-foreground/30" />
+                  <span className="text-[0.6rem] text-muted-foreground">{comparisonData.previousLabel}</span>
+                </div>
+              </div>
+            )}
+            <div className="h-40 flex items-end gap-1">
+              {comparisonData.items.map((d, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                   <div className="w-full flex items-end gap-0.5 h-32">
-                    {/* Last week bar */}
-                    <div className="flex-1 relative group">
-                      <div
-                        className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
-                        style={{ height: `${d.lastWeekPct}%` }}
-                      />
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        {fmt(d.lastWeek)}
+                    {comparisonData.showPrevious && (
+                      <div className="flex-1 relative group">
+                        <div
+                          className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
+                          style={{ height: `${d.previousPct}%` }}
+                        />
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          {fmt(d.previous)}
+                        </div>
                       </div>
-                    </div>
-                    {/* This week bar */}
-                    <div className="flex-1 relative group">
+                    )}
+                    <div className={`${comparisonData.showPrevious ? "flex-1" : "w-full"} relative group`}>
                       <div
                         className={`w-full rounded-t transition-colors ${d.isFuture ? "bg-primary/10" : "bg-primary/60 hover:bg-primary/80"}`}
-                        style={{ height: d.isFuture ? "3%" : `${d.thisWeekPct}%` }}
+                        style={{ height: d.isFuture ? "3%" : `${d.currentPct}%` }}
                       />
                       {!d.isFuture && (
                         <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          {fmt(d.thisWeek)}
+                          {fmt(d.current)}
                         </div>
                       )}
                     </div>
                   </div>
-                  <span className="text-[0.55rem] text-muted-foreground">{d.day}</span>
+                  <span className="text-[0.5rem] text-muted-foreground">{d.label}</span>
                 </div>
               ))}
             </div>
