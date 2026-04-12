@@ -62,7 +62,7 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
         
         <!-- Logo -->
         <tr><td style="padding:28px 30px 0;text-align:left;">
-          <img src="${LOGO_URL}" alt="VitraPay - Plataforma de pagamentos digitais" width="140" height="40" style="display:block;" />
+          <img src="${LOGO_URL}" alt="VitraPay - Plataforma de pagamentos digitais" width="160" style="display:block;height:auto;" />
         </td></tr>
 
         <!-- Header -->
