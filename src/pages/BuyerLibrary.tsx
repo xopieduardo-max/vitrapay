@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { downloadFile } from "@/lib/downloadFile";
 
 export default function BuyerLibrary() {
   const { user } = useAuth();
@@ -166,11 +167,9 @@ export default function BuyerLibrary() {
                           {product.files.length} Arquivos
                         </Button>
                       ) : product.file_url ? (
-                        <Button size="sm" className="gap-1.5 h-8 text-xs" asChild>
-                          <a href={product.files?.[0]?.file_url || product.file_url} target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => downloadFile(product.files?.[0]?.file_url || product.file_url, product.title || "arquivo")}>
                             <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
                             Baixar
-                          </a>
                         </Button>
                       ) : (
                         <Button size="sm" className="gap-1.5 h-8 text-xs" disabled>
@@ -198,17 +197,15 @@ export default function BuyerLibrary() {
                         className="space-y-1.5 pt-2 border-t border-border"
                       >
                         {product.files.map((f: any) => (
-                          <a
+                          <button
                             key={f.id}
-                            href={f.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors"
+                            onClick={() => downloadFile(f.file_url, f.file_name)}
+                            className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors w-full text-left"
                           >
                             <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />
                             <span className="text-xs font-medium truncate flex-1">{f.file_name}</span>
                             <Download className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          </a>
+                          </button>
                         ))}
                       </motion.div>
                     )}

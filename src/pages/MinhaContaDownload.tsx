@@ -10,6 +10,7 @@ import { MediaPlayer } from "@/components/download/MediaPlayer";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import MinhaContaLogin from "./MinhaContaLogin";
 import { useState, useCallback } from "react";
+import { downloadFile } from "@/lib/downloadFile";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -265,11 +266,7 @@ export default function MinhaContaDownload() {
                     onClick={() => {
                       trackDownload();
                       data.files.forEach((f: any) => {
-                        const a = document.createElement("a");
-                        a.href = f.file_url;
-                        a.target = "_blank";
-                        a.rel = "noopener noreferrer";
-                        a.click();
+                        downloadFile(f.file_url, f.file_name);
                       });
                     }}
                   >
@@ -363,12 +360,7 @@ export default function MinhaContaDownload() {
                               className="h-8 text-xs gap-1.5"
                               onClick={() => {
                                 trackDownload();
-                                const a = document.createElement("a");
-                                a.href = file.file_url;
-                                a.target = "_blank";
-                                a.rel = "noopener noreferrer";
-                                a.download = file.file_name;
-                                a.click();
+                                downloadFile(file.file_url, file.file_name);
                               }}
                             >
                               <Download className="h-3.5 w-3.5" />
@@ -404,11 +396,7 @@ export default function MinhaContaDownload() {
                     </div>
                     <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => {
                       trackDownload();
-                      const a = document.createElement("a");
-                      a.href = data.product.file_url!;
-                      a.target = "_blank";
-                      a.download = "arquivo";
-                      a.click();
+                      downloadFile(data.product.file_url!, data.product.title || "arquivo");
                     }}>
                       <Download className="h-3.5 w-3.5" />
                       Baixar
