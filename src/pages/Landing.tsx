@@ -341,7 +341,8 @@ const faqItems = [
 { q: "Como funciona o saque?", a: "Você pode solicitar saque a partir de R$ 10,00. O valor é enviado direto para sua chave Pix cadastrada. Saques são processados rapidamente pela nossa equipe." },
 { q: "Posso ter afiliados vendendo meus produtos?", a: "Sim! A VitraPay tem um programa de afiliados completo. Você define a comissão de cada produto e os afiliados recebem um link exclusivo para divulgar." },
 { q: "A plataforma tem área de membros?", a: "Sim! Você pode organizar conteúdo em módulos e aulas, adicionar vídeos, acompanhar o progresso dos alunos e oferecer uma experiência profissional de aprendizado." },
-{ q: "Preciso pagar para criar minha conta?", a: "Não! A criação de conta é 100% gratuita. Você só paga taxas sobre as vendas realizadas. Sem mensalidade, sem taxa de adesão." }];
+{ q: "Preciso pagar para criar minha conta?", a: "Não! A criação de conta é 100% gratuita. Você só paga taxas sobre as vendas realizadas. Sem mensalidade, sem taxa de adesão." },
+{ q: "Comprei um produto na VitraPay e preciso de ajuda, como proceder?", a: "HELP_LINK" }];
 
 
 const marqueeStats = [
