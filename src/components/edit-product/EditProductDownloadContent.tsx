@@ -97,22 +97,31 @@ export default function EditProductDownloadContent({ productId }: Props) {
         ? Math.max(...files.map((f: any) => f.position ?? 0)) + 1
         : 0;
 
+      let successCount = 0;
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         setUploadProgress(`Enviando ${i + 1}/${fileList.length}: ${file.name}`);
         const url = await uploadFile(file);
         if (url) {
-          await supabase.from("product_files").insert({
+          const { error: insertError } = await supabase.from("product_files").insert({
             product_id: productId,
             file_url: url,
             file_name: file.name,
             file_size: file.size,
             position: maxPos + i,
           });
+          if (insertError) {
+            console.error("Erro ao salvar arquivo:", insertError);
+            toast.error(`Erro ao salvar "${file.name}": ${insertError.message}`);
+          } else {
+            successCount++;
+          }
         }
       }
       queryClient.invalidateQueries({ queryKey: ["product-files", productId] });
-      toast.success(`${fileList.length} arquivo(s) adicionado(s)`);
+      if (successCount > 0) {
+        toast.success(`${successCount} arquivo(s) adicionado(s)`);
+      }
     } catch (err: any) {
       toast.error("Erro ao enviar arquivo");
     } finally {
