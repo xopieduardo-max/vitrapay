@@ -612,6 +612,9 @@ Deno.serve(async (req) => {
         payment_provider: "pix",
         payment_id: asaasPaymentId,
         status: "completed",
+        buyer_city: pending.buyer_city || null,
+        buyer_state: pending.buyer_state || null,
+        buyer_country: pending.buyer_country || null,
       })
       .select()
       .single();

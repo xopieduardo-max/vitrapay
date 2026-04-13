@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { autoCreateBuyerAccount } from "../_shared/auto-create-buyer.ts";
+import { geolocateIp } from "../_shared/geolocate-ip.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -216,6 +217,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Geolocate buyer IP (non-blocking, best effort)
+    const geo = await geolocateIp(req);
+
     // Save to pending_payments
     await supabase.from("pending_payments").insert({
       asaas_payment_id: paymentData.id,
@@ -227,6 +231,9 @@ Deno.serve(async (req) => {
       utm_campaign: utm_campaign || null,
       utm_content: utm_content || null,
       utm_term: utm_term || null,
+      buyer_city: geo.city,
+      buyer_state: geo.state,
+      buyer_country: geo.country,
     });
 
     // Send push notification for pending card payment
@@ -306,6 +313,7 @@ Deno.serve(async (req) => {
           product_id, producer_id: product.producer_id, buyer_id: null,
           affiliate_id: affiliateId, amount: productAmount, platform_fee: platformFee,
           payment_provider: "card", payment_id: paymentData.id, status: "completed",
+          buyer_city: geo.city, buyer_state: geo.state, buyer_country: geo.country,
         })
         .select().single();
 
