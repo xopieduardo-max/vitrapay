@@ -8,12 +8,6 @@ interface Pixel {
   config: Record<string, any>;
 }
 
-interface Props {
-  pixels: Pixel[];
-  event?: "PageView" | "InitiateCheckout" | "Purchase";
-  purchaseValue?: number;
-}
-
 declare global {
   interface Window {
     fbq: any;
@@ -22,13 +16,13 @@ declare global {
     gtag: (...args: any[]) => void;
     ttq: any;
     TiktokAnalyticsObject: string;
+    __pixelsReady?: boolean;
   }
 }
 
 // Helper: load an external script and return a promise
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Avoid loading the same script twice
     if (document.querySelector(`script[src="${src}"]`)) {
       resolve();
       return;
@@ -42,11 +36,16 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+// Track if InitiateCheckout was already fired (module-level to survive re-renders)
+let _firedInitiate = false;
+
 export function useCheckoutPixels(pixels: Pixel[]) {
   useEffect(() => {
+    _firedInitiate = false;
     if (!pixels.length) return;
 
     let cancelled = false;
+    window.__pixelsReady = false;
 
     const initPixels = async () => {
       if (cancelled) return;
@@ -56,7 +55,6 @@ export function useCheckoutPixels(pixels: Pixel[]) {
 
         if (px.platform === "facebook") {
           try {
-            // Initialize fbq inline (the snippet minus the external script load)
             if (!window.fbq) {
               const n: any = (window.fbq = function (...args: any[]) {
                 n.callMethod ? n.callMethod.apply(n, args) : n.queue.push(args);
@@ -67,10 +65,7 @@ export function useCheckoutPixels(pixels: Pixel[]) {
               n.version = "2.0";
               n.queue = [];
             }
-
-            // Load the external Facebook SDK
             await loadScript("https://connect.facebook.net/en_US/fbevents.js");
-
             if (!cancelled) {
               window.fbq("init", px.pixel_id);
               window.fbq("track", "PageView");
@@ -86,9 +81,7 @@ export function useCheckoutPixels(pixels: Pixel[]) {
             await loadScript(`https://www.googletagmanager.com/gtag/js?id=${px.pixel_id}`);
             if (!cancelled) {
               window.dataLayer = window.dataLayer || [];
-              window.gtag = function (...args: any[]) {
-                window.dataLayer.push(args);
-              };
+              window.gtag = function (...args: any[]) { window.dataLayer.push(args); };
               window.gtag("js", new Date());
               window.gtag("config", px.pixel_id);
               console.log("[Pixel] Google Analytics initialized:", px.pixel_id);
@@ -104,9 +97,7 @@ export function useCheckoutPixels(pixels: Pixel[]) {
               await loadScript(`https://www.googletagmanager.com/gtag/js?id=${px.pixel_id}`);
               if (!cancelled) {
                 window.dataLayer = window.dataLayer || [];
-                window.gtag = function (...args: any[]) {
-                  window.dataLayer.push(args);
-                };
+                window.gtag = function (...args: any[]) { window.dataLayer.push(args); };
                 window.gtag("js", new Date());
               }
             }
@@ -121,42 +112,27 @@ export function useCheckoutPixels(pixels: Pixel[]) {
 
         if (px.platform === "tiktok") {
           try {
-            // Initialize ttq inline
             if (!window.ttq) {
               const w = window as any;
               w.TiktokAnalyticsObject = "ttq";
               const ttq: any = (w.ttq = w.ttq || []);
-              ttq.methods = [
-                "page", "track", "identify", "instances", "debug", "on", "off",
-                "once", "ready", "alias", "group", "enableCookie", "disableCookie",
-              ];
+              ttq.methods = ["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];
               ttq.setAndDefer = function (t: any, e: string) {
-                t[e] = function () {
-                  t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
-                };
+                t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))); };
               };
-              for (let i = 0; i < ttq.methods.length; i++) {
-                ttq.setAndDefer(ttq, ttq.methods[i]);
-              }
+              for (let i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
               ttq.instance = function (t: string) {
                 const e = ttq._i[t] || [];
                 for (let n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
                 return e;
               };
               ttq.load = function (e: string, n?: any) {
-                ttq._i = ttq._i || {};
-                ttq._i[e] = [];
-                ttq._i[e]._u = "https://analytics.tiktok.com/i18n/pixel/events.js";
-                ttq._t = ttq._t || {};
-                ttq._t[e] = +new Date();
-                ttq._o = ttq._o || {};
-                ttq._o[e] = n || {};
+                ttq._i = ttq._i || {}; ttq._i[e] = []; ttq._i[e]._u = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                ttq._t = ttq._t || {}; ttq._t[e] = +new Date(); ttq._o = ttq._o || {}; ttq._o[e] = n || {};
               };
             }
-
             window.ttq.load(px.pixel_id);
             await loadScript(`https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=${px.pixel_id}&lib=ttq`);
-
             if (!cancelled) {
               window.ttq.page();
               console.log("[Pixel] TikTok initialized:", px.pixel_id);
@@ -166,21 +142,23 @@ export function useCheckoutPixels(pixels: Pixel[]) {
           }
         }
       }
+
+      // Mark pixels as ready and fire InitiateCheckout automatically
+      if (!cancelled) {
+        window.__pixelsReady = true;
+        if (!_firedInitiate) {
+          _firedInitiate = true;
+          firePixelEvent(pixels, "InitiateCheckout");
+        }
+      }
     };
 
-    // Defer pixel loading to after page render
     if (typeof requestIdleCallback !== "undefined") {
       const handle = requestIdleCallback(() => initPixels());
-      return () => {
-        cancelled = true;
-        cancelIdleCallback(handle);
-      };
+      return () => { cancelled = true; cancelIdleCallback(handle); };
     } else {
       const timeout = setTimeout(() => initPixels(), 100);
-      return () => {
-        cancelled = true;
-        clearTimeout(timeout);
-      };
+      return () => { cancelled = true; clearTimeout(timeout); };
     }
   }, [pixels]);
 }
@@ -192,6 +170,16 @@ export function firePixelEvent(
   currency = "BRL",
   eventId?: string
 ) {
+  // If SDKs not ready yet for non-Purchase events, skip (InitiateCheckout is fired automatically by useCheckoutPixels)
+  if (!window.__pixelsReady && event !== "Purchase") return;
+
+  // For Purchase, retry with delay if SDKs not ready
+  if (!window.__pixelsReady && event === "Purchase") {
+    console.log("[Pixel] SDKs not ready, retrying Purchase in 1s...");
+    setTimeout(() => firePixelEvent(pixels, event, value, currency, eventId), 1000);
+    return;
+  }
+
   pixels.forEach((px) => {
     if (!px.pixel_id) return;
 
@@ -217,11 +205,7 @@ export function firePixelEvent(
       if (event === "Purchase" && value) {
         const conversionLabel = px.config?.conversion_label;
         const sendTo = conversionLabel ? `${px.pixel_id}/${conversionLabel}` : px.pixel_id;
-        window.gtag("event", "conversion", {
-          send_to: sendTo,
-          value: value / 100,
-          currency,
-        });
+        window.gtag("event", "conversion", { send_to: sendTo, value: value / 100, currency });
       }
     }
 
