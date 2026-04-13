@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,29 +58,32 @@ export default function EditProduct() {
   });
 
   const [form, setForm] = useState<Record<string, any>>({});
-  if (product && !form._initialized) {
-    setForm({
-      _initialized: true,
-      title: product.title,
-      description: product.description || "",
-      price: String(product.price / 100),
-      type: product.type,
-      affiliate_commission: product.affiliate_commission || 0,
-      is_published: product.is_published || false,
-      allow_affiliates: product.allow_affiliates ?? true,
-      cover_url: product.cover_url || "",
-      file_url: product.file_url || "",
-      checkout_headline: product.checkout_headline || "",
-      checkout_timer_minutes: product.checkout_timer_minutes || 0,
-      checkout_banner_url: product.checkout_banner_url || "",
-      checkout_theme: product.checkout_theme || "light",
-      checkout_color_theme: (product as any).checkout_color_theme || "classic",
-      checkout_social_proof: (product as any).checkout_social_proof || false,
-      checkout_social_proof_interval: (product as any).checkout_social_proof_interval || 30,
-      checkout_sidebar_banner_url: (product as any).checkout_sidebar_banner_url || "",
-      checkout_contact_model: (product as any).checkout_contact_model || 1,
-    });
-  }
+  
+  useEffect(() => {
+    if (product) {
+      setForm({
+        _initialized: true,
+        title: product.title,
+        description: product.description || "",
+        price: String(product.price / 100),
+        type: product.type,
+        affiliate_commission: product.affiliate_commission || 0,
+        is_published: product.is_published || false,
+        allow_affiliates: product.allow_affiliates ?? true,
+        cover_url: product.cover_url || "",
+        file_url: product.file_url || "",
+        checkout_headline: product.checkout_headline || "",
+        checkout_timer_minutes: product.checkout_timer_minutes || 0,
+        checkout_banner_url: product.checkout_banner_url || "",
+        checkout_theme: product.checkout_theme || "light",
+        checkout_color_theme: (product as any).checkout_color_theme || "classic",
+        checkout_social_proof: (product as any).checkout_social_proof || false,
+        checkout_social_proof_interval: (product as any).checkout_social_proof_interval || 30,
+        checkout_sidebar_banner_url: (product as any).checkout_sidebar_banner_url || "",
+        checkout_contact_model: (product as any).checkout_contact_model || 1,
+      });
+    }
+  }, [product]);
 
   const updateField = (field: string, value: any) => setForm((f) => ({ ...f, [field]: value }));
 
