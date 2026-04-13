@@ -540,7 +540,9 @@ function ImageUploadField({
         type: "image/webp",
       });
       const ext = compressed.name.split(".").pop() || "webp";
-      const path = `${crypto.randomUUID()}.${ext}`;
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || "anonymous";
+      const path = `${userId}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("checkout-images").upload(path, compressed, {
         contentType: compressed.type,
       });
