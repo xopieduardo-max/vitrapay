@@ -1,32 +1,32 @@
 
-## Agendamento de Notificações no GV+
 
-### Objetivo
-Permitir que as vendas simuladas tenham suas notificações push distribuídas ao longo de um período (ex: 9h às 18h), em vez de disparar todas de uma vez.
+## Plano: Preview da seção "Vendas por Região" no Dashboard
 
-### Abordagem
+Vou adicionar a seção diretamente no dashboard usando **dados fictícios (mockados)** para você visualizar como ficará. Nenhuma alteração no banco de dados será feita — é puramente visual.
 
-**1. Nova tabela `scheduled_fake_pushes`**
-- Armazena cada notificação push agendada com horário de disparo
-- Campos: `id`, `producer_id`, `title`, `body`, `url`, `scheduled_at`, `sent_at`, `created_at`
+### O que será adicionado
 
-**2. Atualizar UI do GV+ (`AdminFakeSales.tsx`)**
-- Adicionar campos de "Horário início" e "Horário fim" em cada linha de dia
-- Padrão: 09:00 às 18:00
-- Toggle "Agendar notificações" (se desligado, envia tudo imediatamente como hoje)
-- Quando agendado: as vendas são inseridas normalmente (instantâneo), mas as notificações push são salvas na tabela com horários distribuídos aleatoriamente no intervalo
+Um novo card "Vendas por região" ao lado do card "Conversão de pagamento", na mesma linha do gráfico comparativo (grid `lg:grid-cols-5`). O layout atual será ajustado de `col-span-3 + col-span-2` para `col-span-3 + col-span-1 + col-span-1`, ou alternativamente uma nova linha abaixo.
 
-**3. Nova Edge Function `process-scheduled-pushes`**
-- Executada a cada minuto via cron job
-- Busca pushes com `scheduled_at <= now()` e `sent_at IS NULL`
-- Envia cada push via `send-push` e marca como enviado
+**Conteúdo do card (dados mock):**
+- Título: "Vendas por região"
+- Lista ranqueada dos top 5 estados com barra de progresso, quantidade de pedidos e valor
+- Indicadores: "Total de pedidos" e "Estados ativos"
+- Mesmo estilo visual dos cards existentes (rounded-xl, border, bg-card, text-xs)
 
-### Fluxo
-1. Admin configura 20 Pix + 10 Cartão, horário 9h-18h
-2. Clica "Gerar" → vendas são inseridas no banco instantaneamente
-3. 30 registros são criados em `scheduled_fake_pushes` com horários aleatórios entre 9h-18h
-4. Cron a cada minuto verifica e dispara os pushes no horário certo
+**Dados de exemplo:**
 
-### Vantagem
-- Vendas aparecem no dashboard imediatamente (para métricas)
-- Notificações chegam gradualmente ao longo do dia (natural)
+| # | Estado | Pedidos | Valor |
+|---|--------|---------|-------|
+| 1 | São Paulo | 145 | R$ 28.500 |
+| 2 | Rio de Janeiro | 89 | R$ 17.200 |
+| 3 | Minas Gerais | 67 | R$ 13.100 |
+| 4 | Bahia | 42 | R$ 8.300 |
+| 5 | Paraná | 38 | R$ 7.400 |
+
+### Arquivo alterado
+- `src/pages/Dashboard.tsx` — adicionar o card mock na seção desktop, após o bloco de "Conversão de pagamento"
+
+### Observação
+Após sua aprovação visual, implementaremos a captura real de geolocalização (migração de banco + edge function) para substituir os dados mock por dados reais.
+
