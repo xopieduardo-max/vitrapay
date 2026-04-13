@@ -1053,7 +1053,9 @@ export default function Landing() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pl-14 text-sm text-muted-foreground leading-relaxed">
-                  {item.a}
+                  {item.a === "HELP_LINK" ? (
+                    <span>Para dúvidas relacionadas à sua compra, <Link to="/help" className="text-primary hover:underline font-medium">clique aqui</Link>.</span>
+                  ) : item.a}
                 </AccordionContent>
               </AccordionItem>
             )}
