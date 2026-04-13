@@ -773,7 +773,7 @@ Deno.serve(async (req) => {
           amount: pending.amount,
           buyer_email: pending.buyer_email || null,
           buyer_name: pending.buyer_name || null,
-          buyer_phone: null,
+          buyer_phone: pending.buyer_phone || null,
           buyer_cpf: pending.buyer_cpf || null,
         }),
       });
