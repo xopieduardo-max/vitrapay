@@ -164,6 +164,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Geolocate buyer IP (non-blocking, best effort)
+    const geo = await geolocateIp(req);
+
     // Save to pending_payments
     const { error: pendingErr } = await supabase.from("pending_payments").insert({
       asaas_payment_id: paymentData.id,
@@ -180,6 +183,9 @@ Deno.serve(async (req) => {
       utm_campaign: utm_campaign || null,
       utm_content: utm_content || null,
       utm_term: utm_term || null,
+      buyer_city: geo.city,
+      buyer_state: geo.state,
+      buyer_country: geo.country,
     });
 
     if (pendingErr) {
