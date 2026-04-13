@@ -120,6 +120,7 @@ export default function Dashboard() {
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [regionView, setRegionView] = useState<'state' | 'city'>('state');
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
