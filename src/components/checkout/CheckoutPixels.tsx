@@ -146,8 +146,8 @@ export function useCheckoutPixels(pixels: Pixel[]) {
       // Mark pixels as ready and fire InitiateCheckout automatically
       if (!cancelled) {
         window.__pixelsReady = true;
-        if (!firedInitiate.current) {
-          firedInitiate.current = true;
+        if (!_firedInitiate) {
+          _firedInitiate = true;
           firePixelEvent(pixels, "InitiateCheckout");
         }
       }
