@@ -1,32 +1,28 @@
 
 
-## Plano: Preview da seção "Vendas por Região" no Dashboard
+## Plano: Adicionar filtro Estado/Cidade na seção "Vendas por Região"
 
-Vou adicionar a seção diretamente no dashboard usando **dados fictícios (mockados)** para você visualizar como ficará. Nenhuma alteração no banco de dados será feita — é puramente visual.
+### O que será feito
 
-### O que será adicionado
+Adicionar um toggle/tabs "Estado" / "Cidade" no header do card de vendas por região, permitindo alternar entre a visualização por estado (atual) e por cidade.
 
-Um novo card "Vendas por região" ao lado do card "Conversão de pagamento", na mesma linha do gráfico comparativo (grid `lg:grid-cols-5`). O layout atual será ajustado de `col-span-3 + col-span-2` para `col-span-3 + col-span-1 + col-span-1`, ou alternativamente uma nova linha abaixo.
+### Alterações em `src/pages/Dashboard.tsx`
 
-**Conteúdo do card (dados mock):**
-- Título: "Vendas por região"
-- Lista ranqueada dos top 5 estados com barra de progresso, quantidade de pedidos e valor
-- Indicadores: "Total de pedidos" e "Estados ativos"
-- Mesmo estilo visual dos cards existentes (rounded-xl, border, bg-card, text-xs)
+1. **Adicionar estado local** `regionView` com valores `'state' | 'city'`
+2. **Adicionar tabs no header** do card (ao lado do título "Vendas por região") com dois botões: "Estado" e "Cidade"
+3. **Criar dados mock de cidades** para exibir quando o filtro "Cidade" estiver selecionado:
 
-**Dados de exemplo:**
-
-| # | Estado | Pedidos | Valor |
+| # | Cidade | Pedidos | Valor |
 |---|--------|---------|-------|
-| 1 | São Paulo | 145 | R$ 28.500 |
-| 2 | Rio de Janeiro | 89 | R$ 17.200 |
-| 3 | Minas Gerais | 67 | R$ 13.100 |
-| 4 | Bahia | 42 | R$ 8.300 |
-| 5 | Paraná | 38 | R$ 7.400 |
+| 1 | São Paulo - SP | 98 | R$ 19.200 |
+| 2 | Rio de Janeiro - RJ | 64 | R$ 12.500 |
+| 3 | Belo Horizonte - MG | 41 | R$ 8.000 |
+| 4 | Salvador - BA | 29 | R$ 5.700 |
+| 5 | Curitiba - PR | 25 | R$ 4.900 |
 
-### Arquivo alterado
-- `src/pages/Dashboard.tsx` — adicionar o card mock na seção desktop, após o bloco de "Conversão de pagamento"
+4. **Renderizar condicionalmente** a lista de estados ou cidades com base no filtro selecionado
+5. **Atualizar os indicadores** ("Total de pedidos" e "Cidades/Estados ativos") conforme o filtro
 
-### Observação
-Após sua aprovação visual, implementaremos a captura real de geolocalização (migração de banco + edge function) para substituir os dados mock por dados reais.
+### Visual dos tabs
+Dois botões pequenos estilizados como pills/chips no header, usando o mesmo padrão visual dos filtros de período já existentes no dashboard (bg-muted para inativo, bg-primary para ativo).
 
