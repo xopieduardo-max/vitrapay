@@ -123,7 +123,8 @@ export default function EditProductDownloadContent({ productId }: Props) {
           }
         }
       }
-      queryClient.invalidateQueries({ queryKey: ["product-files", productId] });
+      await queryClient.invalidateQueries({ queryKey: ["product-files", productId] });
+      await refetch();
       if (successCount > 0) {
         toast.success(`${successCount} arquivo(s) adicionado(s)`);
       }
