@@ -550,15 +550,15 @@ export default function Landing() {
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-            className="mt-16 md:mt-24 max-w-6xl mx-auto relative flex items-start justify-center gap-6">
+            className="mt-16 md:mt-24 max-w-[90rem] mx-auto relative flex items-start justify-center gap-6 px-4">
             
             {/* Floating Notifications — left side, desktop only */}
-            <div className="hidden lg:block w-[260px] shrink-0 pt-8">
+            <div className="hidden lg:block w-[280px] shrink-0 pt-8">
               <FloatingNotifications />
             </div>
 
             {/* Dashboard image with scroll-driven tilt */}
-            <div className="flex-1 min-w-0 max-w-4xl" style={{ perspective: "1200px" }}>
+            <div className="flex-1 min-w-0" style={{ perspective: "1200px" }}>
               <motion.div
                 style={{ rotateX: dashboardRotateX }}
                 className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group origin-bottom">
