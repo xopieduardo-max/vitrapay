@@ -954,27 +954,54 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Vendas por Região (Preview com dados mock) */}
+        {/* Vendas por Região (dados reais via geolocalização) */}
         {(() => {
-          const mockStates = [
-            { rank: 1, name: "São Paulo", abbr: "SP", orders: 145, value: 2850000 },
-            { rank: 2, name: "Rio de Janeiro", abbr: "RJ", orders: 89, value: 1720000 },
-            { rank: 3, name: "Minas Gerais", abbr: "MG", orders: 67, value: 1310000 },
-            { rank: 4, name: "Bahia", abbr: "BA", orders: 42, value: 830000 },
-            { rank: 5, name: "Paraná", abbr: "PR", orders: 38, value: 740000 },
-          ];
-          const mockCities = [
-            { rank: 1, name: "São Paulo", abbr: "SP", orders: 98, value: 1920000 },
-            { rank: 2, name: "Rio de Janeiro", abbr: "RJ", orders: 64, value: 1250000 },
-            { rank: 3, name: "Belo Horizonte", abbr: "MG", orders: 41, value: 800000 },
-            { rank: 4, name: "Salvador", abbr: "BA", orders: 29, value: 570000 },
-            { rank: 5, name: "Curitiba", abbr: "PR", orders: 25, value: 490000 },
-          ];
-          const currentRegionData = regionView === 'state' ? mockStates : mockCities;
+          // Aggregate region data from filtered completed sales
+          const completedWithGeo = filteredSales.filter(s => s.status === "completed");
+          
+          const stateMap = new Map<string, { orders: number; value: number }>();
+          const cityMap = new Map<string, { orders: number; value: number; state: string }>();
+
+          for (const s of completedWithGeo) {
+            const sale = s as any;
+            if (sale.buyer_state) {
+              const existing = stateMap.get(sale.buyer_state) || { orders: 0, value: 0 };
+              existing.orders += 1;
+              existing.value += sale.amount || 0;
+              stateMap.set(sale.buyer_state, existing);
+            }
+            if (sale.buyer_city && sale.buyer_state) {
+              const key = `${sale.buyer_city}|${sale.buyer_state}`;
+              const existing = cityMap.get(key) || { orders: 0, value: 0, state: sale.buyer_state };
+              existing.orders += 1;
+              existing.value += sale.amount || 0;
+              cityMap.set(key, existing);
+            }
+          }
+
+          const stateData = Array.from(stateMap.entries())
+            .map(([name, d]) => ({ name, abbr: "", orders: d.orders, value: d.value }))
+            .sort((a, b) => b.orders - a.orders)
+            .slice(0, 5)
+            .map((item, i) => ({ ...item, rank: i + 1 }));
+
+          const cityData = Array.from(cityMap.entries())
+            .map(([key, d]) => {
+              const [city] = key.split("|");
+              return { name: city, abbr: d.state, orders: d.orders, value: d.value };
+            })
+            .sort((a, b) => b.orders - a.orders)
+            .slice(0, 5)
+            .map((item, i) => ({ ...item, rank: i + 1 }));
+
+          const currentRegionData = regionView === 'state' ? stateData : cityData;
           const maxOrders = currentRegionData[0]?.orders || 1;
-          const totalOrders = regionView === 'state' ? 381 : 257;
-          const activeCount = regionView === 'state' ? 12 : 38;
+          const totalOrders = regionView === 'state'
+            ? Array.from(stateMap.values()).reduce((acc, d) => acc + d.orders, 0)
+            : Array.from(cityMap.values()).reduce((acc, d) => acc + d.orders, 0);
+          const activeCount = regionView === 'state' ? stateMap.size : cityMap.size;
           const activeLabel = regionView === 'state' ? "Estados ativos" : "Cidades ativas";
+          const hasData = currentRegionData.length > 0;
 
           return (
             <motion.div {...anim(0.32)} className="rounded-xl border border-border bg-card p-5">
@@ -1002,31 +1029,38 @@ export default function Dashboard() {
                   <span>{activeLabel}: <strong className="text-foreground">{activeCount}</strong></span>
                 </div>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {currentRegionData.map((item) => {
-                  const pct = (item.orders / maxOrders) * 100;
-                  return (
-                    <div key={item.name + item.abbr} className="flex items-center gap-3">
-                      <span className="text-[0.6rem] font-bold text-muted-foreground w-4 text-right">{item.rank}</span>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium">{item.name} <span className="text-muted-foreground">({item.abbr})</span></span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[0.6rem] text-muted-foreground">{item.orders} pedidos</span>
-                            <span className="text-xs font-bold">{fmt(item.value)}</span>
+              {hasData ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {currentRegionData.map((item) => {
+                    const pct = (item.orders / maxOrders) * 100;
+                    return (
+                      <div key={item.name + item.abbr} className="flex items-center gap-3">
+                        <span className="text-[0.6rem] font-bold text-muted-foreground w-4 text-right">{item.rank}</span>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium">
+                              {item.name}
+                              {item.abbr && <span className="text-muted-foreground"> ({item.abbr})</span>}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[0.6rem] text-muted-foreground">{item.orders} pedidos</span>
+                              <span className="text-xs font-bold">{fmt(item.value)}</span>
+                            </div>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
                           </div>
                         </div>
-                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
-                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-[0.55rem] text-muted-foreground mt-4 text-center italic">
-                ⚠️ Preview com dados fictícios — a geolocalização real será ativada após aprovação
-              </p>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <MapPin className="h-8 w-8 text-muted-foreground/30 mb-2" />
+                  <p className="text-xs text-muted-foreground">Dados regionais aparecerão aqui após as próximas vendas</p>
+                </div>
+              )}
             </motion.div>
           );
         })()}
