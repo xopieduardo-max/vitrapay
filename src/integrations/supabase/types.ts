@@ -812,10 +812,13 @@ export type Database = {
           affiliate_ref: string | null
           amount: number
           asaas_payment_id: string
+          buyer_city: string | null
+          buyer_country: string | null
           buyer_cpf: string | null
           buyer_email: string | null
           buyer_name: string | null
           buyer_phone: string | null
+          buyer_state: string | null
           created_at: string
           id: string
           producer_id: string | null
@@ -835,10 +838,13 @@ export type Database = {
           affiliate_ref?: string | null
           amount: number
           asaas_payment_id: string
+          buyer_city?: string | null
+          buyer_country?: string | null
           buyer_cpf?: string | null
           buyer_email?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          buyer_state?: string | null
           created_at?: string
           id?: string
           producer_id?: string | null
@@ -858,10 +864,13 @@ export type Database = {
           affiliate_ref?: string | null
           amount?: number
           asaas_payment_id?: string
+          buyer_city?: string | null
+          buyer_country?: string | null
           buyer_cpf?: string | null
           buyer_email?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          buyer_state?: string | null
           created_at?: string
           id?: string
           producer_id?: string | null
@@ -1381,7 +1390,10 @@ export type Database = {
         Row: {
           affiliate_id: string | null
           amount: number
+          buyer_city: string | null
+          buyer_country: string | null
           buyer_id: string | null
+          buyer_state: string | null
           created_at: string
           id: string
           payment_id: string | null
@@ -1394,7 +1406,10 @@ export type Database = {
         Insert: {
           affiliate_id?: string | null
           amount: number
+          buyer_city?: string | null
+          buyer_country?: string | null
           buyer_id?: string | null
+          buyer_state?: string | null
           created_at?: string
           id?: string
           payment_id?: string | null
@@ -1407,7 +1422,10 @@ export type Database = {
         Update: {
           affiliate_id?: string | null
           amount?: number
+          buyer_city?: string | null
+          buyer_country?: string | null
           buyer_id?: string | null
+          buyer_state?: string | null
           created_at?: string
           id?: string
           payment_id?: string | null
