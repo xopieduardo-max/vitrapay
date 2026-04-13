@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface Pixel {
   id: string;
@@ -36,10 +36,12 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
-export function useCheckoutPixels(pixels: Pixel[]) {
-  const firedInitiate = useRef(false);
+// Track if InitiateCheckout was already fired (module-level to survive re-renders)
+let _firedInitiate = false;
 
+export function useCheckoutPixels(pixels: Pixel[]) {
   useEffect(() => {
+    _firedInitiate = false;
     if (!pixels.length) return;
 
     let cancelled = false;
