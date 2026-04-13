@@ -156,7 +156,7 @@ export default function Dashboard() {
       if (!user) return [];
       const { data } = await supabase
         .from("sales")
-        .select("amount, platform_fee, status, created_at, payment_provider")
+        .select("amount, platform_fee, status, created_at, payment_provider, buyer_city, buyer_state, buyer_country")
         .eq("producer_id", user.id);
       return data || [];
     },
