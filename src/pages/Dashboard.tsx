@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -952,7 +953,52 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Bottom Row */}
+        {/* Vendas por Região (Preview com dados mock) */}
+        <motion.div {...anim(0.32)} className="rounded-xl border border-border bg-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" strokeWidth={1.5} />
+              <p className="text-xs text-muted-foreground">Vendas por região • {periodLabels[period]}</p>
+            </div>
+            <div className="flex items-center gap-3 text-[0.6rem] text-muted-foreground">
+              <span>Total: <strong className="text-foreground">381 pedidos</strong></span>
+              <span>Estados ativos: <strong className="text-foreground">12</strong></span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {[
+              { rank: 1, state: "São Paulo", abbr: "SP", orders: 145, value: 2850000 },
+              { rank: 2, state: "Rio de Janeiro", abbr: "RJ", orders: 89, value: 1720000 },
+              { rank: 3, state: "Minas Gerais", abbr: "MG", orders: 67, value: 1310000 },
+              { rank: 4, state: "Bahia", abbr: "BA", orders: 42, value: 830000 },
+              { rank: 5, state: "Paraná", abbr: "PR", orders: 38, value: 740000 },
+            ].map((item) => {
+              const maxOrders = 145;
+              const pct = (item.orders / maxOrders) * 100;
+              return (
+                <div key={item.abbr} className="flex items-center gap-3">
+                  <span className="text-[0.6rem] font-bold text-muted-foreground w-4 text-right">{item.rank}</span>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium">{item.state} <span className="text-muted-foreground">({item.abbr})</span></span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[0.6rem] text-muted-foreground">{item.orders} pedidos</span>
+                        <span className="text-xs font-bold">{fmt(item.value)}</span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[0.55rem] text-muted-foreground mt-4 text-center italic">
+            ⚠️ Preview com dados fictícios — a geolocalização real será ativada após aprovação
+          </p>
+        </motion.div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div {...anim(0.35)} className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
             <h3 className="text-sm font-bold">Transforme sua ideia em produto digital</h3>
