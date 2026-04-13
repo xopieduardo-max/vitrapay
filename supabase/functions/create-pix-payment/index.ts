@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { geolocateIp } from "../_shared/geolocate-ip.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
