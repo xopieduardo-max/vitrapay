@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
@@ -25,10 +26,13 @@ import {
   FileAudio,
   X,
   Plus,
+  Eye,
   Download,
   Package,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { downloadFile } from "@/lib/downloadFile";
 
 interface Props {
   productId: string;
@@ -59,6 +63,7 @@ export default function EditProductDownloadContent({ productId }: Props) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: files = [], isLoading } = useQuery({
@@ -94,6 +99,7 @@ export default function EditProductDownloadContent({ productId }: Props) {
 
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
+        setUploadProgress(`Enviando ${i + 1}/${fileList.length}: ${file.name}`);
         const url = await uploadFile(file);
         if (url) {
           await supabase.from("product_files").insert({
@@ -111,6 +117,7 @@ export default function EditProductDownloadContent({ productId }: Props) {
       toast.error("Erro ao enviar arquivo");
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       e.target.value = "";
     }
   };
@@ -123,18 +130,33 @@ export default function EditProductDownloadContent({ productId }: Props) {
     toast.success("Arquivo removido");
   };
 
+  const hasFiles = files.length > 0;
+
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Header card */}
-      <Card className="border-dashed border-primary/30 bg-primary/5">
+      <Card className={`border-dashed ${hasFiles ? "border-emerald-500/40 bg-emerald-500/5" : "border-primary/30 bg-primary/5"}`}>
         <CardContent className="flex items-center gap-4 p-5">
-          <div className="rounded-xl bg-primary/10 p-3">
-            <Package className="h-7 w-7 text-primary" strokeWidth={1.5} />
+          <div className={`rounded-xl p-3 ${hasFiles ? "bg-emerald-500/10" : "bg-primary/10"}`}>
+            {hasFiles ? (
+              <CheckCircle2 className="h-7 w-7 text-emerald-500" strokeWidth={1.5} />
+            ) : (
+              <Package className="h-7 w-7 text-primary" strokeWidth={1.5} />
+            )}
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-sm">Conteúdo Entregável</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-sm">Conteúdo Entregável</h3>
+              {hasFiles && (
+                <Badge variant="secondary" className="text-[0.6rem] bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                  {files.length} arquivo{files.length > 1 ? "s" : ""}
+                </Badge>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Adicione os arquivos que o comprador receberá após a compra. PDF, ZIP, vídeos, imagens e mais.
+              {hasFiles
+                ? "Seus arquivos entregáveis estão prontos. O comprador terá acesso após a compra."
+                : "Adicione os arquivos que o comprador receberá após a compra. PDF, ZIP, vídeos, imagens e mais."}
             </p>
           </div>
         </CardContent>
@@ -145,18 +167,21 @@ export default function EditProductDownloadContent({ productId }: Props) {
         <div className="flex justify-center py-8">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-      ) : files.length > 0 ? (
+      ) : hasFiles ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-xs text-muted-foreground">
               {files.length} arquivo(s) adicionado(s)
             </Label>
           </div>
-          {files.map((f: any) => (
+          {files.map((f: any, idx: number) => (
             <div
               key={f.id}
               className="flex items-center gap-3 rounded-xl border border-border p-3.5 bg-card hover:bg-muted/30 transition-colors"
             >
+              <span className="text-[0.6rem] text-muted-foreground font-mono w-5 text-center shrink-0">
+                {idx + 1}
+              </span>
               {getFileIcon(f.file_name)}
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate">{f.file_name}</p>
@@ -169,7 +194,17 @@ export default function EditProductDownloadContent({ productId }: Props) {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
+                  title="Visualizar"
                   onClick={() => window.open(f.file_url, "_blank")}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  title="Baixar"
+                  onClick={() => downloadFile(f.file_url, f.file_name)}
                 >
                   <Download className="h-3.5 w-3.5" />
                 </Button>
@@ -177,6 +212,7 @@ export default function EditProductDownloadContent({ productId }: Props) {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-destructive hover:text-destructive"
+                  title="Remover"
                   onClick={() => setDeleteId(f.id)}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -190,16 +226,21 @@ export default function EditProductDownloadContent({ productId }: Props) {
       {/* Upload area */}
       <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-8 cursor-pointer hover:border-primary/50 hover:bg-muted/20 transition-all">
         {uploading ? (
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            {uploadProgress && (
+              <span className="text-xs text-muted-foreground animate-pulse">{uploadProgress}</span>
+            )}
+          </div>
         ) : (
           <>
-            {files.length === 0 ? (
+            {!hasFiles ? (
               <Upload className="h-8 w-8 text-muted-foreground mb-2" strokeWidth={1} />
             ) : (
               <Plus className="h-8 w-8 text-muted-foreground mb-2" strokeWidth={1} />
             )}
             <span className="text-sm font-medium text-muted-foreground">
-              {files.length === 0 ? "Enviar arquivos entregáveis" : "Adicionar mais arquivos"}
+              {!hasFiles ? "Enviar arquivos entregáveis" : "Adicionar mais arquivos"}
             </span>
             <span className="text-[0.65rem] text-muted-foreground mt-1">
               PDF, ZIP, MP4, MP3, imagens e mais
