@@ -66,16 +66,21 @@ export default function EditProductDownloadContent({ productId }: Props) {
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: files = [], isLoading } = useQuery({
+  const { data: files = [], isLoading, refetch } = useQuery({
     queryKey: ["product-files", productId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("product_files")
         .select("*")
         .eq("product_id", productId)
         .order("position");
+      if (error) {
+        console.error("Erro ao carregar arquivos:", error);
+        throw error;
+      }
       return data || [];
     },
+    refetchOnMount: true,
   });
 
   const uploadFile = async (file: File) => {
