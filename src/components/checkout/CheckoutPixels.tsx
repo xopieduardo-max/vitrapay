@@ -14,114 +14,174 @@ interface Props {
   purchaseValue?: number;
 }
 
+declare global {
+  interface Window {
+    fbq: any;
+    _fbq: any;
+    dataLayer: any[];
+    gtag: (...args: any[]) => void;
+    ttq: any;
+    TiktokAnalyticsObject: string;
+  }
+}
+
+// Helper: load an external script and return a promise
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Avoid loading the same script twice
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
 export function useCheckoutPixels(pixels: Pixel[]) {
   useEffect(() => {
     if (!pixels.length) return;
 
-    // Defer pixel loading to after page render
-    const scheduleLoad = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : (cb: () => void) => setTimeout(cb, 100);
-
-    const scripts: HTMLScriptElement[] = [];
     let cancelled = false;
 
-    scheduleLoad(() => {
+    const initPixels = async () => {
       if (cancelled) return;
 
-    pixels.forEach((px) => {
-      if (!px.pixel_id) return;
+      for (const px of pixels) {
+        if (!px.pixel_id || cancelled) continue;
 
-      if (px.platform === "facebook") {
-        const script = document.createElement("script");
-        script.innerHTML = `
-          !function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window,document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '${px.pixel_id}');
-          fbq('track', 'PageView');
-        `;
-        document.head.appendChild(script);
-        scripts.push(script);
-      }
+        if (px.platform === "facebook") {
+          try {
+            // Initialize fbq inline (the snippet minus the external script load)
+            if (!window.fbq) {
+              const n: any = (window.fbq = function (...args: any[]) {
+                n.callMethod ? n.callMethod.apply(n, args) : n.queue.push(args);
+              });
+              if (!window._fbq) window._fbq = n;
+              n.push = n;
+              n.loaded = true;
+              n.version = "2.0";
+              n.queue = [];
+            }
 
-      if (px.platform === "google_analytics") {
-        const gtagScript = document.createElement("script");
-        gtagScript.async = true;
-        gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${px.pixel_id}`;
-        document.head.appendChild(gtagScript);
-        scripts.push(gtagScript);
+            // Load the external Facebook SDK
+            await loadScript("https://connect.facebook.net/en_US/fbevents.js");
 
-        const initScript = document.createElement("script");
-        initScript.innerHTML = `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${px.pixel_id}');
-        `;
-        document.head.appendChild(initScript);
-        scripts.push(initScript);
-      }
-
-      if (px.platform === "google_ads") {
-        if (!document.querySelector('script[src*="googletagmanager"]')) {
-          const gtagScript = document.createElement("script");
-          gtagScript.async = true;
-          gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${px.pixel_id}`;
-          document.head.appendChild(gtagScript);
-          scripts.push(gtagScript);
-
-          const initScript = document.createElement("script");
-          initScript.innerHTML = `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-          `;
-          document.head.appendChild(initScript);
-          scripts.push(initScript);
+            if (!cancelled) {
+              window.fbq("init", px.pixel_id);
+              window.fbq("track", "PageView");
+              console.log("[Pixel] Facebook initialized:", px.pixel_id);
+            }
+          } catch (err) {
+            console.error("[Pixel] Failed to load Facebook SDK:", err);
+          }
         }
 
-        const configScript = document.createElement("script");
-        configScript.innerHTML = `gtag('config', '${px.pixel_id}');`;
-        document.head.appendChild(configScript);
-        scripts.push(configScript);
-      }
+        if (px.platform === "google_analytics") {
+          try {
+            await loadScript(`https://www.googletagmanager.com/gtag/js?id=${px.pixel_id}`);
+            if (!cancelled) {
+              window.dataLayer = window.dataLayer || [];
+              window.gtag = function (...args: any[]) {
+                window.dataLayer.push(args);
+              };
+              window.gtag("js", new Date());
+              window.gtag("config", px.pixel_id);
+              console.log("[Pixel] Google Analytics initialized:", px.pixel_id);
+            }
+          } catch (err) {
+            console.error("[Pixel] Failed to load GA:", err);
+          }
+        }
 
-      if (px.platform === "tiktok") {
-        const script = document.createElement("script");
-        script.innerHTML = `
-          !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
-          ttq.methods=["page","track","identify","instances","debug","on","off",
-          "once","ready","alias","group","enableCookie","disableCookie"],
-          ttq.setAndDefer=function(t,e){t[e]=function(){
-          t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
-          for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
-          ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;
-          n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};
-          ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";
-          ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,
-          ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},
-          ttq._o[e]=n||{};var o=document.createElement("script");
-          o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;
-          var a=document.getElementsByTagName("script")[0];
-          a.parentNode.insertBefore(o,a)};
-          ttq.load('${px.pixel_id}');
-          ttq.page();
-          }(window,document,'ttq');
-        `;
-        document.head.appendChild(script);
-        scripts.push(script);
-      }
-    });
-    }); // end scheduleLoad
+        if (px.platform === "google_ads") {
+          try {
+            if (!document.querySelector('script[src*="googletagmanager"]')) {
+              await loadScript(`https://www.googletagmanager.com/gtag/js?id=${px.pixel_id}`);
+              if (!cancelled) {
+                window.dataLayer = window.dataLayer || [];
+                window.gtag = function (...args: any[]) {
+                  window.dataLayer.push(args);
+                };
+                window.gtag("js", new Date());
+              }
+            }
+            if (!cancelled) {
+              window.gtag("config", px.pixel_id);
+              console.log("[Pixel] Google Ads initialized:", px.pixel_id);
+            }
+          } catch (err) {
+            console.error("[Pixel] Failed to load Google Ads:", err);
+          }
+        }
 
-    return () => {
-      cancelled = true;
-      scripts.forEach((script) => script.remove());
+        if (px.platform === "tiktok") {
+          try {
+            // Initialize ttq inline
+            if (!window.ttq) {
+              const w = window as any;
+              w.TiktokAnalyticsObject = "ttq";
+              const ttq: any = (w.ttq = w.ttq || []);
+              ttq.methods = [
+                "page", "track", "identify", "instances", "debug", "on", "off",
+                "once", "ready", "alias", "group", "enableCookie", "disableCookie",
+              ];
+              ttq.setAndDefer = function (t: any, e: string) {
+                t[e] = function () {
+                  t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
+                };
+              };
+              for (let i = 0; i < ttq.methods.length; i++) {
+                ttq.setAndDefer(ttq, ttq.methods[i]);
+              }
+              ttq.instance = function (t: string) {
+                const e = ttq._i[t] || [];
+                for (let n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
+                return e;
+              };
+              ttq.load = function (e: string, n?: any) {
+                ttq._i = ttq._i || {};
+                ttq._i[e] = [];
+                ttq._i[e]._u = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                ttq._t = ttq._t || {};
+                ttq._t[e] = +new Date();
+                ttq._o = ttq._o || {};
+                ttq._o[e] = n || {};
+              };
+            }
+
+            window.ttq.load(px.pixel_id);
+            await loadScript(`https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=${px.pixel_id}&lib=ttq`);
+
+            if (!cancelled) {
+              window.ttq.page();
+              console.log("[Pixel] TikTok initialized:", px.pixel_id);
+            }
+          } catch (err) {
+            console.error("[Pixel] Failed to load TikTok:", err);
+          }
+        }
+      }
     };
+
+    // Defer pixel loading to after page render
+    if (typeof requestIdleCallback !== "undefined") {
+      const handle = requestIdleCallback(() => initPixels());
+      return () => {
+        cancelled = true;
+        cancelIdleCallback(handle);
+      };
+    } else {
+      const timeout = setTimeout(() => initPixels(), 100);
+      return () => {
+        cancelled = true;
+        clearTimeout(timeout);
+      };
+    }
   }, [pixels]);
 }
 
@@ -134,30 +194,30 @@ export function firePixelEvent(
 ) {
   pixels.forEach((px) => {
     if (!px.pixel_id) return;
-    const w = window as any;
 
-    if (px.platform === "facebook" && w.fbq) {
+    if (px.platform === "facebook" && window.fbq) {
       if (event === "InitiateCheckout") {
         const eid = eventId || `ic_${Date.now()}`;
-        w.fbq("track", "InitiateCheckout", {}, { eventID: eid });
+        window.fbq("track", "InitiateCheckout", {}, { eventID: eid });
+        console.log("[Pixel] Facebook InitiateCheckout fired, eventID:", eid);
       } else if (event === "Purchase" && value) {
         const eid = eventId || `pur_${Date.now()}`;
-        w.fbq("track", "Purchase", { value: value / 100, currency }, { eventID: eid });
+        window.fbq("track", "Purchase", { value: value / 100, currency }, { eventID: eid });
+        console.log("[Pixel] Facebook Purchase fired, value:", value / 100, "eventID:", eid);
       }
     }
 
-    if (px.platform === "google_analytics" && w.gtag) {
+    if (px.platform === "google_analytics" && window.gtag) {
       if (event === "Purchase" && value) {
-        w.gtag("event", "purchase", { value: value / 100, currency });
+        window.gtag("event", "purchase", { value: value / 100, currency });
       }
     }
 
-    if (px.platform === "google_ads" && w.gtag) {
+    if (px.platform === "google_ads" && window.gtag) {
       if (event === "Purchase" && value) {
         const conversionLabel = px.config?.conversion_label;
         const sendTo = conversionLabel ? `${px.pixel_id}/${conversionLabel}` : px.pixel_id;
-
-        w.gtag("event", "conversion", {
+        window.gtag("event", "conversion", {
           send_to: sendTo,
           value: value / 100,
           currency,
@@ -165,11 +225,11 @@ export function firePixelEvent(
       }
     }
 
-    if (px.platform === "tiktok" && w.ttq) {
+    if (px.platform === "tiktok" && window.ttq) {
       if (event === "InitiateCheckout") {
-        w.ttq.track("InitiateCheckout");
+        window.ttq.track("InitiateCheckout");
       } else if (event === "Purchase" && value) {
-        w.ttq.track("CompletePayment", { value: value / 100, currency });
+        window.ttq.track("CompletePayment", { value: value / 100, currency });
       }
     }
   });
