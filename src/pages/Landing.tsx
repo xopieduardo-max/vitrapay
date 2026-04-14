@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import dashboardPreview from "@/assets/dashboard-preview.png";
+import integrationsOrbit from "@/assets/integrations-orbit.png";
 import appMockup from "@/assets/app-mockup.png";
 import iphoneMockup3d from "@/assets/iphone-mockup-3d.png";
 import iphone3dMockup from "@/assets/iphone-3d-mockup.png";
