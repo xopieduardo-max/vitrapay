@@ -21,6 +21,7 @@ import {
   CalendarDays,
   Info,
   X,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -555,34 +556,71 @@ export default function Dashboard() {
         {/* Header */}
         <motion.div {...anim(0)} className="flex items-center justify-between">
           <h1 className="text-xl font-bold tracking-tight">Visão geral</h1>
-          <button
-            onClick={() => setShowValues(!showValues)}
-            className="h-8 w-8 flex items-center justify-center rounded-full bg-accent text-accent-foreground"
-          >
-            {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Filter button */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="h-8 px-2.5 flex items-center gap-1.5 rounded-lg bg-muted/60 border border-border text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  {periodLabels[period]}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="space-y-1">
+                  {(["today", "7d", "30d", "all"] as PeriodKey[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => { setPeriod(key); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        period === key ? "bg-primary text-primary-foreground" : "hover:bg-muted text-foreground"
+                      }`}
+                    >
+                      {periodLabels[key]}
+                    </button>
+                  ))}
+                  <div className="border-t border-border my-1" />
+                  <button
+                    onClick={() => setPeriod("custom")}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      period === "custom" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-foreground"
+                    }`}
+                  >
+                    📅 Personalizado
+                  </button>
+                  {period === "custom" && (
+                    <div className="pt-2 space-y-2">
+                      <Calendar
+                        mode="range"
+                        selected={{ from: customFrom, to: customTo }}
+                        onSelect={(range) => {
+                          setCustomFrom(range?.from);
+                          setCustomTo(range?.to);
+                        }}
+                        locale={ptBR}
+                        className="rounded-md border"
+                      />
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <button
+              onClick={() => setShowValues(!showValues)}
+              className="h-8 w-8 flex items-center justify-center rounded-lg bg-muted/60 border border-border text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </button>
+          </div>
         </motion.div>
 
-        {/* Faturamento do dia card */}
+        {/* Faturamento do período card */}
         <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-1">
-          <p className="text-xs text-muted-foreground font-medium">Faturamento hoje</p>
+          <p className="text-xs text-muted-foreground font-medium">Faturamento — {periodLabels[period]}</p>
           <p className="text-2xl font-bold text-primary">
-            {fmt(
-              salesData
-                .filter((s) => {
-                  const d = new Date(s.created_at);
-                  const now = new Date();
-                  return s.status === "completed" && d.toDateString() === now.toDateString();
-                })
-                .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
-            )}
+            {fmt(totalRevenue)}
           </p>
           <p className="text-[0.65rem] text-muted-foreground">
-            {salesData.filter((s) => {
-              const d = new Date(s.created_at);
-              const now = new Date();
-              return s.status === "completed" && d.toDateString() === now.toDateString();
-            }).length} venda(s) hoje
+            {salesCount} venda(s) no período
           </p>
         </motion.div>
 
@@ -614,37 +652,55 @@ export default function Dashboard() {
           </Button>
         </motion.div>
 
-        {/* Gráfico últimos 7 dias */}
+        {/* Gráfico de barras — responsivo ao período */}
         <motion.div {...anim(0.16)} className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold">Últimos 7 dias</p>
+            <p className="text-sm font-semibold">Receita por dia</p>
           </div>
           <div className="flex items-end gap-1" style={{ height: 96 }}>
             {(() => {
               const BAR_AREA_H = 80;
               const now = new Date();
+              const { from: rangeFrom } = getDateRange(period, customFrom, customTo);
+              // Determine how many days to show (max 14 for readability)
+              let numDays = 7;
+              if (period === "today") numDays = 1;
+              else if (period === "7d") numDays = 7;
+              else if (period === "30d") numDays = 14;
+              else if (period === "all") numDays = 14;
+              else if (period === "custom" && customFrom && customTo) {
+                const diff = Math.ceil((customTo.getTime() - customFrom.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                numDays = Math.min(diff, 14);
+              }
+
               const days: { label: string; value: number }[] = [];
-              for (let i = 6; i >= 0; i--) {
+              const startDate = rangeFrom || new Date(now.getTime() - (numDays - 1) * 86400000);
+              for (let i = numDays - 1; i >= 0; i--) {
                 const d = new Date(now);
                 d.setDate(d.getDate() - i);
+                // Only include days within the range
+                if (d < startDate) continue;
                 const key = d.toISOString().slice(0, 10);
-                const label = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+                const label = numDays <= 7
+                  ? d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")
+                  : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
                 const value = salesData
                   .filter(s => s.status === "completed" && new Date(s.created_at).toISOString().slice(0, 10) === key)
                   .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
                 days.push({ label, value });
               }
+              if (days.length === 0) days.push({ label: "hoje", value: 0 });
               const maxVal = Math.max(...days.map(d => d.value), 1);
               return days.map((d, i) => {
-                const isToday = i === 6;
+                const isLast = i === days.length - 1;
                 const barH = Math.max((d.value / maxVal) * BAR_AREA_H, 4);
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1">
                     <div
-                      className={`w-full max-w-[28px] rounded-md transition-all ${isToday ? "bg-primary" : "bg-muted"}`}
+                      className={`w-full max-w-[28px] rounded-md transition-all ${isLast ? "bg-primary" : "bg-muted"}`}
                       style={{ height: barH }}
                     />
-                    <span className={`text-[0.55rem] leading-none ${isToday ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                    <span className={`text-[0.55rem] leading-none ${isLast ? "text-primary font-semibold" : "text-muted-foreground"}`}>
                       {d.label}
                     </span>
                   </div>
