@@ -137,7 +137,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="p-4">
-        <NavLink to="/" className="flex items-center gap-2">
+        <NavLink to="/dashboard" className="flex items-center gap-2">
           <ThemeLogo variant="icon" className="h-9 w-9 rounded-lg object-contain" />
           {!collapsed && (
             <span className="text-lg font-bold tracking-tight text-foreground">
