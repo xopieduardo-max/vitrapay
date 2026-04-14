@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { geolocateIp } from "../_shared/geolocate-ip.ts";
+import { checkCpfRateLimit, checkIpRateLimit, getClientIp } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,6 +31,24 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // ── Rate limiting ──
+    const cpfClean = buyer_cpf.replace(/\D/g, "");
+    const cpfCheck = await checkCpfRateLimit(supabase, cpfClean);
+    if (!cpfCheck.allowed) {
+      return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const clientIp = getClientIp(req);
+    if (clientIp) {
+      const ipCheck = await checkIpRateLimit(supabase, clientIp);
+      if (!ipCheck.allowed) {
+        return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Verify product exists and is published
     const { data: product, error: prodErr } = await supabase
@@ -186,6 +205,7 @@ Deno.serve(async (req) => {
       buyer_city: geo.city,
       buyer_state: geo.state,
       buyer_country: geo.country,
+      buyer_ip: clientIp || null,
     });
 
     if (pendingErr) {
