@@ -141,7 +141,6 @@ export default function Sales() {
 
   const completed = filteredSales.filter((s: any) => s.status === "completed");
   const pending = filteredSales.filter((s: any) => s.status === "pending");
-  const refunded = filteredSales.filter((s: any) => s.status === "refunded");
   const totalRevenue = completed.reduce((acc: number, s: any) => acc + s.amount, 0);
   const pendingRevenue = pending.reduce((acc: number, s: any) => acc + s.amount, 0);
 
@@ -149,6 +148,7 @@ export default function Sales() {
   const paginatedSales = filteredSales.slice((page - 1) * perPage, page * perPage);
 
   // Reset page when filters change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => { setPage(1); }, [dateFilter, productFilter, searchTerm]);
 
   // Chart data: group by day for last 7 days
