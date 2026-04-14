@@ -1,12 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Landmark, TrendingUp, Zap, Smartphone, Settings } from "lucide-react";
+import { LayoutDashboard, TrendingUp, ArrowDownToLine, Landmark, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { label: "Conta", icon: Landmark, path: "/dashboard" },
+  { label: "Visão Geral", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Vendas", icon: TrendingUp, path: "/sales" },
-  { label: "", icon: Zap, path: "/products", center: true },
-  { label: "App", icon: Smartphone, path: "/install" },
+  { label: "", icon: ArrowDownToLine, path: "/finance", center: true },
+  { label: "Financeiro", icon: Landmark, path: "/transactions" },
   { label: "Ajustes", icon: Settings, path: "/settings" },
 ];
 
