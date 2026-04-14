@@ -623,7 +623,7 @@ export default function Landing() {
       <section className="bg-card/30">
         <div className="container py-20">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Sobre nós</span>
+            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Sobre nós</span>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mt-4">
               Somos muito mais que uma{" "}
               <span className="text-gradient-primary">plataforma</span>
@@ -650,7 +650,7 @@ export default function Landing() {
       {/* ─── Features — Bento Grid ─── */}
       <section id="features" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-widest text-primary">Recursos</span>
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Recursos</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Tudo que você precisa para{" "}
             <span className="text-gradient-primary">vender online</span>
@@ -698,7 +698,7 @@ export default function Landing() {
       <section id="pricing" className="bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Pagamentos & Taxas</span>
+            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Pagamentos & Taxas</span>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Custo sob controle,{" "}
               <span className="text-gradient-primary">performance sem limite</span>
@@ -986,7 +986,7 @@ export default function Landing() {
       <section id="testimonials" className="bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Depoimentos</span>
+            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Depoimentos</span>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Quem usa, <span className="text-gradient-primary">recomenda</span>
             </h2>
@@ -1025,7 +1025,7 @@ export default function Landing() {
       {/* ─── Membros Black Carousel ─── */}
       <section className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-widest text-primary">Comunidade</span>
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Comunidade</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Nossos <span className="text-gradient-primary">Membros Black</span>
           </h2>
@@ -1042,7 +1042,7 @@ export default function Landing() {
       {/* ─── FAQ Section ─── */}
       <section id="faq" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-widest text-primary">Dúvidas frequentes</span>
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Dúvidas frequentes</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Perguntas <span className="text-gradient-primary">frequentes</span>
           </h2>
