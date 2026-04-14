@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MoreHorizontal, Shield, Package, ShoppingCart, Loader2, Search, ChevronLeft, ChevronRight, Percent, ArrowUpDown } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { MoreHorizontal, Shield, Package, ShoppingCart, Loader2, Search, ChevronLeft, ChevronRight, Percent, ArrowUpDown, Ban, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +51,8 @@ interface UserData {
   custom_fee_fixed: number | null;
   productsCount: number;
   totalRevenue: number;
+  is_suspended: boolean;
+  suspended_reason: string | null;
 }
 
 export default function AdminUsers() {
@@ -61,6 +64,9 @@ export default function AdminUsers() {
   const [feePercentage, setFeePercentage] = useState("");
   const [feeFixed, setFeeFixed] = useState("");
   const [savingFee, setSavingFee] = useState(false);
+  const [suspendingUser, setSuspendingUser] = useState<UserData | null>(null);
+  const [suspendReason, setSuspendReason] = useState("");
+  const [savingSuspend, setSavingSuspend] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -69,7 +75,7 @@ export default function AdminUsers() {
     queryFn: async () => {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar_url, created_at, custom_fee_percentage, custom_fee_fixed, card_plan")
+        .select("user_id, display_name, avatar_url, created_at, custom_fee_percentage, custom_fee_fixed, card_plan, is_suspended, suspended_reason")
         .order("created_at", { ascending: false });
 
       if (!profiles) return [];
@@ -116,6 +122,8 @@ export default function AdminUsers() {
           custom_fee_fixed: p.custom_fee_fixed,
           productsCount: productsCountMap[p.user_id] || 0,
           totalRevenue: revenueMap[p.user_id] || 0,
+          is_suspended: p.is_suspended ?? false,
+          suspended_reason: p.suspended_reason ?? null,
         } as UserData;
       });
     },
@@ -197,6 +205,47 @@ export default function AdminUsers() {
       setEditingUser(null);
     }
     setSavingFee(false);
+  };
+
+  const handleSuspend = async () => {
+    if (!suspendingUser) return;
+    setSavingSuspend(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        is_suspended: true,
+        suspended_at: new Date().toISOString(),
+        suspended_reason: suspendReason.trim() || null,
+      } as any)
+      .eq("user_id", suspendingUser.id);
+
+    if (error) {
+      toast.error("Erro ao suspender usuário.");
+    } else {
+      toast.success(`${suspendingUser.name} foi suspenso.`);
+      queryClient.invalidateQueries({ queryKey: ["admin-users-list"] });
+      setSuspendingUser(null);
+      setSuspendReason("");
+    }
+    setSavingSuspend(false);
+  };
+
+  const handleUnsuspend = async (user: UserData) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        is_suspended: false,
+        suspended_at: null,
+        suspended_reason: null,
+      } as any)
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast.error("Erro ao reativar usuário.");
+    } else {
+      toast.success(`${user.name} foi reativado.`);
+      queryClient.invalidateQueries({ queryKey: ["admin-users-list"] });
+    }
   };
 
   const getFeeLabel = (user: UserData) => {
@@ -286,7 +335,14 @@ export default function AdminUsers() {
                 onClick={() => navigate(`/admin/users/${user.id}`)}
               >
                 <div className="min-w-0">
-                  <span className="text-sm font-medium truncate block">{user.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium truncate">{user.name}</span>
+                    {user.is_suspended && (
+                      <Badge variant="outline" className="text-[0.6rem] px-1 py-0 border-red-500/50 text-red-500 bg-red-500/10 shrink-0">
+                        Suspenso
+                      </Badge>
+                    )}
+                  </div>
                   {user.email && <span className="text-[0.65rem] text-muted-foreground truncate block">{user.email}</span>}
                 </div>
                 <Badge variant="outline" className={`text-[0.65rem] w-fit gap-1 ${rc.className}`}>
@@ -313,7 +369,17 @@ export default function AdminUsers() {
                       Editar Taxas
                     </DropdownMenuItem>
                     <DropdownMenuItem className="text-sm" onClick={() => navigate(`/admin/users/${user.id}`)}>Ver perfil</DropdownMenuItem>
-                    <DropdownMenuItem className="text-sm text-destructive">Suspender</DropdownMenuItem>
+                    {user.is_suspended ? (
+                      <DropdownMenuItem className="text-sm text-green-600" onClick={() => handleUnsuspend(user)}>
+                        <CheckCircle className="h-3.5 w-3.5 mr-2" />
+                        Reativar conta
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem className="text-sm text-destructive" onClick={() => { setSuspendingUser(user); setSuspendReason(""); }}>
+                        <Ban className="h-3.5 w-3.5 mr-2" />
+                        Suspender conta
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </motion.div>
@@ -343,6 +409,42 @@ export default function AdminUsers() {
           </div>
         </div>
       )}
+
+      {/* Suspend Dialog */}
+      <Dialog open={!!suspendingUser} onOpenChange={(open) => !open && setSuspendingUser(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg flex items-center gap-2">
+              <Ban className="h-5 w-5 text-destructive" />
+              Suspender — {suspendingUser?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              O usuário perderá acesso à plataforma imediatamente. Você pode reativar a qualquer momento.
+            </p>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Motivo (opcional)</Label>
+              <Textarea
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                placeholder="Ex: Violação dos termos de uso, atividade suspeita..."
+                rows={3}
+                className="bg-muted/50 border-transparent focus:border-border text-sm"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" size="sm" onClick={() => setSuspendingUser(null)} disabled={savingSuspend}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleSuspend} disabled={savingSuspend}>
+              {savingSuspend ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Ban className="h-4 w-4 mr-2" />}
+              Suspender conta
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Fee Editing Dialog */}
       <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
