@@ -151,12 +151,8 @@ const row2 = [...membrosBlack.reverse(), ...membrosBlack, ...membrosBlack, ...me
 function MembrosBlackCarousel() {
   return (
     <div className="space-y-4 overflow-hidden -mx-4 md:-mx-8">
-      {/* Row 1 – scrolls left */}
-      <motion.div
-        className="flex gap-4"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      >
+      {/* Row 1 – scrolls left (CSS marquee) */}
+      <div className="flex gap-4 animate-marquee will-change-transform">
         {row1.map((m, i) => (
           <div
             key={`r1-${i}`}
@@ -175,7 +171,7 @@ function MembrosBlackCarousel() {
             </div>
           </div>
         ))}
-      </motion.div>
+      </div>
 
       {/* Row 2 – scrolls right */}
       <motion.div
