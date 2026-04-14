@@ -59,7 +59,7 @@ export default function Affiliates() {
       const profileMap = new Map((profiles || []).map((p) => [p.user_id, p.display_name]));
       const productMap = new Map((products || []).map((p) => [p.id, p]));
 
-      const { data: commissions } = await supabase
+      await supabase
         .from("commissions")
         .select("affiliate_id, amount, status")
         .eq("affiliate_id", user.id);
