@@ -139,12 +139,37 @@ export default function Sales() {
   const totalRevenue = completed.reduce((acc: number, s: any) => acc + s.amount, 0);
   const refundedVolume = refunded.reduce((acc: number, s: any) => acc + s.amount, 0);
   const avgTicket = completed.length > 0 ? totalRevenue / completed.length : 0;
+  const pendingRevenue = pending.reduce((acc: number, s: any) => acc + s.amount, 0);
 
   const totalPages = Math.max(1, Math.ceil(filteredSales.length / perPage));
   const paginatedSales = filteredSales.slice((page - 1) * perPage, page * perPage);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => { setPage(1); }, [dateFilter, productFilter, searchTerm]);
+
+  // Chart data: group by day for last 7 days
+  const chartData = useMemo(() => {
+    const days = 7;
+    const now = new Date();
+    const buckets: { label: string; value: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dayStr = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      const count = filteredSales.filter((s: any) => {
+        if (s.status !== "completed") return false;
+        const sd = new Date(s.created_at);
+        return sd >= start && sd < end;
+      }).length;
+      buckets.push({ label: dayStr, value: count });
+    }
+    return buckets;
+  }, [filteredSales]);
+
+  const maxChart = Math.max(1, ...chartData.map((d) => d.value));
 
   const exportColumns = [
     { key: "product_title", label: "Produto" },
@@ -274,6 +299,58 @@ export default function Sales() {
             <p className={`text-xs mt-1 ${stat.subColor}`}>{stat.sub}</p>
           </motion.div>
         ))}
+      </div>
+
+      {/* Chart + Side Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="flex items-end justify-between h-[200px] gap-2">
+            <div className="flex flex-col justify-between h-full text-xs text-muted-foreground pr-2 py-1">
+              <span>{maxChart}</span>
+              <span>{Math.round(maxChart / 2)}</span>
+              <span>0</span>
+            </div>
+            <div className="flex-1 flex items-end justify-between gap-1 h-full">
+              {chartData.map((d, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${(d.value / maxChart) * 100}%` }}
+                    transition={{ delay: i * 0.05, duration: 0.5, ease: "easeOut" }}
+                    className="w-full max-w-[40px] rounded-t-md bg-primary min-h-[2px]"
+                  />
+                  <span className="text-[0.6rem] text-muted-foreground">{d.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-xl border border-border bg-card p-5 flex-1"
+          >
+            <p className="text-sm font-semibold text-primary">Vendas aprovadas</p>
+            <p className="text-2xl font-bold mt-1">
+              R$ {(totalRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">{completed.length} transações</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-xl border border-border bg-card p-5 flex-1"
+          >
+            <p className="text-sm font-semibold text-amber-500">Aguardando pagamento</p>
+            <p className="text-2xl font-bold mt-1">
+              R$ {(pendingRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">{pending.length} transações</p>
+          </motion.div>
+        </div>
       </div>
 
       {/* Search + Items per page */}
