@@ -1123,7 +1123,7 @@ export default function Landing() {
                 <a href="#pricing" className="text-[13px] text-white/35 hover:text-white transition-colors">Taxas</a>
                 <a href="#smart-payment" className="text-[13px] text-white/35 hover:text-white transition-colors">Benefícios</a>
                 <a href="#why-us" className="text-[13px] text-white/35 hover:text-white transition-colors">Por que nos escolher</a>
-                <a href="#faq" className="text-[13px] text-white/35 hover:text-white transition-colors">FAQ</a>
+                <Link to="/faq" className="text-[13px] text-white/35 hover:text-white transition-colors">FAQ</Link>
               </div>
             </div>
 
