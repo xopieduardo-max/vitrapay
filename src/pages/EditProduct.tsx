@@ -19,6 +19,7 @@ import {
   BarChart3,
   Zap,
   BookOpen,
+  Mail,
 } from "lucide-react";
 
 import EditProductSettings from "@/components/edit-product/EditProductSettings";
@@ -29,9 +30,10 @@ import EditProductCheckout from "@/components/edit-product/EditProductCheckout";
 import EditProductPixels from "@/components/edit-product/EditProductPixels";
 import EditProductContent from "@/components/edit-product/EditProductContent";
 import EditProductDownloadContent from "@/components/edit-product/EditProductDownloadContent";
+import EditProductEmail from "@/components/edit-product/EditProductEmail";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const PRODUCT_TABS = ["settings", "content", "checkout", "funnel", "pixels", "coupons", "links"] as const;
+const PRODUCT_TABS = ["settings", "content", "checkout", "funnel", "pixels", "coupons", "links", "email"] as const;
 type ProductTab = (typeof PRODUCT_TABS)[number];
 
 export default function EditProduct() {
@@ -200,6 +202,7 @@ export default function EditProduct() {
             { value: "pixels", icon: BarChart3, label: "Pixels" },
             { value: "coupons", icon: Tag, label: "Cupons" },
             { value: "links", icon: Link2, label: "Afiliados" },
+            { value: "email", icon: Mail, label: "Email" },
           ].map((tab) => (
             <TabsTrigger
               key={tab.value}
@@ -246,6 +249,14 @@ export default function EditProduct() {
 
         <TabsContent value="links" className="mt-6">
           <EditProductLinks productId={id!} checkoutUrl={checkoutUrl} />
+        </TabsContent>
+
+        <TabsContent value="email" className="mt-6">
+          <EditProductEmail
+            productTitle={form.title || "Seu Produto"}
+            productType={product.type}
+            productId={id!}
+          />
         </TabsContent>
       </Tabs>
     </motion.div>
