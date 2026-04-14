@@ -62,6 +62,12 @@ export async function autoCreateBuyerAccount(
         .eq("buyer_email", buyerEmail)
         .is("user_id", null);
 
+      // Mark account as needing password change on first login
+      await supabase
+        .from("profiles")
+        .update({ must_change_password: true })
+        .eq("user_id", newUser.user.id);
+
       return {
         userId: newUser.user.id,
         tempPassword: buyerCpf ? "cpf" : password, // signal that password is CPF-based

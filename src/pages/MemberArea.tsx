@@ -52,6 +52,31 @@ export default function MemberArea() {
   }, [productId, user]);
 
   const loadContent = async () => {
+    // Verify access before loading content (producers bypass this check)
+    if (!isPreview) {
+      const { data: productCheck } = await supabase
+        .from("products")
+        .select("producer_id")
+        .eq("id", productId!)
+        .maybeSingle();
+
+      const isProducer = productCheck?.producer_id === user?.id;
+
+      if (!isProducer) {
+        const { data: access } = await supabase
+          .from("product_access")
+          .select("id")
+          .eq("product_id", productId!)
+          .eq("user_id", user!.id)
+          .maybeSingle();
+
+        if (!access) {
+          navigate("/minha-conta", { replace: true });
+          return;
+        }
+      }
+    }
+
     const { data: mods } = await supabase
       .from("modules")
       .select("*")

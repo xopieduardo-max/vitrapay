@@ -471,6 +471,24 @@ Deno.serve(async (req) => {
         }
       }
 
+      // ✅ Send producer sale notification email
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/send-producer-sale-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            producer_id: product.producer_id,
+            product_title: product.title,
+            buyer_name: buyer_name || "Cliente",
+            amount,
+            payment_method: "credit_card",
+          }),
+        });
+        console.log("Producer sale email dispatched for producer:", product.producer_id);
+      } catch (producerEmailErr) {
+        console.error("Failed to dispatch producer sale email:", producerEmailErr);
+      }
+
       // ✅ Send UTMify postback (per-producer token)
       try {
         const { data: utmIntegration } = await supabase

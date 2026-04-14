@@ -42,6 +42,7 @@ export default function MinhaConta() {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       await supabase.auth.updateUser({ data: { auto_created: false } });
+      await supabase.from("profiles").update({ must_change_password: false }).eq("user_id", user!.id);
       setPasswordChanged(true);
       setShowPasswordChange(false);
       setDismissed(true);
@@ -225,10 +226,7 @@ export default function MinhaConta() {
                     <div className="flex gap-2">
                       <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowPasswordChange(true)}>
                         <Lock className="h-3.5 w-3.5" />
-                        Trocar Senha
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setDismissed(true)}>
-                        Depois
+                        Trocar Senha Agora
                       </Button>
                     </div>
                   ) : (

@@ -117,10 +117,26 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Cleanup expired pending_payments (PIX expires in 3 days)
+    const expiryThreshold = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: expiredPayments, error: expiredErr } = await supabase
+      .from("pending_payments")
+      .update({ status: "expired" })
+      .eq("status", "pending")
+      .lt("created_at", expiryThreshold)
+      .select("id");
+
+    if (expiredErr) {
+      console.error("Failed to expire pending_payments:", expiredErr);
+    } else {
+      console.log(`Expired ${expiredPayments?.length ?? 0} stale pending_payments`);
+    }
+
     const result = {
       released: releasedCount,
       transactions_updated: txnIds.length,
-      message: `Released ${releasedCount} user balances (${txnIds.length} transactions)`,
+      expired_payments: expiredPayments?.length ?? 0,
+      message: `Released ${releasedCount} user balances (${txnIds.length} transactions), expired ${expiredPayments?.length ?? 0} payments`,
     };
 
     console.log("Release complete:", JSON.stringify(result));

@@ -229,8 +229,8 @@ Deno.serve(async (req) => {
       event === "PAYMENT_CHARGEBACK_CREATED";
     const isRefund = event === "PAYMENT_REFUNDED";
     const isMED =
-      event === "PAYMENT_RECEIVED_IN_CASH_UNDONE" ||
-      event === "PAYMENT_DUNNING_RECEIVED" && payment?.billingType === "PIX";
+      (event === "PAYMENT_RECEIVED_IN_CASH_UNDONE" ||
+       event === "PAYMENT_DUNNING_RECEIVED") && payment?.billingType === "PIX";
 
     if (isRefund || isChargeback || isMED) {
       const saleStatus = isChargeback ? "chargeback" : isMED ? "med" : "refunded";
@@ -760,6 +760,24 @@ Deno.serve(async (req) => {
         product.file_url,
         tempPassword
       );
+    }
+
+    // ✅ Send producer sale notification email
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/send-producer-sale-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          producer_id: product.producer_id,
+          product_title: product.title,
+          buyer_name: pending.buyer_name || "Cliente",
+          amount: pending.amount,
+          payment_method: "pix",
+        }),
+      });
+      console.log("Producer sale email dispatched for producer:", product.producer_id);
+    } catch (producerEmailErr) {
+      console.error("Failed to dispatch producer sale email:", producerEmailErr);
     }
 
     // ✅ Send UTMify postback
