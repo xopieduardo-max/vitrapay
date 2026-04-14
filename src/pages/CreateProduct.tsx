@@ -19,6 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Upload, FileText, Image, Loader2, ShieldAlert, X, Plus } from "lucide-react";
 import { motion } from "framer-motion";
+import { validateFile, validateFiles } from "@/lib/file-validation";
 
 type PendingFile = { file: File; id: string };
 
@@ -80,16 +81,28 @@ export default function CreateProduct() {
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setCoverFile(file);
-      setCoverPreview(URL.createObjectURL(file));
+    if (!file) return;
+    const validation = validateFile(file, "cover", 5);
+    if (!validation.valid) {
+      toast({ title: "Arquivo inválido", description: validation.error, variant: "destructive" });
+      e.target.value = "";
+      return;
     }
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
   };
 
   const handleAddFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const newFiles: PendingFile[] = Array.from(files).map((f) => ({
+    const allFiles = Array.from(files);
+    const validation = validateFiles(allFiles, "product", 20);
+    if (!validation.valid) {
+      toast({ title: "Arquivo inválido", description: validation.error, variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    const newFiles: PendingFile[] = allFiles.map((f) => ({
       file: f,
       id: crypto.randomUUID(),
     }));

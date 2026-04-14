@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { validateFile } from "@/lib/file-validation";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -132,6 +133,11 @@ export default function EditProductContent({ productId }: Props) {
 
   // Upload cover image
   const uploadCover = async (file: File) => {
+    const validation = validateFile(file, "cover", 5);
+    if (!validation.valid) {
+      toast.error(validation.error!);
+      return;
+    }
     setUploadingCover(true);
     try {
       const ext = file.name.split(".").pop();
@@ -256,9 +262,9 @@ export default function EditProductContent({ productId }: Props) {
 
   // Upload video file with progress
   const uploadVideo = async (file: File) => {
-    const maxSize = 500 * 1024 * 1024; // 500MB
-    if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. Máximo: 500MB");
+    const validation = validateFile(file, "lesson", 500);
+    if (!validation.valid) {
+      toast.error(validation.error!);
       return;
     }
     setUploadingVideo(true);
@@ -306,6 +312,11 @@ export default function EditProductContent({ productId }: Props) {
 
   // Upload lesson material file
   const uploadLessonFile = async (file: File) => {
+    const validation = validateFile(file, "lesson", 20);
+    if (!validation.valid) {
+      toast.error(validation.error!);
+      return;
+    }
     setUploadingLessonFile(true);
     try {
       const ext = file.name.split(".").pop();

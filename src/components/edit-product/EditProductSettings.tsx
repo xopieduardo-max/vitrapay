@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Image, Upload, FileText, Loader2, X, Plus } from "lucide-react";
+import { validateFile, validateFiles } from "@/lib/file-validation";
 
 interface Props {
   form: Record<string, any>;
@@ -51,6 +52,12 @@ export default function EditProductSettings({ form, updateField, productId, prod
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const validation = validateFile(file, "cover", 5);
+    if (!validation.valid) {
+      alert(validation.error);
+      e.target.value = "";
+      return;
+    }
     setUploadingCover(true);
     try {
       const url = await uploadFile(file, "covers");
@@ -65,6 +72,12 @@ export default function EditProductSettings({ form, updateField, productId, prod
   const handleAddProductFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !productId) return;
+    const validation = validateFiles(Array.from(files), "product", 20);
+    if (!validation.valid) {
+      alert(validation.error);
+      e.target.value = "";
+      return;
+    }
     setUploadingFiles(true);
     try {
       const maxPosition = existingFiles.length > 0

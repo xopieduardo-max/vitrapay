@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { validateFiles } from "@/lib/file-validation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -96,6 +97,12 @@ export default function EditProductDownloadContent({ productId }: Props) {
   const handleAddFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList) return;
+    const validation = validateFiles(Array.from(fileList), "product", 20);
+    if (!validation.valid) {
+      alert(validation.error);
+      e.target.value = "";
+      return;
+    }
     setUploading(true);
     try {
       const maxPos = files.length > 0

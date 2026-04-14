@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { validateFile } from "@/lib/file-validation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -94,7 +95,12 @@ export default function Settings() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-
+    const validation = validateFile(file, "avatar", 5);
+    if (!validation.valid) {
+      toast.error(validation.error!);
+      e.target.value = "";
+      return;
+    }
     setUploading(true);
     const ext = file.name.split(".").pop();
     const path = `${user.id}/avatar.${ext}`;
