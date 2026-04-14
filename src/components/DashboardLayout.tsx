@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -11,10 +11,12 @@ import { useSalesNotifications } from "@/hooks/useSalesNotifications";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
+import { ThemeLogo } from "@/components/ThemeLogo";
 
 export function DashboardLayout() {
   const { newSalesCount, notifications, clearCount } = useSalesNotifications();
   usePushNotifications();
+  const navigate = useNavigate();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +45,10 @@ export function DashboardLayout() {
             </div>
 
             {/* Mobile: icon-only, expands on click */}
-            <div className="md:hidden flex items-center">
+            <div className="md:hidden flex items-center gap-2">
+              <button onClick={() => navigate("/dashboard")} className="shrink-0">
+                <ThemeLogo variant="horizontal" className="h-6" />
+              </button>
               {!searchOpen ? (
                 <button
                   onClick={() => setSearchOpen(true)}
