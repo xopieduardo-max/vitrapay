@@ -574,23 +574,29 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Highlight Cards ─── */}
-      <section className="container pb-20">
-        <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
-          {highlights.map((item, i) =>
-          <motion.div
-            key={item.title}
-            {...stagger}
-            transition={{ delay: i * 0.08, duration: 0.5 }}
-            className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card hover:-translate-y-1 transition-all duration-300 cursor-default">
-            
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                <item.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
-              </div>
-              <h3 className="font-semibold text-sm md:text-base">{item.title}</h3>
-              <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-            </motion.div>
-          )}
+      {/* ─── Highlight Cards — Dark Premium ─── */}
+      <section className="relative bg-[#080808] border-y border-white/[0.06]">
+        <div className="container py-20">
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+            {highlights.map((item, i) =>
+            <motion.div
+              key={item.title}
+              {...stagger}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 md:p-7 space-y-4 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 cursor-default overflow-hidden">
+              
+                {/* Yellow top bar */}
+                <div className="absolute top-0 left-6 right-6 h-[2px]">
+                  <div className="w-16 h-full bg-primary rounded-b-full" />
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary group-hover:scale-110 transition-all duration-300">
+                  <item.icon className="h-6 w-6 text-primary-foreground" strokeWidth={1.5} />
+                </div>
+                <h3 className="font-semibold text-sm md:text-base text-white">{item.title}</h3>
+                <p className="text-xs md:text-sm text-white/50 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            )}
+          </div>
         </div>
       </section>
 
