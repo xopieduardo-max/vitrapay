@@ -172,7 +172,58 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Processed ${salesInserted} sales, ${pushSent}/${pending?.length || 0} pushes`);
+    // ─── 3. Process scheduled ADMIN PUSHES ───
+    const { data: adminPushes } = await supabase
+      .from("scheduled_admin_pushes")
+      .select("*")
+      .is("sent_at", null)
+      .lte("scheduled_at", new Date().toISOString())
+      .order("scheduled_at", { ascending: true })
+      .limit(20);
+
+    let adminPushSent = 0;
+
+    if (adminPushes && adminPushes.length > 0) {
+      for (const push of adminPushes) {
+        try {
+          const pushPayload: any = {
+            title: push.title,
+            body: push.body || "",
+            url: push.url || "/dashboard",
+          };
+          if (push.broadcast) {
+            pushPayload.broadcast = true;
+          } else if (push.target_user_id) {
+            pushPayload.producer_id = push.target_user_id;
+          }
+
+          const res = await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify(pushPayload),
+          });
+
+          if (res.ok) adminPushSent++;
+          else console.error(`Admin push send failed for ${push.id}:`, await res.text());
+
+          await supabase
+            .from("scheduled_admin_pushes")
+            .update({ sent_at: new Date().toISOString() })
+            .eq("id", push.id);
+        } catch (e) {
+          console.error(`Error processing admin push ${push.id}:`, e);
+          await supabase
+            .from("scheduled_admin_pushes")
+            .update({ sent_at: new Date().toISOString() })
+            .eq("id", push.id);
+        }
+      }
+    }
+
+    console.log(`Processed ${salesInserted} sales, ${pushSent}/${pending?.length || 0} fake pushes, ${adminPushSent} admin pushes`);
 
     return new Response(
       JSON.stringify({

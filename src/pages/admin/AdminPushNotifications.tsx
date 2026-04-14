@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Bell, Loader2, Send, Users, Clock, History, User, Search, Smartphone, X } from "lucide-react";
+import { Bell, Loader2, Send, Users, Clock, History, User, Search, Smartphone, X, CalendarClock } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -26,6 +27,9 @@ export default function AdminPushNotifications() {
   const [sendMode, setSendMode] = useState<SendMode>("all");
   const [userSearch, setUserSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [scheduling, setScheduling] = useState(false);
 
   // Count subscriptions + unique users
   const { data: subStats } = useQuery({
@@ -77,6 +81,18 @@ export default function AdminPushNotifications() {
         }));
     },
     enabled: userSearch.length >= 2 && sendMode === "user",
+  });
+
+  const { data: scheduledPushes = [], refetch: refetchScheduled } = useQuery({
+    queryKey: ["scheduled-admin-pushes"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("scheduled_admin_pushes")
+        .select("*")
+        .is("sent_at", null)
+        .order("scheduled_at", { ascending: true });
+      return data || [];
+    },
   });
 
   const { data: history = [] } = useQuery({
@@ -164,6 +180,57 @@ export default function AdminPushNotifications() {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleSchedule = async () => {
+    if (!title.trim() || !user) {
+      toast.error("Digite um título para a notificação.");
+      return;
+    }
+    if (!scheduledAt) {
+      toast.error("Selecione a data e hora para o agendamento.");
+      return;
+    }
+    if (sendMode === "user" && !selectedUser) {
+      toast.error("Selecione um usuário para enviar.");
+      return;
+    }
+
+    setScheduling(true);
+    try {
+      const payload: any = {
+        title: title.trim(),
+        body: body.trim() || null,
+        url: url.trim() || "/dashboard",
+        scheduled_at: new Date(scheduledAt).toISOString(),
+        sent_by: user.id,
+        broadcast: sendMode === "all",
+        target_user_id: sendMode === "user" ? selectedUser!.id : null,
+      };
+
+      const { error } = await supabase.from("scheduled_admin_pushes").insert(payload);
+      if (error) throw error;
+
+      toast.success("Push agendado com sucesso!");
+      setTitle("");
+      setBody("");
+      setUrl("/dashboard");
+      setScheduledAt("");
+      setIsScheduled(false);
+      setSelectedUser(null);
+      setUserSearch("");
+      refetchScheduled();
+    } catch (e: any) {
+      toast.error("Erro ao agendar: " + (e.message || String(e)));
+    } finally {
+      setScheduling(false);
+    }
+  };
+
+  const cancelScheduled = async (id: string) => {
+    await supabase.from("scheduled_admin_pushes").delete().eq("id", id);
+    refetchScheduled();
+    toast.success("Agendamento cancelado.");
   };
 
   const sendButtonLabel = useMemo(() => {
@@ -353,6 +420,37 @@ export default function AdminPushNotifications() {
           </p>
         </div>
 
+        {/* Schedule toggle */}
+        <div className="space-y-3 pt-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-sm font-medium cursor-pointer" htmlFor="schedule-toggle">
+                Agendar envio
+              </Label>
+            </div>
+            <Switch
+              id="schedule-toggle"
+              checked={isScheduled}
+              onCheckedChange={setIsScheduled}
+            />
+          </div>
+          {isScheduled && (
+            <div className="space-y-1.5">
+              <Input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                min={new Date().toISOString().slice(0, 16)}
+                className="bg-muted/50 border-transparent focus:border-border"
+              />
+              <p className="text-xs text-muted-foreground">
+                A notificação será enviada automaticamente na data e hora selecionadas
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Preview */}
         {title && (
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
@@ -370,16 +468,63 @@ export default function AdminPushNotifications() {
         )}
 
         <div className="flex justify-end pt-2">
-          <Button
-            onClick={handleSend}
-            disabled={sending || !title.trim() || (sendMode === "user" && !selectedUser)}
-            className="gap-2"
-          >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {sendButtonLabel}
-          </Button>
+          {isScheduled ? (
+            <Button
+              onClick={handleSchedule}
+              disabled={scheduling || !title.trim() || !scheduledAt || (sendMode === "user" && !selectedUser)}
+              className="gap-2"
+              variant="secondary"
+            >
+              {scheduling ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarClock className="h-4 w-4" />}
+              Agendar envio
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSend}
+              disabled={sending || !title.trim() || (sendMode === "user" && !selectedUser)}
+              className="gap-2"
+            >
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {sendButtonLabel}
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Scheduled pushes */}
+      {scheduledPushes.length > 0 && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
+            <h2 className="text-sm font-semibold flex items-center gap-2">
+              <CalendarClock className="h-3.5 w-3.5 text-primary" />
+              Agendados ({scheduledPushes.length})
+            </h2>
+          </div>
+          <div className="divide-y divide-border">
+            {(scheduledPushes as any[]).map((item) => (
+              <div key={item.id} className="px-4 py-3 flex items-start justify-between gap-3 hover:bg-muted/20">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{item.title}</p>
+                  {item.body && (
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{item.body}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {item.broadcast ? "Para todos" : "Usuário específico"} · {format(new Date(item.scheduled_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => cancelScheduled(item.id)}
+                  className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                  title="Cancelar agendamento"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* History */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
