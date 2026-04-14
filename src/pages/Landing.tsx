@@ -948,6 +948,40 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ─── Integrations Section ─── */}
+      <section className="relative overflow-hidden bg-[#080808]">
+        <div className="container relative py-20 md:py-28">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left – Copy */}
+            <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
+              <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary">
+                <span className="w-1 h-5 rounded-full bg-primary mr-3" />
+                Integrações
+              </span>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-white">
+                Integrações amplas e{" "}
+                <span className="text-primary">flexíveis:</span>
+              </h2>
+              <p className="text-white/60 text-lg max-w-md leading-relaxed">
+                Conecte-se com as <strong className="text-white/90">principais plataformas</strong> e serviços do mercado para automatizar seu negócio e maximizar seus resultados.
+              </p>
+              <p className="text-white/60 text-lg max-w-md leading-relaxed">
+                <strong className="text-white/90">Não encontrou a integração que precisa?</strong> Entre em contato com nossa equipe e iremos desenvolver a integração <strong className="text-white/90">sob medida</strong> para você.
+              </p>
+            </motion.div>
+
+            {/* Right – Orbit Image */}
+            <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }} className="flex justify-center">
+              <img
+                src={integrationsOrbit}
+                alt="Integrações VitraPay — Facebook, TikTok, UTMify, WhatsApp e mais"
+                className="w-full max-w-lg"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── App Coming Soon ─── */}
       <section className="relative overflow-hidden">
         <FloatingParticles />
