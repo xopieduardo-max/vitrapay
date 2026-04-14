@@ -7,37 +7,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Save, Eye, EyeOff, ChevronDown, ExternalLink } from "lucide-react";
+import { Loader2, Save, Eye, EyeOff, ChevronDown, ExternalLink, ChevronRight, Plug } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { motion } from "framer-motion";
 
 import utmifyLogo from "@/assets/integrations/utmify-logo.png";
 import facebookLogo from "@/assets/integrations/facebook-logo.png";
 import googleAdsLogo from "@/assets/integrations/google-ads-logo.png";
 import tiktokLogo from "@/assets/integrations/tiktok-logo.png";
 
+const anim = (delay: number) => ({
+  initial: { opacity: 0, y: 12 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { delay, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+});
+
 function IntegrationCard({
   title,
   description,
   logo,
   tutorialSteps,
+  delay = 0,
   children,
 }: {
   title: string;
   description: string;
   logo: string;
   tutorialSteps: { step: string; detail: string }[];
+  delay?: number;
   children?: React.ReactNode;
 }) {
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+    <motion.div
+      {...anim(delay)}
+      className="rounded-2xl border border-border bg-card p-6 space-y-4 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+    >
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl overflow-hidden shrink-0 bg-muted/50">
+        <div className="h-12 w-12 rounded-xl overflow-hidden shrink-0 bg-muted/30 border border-border/50">
           <img src={logo} alt={title} className="h-full w-full object-cover" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
+          <h3 className="text-sm font-bold">{title}</h3>
           <p className="text-xs text-muted-foreground">{description}</p>
         </div>
       </div>
@@ -52,12 +64,12 @@ function IntegrationCard({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-3">
-          <div className="rounded-lg bg-muted/50 p-4 space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Passo a passo</p>
+          <div className="rounded-xl bg-muted/30 p-4 space-y-3 border border-border/50">
+            <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-widest">Passo a passo</p>
             <ol className="space-y-2.5">
               {tutorialSteps.map((s, i) => (
                 <li key={i} className="flex gap-3 text-sm">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="h-6 w-6 rounded-lg bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {i + 1}
                   </span>
                   <div>
@@ -70,7 +82,7 @@ function IntegrationCard({
           </div>
         </CollapsibleContent>
       </Collapsible>
-    </div>
+    </motion.div>
   );
 }
 
@@ -104,15 +116,9 @@ function UtmifySection() {
   });
 
   const handleSave = async () => {
-    if (!user) {
-      toast.error("Você precisa estar logado para salvar a integração.");
-      return;
-    }
+    if (!user) { toast.error("Você precisa estar logado."); return; }
     const trimmedToken = utmifyToken.trim();
-    if (!trimmedToken) {
-      toast.error("Informe o token do UTMify.");
-      return;
-    }
+    if (!trimmedToken) { toast.error("Informe o token do UTMify."); return; }
     setSaving(true);
     try {
       if (integration) {
@@ -120,27 +126,17 @@ function UtmifySection() {
           .from("user_integrations")
           .update({ api_token: trimmedToken, is_active: utmifyActive, updated_at: new Date().toISOString() })
           .eq("id", integration.id);
-        if (error) {
-          console.error("Erro update UTMify:", error);
-          toast.error(`Erro ao atualizar: ${error.message}`);
-        } else {
-          toast.success("Integração atualizada!");
-        }
+        if (error) toast.error(`Erro ao atualizar: ${error.message}`);
+        else toast.success("Integração atualizada!");
       } else {
         const { error } = await supabase
           .from("user_integrations")
           .insert({ user_id: user.id, platform: "utmify", api_token: trimmedToken, is_active: utmifyActive });
-        if (error) {
-          console.error("Erro insert UTMify:", error);
-          toast.error(`Erro ao salvar: ${error.message}`);
-        } else {
-          toast.success("Integração configurada!");
-          setLoaded(false);
-        }
+        if (error) toast.error(`Erro ao salvar: ${error.message}`);
+        else { toast.success("Integração configurada!"); setLoaded(false); }
       }
       queryClient.invalidateQueries({ queryKey: ["user-integrations", user?.id, "utmify"] });
     } catch (e: any) {
-      console.error("Exceção UTMify:", e);
       toast.error(`Erro inesperado: ${e.message}`);
     } finally {
       setSaving(false);
@@ -152,12 +148,7 @@ function UtmifySection() {
     setSaving(true);
     const { error } = await supabase.from("user_integrations").delete().eq("id", integration.id);
     if (error) toast.error("Erro ao remover.");
-    else {
-      toast.success("Integração removida!");
-      setUtmifyToken("");
-      setUtmifyActive(true);
-      setLoaded(false);
-    }
+    else { toast.success("Integração removida!"); setUtmifyToken(""); setUtmifyActive(true); setLoaded(false); }
     queryClient.invalidateQueries({ queryKey: ["user-integrations", user?.id, "utmify"] });
     setSaving(false);
   };
@@ -172,14 +163,14 @@ function UtmifySection() {
         <Switch checked={utmifyActive} onCheckedChange={setUtmifyActive} />
       </div>
       <div className="space-y-2">
-        <Label className="text-xs uppercase tracking-widest text-muted-foreground">Token de API</Label>
+        <Label className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Token de API</Label>
         <div className="relative">
           <Input
             type={showToken ? "text" : "password"}
             value={utmifyToken}
             onChange={(e) => setUtmifyToken(e.target.value)}
             placeholder="Cole seu token do UTMify aqui"
-            className="bg-muted/50 border-transparent focus:border-border pr-10"
+            className="bg-muted/30 border-border/50 rounded-xl h-11 pr-10"
           />
           <button
             type="button"
@@ -192,9 +183,9 @@ function UtmifySection() {
       </div>
       <div className="flex items-center gap-2 justify-end">
         {integration && (
-          <Button variant="outline" size="sm" onClick={handleRemove} disabled={saving}>Remover</Button>
+          <Button variant="outline" size="sm" className="rounded-xl" onClick={handleRemove} disabled={saving}>Remover</Button>
         )}
-        <Button size="sm" onClick={handleSave} disabled={saving || !utmifyToken.trim()}>
+        <Button size="sm" className="rounded-xl" onClick={handleSave} disabled={saving || !utmifyToken.trim()}>
           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
           {integration ? "Atualizar" : "Salvar"}
         </Button>
@@ -205,17 +196,33 @@ function UtmifySection() {
 
 export default function Integrations() {
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Integrações</h1>
-        <p className="text-sm text-muted-foreground mt-1">Conecte ferramentas externas à sua conta para rastrear vendas e campanhas</p>
-      </div>
+    <div className="space-y-5 pb-20 md:pb-6 max-w-2xl">
+      {/* Premium Header */}
+      <motion.div {...anim(0)} className="rounded-2xl border border-border bg-card p-6">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Plug className="h-5 w-5 text-primary" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Integrações</h1>
+            <p className="text-sm text-muted-foreground">Conecte ferramentas externas à sua conta</p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Breadcrumb */}
+      <motion.div {...anim(0.04)} className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+        <span className="hover:text-foreground transition-colors cursor-pointer">Home</span>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-foreground font-medium">Integrações</span>
+      </motion.div>
 
       {/* UTMify */}
       <IntegrationCard
         title="UTMify"
         description="Rastreamento de vendas e campanhas de tráfego pago"
         logo={utmifyLogo}
+        delay={0.08}
         tutorialSteps={[
           { step: "Crie sua conta no UTMify", detail: "Acesse app.utmify.com.br e crie sua conta gratuita." },
           { step: "Acesse Integrações → Credenciais de API", detail: "No painel do UTMify, vá em Integrações e copie seu token de API." },
@@ -231,14 +238,15 @@ export default function Integrations() {
         title="Facebook Ads (Meta Pixel)"
         description="Rastreie conversões e otimize suas campanhas no Facebook e Instagram"
         logo={facebookLogo}
+        delay={0.12}
         tutorialSteps={[
           { step: "Acesse o Gerenciador de Eventos do Facebook", detail: "Vá em business.facebook.com → Gerenciador de Eventos → Fontes de Dados." },
           { step: "Copie o ID do Pixel", detail: "Selecione seu Pixel e copie o ID (número de 15-16 dígitos)." },
           { step: "Adicione o Pixel no seu produto", detail: "Na VitraPay, vá em Meus Produtos → Editar Produto → aba Pixels → Adicione um pixel Facebook com o ID copiado." },
-          { step: "Teste com o Meta Pixel Helper", detail: "Instale a extensão Meta Pixel Helper no Chrome e acesse o checkout do produto para verificar os eventos PageView, InitiateCheckout e Purchase." },
+          { step: "Teste com o Meta Pixel Helper", detail: "Instale a extensão Meta Pixel Helper no Chrome e acesse o checkout do produto para verificar os eventos." },
         ]}
       >
-        <div className="rounded-lg bg-muted/30 p-3 flex items-center gap-3">
+        <div className="rounded-xl bg-muted/30 p-3 flex items-center gap-3 border border-border/50">
           <span className="text-xs text-muted-foreground">⚙️ Configuração feita por produto em</span>
           <a href="/products" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
             Meus Produtos → Editar → Pixels <ExternalLink className="h-3 w-3" />
@@ -251,6 +259,7 @@ export default function Integrations() {
         title="Google Ads"
         description="Rastreie conversões de vendas nas campanhas do Google Ads"
         logo={googleAdsLogo}
+        delay={0.16}
         tutorialSteps={[
           { step: "Acesse o Google Ads", detail: "Vá em ads.google.com → Ferramentas e Configurações → Medição → Conversões." },
           { step: "Crie uma ação de conversão", detail: "Clique em '+ Nova ação de conversão' → Website → Configure o nome e valor." },
@@ -259,7 +268,7 @@ export default function Integrations() {
           { step: "Teste a conversão", detail: "Faça uma compra teste e verifique no Google Ads se a conversão foi registrada (pode levar até 24h)." },
         ]}
       >
-        <div className="rounded-lg bg-muted/30 p-3 flex items-center gap-3">
+        <div className="rounded-xl bg-muted/30 p-3 flex items-center gap-3 border border-border/50">
           <span className="text-xs text-muted-foreground">⚙️ Configuração feita por produto em</span>
           <a href="/products" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
             Meus Produtos → Editar → Pixels <ExternalLink className="h-3 w-3" />
@@ -272,6 +281,7 @@ export default function Integrations() {
         title="TikTok Ads"
         description="Rastreie conversões e otimize campanhas no TikTok"
         logo={tiktokLogo}
+        delay={0.2}
         tutorialSteps={[
           { step: "Acesse o TikTok Ads Manager", detail: "Vá em ads.tiktok.com → Assets → Events → Web Events." },
           { step: "Crie um Pixel", detail: "Clique em 'Create Pixel' → Escolha 'Manually Install Pixel Code' → Copie o Pixel ID." },
@@ -279,7 +289,7 @@ export default function Integrations() {
           { step: "Teste o Pixel", detail: "Use o TikTok Pixel Helper (extensão Chrome) para verificar se os eventos estão disparando no checkout." },
         ]}
       >
-        <div className="rounded-lg bg-muted/30 p-3 flex items-center gap-3">
+        <div className="rounded-xl bg-muted/30 p-3 flex items-center gap-3 border border-border/50">
           <span className="text-xs text-muted-foreground">⚙️ Configuração feita por produto em</span>
           <a href="/products" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
             Meus Produtos → Editar → Pixels <ExternalLink className="h-3 w-3" />

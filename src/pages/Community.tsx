@@ -11,8 +11,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Lightbulb, ThumbsUp, MessageCircle, Plus, Send, Loader2, Clock, ChevronDown, ChevronUp, Sparkles,
+  Lightbulb, ThumbsUp, MessageCircle, Plus, Send, Loader2, Clock, ChevronDown, ChevronUp, Sparkles, ChevronRight, Users,
 } from "lucide-react";
+
+const anim = (delay: number) => ({
+  initial: { opacity: 0, y: 12 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { delay, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+});
 
 export default function Community() {
   const { user } = useAuth();
@@ -24,7 +30,6 @@ export default function Community() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
 
-  // Fetch approved suggestions
   const { data: suggestions = [], isLoading } = useQuery({
     queryKey: ["community-suggestions"],
     queryFn: async () => {
@@ -36,7 +41,6 @@ export default function Community() {
     },
   });
 
-  // Fetch user's votes
   const { data: userVotes = [] } = useQuery({
     queryKey: ["community-my-votes"],
     queryFn: async () => {
@@ -50,7 +54,6 @@ export default function Community() {
     enabled: !!user,
   });
 
-  // Fetch comments for expanded suggestion
   const { data: comments = [] } = useQuery({
     queryKey: ["community-comments", expandedId],
     queryFn: async () => {
@@ -65,7 +68,6 @@ export default function Community() {
     enabled: !!expandedId,
   });
 
-  // Fetch profiles for suggestions
   const { data: profiles = [] } = useQuery({
     queryKey: ["community-profiles"],
     queryFn: async () => {
@@ -137,19 +139,27 @@ export default function Community() {
   const pendingSuggestions = suggestions.filter((s: any) => s.status === "pending" && s.user_id === user?.id);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-5 pb-20 md:pb-6">
+      {/* Premium Header */}
+      <motion.div {...anim(0)} className="rounded-2xl border border-border bg-card p-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Comunidade</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Compartilhe ideias e vote nas sugestões da comunidade
           </p>
         </div>
-        <Button className="gap-1.5" onClick={() => setShowForm(!showForm)}>
+        <Button className="gap-1.5 rounded-xl" onClick={() => setShowForm(!showForm)}>
           <Plus className="h-3.5 w-3.5" />
           Nova sugestão
         </Button>
-      </div>
+      </motion.div>
+
+      {/* Breadcrumb */}
+      <motion.div {...anim(0.04)} className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+        <span className="hover:text-foreground transition-colors cursor-pointer">Home</span>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-foreground font-medium">Comunidade</span>
+      </motion.div>
 
       {/* New suggestion form */}
       <AnimatePresence>
@@ -158,10 +168,13 @@ export default function Community() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="rounded-xl border border-border bg-card p-5 space-y-4"
+            className="rounded-2xl border border-border bg-card p-5 space-y-4"
           >
             <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-primary" /> Sua ideia ou sugestão
+              <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Lightbulb className="h-4 w-4 text-primary" />
+              </div>
+              Sua ideia ou sugestão
             </h3>
             <p className="text-xs text-muted-foreground">
               Sua sugestão será analisada pela equipe antes de ser publicada para a comunidade votar.
@@ -173,6 +186,7 @@ export default function Community() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={100}
+                className="bg-muted/30 border-border/50 rounded-xl h-11"
               />
             </div>
             <div className="space-y-1">
@@ -183,12 +197,13 @@ export default function Community() {
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={1000}
                 rows={4}
+                className="bg-muted/30 border-border/50 rounded-xl"
               />
             </div>
             <Button
               onClick={() => submitSuggestion.mutate()}
               disabled={submitSuggestion.isPending || !title.trim() || !description.trim()}
-              className="gap-1.5"
+              className="gap-1.5 rounded-xl"
             >
               {submitSuggestion.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
               Enviar sugestão
@@ -199,17 +214,17 @@ export default function Community() {
 
       {/* Pending user suggestions */}
       {pendingSuggestions.length > 0 && (
-        <div className="space-y-2">
+        <motion.div {...anim(0.06)} className="space-y-2">
           <p className="text-xs text-muted-foreground flex items-center gap-1.5">
             <Clock className="h-3 w-3" /> Suas sugestões aguardando aprovação
           </p>
           {pendingSuggestions.map((s: any) => (
-            <div key={s.id} className="rounded-lg border border-warning/20 bg-warning/5 px-4 py-3">
+            <div key={s.id} className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-5 py-4">
               <p className="text-sm font-medium">{s.title}</p>
               <p className="text-xs text-muted-foreground mt-1">{s.description}</p>
             </div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* Approved suggestions */}
@@ -218,26 +233,33 @@ export default function Community() {
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : approvedSuggestions.length === 0 ? (
-        <div className="text-center py-16 space-y-3">
-          <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto" />
-          <p className="text-sm text-muted-foreground">Nenhuma sugestão aprovada ainda. Seja o primeiro!</p>
-        </div>
+        <motion.div {...anim(0.08)} className="rounded-2xl border border-dashed border-border bg-card p-16 text-center space-y-4">
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Sparkles className="h-7 w-7 text-primary" />
+          </div>
+          <div>
+            <p className="text-base font-semibold">Nenhuma sugestão aprovada ainda</p>
+            <p className="text-sm text-muted-foreground mt-1">Seja o primeiro a compartilhar uma ideia!</p>
+          </div>
+          <Button className="gap-1.5 rounded-xl" onClick={() => setShowForm(true)}>
+            <Plus className="h-3.5 w-3.5" />
+            Criar sugestão
+          </Button>
+        </motion.div>
       ) : (
         <div className="space-y-3">
           {approvedSuggestions.map((s: any, i: number) => (
             <motion.div
               key={s.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-xl border border-border bg-card overflow-hidden"
+              {...anim(0.08 + i * 0.04)}
+              className="rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
             >
-              <div className="flex items-start gap-4 p-4">
+              <div className="flex items-start gap-4 p-5">
                 {/* Vote button */}
                 <button
                   onClick={() => toggleVote.mutate(s.id)}
-                  className={`flex flex-col items-center gap-0.5 pt-1 transition-colors ${
-                    userVotes.includes(s.id) ? "text-primary" : "text-muted-foreground hover:text-primary"
+                  className={`flex flex-col items-center gap-0.5 pt-1 transition-colors rounded-xl px-2 py-1.5 ${
+                    userVotes.includes(s.id) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                   }`}
                 >
                   <ThumbsUp className={`h-5 w-5 ${userVotes.includes(s.id) ? "fill-primary" : ""}`} />
@@ -249,7 +271,10 @@ export default function Community() {
                   <h3 className="text-sm font-semibold">{s.title}</h3>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.description}</p>
                   <div className="flex items-center gap-3 mt-2 text-[0.65rem] text-muted-foreground">
-                    <span>{getDisplayName(s.user_id)}</span>
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {getDisplayName(s.user_id)}
+                    </span>
                     <span>•</span>
                     <span>{format(new Date(s.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
                   </div>
@@ -259,7 +284,7 @@ export default function Community() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="gap-1.5 text-xs text-muted-foreground shrink-0"
+                  className="gap-1.5 text-xs text-muted-foreground shrink-0 rounded-xl"
                   onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
@@ -276,13 +301,13 @@ export default function Community() {
                     exit={{ height: 0, opacity: 0 }}
                     className="border-t border-border"
                   >
-                    <div className="p-4 space-y-3">
+                    <div className="p-5 space-y-3">
                       {comments.length === 0 ? (
                         <p className="text-xs text-muted-foreground">Nenhum comentário ainda.</p>
                       ) : (
                         comments.map((c: any) => (
                           <div key={c.id} className="flex gap-3">
-                            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-[0.6rem] font-bold text-primary shrink-0">
+                            <div className="h-7 w-7 rounded-xl bg-primary/10 flex items-center justify-center text-[0.6rem] font-bold text-primary shrink-0">
                               {(c.profiles?.display_name || "U").charAt(0)}
                             </div>
                             <div>
@@ -305,12 +330,12 @@ export default function Community() {
                           value={commentText}
                           onChange={(e) => setCommentText(e.target.value)}
                           maxLength={500}
-                          className="text-xs h-8"
+                          className="text-xs h-8 bg-muted/30 border-border/50 rounded-xl"
                           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && submitComment.mutate()}
                         />
                         <Button
                           size="sm"
-                          className="h-8 px-3"
+                          className="h-8 px-3 rounded-xl"
                           onClick={() => submitComment.mutate()}
                           disabled={submitComment.isPending || !commentText.trim()}
                         >
