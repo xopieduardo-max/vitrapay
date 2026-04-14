@@ -1132,6 +1132,10 @@ export default function Landing() {
 
       {/* ─── Footer ─── */}
       <footer className="relative bg-[#080808] overflow-hidden">
+        {/* Golden gradient at top */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(48,96%,53%)] to-transparent opacity-40" />
+        <div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-[hsl(48,96%,53%)]/[0.08] rounded-full blur-[100px] pointer-events-none" />
+        
         {/* Yellow glow — subtle, only peeking from bottom */}
         <div className="absolute -bottom-[350px] left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-[hsl(48,96%,53%)]/[0.12] rounded-full blur-[100px] pointer-events-none" />
 
