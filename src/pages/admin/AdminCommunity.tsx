@@ -39,12 +39,25 @@ export default function AdminCommunity() {
   };
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, userId, title }: { id: string; status: string; userId: string; title: string }) => {
       const { error } = await supabase
         .from("community_suggestions")
         .update({ status, reviewed_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
+
+      // Notify the suggestion author via push
+      const isApproved = status === "approved";
+      await supabase.functions.invoke("send-push", {
+        body: {
+          producer_id: userId,
+          title: isApproved ? "Sua sugestão foi aprovada! 🎉" : "Sugestão analisada",
+          body: isApproved
+            ? `"${title}" foi aprovada pelo time VitraPay.`
+            : `"${title}" não foi selecionada desta vez, mas obrigado pela ideia!`,
+          url: "/community",
+        },
+      });
     },
     onSuccess: (_, { status }) => {
       toast({ title: status === "approved" ? "Sugestão aprovada!" : "Sugestão rejeitada" });
@@ -114,7 +127,7 @@ export default function AdminCommunity() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-primary"
-                    onClick={() => updateStatus.mutate({ id: s.id, status: "approved" })}
+                    onClick={() => updateStatus.mutate({ id: s.id, status: "approved", userId: s.user_id, title: s.title })}
                     title="Aprovar"
                   >
                     <CheckCircle2 className="h-4 w-4" />
@@ -123,7 +136,7 @@ export default function AdminCommunity() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-destructive"
-                    onClick={() => updateStatus.mutate({ id: s.id, status: "rejected" })}
+                    onClick={() => updateStatus.mutate({ id: s.id, status: "rejected", userId: s.user_id, title: s.title })}
                     title="Rejeitar"
                   >
                     <XCircle className="h-4 w-4" />
