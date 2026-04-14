@@ -550,86 +550,137 @@ export default function Dashboard() {
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
-        {/* Period filters mobile */}
-        <motion.div {...anim(0)} className="flex flex-wrap items-center gap-1.5">
-          {(Object.keys(periodLabels) as PeriodKey[]).filter(p => p !== "custom").map((p) => (
-            <button
-              key={p}
-              onClick={() => handlePeriodChange(p)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                period === p ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {periodLabels[p]}
-            </button>
-          ))}
+        {/* Header */}
+        <motion.div {...anim(0)} className="flex items-center justify-between">
+          <h1 className="text-xl font-bold tracking-tight">Visão geral</h1>
           <button
             onClick={() => setShowValues(!showValues)}
-            className="ml-auto h-7 w-7 flex items-center justify-center rounded-full bg-accent text-accent-foreground"
+            className="h-8 w-8 flex items-center justify-center rounded-full bg-accent text-accent-foreground"
           >
-            {showValues ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
           </button>
         </motion.div>
 
-        {/* Balance card mobile */}
-        <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <button
-              onClick={() => setBalanceTab("pending")}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${balanceTab === "pending" ? "bg-muted text-foreground" : "text-muted-foreground"}`}
-            >
-              À receber
-            </button>
-            <button
-              onClick={() => setBalanceTab("available")}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${balanceTab === "available" ? "bg-muted text-foreground" : "text-muted-foreground"}`}
-            >
-              Disponível
-            </button>
-          </div>
-          <p className="text-2xl font-bold">
-            {balanceTab === "available" ? fmt(availableBalance) : fmt(walletPending)}
+        {/* Faturamento do dia card */}
+        <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-1">
+          <p className="text-xs text-muted-foreground font-medium">Faturamento hoje</p>
+          <p className="text-2xl font-bold text-primary">
+            {fmt(
+              salesData
+                .filter((s) => {
+                  const d = new Date(s.created_at);
+                  const now = new Date();
+                  return s.status === "completed" && d.toDateString() === now.toDateString();
+                })
+                .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
+            )}
           </p>
+          <p className="text-[0.65rem] text-muted-foreground">
+            {salesData.filter((s) => {
+              const d = new Date(s.created_at);
+              const now = new Date();
+              return s.status === "completed" && d.toDateString() === now.toDateString();
+            }).length} venda(s) hoje
+          </p>
+        </motion.div>
+
+        {/* À receber + Disponível */}
+        <div className="grid grid-cols-2 gap-3">
+          <motion.div {...anim(0.08)} className="rounded-xl border border-border bg-card p-3 space-y-0.5">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <p className="text-[0.65rem] text-muted-foreground font-medium">À receber</p>
+            </div>
+            <p className="text-lg font-bold">{fmt(walletPending)}</p>
+          </motion.div>
+          <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-3 space-y-0.5">
+            <div className="flex items-center gap-1.5">
+              <ArrowDownToLine className="h-3 w-3 text-muted-foreground" />
+              <p className="text-[0.65rem] text-muted-foreground font-medium">Disponível</p>
+            </div>
+            <p className="text-lg font-bold">{fmt(availableBalance)}</p>
+          </motion.div>
+        </div>
+
+        {/* Botão Sacar */}
+        <motion.div {...anim(0.12)}>
           <Button
-            size="sm"
-            className="mt-3 h-8 text-xs gap-1.5"
+            className="w-full h-11 text-sm gap-2 rounded-xl font-semibold"
             onClick={() => navigate("/finance")}
           >
-            <ArrowDownToLine className="h-3.5 w-3.5" /> Solicitar saque
+            <ArrowDownToLine className="h-4 w-4" /> Solicitar saque
           </Button>
         </motion.div>
 
-        {/* Stats grid mobile */}
+        {/* Gráfico últimos 7 dias */}
+        <motion.div {...anim(0.16)} className="rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-semibold">Últimos 7 dias</p>
+          </div>
+          <div className="flex items-end gap-1 h-24">
+            {(() => {
+              const now = new Date();
+              const days: { label: string; value: number }[] = [];
+              for (let i = 6; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(d.getDate() - i);
+                const key = d.toISOString().slice(0, 10);
+                const label = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+                const value = salesData
+                  .filter(s => s.status === "completed" && new Date(s.created_at).toISOString().slice(0, 10) === key)
+                  .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+                days.push({ label, value });
+              }
+              const maxVal = Math.max(...days.map(d => d.value), 1);
+              return days.map((d, i) => {
+                const isToday = i === 6;
+                const heightPct = Math.max((d.value / maxVal) * 100, 6);
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <div className="w-full flex justify-center">
+                      <div
+                        className={`w-full max-w-[28px] rounded-md transition-all ${isToday ? "bg-primary" : "bg-muted"}`}
+                        style={{ height: `${heightPct}%`, minHeight: 4 }}
+                      />
+                    </div>
+                    <span className={`text-[0.55rem] ${isToday ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                      {d.label}
+                    </span>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </motion.div>
+
+        {/* Ticket médio + Vendas */}
         <div className="grid grid-cols-2 gap-3">
-          <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-3">
-            <p className="text-[0.65rem] text-muted-foreground">Vendas</p>
-            <p className="text-lg font-bold">{salesCount}</p>
-          </motion.div>
-          <motion.div {...anim(0.12)} className="rounded-xl border border-border bg-card p-3">
-            <p className="text-[0.65rem] text-muted-foreground">Ticket médio</p>
+          <motion.div {...anim(0.2)} className="rounded-xl border border-border bg-card p-3 space-y-0.5">
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="h-3 w-3 text-muted-foreground" />
+              <p className="text-[0.65rem] text-muted-foreground font-medium">Ticket médio</p>
+            </div>
             <p className="text-lg font-bold">{fmt(ticketMedio)}</p>
           </motion.div>
-          <motion.div {...anim(0.14)} className="rounded-xl border border-border bg-card p-3">
-            <p className="text-[0.65rem] text-muted-foreground">Carrinhos abandonados</p>
-            <p className="text-lg font-bold">{pendingCheckoutsCount}</p>
-          </motion.div>
-          <motion.div {...anim(0.16)} className="rounded-xl border border-border bg-card p-3">
-            <p className="text-[0.65rem] text-muted-foreground">Conv. Checkout</p>
-            <p className="text-lg font-bold">{checkoutConversionRate}%</p>
+          <motion.div {...anim(0.22)} className="rounded-xl border border-border bg-card p-3 space-y-0.5">
+            <div className="flex items-center gap-1.5">
+              <BarChart3 className="h-3 w-3 text-muted-foreground" />
+              <p className="text-[0.65rem] text-muted-foreground font-medium">Vendas ({periodLabels[period]})</p>
+            </div>
+            <p className="text-lg font-bold">{salesCount}</p>
           </motion.div>
         </div>
 
         {/* Quick links mobile */}
         <div className="space-y-2">
           {[
-            { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
             { label: "Meus Produtos", icon: Package, path: "/products" },
             { label: "Afiliados", icon: Users, path: "/affiliates" },
             { label: "Suporte", icon: HelpCircle, path: "/help" },
           ].map((link, i) => (
             <motion.button
               key={link.path}
-              {...anim(0.2 + i * 0.04)}
+              {...anim(0.26 + i * 0.04)}
               onClick={() => navigate(link.path)}
               className="w-full flex items-center gap-4 rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors active:scale-[0.98]"
             >
