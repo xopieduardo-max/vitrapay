@@ -42,7 +42,6 @@ export default function MinhaConta() {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       await supabase.auth.updateUser({ data: { auto_created: false } });
-      await supabase.from("profiles").update({ must_change_password: false }).eq("user_id", user!.id);
       setPasswordChanged(true);
       setShowPasswordChange(false);
       setDismissed(true);

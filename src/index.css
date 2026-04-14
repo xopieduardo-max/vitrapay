@@ -226,6 +226,8 @@
 
   .animate-pulse-glow-primary {
     animation: pulse-glow-primary 3s ease-in-out infinite;
+  }
+
   @keyframes float-particle {
     0%, 100% { transform: translateY(0); opacity: 0.2; }
     50% { transform: translateY(-30px); opacity: 0.6; }
