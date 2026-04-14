@@ -910,22 +910,27 @@ export default function Dashboard() {
           <motion.div {...anim(0.25)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Número de vendas</p>
             <p className="text-2xl font-bold">{salesCount.toLocaleString("pt-BR")}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">{salesCount} vendas aprovadas no período</p>
           </motion.div>
           <motion.div {...anim(0.27)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Ticket médio</p>
             <p className="text-2xl font-bold">{fmt(ticketMedio)}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">Média por venda aprovada</p>
           </motion.div>
           <motion.div {...anim(0.29)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Carrinhos abandonados</p>
             <p className="text-2xl font-bold">{pendingCheckoutsCount.toLocaleString("pt-BR")}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">{fmt(pendingCheckoutsValue)} em checkouts pendentes</p>
           </motion.div>
           <motion.div {...anim(0.31)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Conv. Checkout</p>
             <p className="text-2xl font-bold">{checkoutConversionRate}%</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">{salesCount} vendas de {totalCheckoutInitiations} visitas</p>
           </motion.div>
           <motion.div {...anim(0.33)} className="rounded-xl border border-border bg-card p-5 col-span-2 lg:col-span-1">
             <p className="text-xs text-muted-foreground mb-1">Faturamento bruto</p>
             <p className="text-2xl font-bold">{fmt(completedSales.reduce((a, s) => a + s.amount, 0))}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">Antes das taxas da plataforma</p>
           </motion.div>
         </div>
 
