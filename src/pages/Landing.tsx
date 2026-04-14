@@ -173,12 +173,8 @@ function MembrosBlackCarousel() {
         ))}
       </div>
 
-      {/* Row 2 – scrolls right */}
-      <motion.div
-        className="flex gap-4"
-        animate={{ x: ["-50%", "0%"] }}
-        transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-      >
+      {/* Row 2 – scrolls right (CSS marquee-reverse) */}
+      <div className="flex gap-4 animate-marquee-reverse will-change-transform">
         {row2.map((m, i) => (
           <div
             key={`r2-${i}`}
@@ -197,7 +193,7 @@ function MembrosBlackCarousel() {
             </div>
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -815,16 +811,9 @@ export default function Landing() {
 
               {/* VitraPay Metallic Credit Card */}
               <div className="relative flex items-center justify-center p-4 md:p-10 md:min-w-[400px]">
-                <motion.div
-                  animate={{
-                    y: [0, -14, 0],
-                    rotateY: [0, 4, 0, -4, 0],
-                    rotateX: [0, -3, 0, 3, 0],
-                    rotate: [-3, -2, -3]
-                  }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative w-full max-w-[520px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl"
-                  style={{ perspective: "1000px", transformStyle: "preserve-3d", transform: "rotate(-3deg)" }}>
+                <div
+                  className="relative w-full max-w-[520px] aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl animate-card-float"
+                  style={{ perspective: "1000px", transformStyle: "preserve-3d" }}>
                   
                   <div className="absolute inset-0" style={{
                     background: `linear-gradient(145deg, 
