@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import {
-  Play, CheckCircle2, ChevronDown, ChevronRight, Clock, Loader2, ArrowLeft, BookOpen, Layers, Download, Paperclip,
+  Play, CheckCircle2, ChevronDown, ChevronRight, Clock, Loader2, ArrowLeft, BookOpen, Layers, Download, Paperclip, Award,
 } from "lucide-react";
 
 type Module = {
@@ -157,6 +157,91 @@ export default function MemberArea() {
   const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
   const completedLessons = Object.values(progress).filter(Boolean).length;
   const progressPercent = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+  const courseCompleted = totalLessons > 0 && completedLessons >= totalLessons;
+
+  const downloadCertificate = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 850;
+    const ctx = canvas.getContext("2d")!;
+
+    // Background
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Gold border
+    ctx.strokeStyle = "#f5c518";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(44, 44, canvas.width - 88, canvas.height - 88);
+
+    // VitraPay title
+    ctx.fillStyle = "#f5c518";
+    ctx.font = "bold 28px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("VitraPay", canvas.width / 2, 110);
+
+    // "Certificado de Conclusão"
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 52px Arial";
+    ctx.fillText("Certificado de Conclusão", canvas.width / 2, 200);
+
+    // Decorative line
+    ctx.strokeStyle = "#f5c518";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(200, 230);
+    ctx.lineTo(canvas.width - 200, 230);
+    ctx.stroke();
+
+    // "Certificamos que"
+    ctx.fillStyle = "#aaaaaa";
+    ctx.font = "24px Arial";
+    ctx.fillText("Certificamos que", canvas.width / 2, 300);
+
+    // Student name
+    const studentName = user?.user_metadata?.display_name || user?.email || "Aluno";
+    ctx.fillStyle = "#f5c518";
+    ctx.font = "bold 48px Arial";
+    ctx.fillText(studentName, canvas.width / 2, 380);
+
+    // "concluiu com êxito o curso"
+    ctx.fillStyle = "#aaaaaa";
+    ctx.font = "24px Arial";
+    ctx.fillText("concluiu com êxito o curso", canvas.width / 2, 440);
+
+    // Course name
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 36px Arial";
+    const courseName = product?.title || "Curso";
+    ctx.fillText(courseName, canvas.width / 2, 510);
+
+    // Date
+    ctx.fillStyle = "#888888";
+    ctx.font = "20px Arial";
+    const dateStr = new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" });
+    ctx.fillText(`Concluído em ${dateStr}`, canvas.width / 2, 590);
+
+    // Bottom decorative line
+    ctx.strokeStyle = "#f5c518";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(200, 640);
+    ctx.lineTo(canvas.width - 200, 640);
+    ctx.stroke();
+
+    // Footer
+    ctx.fillStyle = "#666666";
+    ctx.font = "16px Arial";
+    ctx.fillText("vitrapay.com.br", canvas.width / 2, 690);
+
+    // Download
+    const link = document.createElement("a");
+    link.download = `certificado-${(product?.title || "curso").replace(/\s+/g, "-").toLowerCase()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   const getModuleProgress = (mod: Module) => {
     const completed = mod.lessons.filter((l) => progress[l.id]).length;
@@ -233,6 +318,12 @@ export default function MemberArea() {
               </Badge>
             </div>
             <Progress value={progressPercent} className="h-1.5 mt-3 max-w-md" />
+            {courseCompleted && (
+              <Button onClick={downloadCertificate} className="gap-2 mt-4 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold">
+                <Award className="h-4 w-4" />
+                Baixar Certificado
+              </Button>
+            )}
           </div>
         </div>
 
