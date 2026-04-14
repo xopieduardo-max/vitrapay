@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import {
   Loader2, Save, CreditCard, Zap, Clock, Calculator, QrCode, Percent,
+  ChevronRight,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 const PLANS = [
   {
@@ -33,6 +34,12 @@ const PLANS = [
     default: false,
   },
 ];
+
+const anim = (delay: number) => ({
+  initial: { opacity: 0, y: 12 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { delay, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+});
 
 export default function Taxas() {
   const { user } = useAuth();
@@ -116,29 +123,39 @@ export default function Taxas() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
+    <div className="space-y-5 pb-20 md:pb-6">
+      {/* Header */}
+      <motion.div {...anim(0)} className="rounded-2xl border border-border bg-card p-6">
         <h1 className="text-2xl font-bold tracking-tight">Taxas e Plano</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Escolha seu plano de recebimento e simule suas taxas
         </p>
-      </div>
+      </motion.div>
+
+      {/* Breadcrumb */}
+      <motion.div {...anim(0.04)} className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+        <span className="hover:text-foreground transition-colors cursor-pointer">Home</span>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-foreground font-medium">Taxas e Plano</span>
+      </motion.div>
 
       {/* Fixed fees info */}
-      <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <QrCode className="h-4 w-4 text-primary" />
-          Taxas por Método de Pagamento
+      <motion.div {...anim(0.08)} className="rounded-2xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <QrCode className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-bold">Taxas por Método de Pagamento</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="rounded-lg bg-muted/50 p-3 space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">PIX</p>
-            <p className="text-lg font-bold">R$ 2,49 <span className="text-xs font-normal text-muted-foreground">por venda</span></p>
+          <div className="rounded-xl bg-muted/30 border border-border/50 p-4 space-y-2">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">PIX</p>
+            <p className="text-xl font-bold">R$ 2,49 <span className="text-xs font-normal text-muted-foreground">por venda</span></p>
             <p className="text-[0.65rem] text-muted-foreground">Taxa fixa. Liberação D+0 (imediato).</p>
           </div>
-          <div className="rounded-lg bg-muted/50 p-3 space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cartão de Crédito</p>
-            <p className="text-lg font-bold">
+          <div className="rounded-xl bg-muted/30 border border-border/50 p-4 space-y-2">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">Cartão de Crédito</p>
+            <p className="text-xl font-bold">
               {selectedPlan.pct}% + R$ 2,49
             </p>
             <p className="text-[0.65rem] text-muted-foreground">
@@ -149,46 +166,52 @@ export default function Taxas() {
         <p className="text-[0.65rem] text-muted-foreground">
           + R$ 0,99 de taxa de serviço cobrada do comprador em todas as transações.
         </p>
-      </div>
+      </motion.div>
 
       {/* Plan Selection */}
-      <div className="rounded-xl border border-border bg-card p-5 space-y-5">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <CreditCard className="h-4 w-4 text-primary" />
-          Plano de Recebimento (Cartão)
+      <motion.div {...anim(0.12)} className="rounded-2xl border border-border bg-card p-6 space-y-5">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <CreditCard className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-bold">Plano de Recebimento (Cartão)</h2>
         </div>
         <p className="text-xs text-muted-foreground">
-          Escolha quando deseja receber os valores das vendas por cartão de crédito. 
+          Escolha quando deseja receber os valores das vendas por cartão de crédito.
           Vendas via PIX são sempre D+0 (imediato). Todos começam no plano Padrão (D+30).
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {PLANS.map((plan) => (
             <button
               key={plan.id}
               onClick={() => setCardPlan(plan.id)}
-              className={`relative rounded-xl border-2 p-4 text-left transition-all ${
+              className={`relative rounded-2xl border-2 p-5 text-left transition-all duration-300 ${
                 cardPlan === plan.id
-                  ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
-                  : "border-border hover:border-muted-foreground/30"
+                  ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                  : "border-border hover:border-muted-foreground/30 hover:bg-muted/20"
               }`}
             >
               {cardPlan === plan.id && (
-                <span className="absolute top-2 right-2 text-[0.6rem] font-bold uppercase px-1.5 py-0.5 rounded bg-primary text-primary-foreground">
+                <span className="absolute top-3 right-3 text-[0.6rem] font-bold uppercase px-2 py-0.5 rounded-md bg-primary text-primary-foreground shadow-sm">
                   Ativo
                 </span>
               )}
               {plan.default && cardPlan !== plan.id && (
-                <span className="absolute top-2 right-2 text-[0.6rem] font-medium uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                <span className="absolute top-3 right-3 text-[0.6rem] font-medium uppercase px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
                   Padrão
                 </span>
               )}
-              <div className="flex items-center gap-2 mb-2">
-                <plan.icon className={`h-5 w-5 ${plan.iconColor}`} />
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                  cardPlan === plan.id ? "bg-primary/15" : "bg-muted/50"
+                }`}>
+                  <plan.icon className={`h-5 w-5 ${cardPlan === plan.id ? "text-primary" : plan.iconColor}`} />
+                </div>
                 <span className="font-bold text-sm">{plan.label}</span>
               </div>
-              <p className="text-xs text-muted-foreground mb-3">{plan.desc}</p>
-              <div className="space-y-1">
+              <p className="text-xs text-muted-foreground mb-4">{plan.desc}</p>
+              <div className="space-y-2 pt-3 border-t border-border/50">
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Taxa percentual</span>
                   <span className="font-semibold">{plan.pct.toFixed(2).replace(".", ",")}%</span>
@@ -207,18 +230,21 @@ export default function Taxas() {
             size="sm"
             disabled={savingPlan || cardPlan === (profile?.card_plan || "d30")}
             onClick={handleSavePlan}
+            className="rounded-xl"
           >
             {savingPlan ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
             Salvar Plano
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Fee Simulator */}
-      <div className="rounded-xl border border-border bg-card p-5 space-y-5">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <Calculator className="h-4 w-4 text-primary" />
-          Simulador de Taxas
+      <motion.div {...anim(0.16)} className="rounded-2xl border border-border bg-card p-6 space-y-5">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Calculator className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-bold">Simulador de Taxas</h2>
         </div>
         <p className="text-xs text-muted-foreground">
           Simule quanto você vai receber em cada venda de acordo com o método de pagamento e seu plano atual.
@@ -233,7 +259,7 @@ export default function Taxas() {
               step="0.01"
               value={simValue}
               onChange={(e) => setSimValue(e.target.value)}
-              className="bg-muted/50 border-transparent focus:border-border"
+              className="bg-muted/30 border-border/50 focus:border-primary rounded-xl h-11"
               placeholder="100.00"
             />
           </div>
@@ -242,9 +268,9 @@ export default function Taxas() {
             <div className="flex gap-2">
               <button
                 onClick={() => setSimMethod("pix")}
-                className={`flex-1 rounded-lg border-2 py-2 px-3 text-xs font-semibold transition-all ${
+                className={`flex-1 rounded-xl border-2 py-2.5 px-3 text-xs font-semibold transition-all duration-300 ${
                   simMethod === "pix"
-                    ? "border-primary bg-primary/5 text-primary"
+                    ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:border-muted-foreground/30"
                 }`}
               >
@@ -252,9 +278,9 @@ export default function Taxas() {
               </button>
               <button
                 onClick={() => setSimMethod("card")}
-                className={`flex-1 rounded-lg border-2 py-2 px-3 text-xs font-semibold transition-all ${
+                className={`flex-1 rounded-xl border-2 py-2.5 px-3 text-xs font-semibold transition-all duration-300 ${
                   simMethod === "card"
-                    ? "border-primary bg-primary/5 text-primary"
+                    ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:border-muted-foreground/30"
                 }`}
               >
@@ -264,10 +290,8 @@ export default function Taxas() {
           </div>
         </div>
 
-        <Separator />
-
         {valueCents > 0 && (
-          <div className="space-y-3">
+          <div className="rounded-xl bg-muted/20 border border-border/50 p-5 space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Valor do produto</span>
               <span className="font-medium">{fmt(valueCents)}</span>
@@ -280,7 +304,7 @@ export default function Taxas() {
               <span className="font-medium text-destructive">- {fmt(platformFee)}</span>
             </div>
 
-            <Separator />
+            <div className="h-px bg-border" />
 
             <div className="flex justify-between text-base">
               <span className="font-semibold">Você recebe</span>
@@ -289,7 +313,7 @@ export default function Taxas() {
               </span>
             </div>
 
-            <Separator />
+            <div className="h-px bg-border" />
 
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Comprador paga (produto + taxa de serviço)</span>
@@ -297,7 +321,7 @@ export default function Taxas() {
             </div>
 
             {simMethod === "card" && (
-              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+              <div className="rounded-xl bg-muted/30 p-3.5 text-xs text-muted-foreground">
                 <p>
                   <strong>Plano selecionado:</strong> {selectedPlan.label} — liberação em{" "}
                   {selectedPlan.id === "d2" ? "2 dias úteis" : "30 dias corridos"}.
@@ -306,7 +330,7 @@ export default function Taxas() {
             )}
 
             {simMethod === "pix" && (
-              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+              <div className="rounded-xl bg-muted/30 p-3.5 text-xs text-muted-foreground">
                 <p>
                   <strong>PIX:</strong> Taxa fixa de R$ 2,49. Liberação D+0 (imediato).
                 </p>
@@ -314,7 +338,7 @@ export default function Taxas() {
             )}
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
