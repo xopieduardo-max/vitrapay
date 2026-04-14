@@ -666,8 +666,7 @@ export default function Landing() {
             key={f.title}
             {...stagger}
             transition={{ delay: i * 0.08, duration: 0.5 }}
-            whileHover={{ y: -6, scale: 1.01 }}
-            className={`group relative rounded-2xl border border-border/50 bg-card/50 p-7 flex flex-col justify-between hover:border-primary/30 transition-all duration-300 overflow-hidden cursor-default ${
+            className={`group relative rounded-2xl border border-border/50 bg-card/50 p-7 flex flex-col justify-between hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-default ${
             f.size === "large" ? "lg:col-span-2 lg:row-span-1" : ""}`
             }>
             
