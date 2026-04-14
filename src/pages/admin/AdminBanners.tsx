@@ -260,20 +260,6 @@ export default function AdminBanners() {
                 onChange={handleFileSelect}
                 className="text-sm"
               />
-              {previewUrl && (
-                <div className="relative">
-                  <img src={previewUrl} alt="Preview" className="rounded-lg max-h-32 object-cover border border-border" />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1 right-1 h-6 w-6 bg-background/80"
-                    onClick={() => { setSelectedFile(null); setPreviewUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
               <p className="text-[11px] text-muted-foreground">A imagem será comprimida automaticamente para WebP (máx 1920px)</p>
             </div>
           ) : (
@@ -285,6 +271,42 @@ export default function AdminBanners() {
           <Label className="text-xs">Link ao clicar (opcional)</Label>
           <Input value={newLink} onChange={(e) => setNewLink(e.target.value)} placeholder="https://..." />
         </div>
+
+        {/* Live preview */}
+        {(previewUrl || newImageUrl) && (
+          <div className="space-y-2 pt-1">
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Pré-visualização</Label>
+            <div className="relative w-full overflow-hidden rounded-xl border border-border bg-muted" style={{ aspectRatio: "6 / 1", minHeight: 64 }}>
+              <img
+                src={previewUrl || newImageUrl}
+                alt="Banner preview"
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+              {newTitle && (
+                <div className="absolute inset-0 flex items-end p-3 pointer-events-none">
+                  <span className="text-sm font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] truncate">
+                    {newTitle}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-muted-foreground">
+                Proporção 6:1 · Tamanho ideal: 1920 × 320 px
+              </p>
+              {previewUrl && (
+                <button
+                  type="button"
+                  className="text-[11px] text-destructive hover:underline"
+                  onClick={() => { setSelectedFile(null); setPreviewUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                >
+                  Remover imagem
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         <Button size="sm" className="gap-1.5" onClick={() => addBanner.mutate()} disabled={isPending}>
           {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
