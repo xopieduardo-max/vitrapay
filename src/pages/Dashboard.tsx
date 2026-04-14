@@ -409,15 +409,13 @@ export default function Dashboard() {
     const height = 250;
     const padLeft = 50;
     const padRight = 20;
-    const padTop = 20;
+    const padTop = 30;
     const padBottom = 40;
     const chartW = width - padLeft - padRight;
     const chartH = height - padTop - padBottom;
 
-    // Y-axis ticks
     const yTicks = 5;
     const yMax = maxChartValue;
-    const yStep = yMax / yTicks;
 
     const points = chartData.map((d, i) => {
       const x = padLeft + (i / Math.max(chartData.length - 1, 1)) * chartW;
@@ -427,17 +425,36 @@ export default function Dashboard() {
 
     const pathD = points.map((p, i) => {
       if (i === 0) return `M ${p.x} ${p.y}`;
-      // Smooth curve
       const prev = points[i - 1];
       const cpx = (prev.x + p.x) / 2;
       return `C ${cpx} ${prev.y}, ${cpx} ${p.y}, ${p.x} ${p.y}`;
     }).join(" ");
 
-    // Gradient area
     const areaD = pathD + ` L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
 
+    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+      const svg = chartRef.current;
+      if (!svg || points.length === 0) return;
+      const rect = svg.getBoundingClientRect();
+      const mouseX = ((e.clientX - rect.left) / rect.width) * width;
+      let closest = 0;
+      let minDist = Infinity;
+      points.forEach((p, i) => {
+        const d = Math.abs(p.x - mouseX);
+        if (d < minDist) { minDist = d; closest = i; }
+      });
+      setHoveredPoint(closest);
+    };
+
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+      <svg
+        ref={chartRef}
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full h-full"
+        preserveAspectRatio="none"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHoveredPoint(null)}
+      >
         <defs>
           <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
@@ -468,13 +485,44 @@ export default function Dashboard() {
         {/* Points */}
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r="3.5" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="2" />
+            <circle
+              cx={p.x} cy={p.y}
+              r={hoveredPoint === i ? 6 : 3.5}
+              fill={hoveredPoint === i ? "hsl(142 71% 45%)" : "hsl(var(--primary))"}
+              stroke="hsl(var(--background))"
+              strokeWidth="2"
+              style={{ transition: "r 0.15s, fill 0.15s" }}
+            />
           </g>
         ))}
 
+        {/* Hover tooltip */}
+        {hoveredPoint !== null && points[hoveredPoint] && (() => {
+          const p = points[hoveredPoint];
+          const tooltipW = 120;
+          const tooltipH = 28;
+          let tx = p.x - tooltipW / 2;
+          if (tx < padLeft) tx = padLeft;
+          if (tx + tooltipW > width - padRight) tx = width - padRight - tooltipW;
+          const ty = p.y - tooltipH - 12;
+          return (
+            <g>
+              {/* Vertical line */}
+              <line x1={p.x} y1={padTop} x2={p.x} y2={padTop + chartH} stroke="hsl(var(--muted-foreground))" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.5" />
+              {/* Tooltip bg */}
+              <rect x={tx} y={ty} width={tooltipW} height={tooltipH} rx={6} fill="hsl(142 71% 45%)" />
+              {/* Arrow */}
+              <polygon points={`${p.x - 5},${ty + tooltipH} ${p.x + 5},${ty + tooltipH} ${p.x},${ty + tooltipH + 6}`} fill="hsl(142 71% 45%)" />
+              {/* Text */}
+              <text x={tx + tooltipW / 2} y={ty + tooltipH / 2 + 1} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="11" fontWeight="bold">
+                {`R$ ${(p.value / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+              </text>
+            </g>
+          );
+        })()}
+
         {/* X labels */}
         {points.map((p, i) => {
-          // Show every label or skip some if too many
           const skip = chartData.length > 15 ? Math.ceil(chartData.length / 12) : 1;
           if (i % skip !== 0 && i !== chartData.length - 1) return null;
           return (
@@ -486,9 +534,6 @@ export default function Dashboard() {
       </svg>
     );
   };
-
-  // Find the hovered/max point for tooltip
-  const maxPoint = chartData.reduce((max, d) => d.value > max.value ? d : max, chartData[0] || { label: "", value: 0 });
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
