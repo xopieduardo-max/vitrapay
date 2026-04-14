@@ -894,7 +894,9 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground italic">{getCurrentLevelName(milestoneIdx)}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{getNextLevelName(milestoneIdx)}</span>
+                      <span className={`text-sm font-bold ${milestoneIdx < MILESTONES.length ? MILESTONE_COLORS[milestoneIdx] : "text-foreground"}`}>
+                        → {getNextLevelName(milestoneIdx)}
+                      </span>
                       {/* Info button to see all levels */}
                       <Dialog>
                         <DialogTrigger asChild>
