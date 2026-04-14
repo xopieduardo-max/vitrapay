@@ -22,6 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const anim = (delay: number) => ({
+  initial: { opacity: 0, y: 12 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { delay, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+});
+
 const DATE_FILTERS = [
   { label: "Hoje", value: "today" },
   { label: "Ontem", value: "yesterday" },
@@ -147,7 +153,6 @@ export default function Sales() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => { setPage(1); }, [dateFilter, productFilter, searchTerm]);
 
-  // Chart data: group by day for last 7 days
   const chartData = useMemo(() => {
     const days = 7;
     const now = new Date();
@@ -237,24 +242,31 @@ export default function Sales() {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-5 pb-20 md:pb-6">
+      {/* Premium Header */}
+      <motion.div {...anim(0)} className="rounded-2xl border border-border bg-card p-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Minhas Vendas</h1>
           <p className="text-sm text-muted-foreground mt-1">Acompanhe suas vendas e métricas de conversão</p>
         </div>
         <ExportButton data={exportData} columns={exportColumns} filename="vendas-vitrapay" />
-      </div>
+      </motion.div>
+
+      {/* Breadcrumb */}
+      <motion.div {...anim(0.04)} className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+        <span className="hover:text-foreground transition-colors cursor-pointer">Home</span>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-foreground font-medium">Minhas Vendas</span>
+      </motion.div>
 
       {/* Period Filters + Product Filter */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <motion.div {...anim(0.06)} className="flex items-center gap-3 flex-wrap">
         <Calendar className="h-4 w-4 text-muted-foreground" />
         {DATE_FILTERS.map((f) => (
           <button
             key={f.value}
             onClick={() => setDateFilter(f.value)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
               dateFilter === f.value
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -264,7 +276,7 @@ export default function Sales() {
           </button>
         ))}
         <Select value={productFilter} onValueChange={setProductFilter}>
-          <SelectTrigger className="w-[180px] h-8 bg-card border-border text-xs">
+          <SelectTrigger className="w-[180px] h-8 bg-muted/30 border-border/50 text-xs rounded-xl">
             <Package className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
             <SelectValue placeholder="Todos os produtos" />
           </SelectTrigger>
@@ -275,27 +287,25 @@ export default function Sales() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </motion.div>
 
       {/* Stat Cards Row */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="rounded-xl border border-border bg-card p-5"
+            {...anim(0.08 + i * 0.04)}
+            className="rounded-2xl border border-border bg-card p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
           >
             <div className="flex items-start justify-between">
               <p className="text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
                 {stat.label}
               </p>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
                 <stat.icon className="h-4 w-4 text-primary" strokeWidth={1.5} />
               </div>
             </div>
-            <p className="text-2xl font-bold mt-2 text-gradient-primary">{stat.value}</p>
+            <p className="text-2xl font-bold mt-2 text-primary">{stat.value}</p>
             <p className={`text-xs mt-1 ${stat.subColor}`}>{stat.sub}</p>
           </motion.div>
         ))}
@@ -303,8 +313,14 @@ export default function Sales() {
 
       {/* Chart + Side Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-end justify-between h-[200px] gap-2">
+        <motion.div {...anim(0.2)} className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-primary" strokeWidth={1.5} />
+            </div>
+            <p className="text-sm font-semibold">Volume de Vendas (7 dias)</p>
+          </div>
+          <div className="flex items-end justify-between h-[180px] gap-2">
             <div className="flex flex-col justify-between h-full text-xs text-muted-foreground pr-2 py-1">
               <span>{maxChart}</span>
               <span>{Math.round(maxChart / 2)}</span>
@@ -317,35 +333,41 @@ export default function Sales() {
                     initial={{ height: 0 }}
                     animate={{ height: `${(d.value / maxChart) * 100}%` }}
                     transition={{ delay: i * 0.05, duration: 0.5, ease: "easeOut" }}
-                    className="w-full max-w-[40px] rounded-t-md bg-primary min-h-[2px]"
+                    className="w-full max-w-[40px] rounded-t-lg bg-primary min-h-[2px]"
                   />
                   <span className="text-[0.6rem] text-muted-foreground">{d.label}</span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
         <div className="flex flex-col gap-4">
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="rounded-xl border border-border bg-card p-5 flex-1"
+            {...anim(0.24)}
+            className="rounded-2xl border border-border bg-card p-5 flex-1 hover:border-primary/30 transition-colors"
           >
-            <p className="text-sm font-semibold text-primary">Vendas aprovadas</p>
-            <p className="text-2xl font-bold mt-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} />
+              </div>
+              <p className="text-sm font-semibold text-primary">Aprovadas</p>
+            </div>
+            <p className="text-2xl font-bold">
               R$ {(totalRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </p>
             <p className="text-xs text-muted-foreground mt-1">{completed.length} transações</p>
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-xl border border-border bg-card p-5 flex-1"
+            {...anim(0.28)}
+            className="rounded-2xl border border-border bg-card p-5 flex-1 hover:border-amber-500/30 transition-colors"
           >
-            <p className="text-sm font-semibold text-amber-500">Aguardando pagamento</p>
-            <p className="text-2xl font-bold mt-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <CreditCard className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.5} />
+              </div>
+              <p className="text-sm font-semibold text-amber-500">Pendentes</p>
+            </div>
+            <p className="text-2xl font-bold">
               R$ {(pendingRevenue / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </p>
             <p className="text-xs text-muted-foreground mt-1">{pending.length} transações</p>
@@ -354,20 +376,20 @@ export default function Sales() {
       </div>
 
       {/* Search + Items per page */}
-      <div className="flex flex-wrap items-center gap-3">
+      <motion.div {...anim(0.3)} className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por produto, ID ou comprador..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-9 bg-card border-border"
+            className="pl-9 h-9 bg-muted/30 border-border/50 rounded-xl"
           />
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground ml-auto">
           <span>Itens por página:</span>
           <Select value={perPage.toString()} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
-            <SelectTrigger className="w-[70px] h-8 text-xs">
+            <SelectTrigger className="w-[70px] h-8 text-xs rounded-xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -377,16 +399,19 @@ export default function Sales() {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </motion.div>
 
       {/* Sales Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
+      <motion.div {...anim(0.32)} className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <ShoppingCart className="h-4 w-4 text-primary" strokeWidth={1.5} />
+          </div>
           <h3 className="text-sm font-semibold">Vendas ({filteredSales.length})</h3>
         </div>
 
         {/* Table Header */}
-        <div className="hidden md:grid grid-cols-[80px_1fr_1fr_100px_100px_100px_80px_80px] gap-2 px-4 py-2.5 border-b border-border text-xs font-medium text-muted-foreground">
+        <div className="hidden md:grid grid-cols-[80px_1fr_1fr_100px_100px_100px_80px_80px] gap-2 px-5 py-2.5 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-widest">
           <span>Id</span>
           <span>Comprador</span>
           <span>Produto</span>
@@ -418,7 +443,7 @@ export default function Sales() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.02 }}
-                  className="flex flex-col md:grid md:grid-cols-[80px_1fr_1fr_100px_100px_100px_80px_80px] gap-1 md:gap-2 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer items-start md:items-center text-sm"
+                  className="flex flex-col md:grid md:grid-cols-[80px_1fr_1fr_100px_100px_100px_80px_80px] gap-1 md:gap-2 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer items-start md:items-center text-sm"
                   onClick={() => setSelectedSale(sale)}
                 >
                   <span className="text-xs font-mono text-muted-foreground truncate">
@@ -432,7 +457,7 @@ export default function Sales() {
                   <span className="text-xs capitalize text-muted-foreground">
                     {sale.payment_provider || "—"}
                   </span>
-                  <span className="text-right font-semibold">
+                  <span className="text-right font-semibold text-primary">
                     R$ {(sale.amount / 100).toFixed(2)}
                   </span>
                   <span className="text-center">
@@ -448,22 +473,22 @@ export default function Sales() {
             })}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-center gap-4 text-sm">
+      <motion.div {...anim(0.34)} className="flex items-center justify-center gap-4 text-sm">
         <span className="text-muted-foreground text-xs">
           Página {page} de {totalPages}
         </span>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+          <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+          <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Sale Detail Dialog */}
       <Dialog open={!!selectedSale} onOpenChange={(open) => !open && setSelectedSale(null)}>
@@ -473,9 +498,9 @@ export default function Sales() {
           </DialogHeader>
           {selectedSale && (
             <div className="space-y-4 pt-2">
-              <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
+              <div className="rounded-2xl border border-border bg-muted/30 p-4 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                     <FileText className="h-5 w-5 text-primary" />
                   </div>
                   <div>
@@ -487,7 +512,7 @@ export default function Sales() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2 border-b border-border">
                   <span className="text-xs text-muted-foreground flex items-center gap-2"><DollarSign className="h-3.5 w-3.5" /> Valor</span>
-                  <span className="text-sm font-bold">R$ {(selectedSale.amount / 100).toFixed(2)}</span>
+                  <span className="text-sm font-bold text-primary">R$ {(selectedSale.amount / 100).toFixed(2)}</span>
                 </div>
                 {selectedSale.platform_fee > 0 && (
                   <div className="flex items-center justify-between py-2 border-b border-border">
