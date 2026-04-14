@@ -15,12 +15,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import {
   Camera, Loader2, Save, KeyRound, User, Bell, BellOff, Landmark,
-  ShieldCheck, MapPin, Phone,
+  ShieldCheck, MapPin, Phone, ChevronRight,
 } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Badge } from "@/components/ui/badge";
+
+const anim = (delay: number) => ({
+  initial: { opacity: 0, y: 12 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { delay, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+});
 
 export default function Settings() {
   const { user } = useAuth();
@@ -69,7 +76,6 @@ export default function Settings() {
         setCpf((data as any).cpf || "");
         setPhone((data as any).phone || "");
         setBirthDate((data as any).birth_date || "");
-        
         setAddressCep((data as any).address_cep || "");
         setAddressStreet((data as any).address_street || "");
         setAddressNumber((data as any).address_number || "");
@@ -210,6 +216,8 @@ export default function Settings() {
     "PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
   ];
 
+  const inputCls = "bg-muted/30 border-border/50 focus:border-primary rounded-xl h-11";
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -219,10 +227,11 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center justify-between">
+    <div className="space-y-5 pb-20 md:pb-6">
+      {/* Header */}
+      <motion.div {...anim(0)} className="rounded-2xl border border-border bg-card p-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Perfil</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
           <p className="text-sm text-muted-foreground mt-1">Gerencie seus dados e configurações</p>
         </div>
         {isVerified ? (
@@ -234,13 +243,22 @@ export default function Settings() {
             Pendente de verificação
           </Badge>
         )}
-      </div>
+      </motion.div>
+
+      {/* Breadcrumb */}
+      <motion.div {...anim(0.04)} className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+        <span className="hover:text-foreground transition-colors cursor-pointer">Home</span>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-foreground font-medium">Configurações</span>
+      </motion.div>
 
       {/* Profile Section */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-6">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <User className="h-4 w-4 text-primary" />
-          Dados do Perfil
+      <motion.div {...anim(0.08)} className="rounded-2xl border border-border bg-card p-6 space-y-6">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <User className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-bold">Dados do Perfil</h2>
         </div>
 
         <div className="flex items-center gap-5">
@@ -277,26 +295,28 @@ export default function Settings() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Nome de exibição</Label>
-            <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Seu nome" className="bg-muted/50 border-transparent focus:border-border" />
+            <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Seu nome" className={inputCls} />
           </div>
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Bio</Label>
-            <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Conte um pouco sobre você..." className="bg-muted/50 border-transparent focus:border-border resize-none" rows={3} />
+            <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Conte um pouco sobre você..." className="bg-muted/30 border-border/50 focus:border-primary rounded-xl resize-none" rows={3} />
           </div>
           <div className="flex justify-end">
-            <Button onClick={handleSaveProfile} disabled={saving} size="sm">
+            <Button onClick={handleSaveProfile} disabled={saving} size="sm" className="rounded-xl">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
               Salvar Perfil
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Verification Section */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-6">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          Verificação de Identidade
+      <motion.div {...anim(0.12)} className="rounded-2xl border border-border bg-card p-6 space-y-6">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-bold">Verificação de Identidade</h2>
           {!isVerified && (
             <span className="text-xs text-amber-500 font-normal ml-auto">Obrigatório para vender</span>
           )}
@@ -318,12 +338,12 @@ export default function Settings() {
                   setCpf(formatted);
                 }}
                 placeholder="000.000.000-00"
-                className="bg-muted/50 border-transparent focus:border-border"
+                className={inputCls}
               />
             </div>
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Data de nascimento</Label>
-              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-muted/50 border-transparent focus:border-border" />
+              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className={inputCls} />
             </div>
           </div>
 
@@ -344,15 +364,17 @@ export default function Settings() {
                 setPhone(formatted);
               }}
               placeholder="(11) 99999-9999"
-              className="bg-muted/50 border-transparent focus:border-border"
+              className={inputCls}
             />
           </div>
 
           {/* Address */}
           <div className="pt-2">
-            <div className="flex items-center gap-2 text-sm font-semibold mb-4">
-              <MapPin className="h-4 w-4 text-primary" />
-              Endereço
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-sm font-bold">Endereço</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -379,13 +401,13 @@ export default function Settings() {
                     }
                   }}
                   placeholder="00000-000"
-                  className="bg-muted/50 border-transparent focus:border-border"
+                  className={inputCls}
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Estado <span className="text-destructive">*</span></Label>
                 <Select value={addressState} onValueChange={setAddressState}>
-                  <SelectTrigger className="bg-muted/50 border-transparent focus:border-border">
+                  <SelectTrigger className="bg-muted/30 border-border/50 focus:border-primary rounded-xl h-11">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
@@ -400,36 +422,38 @@ export default function Settings() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
               <div className="space-y-2 sm:col-span-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Rua <span className="text-destructive">*</span></Label>
-                <Input value={addressStreet} onChange={(e) => setAddressStreet(e.target.value)} placeholder="Rua, Avenida, Alameda" className="bg-muted/50 border-transparent focus:border-border" />
+                <Input value={addressStreet} onChange={(e) => setAddressStreet(e.target.value)} placeholder="Rua, Avenida, Alameda" className={inputCls} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Número <span className="text-destructive">*</span></Label>
-                <Input value={addressNumber} onChange={(e) => setAddressNumber(e.target.value)} placeholder="Nº" className="bg-muted/50 border-transparent focus:border-border" />
+                <Input value={addressNumber} onChange={(e) => setAddressNumber(e.target.value)} placeholder="Nº" className={inputCls} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Complemento</Label>
-                <Input value={addressComplement} onChange={(e) => setAddressComplement(e.target.value)} placeholder="Ap, Bloco" className="bg-muted/50 border-transparent focus:border-border" />
+                <Input value={addressComplement} onChange={(e) => setAddressComplement(e.target.value)} placeholder="Ap, Bloco" className={inputCls} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Bairro</Label>
-                <Input value={addressNeighborhood} onChange={(e) => setAddressNeighborhood(e.target.value)} placeholder="Bairro" className="bg-muted/50 border-transparent focus:border-border" />
+                <Input value={addressNeighborhood} onChange={(e) => setAddressNeighborhood(e.target.value)} placeholder="Bairro" className={inputCls} />
               </div>
             </div>
 
             <div className="space-y-2 mt-4">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Cidade <span className="text-destructive">*</span></Label>
-              <Input value={addressCity} onChange={(e) => setAddressCity(e.target.value)} placeholder="Cidade" className="bg-muted/50 border-transparent focus:border-border" />
+              <Input value={addressCity} onChange={(e) => setAddressCity(e.target.value)} placeholder="Cidade" className={inputCls} />
             </div>
           </div>
 
           {/* Pix Key inside verification */}
           <div className="pt-2">
-            <div className="flex items-center gap-2 text-sm font-semibold mb-4">
-              <Landmark className="h-4 w-4 text-primary" />
-              Chave Pix para Saques
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Landmark className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-sm font-bold">Chave Pix para Saques</span>
             </div>
             <p className="text-xs text-muted-foreground mb-4">
               A chave Pix deve estar vinculada ao seu CPF. Ela será usada para receber seus saques.
@@ -438,7 +462,7 @@ export default function Settings() {
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Tipo de chave</Label>
                 <Select value={pixKeyType} onValueChange={setPixKeyType}>
-                  <SelectTrigger className="bg-muted/50 border-transparent focus:border-border">
+                  <SelectTrigger className="bg-muted/30 border-border/50 focus:border-primary rounded-xl h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -451,45 +475,47 @@ export default function Settings() {
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Chave Pix</Label>
-                <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Sua chave Pix" className="bg-muted/50 border-transparent focus:border-border" />
+                <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Sua chave Pix" className={inputCls} />
               </div>
             </div>
           </div>
 
           <div className="flex justify-end pt-2">
-            <Button onClick={handleSaveVerification} disabled={savingVerification} size="sm">
+            <Button onClick={handleSaveVerification} disabled={savingVerification} size="sm" className="rounded-xl">
               {savingVerification ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
               {isVerified ? "Atualizar Dados" : "Verificar e Salvar"}
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <NotificationsSection />
 
       {/* Password Section */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-6">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <KeyRound className="h-4 w-4 text-primary" />
-          Alterar Senha
+      <motion.div {...anim(0.2)} className="rounded-2xl border border-border bg-card p-6 space-y-6">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <KeyRound className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-bold">Alterar Senha</h2>
         </div>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Nova senha</Label>
-            <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="bg-muted/50 border-transparent focus:border-border" />
+            <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="bg-muted/30 border-border/50 focus:border-primary rounded-xl h-11" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Confirmar nova senha</Label>
-            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita a nova senha" className="bg-muted/50 border-transparent focus:border-border" />
+            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita a nova senha" className="bg-muted/30 border-border/50 focus:border-primary rounded-xl h-11" />
           </div>
           <div className="flex justify-end">
-            <Button onClick={handleChangePassword} disabled={changingPassword || !newPassword} size="sm" variant="outline">
+            <Button onClick={handleChangePassword} disabled={changingPassword || !newPassword} size="sm" variant="outline" className="rounded-xl">
               {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <KeyRound className="h-4 w-4 mr-2" />}
               Alterar Senha
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -497,25 +523,35 @@ export default function Settings() {
 function NotificationsSection() {
   const { isSubscribed, isSupported, permission, subscribe, unsubscribe } = usePushNotifications();
 
+  const animProps = {
+    initial: { opacity: 0, y: 12 } as const,
+    animate: { opacity: 1, y: 0 } as const,
+    transition: { delay: 0.16, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+  };
+
   if (!isSupported) {
     return (
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <Bell className="h-4 w-4 text-primary" />
-          Notificações Push
+      <motion.div {...animProps} className="rounded-2xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Bell className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-bold">Notificações Push</h2>
         </div>
         <p className="text-sm text-muted-foreground">
           Notificações push não são suportadas neste navegador. Para receber notificações, instale o app na tela inicial do celular.
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <Bell className="h-4 w-4 text-primary" />
-        Notificações Push
+    <motion.div {...animProps} className="rounded-2xl border border-border bg-card p-6 space-y-4">
+      <div className="flex items-center gap-2.5">
+        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Bell className="h-4 w-4 text-primary" />
+        </div>
+        <h2 className="text-base font-bold">Notificações Push</h2>
       </div>
       <div className="flex items-center justify-between">
         <div>
@@ -527,12 +563,12 @@ function NotificationsSection() {
           </p>
         </div>
         {isSubscribed ? (
-          <Button variant="outline" size="sm" onClick={unsubscribe}>
+          <Button variant="outline" size="sm" onClick={unsubscribe} className="rounded-xl">
             <BellOff className="h-4 w-4 mr-2" />
             Desativar
           </Button>
         ) : (
-          <Button size="sm" onClick={subscribe}>
+          <Button size="sm" onClick={subscribe} className="rounded-xl">
             <Bell className="h-4 w-4 mr-2" />
             Ativar
           </Button>
@@ -543,6 +579,6 @@ function NotificationsSection() {
           Notificações bloqueadas pelo navegador. Vá nas configurações do navegador para permitir.
         </p>
       )}
-    </div>
+    </motion.div>
   );
 }
