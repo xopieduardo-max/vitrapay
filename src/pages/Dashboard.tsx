@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   Eye,
   EyeOff,
@@ -20,13 +20,14 @@ import {
   Target,
   CalendarDays,
   Info,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
@@ -49,12 +50,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // ─── Constants & Helpers ────────────────────────────────────────────────────
 
 const MILESTONES = [1000000, 10000000, 25000000, 50000000, 100000000];
 const MILESTONE_LABELS = ["10k", "100k", "250k", "500k", "1M"];
-const MILESTONE_NAMES = ["Iniciante", "Bronze", "Prata", "Ouro", "Diamante", "Lenda"];
+const MILESTONE_NAMES = ["Jalapeño", "Habanero", "Carolina Reaper", "Trinidad Scorpion", "Pepper X"];
+const MILESTONE_EMOJIS = ["🌶️", "🌶️", "🔥", "🔥", "💎"];
 
 function getCurrentGoal(revenue: number) {
   for (const m of MILESTONES) {
@@ -68,6 +77,16 @@ function getMilestoneIndex(revenue: number) {
     if (revenue < MILESTONES[i]) return i;
   }
   return MILESTONES.length;
+}
+
+function getCurrentLevelName(idx: number) {
+  if (idx === 0) return "Primeira venda";
+  return `${MILESTONE_LABELS[idx - 1]} - ${MILESTONE_NAMES[idx - 1]}`;
+}
+
+function getNextLevelName(idx: number) {
+  if (idx >= MILESTONES.length) return "Nível máximo";
+  return `${MILESTONE_LABELS[idx]} - ${MILESTONE_NAMES[idx]}`;
 }
 
 const paymentMethods = [
@@ -309,6 +328,8 @@ export default function Dashboard() {
   const [chartMode, setChartMode] = useState<"day" | "month" | "year">("month");
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
   const [chartProduct, setChartProduct] = useState("all");
+  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
+  const chartRef = useRef<SVGSVGElement>(null);
 
   const chartData = useMemo(() => {
     const salesForChart = chartProduct === "all"
@@ -388,15 +409,13 @@ export default function Dashboard() {
     const height = 250;
     const padLeft = 50;
     const padRight = 20;
-    const padTop = 20;
+    const padTop = 30;
     const padBottom = 40;
     const chartW = width - padLeft - padRight;
     const chartH = height - padTop - padBottom;
 
-    // Y-axis ticks
     const yTicks = 5;
     const yMax = maxChartValue;
-    const yStep = yMax / yTicks;
 
     const points = chartData.map((d, i) => {
       const x = padLeft + (i / Math.max(chartData.length - 1, 1)) * chartW;
@@ -406,17 +425,36 @@ export default function Dashboard() {
 
     const pathD = points.map((p, i) => {
       if (i === 0) return `M ${p.x} ${p.y}`;
-      // Smooth curve
       const prev = points[i - 1];
       const cpx = (prev.x + p.x) / 2;
       return `C ${cpx} ${prev.y}, ${cpx} ${p.y}, ${p.x} ${p.y}`;
     }).join(" ");
 
-    // Gradient area
     const areaD = pathD + ` L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
 
+    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+      const svg = chartRef.current;
+      if (!svg || points.length === 0) return;
+      const rect = svg.getBoundingClientRect();
+      const mouseX = ((e.clientX - rect.left) / rect.width) * width;
+      let closest = 0;
+      let minDist = Infinity;
+      points.forEach((p, i) => {
+        const d = Math.abs(p.x - mouseX);
+        if (d < minDist) { minDist = d; closest = i; }
+      });
+      setHoveredPoint(closest);
+    };
+
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+      <svg
+        ref={chartRef}
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full h-full"
+        preserveAspectRatio="none"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHoveredPoint(null)}
+      >
         <defs>
           <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
@@ -447,13 +485,44 @@ export default function Dashboard() {
         {/* Points */}
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r="3.5" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="2" />
+            <circle
+              cx={p.x} cy={p.y}
+              r={hoveredPoint === i ? 6 : 3.5}
+              fill={hoveredPoint === i ? "hsl(142 71% 45%)" : "hsl(var(--primary))"}
+              stroke="hsl(var(--background))"
+              strokeWidth="2"
+              style={{ transition: "r 0.15s, fill 0.15s" }}
+            />
           </g>
         ))}
 
+        {/* Hover tooltip */}
+        {hoveredPoint !== null && points[hoveredPoint] && (() => {
+          const p = points[hoveredPoint];
+          const tooltipW = 120;
+          const tooltipH = 28;
+          let tx = p.x - tooltipW / 2;
+          if (tx < padLeft) tx = padLeft;
+          if (tx + tooltipW > width - padRight) tx = width - padRight - tooltipW;
+          const ty = p.y - tooltipH - 12;
+          return (
+            <g>
+              {/* Vertical line */}
+              <line x1={p.x} y1={padTop} x2={p.x} y2={padTop + chartH} stroke="hsl(var(--muted-foreground))" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.5" />
+              {/* Tooltip bg */}
+              <rect x={tx} y={ty} width={tooltipW} height={tooltipH} rx={6} fill="hsl(142 71% 45%)" />
+              {/* Arrow */}
+              <polygon points={`${p.x - 5},${ty + tooltipH} ${p.x + 5},${ty + tooltipH} ${p.x},${ty + tooltipH + 6}`} fill="hsl(142 71% 45%)" />
+              {/* Text */}
+              <text x={tx + tooltipW / 2} y={ty + tooltipH / 2 + 1} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="11" fontWeight="bold">
+                {`R$ ${(p.value / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+              </text>
+            </g>
+          );
+        })()}
+
         {/* X labels */}
         {points.map((p, i) => {
-          // Show every label or skip some if too many
           const skip = chartData.length > 15 ? Math.ceil(chartData.length / 12) : 1;
           if (i % skip !== 0 && i !== chartData.length - 1) return null;
           return (
@@ -465,9 +534,6 @@ export default function Dashboard() {
       </svg>
     );
   };
-
-  // Find the hovered/max point for tooltip
-  const maxPoint = chartData.reduce((max, d) => d.value > max.value ? d : max, chartData[0] || { label: "", value: 0 });
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
@@ -623,43 +689,87 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* Milestone Tracker */}
+          {/* Milestone Tracker - Pepper Style */}
           <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-5">
-            <div className="relative">
-              {/* Progress bar */}
-              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${Math.min((milestoneIdx / MILESTONES.length) * 100 + (milestoneIdx < MILESTONES.length ? ((totalRevenueAll / MILESTONES[milestoneIdx]) * (100 / MILESTONES.length)) : 0), 100)}%`,
-                    background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.6))`,
-                  }}
-                />
-              </div>
+            {(() => {
+              const currentGoal = getCurrentGoal(totalRevenueAll);
+              const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
+              const progressInLevel = milestoneIdx < MILESTONES.length
+                ? ((totalRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
+                : 100;
+              const remaining = Math.max(0, currentGoal - totalRevenueAll);
 
-              {/* Milestone markers */}
-              <div className="flex justify-between mt-3">
-                {MILESTONE_LABELS.map((label, i) => {
-                  const reached = milestoneIdx > i;
-                  const current = milestoneIdx === i;
-                  return (
-                    <div key={label} className="flex flex-col items-center gap-1.5">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.55rem] font-bold transition-all ${
-                        reached ? "bg-primary text-primary-foreground" : current ? "bg-primary/30 text-primary ring-2 ring-primary/50" : "bg-muted text-muted-foreground"
-                      }`}>
-                        {reached ? "✓" : <Flame className="h-3 w-3" />}
-                      </div>
-                      <span className={`text-[0.6rem] font-medium ${reached ? "text-primary" : current ? "text-foreground" : "text-muted-foreground"}`}>
-                        {label}
-                      </span>
-                      <span className={`text-[0.5rem] ${reached ? "text-primary/70" : "text-muted-foreground/60"}`}>
-                        {MILESTONE_NAMES[i]}
-                      </span>
+              return (
+                <div className="space-y-3">
+                  {/* Header with current level and next level */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground italic">{getCurrentLevelName(milestoneIdx)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{getNextLevelName(milestoneIdx)}</span>
+                      {/* Info button to see all levels */}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors">
+                            <Info className="h-3 w-3 text-muted-foreground" />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Níveis de vendas</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-3 py-2">
+                            {MILESTONES.map((m, i) => {
+                              const reached = milestoneIdx > i;
+                              const current = milestoneIdx === i;
+                              return (
+                                <div key={i} className={`flex items-center gap-3 p-3 rounded-lg ${current ? "bg-primary/10 border border-primary/30" : reached ? "bg-muted/50" : "opacity-60"}`}>
+                                  <span className="text-xl">{MILESTONE_EMOJIS[i]}</span>
+                                  <div className="flex-1">
+                                    <p className={`text-sm font-semibold ${reached ? "text-primary" : current ? "text-foreground" : ""}`}>
+                                      {MILESTONE_LABELS[i]} - {MILESTONE_NAMES[i]}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      R$ {(m / 100).toLocaleString("pt-BR")} em faturamento
+                                    </p>
+                                  </div>
+                                  {reached && <span className="text-primary font-bold text-sm">✓</span>}
+                                  {current && <span className="text-xs text-primary font-medium">Atual</span>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+                      style={{
+                        width: `${Math.min(progressInLevel, 100)}%`,
+                        background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
+                      }}
+                    />
+                    {/* Pepper emoji at end of bar */}
+                    {milestoneIdx < MILESTONES.length && (
+                      <span
+                        className="absolute top-1/2 -translate-y-1/2 text-lg transition-all duration-700"
+                        style={{ left: `calc(${Math.min(progressInLevel, 97)}% - 4px)` }}
+                      >
+                        🌶️
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Remaining text */}
+                  <p className="text-center text-sm text-muted-foreground">
+                    Faltam <strong className="text-foreground">R$ {(remaining / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong> em saques para você atingir o próximo nível
+                  </p>
+                </div>
+              );
+            })()}
           </motion.div>
         </div>
 
@@ -800,22 +910,27 @@ export default function Dashboard() {
           <motion.div {...anim(0.25)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Número de vendas</p>
             <p className="text-2xl font-bold">{salesCount.toLocaleString("pt-BR")}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">{salesCount} vendas aprovadas no período</p>
           </motion.div>
           <motion.div {...anim(0.27)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Ticket médio</p>
             <p className="text-2xl font-bold">{fmt(ticketMedio)}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">Média por venda aprovada</p>
           </motion.div>
           <motion.div {...anim(0.29)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Carrinhos abandonados</p>
             <p className="text-2xl font-bold">{pendingCheckoutsCount.toLocaleString("pt-BR")}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">{fmt(pendingCheckoutsValue)} em checkouts pendentes</p>
           </motion.div>
           <motion.div {...anim(0.31)} className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground mb-1">Conv. Checkout</p>
             <p className="text-2xl font-bold">{checkoutConversionRate}%</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">{salesCount} vendas de {totalCheckoutInitiations} visitas</p>
           </motion.div>
           <motion.div {...anim(0.33)} className="rounded-xl border border-border bg-card p-5 col-span-2 lg:col-span-1">
             <p className="text-xs text-muted-foreground mb-1">Faturamento bruto</p>
             <p className="text-2xl font-bold">{fmt(completedSales.reduce((a, s) => a + s.amount, 0))}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">Antes das taxas da plataforma</p>
           </motion.div>
         </div>
 
