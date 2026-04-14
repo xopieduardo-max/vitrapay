@@ -740,7 +740,67 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Quick links mobile */}
+        {/* Milestone Tracker Mobile */}
+        <motion.div {...anim(0.24)} className="rounded-2xl border border-primary/30 bg-card p-4 milestone-glow">
+          {(() => {
+            const currentGoal = getCurrentGoal(totalRevenueAll);
+            const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
+            const progressInLevel = milestoneIdx < MILESTONES.length
+              ? ((totalRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
+              : 100;
+
+            return (
+              <div className="space-y-3">
+                {/* Level labels row */}
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{getCurrentLevelName(milestoneIdx)}</span>
+                  <span className={`font-bold ${milestoneIdx < MILESTONES.length ? MILESTONE_COLORS[milestoneIdx] : "text-foreground"}`}>
+                    → {getNextLevelName(milestoneIdx)}
+                  </span>
+                </div>
+
+                {/* Progress bar with rocket outside */}
+                <div className="relative">
+                  <div className="h-3 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${Math.min(progressInLevel, 100)}%`,
+                        background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
+                      }}
+                    />
+                  </div>
+                  {/* Rocket emoji positioned outside/above the bar */}
+                  <span
+                    className="absolute -top-3 text-lg transition-all duration-700"
+                    style={{ left: `calc(${Math.min(progressInLevel, 95)}%)` }}
+                  >
+                    🚀
+                  </span>
+                </div>
+
+                {/* Milestone dots */}
+                <div className="flex items-center justify-between px-1 mt-1">
+                  {MILESTONES.map((_, i) => {
+                    const reached = milestoneIdx > i;
+                    const current = milestoneIdx === i;
+                    return (
+                      <div key={i} className="flex flex-col items-center gap-0.5">
+                        <span className={`text-[0.6rem] font-semibold ${reached ? "text-primary" : current ? MILESTONE_COLORS[i] + " font-bold" : "text-muted-foreground/50"}`}>
+                          {MILESTONE_LABELS[i]}
+                        </span>
+                        <span className={`text-[0.5rem] ${reached ? "text-primary/70" : current ? "text-foreground" : "text-muted-foreground/40"}`}>
+                          {MILESTONE_NAMES[i]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+        </motion.div>
+
         <div className="space-y-2">
           {[
             { label: "Meus Produtos", icon: Package, path: "/products" },
