@@ -617,8 +617,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold">Últimos 7 dias</p>
           </div>
-          <div className="flex items-end gap-1 h-24">
+          <div className="flex items-end gap-1" style={{ height: 96 }}>
             {(() => {
+              const BAR_AREA_H = 80;
               const now = new Date();
               const days: { label: string; value: number }[] = [];
               for (let i = 6; i >= 0; i--) {
@@ -634,16 +635,14 @@ export default function Dashboard() {
               const maxVal = Math.max(...days.map(d => d.value), 1);
               return days.map((d, i) => {
                 const isToday = i === 6;
-                const heightPct = Math.max((d.value / maxVal) * 100, 6);
+                const barH = Math.max((d.value / maxVal) * BAR_AREA_H, 4);
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full flex justify-center">
-                      <div
-                        className={`w-full max-w-[28px] rounded-md transition-all ${isToday ? "bg-primary" : "bg-muted"}`}
-                        style={{ height: `${heightPct}%`, minHeight: 4 }}
-                      />
-                    </div>
-                    <span className={`text-[0.55rem] ${isToday ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                  <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1">
+                    <div
+                      className={`w-full max-w-[28px] rounded-md transition-all ${isToday ? "bg-primary" : "bg-muted"}`}
+                      style={{ height: barH }}
+                    />
+                    <span className={`text-[0.55rem] leading-none ${isToday ? "text-primary font-semibold" : "text-muted-foreground"}`}>
                       {d.label}
                     </span>
                   </div>
