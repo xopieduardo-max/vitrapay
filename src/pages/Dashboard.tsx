@@ -933,21 +933,23 @@ export default function Dashboard() {
                   </div>
 
                   {/* Progress bar */}
-                  <div className="relative h-3 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-                      style={{
-                        width: `${Math.min(progressInLevel, 100)}%`,
-                        background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
-                      }}
-                    />
-                    {/* Level emoji at end of bar */}
+                  <div className="relative">
+                    <div className="h-3 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${Math.min(progressInLevel, 100)}%`,
+                          background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
+                        }}
+                      />
+                    </div>
+                    {/* Rocket emoji outside the bar */}
                     {milestoneIdx < MILESTONES.length && (
                       <span
-                        className="absolute top-1/2 -translate-y-1/2 text-sm transition-all duration-700"
-                        style={{ left: `calc(${Math.min(progressInLevel, 97)}% - 4px)` }}
+                        className="absolute -top-3 text-lg transition-all duration-700"
+                        style={{ left: `calc(${Math.min(progressInLevel, 95)}%)` }}
                       >
-                        {MILESTONE_EMOJIS[milestoneIdx]}
+                        🚀
                       </span>
                     )}
                   </div>
