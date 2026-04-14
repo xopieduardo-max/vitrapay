@@ -8,7 +8,9 @@ import {
   Loader2,
   ExternalLink,
   ShoppingCart,
-  Flame,
+  ChevronRight,
+  Users,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,12 +21,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+const anim = (delay: number) => ({
+  initial: { opacity: 0, y: 12 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { delay, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+});
+
 export default function Affiliates() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [copiedIdx, setCopiedIdx] = useState<string | null>(null);
 
-  // Fetch user's affiliations with product info
   const { data: affiliations = [], isLoading } = useQuery({
     queryKey: ["my-affiliations", user?.id],
     queryFn: async () => {
@@ -37,14 +44,12 @@ export default function Affiliates() {
 
       if (!affs?.length) return [];
 
-      // Fetch product details
       const productIds = [...new Set(affs.map((a) => a.product_id))];
       const { data: products } = await supabase
         .from("products")
         .select("id, title, price, cover_url, type, affiliate_commission, producer_id")
         .in("id", productIds);
 
-      // Fetch producer names
       const producerIds = [...new Set((products || []).map((p) => p.producer_id))];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -54,17 +59,10 @@ export default function Affiliates() {
       const profileMap = new Map((profiles || []).map((p) => [p.user_id, p.display_name]));
       const productMap = new Map((products || []).map((p) => [p.id, p]));
 
-      // Fetch commissions for this user
       const { data: commissions } = await supabase
         .from("commissions")
         .select("affiliate_id, amount, status")
         .eq("affiliate_id", user.id);
-
-      const commissionByProduct = new Map<string, { total: number; count: number }>();
-      // Map commissions through sales to products (simplified - aggregate all)
-      const totalEarnings = (commissions || [])
-        .filter((c) => c.status === "completed" || c.status === "pending")
-        .reduce((acc, c) => acc + c.amount, 0);
 
       return affs.map((a) => {
         const product = productMap.get(a.product_id);
@@ -78,7 +76,6 @@ export default function Affiliates() {
     enabled: !!user,
   });
 
-  // Stats
   const { data: stats = { clicks: 0, earnings: 0, conversions: 0 } } = useQuery({
     queryKey: ["affiliate-stats", user?.id],
     queryFn: async () => {
@@ -113,55 +110,70 @@ export default function Affiliates() {
     `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   return (
-    <div className="space-y-6 pb-20 md:pb-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-5 pb-20 md:pb-6">
+      {/* Premium Header */}
+      <motion.div {...anim(0)} className="rounded-2xl border border-border bg-card p-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Minhas Afiliações</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Gerencie seus produtos afiliados, links e comissões
           </p>
         </div>
-        <Button className="gap-2" onClick={() => navigate("/marketplace")}>
+        <Button className="gap-2 rounded-xl" onClick={() => navigate("/marketplace")}>
           <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
           Encontrar Produtos
         </Button>
-      </div>
+      </motion.div>
+
+      {/* Breadcrumb */}
+      <motion.div {...anim(0.04)} className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+        <span className="hover:text-foreground transition-colors cursor-pointer">Home</span>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-foreground font-medium">Minhas Afiliações</span>
+      </motion.div>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         {[
-          { title: "Cliques", value: stats.clicks.toLocaleString(), icon: MousePointer },
-          { title: "Conversões", value: stats.conversions.toLocaleString(), icon: TrendingUp },
-          { title: "Comissão Total", value: fmt(stats.earnings), icon: DollarSign },
+          { title: "CLIQUES", value: stats.clicks.toLocaleString(), icon: MousePointer, sub: "Total de cliques nos links" },
+          { title: "CONVERSÕES", value: stats.conversions.toLocaleString(), icon: TrendingUp, sub: "Vendas realizadas" },
+          { title: "COMISSÃO TOTAL", value: fmt(stats.earnings), icon: DollarSign, sub: "Ganhos acumulados" },
         ].map((stat, i) => (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="rounded-xl border border-border bg-card p-5"
+            {...anim(0.06 + i * 0.04)}
+            className="rounded-2xl border border-border bg-card p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
           >
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">{stat.title}</p>
-              <stat.icon className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+            <div className="flex items-start justify-between">
+              <p className="text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">{stat.title}</p>
+              <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                <stat.icon className="h-4 w-4 text-primary" strokeWidth={1.5} />
+              </div>
             </div>
-            <p className="text-2xl font-bold mt-2">{stat.value}</p>
+            <p className="text-2xl font-bold mt-2 text-primary">{stat.value}</p>
+            <p className="text-xs mt-1 text-muted-foreground">{stat.sub}</p>
           </motion.div>
         ))}
       </div>
 
       {/* Affiliations List */}
       {isLoading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : affiliations.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center space-y-3">
-          <p className="text-muted-foreground">Você ainda não se afiliou a nenhum produto.</p>
-          <Button className="gap-2" onClick={() => navigate("/marketplace")}>
+        <motion.div {...anim(0.14)} className="rounded-2xl border border-dashed border-border bg-card p-16 text-center space-y-4">
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Users className="h-7 w-7 text-primary" />
+          </div>
+          <div>
+            <p className="text-base font-semibold">Você ainda não se afiliou a nenhum produto</p>
+            <p className="text-sm text-muted-foreground mt-1">Explore o Marketplace e encontre oportunidades</p>
+          </div>
+          <Button className="gap-2 rounded-xl" onClick={() => navigate("/marketplace")}>
             <ShoppingCart className="h-4 w-4" /> Explorar Oportunidades
           </Button>
-        </div>
+        </motion.div>
       ) : (
         <div className="space-y-3">
           {affiliations.map((aff: any, i: number) => {
@@ -173,20 +185,24 @@ export default function Affiliates() {
             return (
               <motion.div
                 key={aff.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-                className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors"
+                {...anim(0.14 + i * 0.04)}
+                className="rounded-2xl border border-border bg-card p-4 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
               >
                 <div className="flex items-start gap-4">
                   {/* Cover */}
-                  {product.cover_url && (
-                    <img
-                      src={product.cover_url}
-                      alt={product.title}
-                      className="h-16 w-16 rounded-lg object-cover shrink-0"
-                    />
-                  )}
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted/30 shrink-0">
+                    {product.cover_url ? (
+                      <img
+                        src={product.cover_url}
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="h-6 w-6 text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0 space-y-2">
@@ -208,7 +224,7 @@ export default function Affiliates() {
                     {/* Link + Stats row */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-3 py-1.5">
+                        <div className="flex items-center gap-1.5 rounded-xl bg-muted/30 px-3 py-1.5 border border-border/50">
                           <Link2 className="h-3 w-3 text-muted-foreground shrink-0" strokeWidth={1.5} />
                           <span className="text-xs text-muted-foreground truncate font-mono">
                             {aff.affiliate_link}
@@ -225,7 +241,7 @@ export default function Affiliates() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="gap-1.5 h-8 text-xs w-[90px]"
+                          className="gap-1.5 h-8 text-xs w-[90px] rounded-xl"
                           onClick={() => handleCopy(aff.affiliate_link, aff.id)}
                         >
                           <AnimatePresence mode="wait">
@@ -243,7 +259,7 @@ export default function Affiliates() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className="h-8 w-8 rounded-xl"
                           onClick={() => window.open(aff.affiliate_link, "_blank")}
                         >
                           <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.5} />
