@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Package, Download, BookOpen, Image, FileDown, Users,
   TrendingUp, DollarSign, ShoppingCart, Loader2, Eye, ExternalLink,
+  EyeOff, Globe,
 } from "lucide-react";
 import { downloadFile } from "@/lib/downloadFile";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { useAdminAudit } from "@/hooks/useAdminAudit";
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -18,6 +21,8 @@ const fmt = (v: number) =>
 export default function AdminProductDetail() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { logAction } = useAdminAudit();
 
   // Product info
   const { data: product, isLoading } = useQuery({
@@ -120,6 +125,22 @@ export default function AdminProductDetail() {
     enabled: !!productId && product?.type === "course",
   });
 
+  const togglePublish = async () => {
+    if (!product) return;
+    const newState = !product.is_published;
+    const { error } = await supabase
+      .from("products")
+      .update({ is_published: newState })
+      .eq("id", product.id);
+    if (error) {
+      toast.error("Erro ao alterar status do produto.");
+    } else {
+      toast.success(newState ? "Produto publicado!" : "Produto despublicado.");
+      await logAction("product_unpublished", "product", product.id, { title: product.title, is_published: newState });
+      queryClient.invalidateQueries({ queryKey: ["admin-product-detail", productId] });
+    }
+  };
+
   const conversionRate = (() => {
     const total = (pendingCount || 0) + (salesData?.totalSales || 0);
     if (total === 0) return 0;
@@ -166,7 +187,21 @@ export default function AdminProductDetail() {
             </Badge>
           </div>
         </div>
-        <p className="text-xl font-bold text-primary">{fmt(product.price)}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xl font-bold text-primary">{fmt(product.price)}</p>
+          <Button
+            size="sm"
+            variant={product.is_published ? "outline" : "default"}
+            className={`gap-1.5 ${product.is_published ? "text-destructive border-destructive/30 hover:bg-destructive/10" : ""}`}
+            onClick={togglePublish}
+          >
+            {product.is_published ? (
+              <><EyeOff className="h-3.5 w-3.5" /> Despublicar</>
+            ) : (
+              <><Globe className="h-3.5 w-3.5" /> Publicar</>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Cover & description */}
