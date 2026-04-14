@@ -302,16 +302,51 @@
 .checkout-theme-amber { --ck-accent: hsl(25, 95%, 53%); --ck-accent-fg: hsl(0, 0%, 10%); }
 .checkout-theme-solar { --ck-accent: hsl(45, 93%, 47%); --ck-accent-fg: hsl(0, 0%, 10%); }
 
-/* Milestone card glowing border animation */
-@keyframes glow-border {
-  0%, 100% {
-    box-shadow: 0 0 8px 2px hsl(48 96% 53% / 0.3), inset 0 0 8px 0 hsl(48 96% 53% / 0.05);
-  }
-  50% {
-    box-shadow: 0 0 18px 4px hsl(48 96% 53% / 0.5), inset 0 0 12px 0 hsl(48 96% 53% / 0.1);
-  }
+/* Milestone card – traveling light border */
+@keyframes border-travel {
+  0% { background-position: 0% 0%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 0%; }
 }
+
 .milestone-glow {
-  animation: glow-border 2.5s ease-in-out infinite;
-  border-color: hsl(48 96% 53% / 0.4);
+  position: relative;
+  border: none !important;
+  overflow: visible;
+}
+
+.milestone-glow::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    transparent 0%,
+    transparent 60%,
+    hsl(48 96% 53% / 0.8) 75%,
+    hsl(48 96% 60% / 1) 80%,
+    hsl(48 96% 53% / 0.8) 85%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rotate-border 3s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotate-border {
+  to { --angle: 360deg; }
 }
