@@ -62,8 +62,8 @@ import {
 
 const MILESTONES = [1000000, 10000000, 25000000, 50000000, 100000000];
 const MILESTONE_LABELS = ["10k", "100k", "250k", "500k", "1M"];
-const MILESTONE_NAMES = ["Jalapeño", "Habanero", "Carolina Reaper", "Trinidad Scorpion", "Pepper X"];
-const MILESTONE_EMOJIS = ["🌶️", "🌶️", "🔥", "🔥", "💎"];
+const MILESTONE_NAMES = ["Iniciante", "Bronze", "Prata", "Gold", "Black"];
+const MILESTONE_EMOJIS = ["🔥", "🥉", "🥈", "🥇", "🖤"];
 
 function getCurrentGoal(revenue: number) {
   for (const m of MILESTONES) {
