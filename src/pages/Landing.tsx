@@ -654,7 +654,8 @@ export default function Landing() {
       </section>
 
       {/* ─── Features — Bento Grid ─── */}
-      <section id="features" className="container py-20 md:py-28">
+      <section id="features" className="relative bg-[#080808] py-20 md:py-28 border-y border-white/[0.06]">
+        <div className="container">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
           <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Recursos</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
@@ -669,29 +670,31 @@ export default function Landing() {
         {/* Bento Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(180px,auto)]">
           {bentoFeatures.map((f, i) =>
-          <motion.div
+           <motion.div
             key={f.title}
             {...stagger}
             transition={{ delay: i * 0.08, duration: 0.5 }}
-            className={`group relative rounded-2xl border border-border/50 bg-card/50 p-7 flex flex-col justify-between hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-default ${
+            className={`group relative rounded-2xl border border-border/50 bg-[#0a0a0a] p-7 flex flex-col justify-between hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-default ${
             f.size === "large" ? "lg:col-span-2 lg:row-span-1" : ""}`
             }>
             
+              {/* Yellow top bar */}
+              <div className="absolute top-0 left-7 w-16 h-[2px] bg-primary rounded-b-full" />
+
               {/* Glow effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-primary/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="relative space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
-                  <f.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary group-hover:scale-110 transition-all duration-300">
+                  <f.icon className="h-6 w-6 text-primary-foreground" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-lg font-semibold">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{f.desc}</p>
+                <h3 className="text-lg font-semibold text-white">{f.title}</h3>
+                <p className="text-sm text-white/50 leading-relaxed max-w-lg">{f.desc}</p>
               </div>
 
               {/* Numbered label */}
               <div className="relative mt-6">
-                <span className="text-6xl font-black text-primary/5 group-hover:text-primary/10 transition-colors duration-300">
+                <span className="text-6xl font-black text-white/[0.03] group-hover:text-white/[0.06] transition-colors duration-300">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
