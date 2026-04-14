@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 import {
   Wallet, ArrowDownToLine, ArrowUpRight, TrendingUp, Clock, Loader2, DollarSign,
   AlertCircle, Lock, Info, ShieldCheck, ArrowLeft, ArrowRight, CheckCircle2,
-  QrCode, Copy, Check,
+  QrCode, Copy, Check, Receipt, RotateCcw, Percent, Star,
 } from "lucide-react";
 
 // ── Platform constants ──
@@ -34,6 +34,8 @@ export default function Finance() {
   const [withdrawStep, setWithdrawStep] = useState(1);
   const [detailView, setDetailView] = useState<"available" | "held" | null>(null);
   const [amount, setAmount] = useState("");
+  const [txFilter, setTxFilter] = useState<"all" | "credit" | "debit">("all");
+  const [txLimit, setTxLimit] = useState(20);
 
   // ── Gerar Pix Avulso ──
   const [pixOpen, setPixOpen] = useState(false);
@@ -87,6 +89,22 @@ export default function Finance() {
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Get transactions (extrato)
+  const { data: transactions = [], isLoading: txLoading } = useQuery({
+    queryKey: ["transactions", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from("transactions")
+        .select("id, type, category, amount, balance_type, status, release_date, created_at, reference_id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
       return data || [];
     },
     enabled: !!user,
@@ -664,6 +682,125 @@ export default function Finance() {
           </p>
         </div>
       )}
+
+      {/* Extrato de Movimentações */}
+      {(() => {
+        const txCategoryConfig: Record<string, { label: string; icon: React.ReactNode; colorClass: string }> = {
+          sale:                    { label: "Venda",               icon: <TrendingUp className="h-4 w-4" />,    colorClass: "text-emerald-500 bg-emerald-500/10" },
+          commission:              { label: "Comissão",            icon: <Star className="h-4 w-4" />,          colorClass: "text-emerald-500 bg-emerald-500/10" },
+          fee:                     { label: "Taxa plataforma",     icon: <Percent className="h-4 w-4" />,       colorClass: "text-muted-foreground bg-muted/50" },
+          withdrawal:              { label: "Saque",               icon: <ArrowDownToLine className="h-4 w-4" />, colorClass: "text-blue-500 bg-blue-500/10" },
+          refund:                  { label: "Estorno",             icon: <RotateCcw className="h-4 w-4" />,     colorClass: "text-orange-500 bg-orange-500/10" },
+          chargeback:              { label: "Chargeback",          icon: <AlertCircle className="h-4 w-4" />,   colorClass: "text-destructive bg-destructive/10" },
+          med:                     { label: "MED Pix",             icon: <AlertCircle className="h-4 w-4" />,   colorClass: "text-destructive bg-destructive/10" },
+          service_fee:             { label: "Taxa de serviço",     icon: <Percent className="h-4 w-4" />,       colorClass: "text-muted-foreground bg-muted/50" },
+          "admin-withdrawal":      { label: "Ajuste admin",        icon: <Receipt className="h-4 w-4" />,       colorClass: "text-muted-foreground bg-muted/50" },
+          "admin-service-fee-withdrawal": { label: "Ajuste admin", icon: <Receipt className="h-4 w-4" />,       colorClass: "text-muted-foreground bg-muted/50" },
+        };
+
+        const filtered = transactions.filter((tx) =>
+          txFilter === "all" ? true : tx.type === txFilter
+        );
+        const visible = filtered.slice(0, txLimit);
+        const hasMore = filtered.length > txLimit;
+
+        return (
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Extrato de Movimentações</h2>
+              <div className="flex items-center gap-1">
+                {(["all", "credit", "debit"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => { setTxFilter(f); setTxLimit(20); }}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                      txFilter === f
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {f === "all" ? "Todos" : f === "credit" ? "Entradas" : "Saídas"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {txLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                Nenhuma movimentação encontrada.
+              </div>
+            ) : (
+              <>
+                <div>
+                  {visible.map((tx: any, i: number) => {
+                    const cfg = txCategoryConfig[tx.category] || {
+                      label: tx.category,
+                      icon: <Receipt className="h-4 w-4" />,
+                      colorClass: "text-muted-foreground bg-muted/50",
+                    };
+                    const isCredit = tx.type === "credit";
+                    const isPending = tx.status === "pending";
+                    const date = new Date(tx.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" });
+                    const releaseDate = tx.release_date
+                      ? new Date(tx.release_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })
+                      : null;
+
+                    return (
+                      <motion.div
+                        key={tx.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: i * 0.02 }}
+                        className="flex items-center justify-between px-4 py-3 border-b border-border last:border-0 hover:bg-muted/20 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${cfg.colorClass}`}>
+                            {cfg.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{cfg.label}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {date}
+                              {isPending && releaseDate && (
+                                <span className="ml-1.5 text-warning">· libera {releaseDate}</span>
+                              )}
+                              {tx.balance_type === "pending" && !isPending && (
+                                <span className="ml-1.5 text-muted-foreground/60">· retido</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0 ml-3">
+                          <p className={`text-sm font-bold ${isCredit ? "text-emerald-500" : "text-destructive"}`}>
+                            {isCredit ? "+" : "-"}R$ {(tx.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                          </p>
+                          {isPending && (
+                            <span className="text-[0.6rem] text-warning font-medium">pendente</span>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+                {hasMore && (
+                  <div className="px-4 py-3 border-t border-border text-center">
+                    <button
+                      onClick={() => setTxLimit((l) => l + 20)}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Ver mais {Math.min(20, filtered.length - txLimit)} movimentações
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Withdrawal history */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
