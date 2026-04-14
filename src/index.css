@@ -301,3 +301,17 @@
 .checkout-theme-coral { --ck-accent: hsl(0, 84%, 55%); --ck-accent-fg: hsl(0, 0%, 100%); }
 .checkout-theme-amber { --ck-accent: hsl(25, 95%, 53%); --ck-accent-fg: hsl(0, 0%, 10%); }
 .checkout-theme-solar { --ck-accent: hsl(45, 93%, 47%); --ck-accent-fg: hsl(0, 0%, 10%); }
+
+/* Milestone card glowing border animation */
+@keyframes glow-border {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px hsl(48 96% 53% / 0.3), inset 0 0 8px 0 hsl(48 96% 53% / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 18px 4px hsl(48 96% 53% / 0.5), inset 0 0 12px 0 hsl(48 96% 53% / 0.1);
+  }
+}
+.milestone-glow {
+  animation: glow-border 2.5s ease-in-out infinite;
+  border-color: hsl(48 96% 53% / 0.4);
+}
