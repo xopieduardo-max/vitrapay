@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,6 +18,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ExportButton } from "@/components/ExportButton";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   AlertTriangle,
   RotateCcw,
@@ -29,7 +33,10 @@ import {
   ShieldAlert,
   TrendingDown,
   FileText,
+  CheckCircle2,
+  MessageSquare,
 } from "lucide-react";
+import { useAdminAudit } from "@/hooks/useAdminAudit";
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -55,13 +62,17 @@ export default function AdminDisputes() {
   const [dateFilter, setDateFilter] = useState("30d");
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
+  const [noteText, setNoteText] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const queryClient = useQueryClient();
+  const { logAction } = useAdminAudit();
 
   const { data: disputes = [], isLoading } = useQuery({
     queryKey: ["admin-disputes"],
     queryFn: async () => {
       const { data } = await supabase
         .from("sales")
-        .select("id, amount, platform_fee, status, created_at, payment_provider, payment_id, product_id, producer_id, buyer_id, products(title)")
+        .select("id, amount, platform_fee, status, created_at, payment_provider, payment_id, product_id, producer_id, buyer_id, dispute_note, dispute_resolved, dispute_resolved_at, products(title)")
         .in("status", ["refunded", "chargeback", "med"])
         .order("created_at", { ascending: false });
       return data || [];
@@ -122,6 +133,32 @@ export default function AdminDisputes() {
     payment_provider: d.payment_provider || "N/A",
     created_at: new Date(d.created_at).toLocaleDateString("pt-BR"),
   }));
+
+  const openDispute = (d: any) => {
+    setSelectedDispute(d);
+    setNoteText(d.dispute_note || "");
+  };
+
+  const saveNote = async (resolved: boolean) => {
+    if (!selectedDispute) return;
+    setSavingNote(true);
+    const updates: any = { dispute_note: noteText.trim() || null, dispute_resolved: resolved };
+    if (resolved && !selectedDispute.dispute_resolved) {
+      updates.dispute_resolved_at = new Date().toISOString();
+    } else if (!resolved) {
+      updates.dispute_resolved_at = null;
+    }
+    const { error } = await supabase.from("sales").update(updates).eq("id", selectedDispute.id);
+    if (error) {
+      toast.error("Erro ao salvar nota.");
+    } else {
+      toast.success(resolved ? "Disputa marcada como resolvida!" : "Nota salva!");
+      await logAction(resolved ? "community_approved" : "community_rejected", "dispute", selectedDispute.id, { note: noteText.trim() || null });
+      queryClient.invalidateQueries({ queryKey: ["admin-disputes"] });
+      setSelectedDispute({ ...selectedDispute, ...updates });
+    }
+    setSavingNote(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -230,7 +267,7 @@ export default function AdminDisputes() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.02, duration: 0.3 }}
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
-                  onClick={() => setSelectedDispute(d)}
+                  onClick={() => openDispute(d)}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${st.className}`}>
@@ -249,6 +286,12 @@ export default function AdminDisputes() {
                     <Badge variant="secondary" className={`text-[0.6rem] ${st.className}`}>
                       {st.label}
                     </Badge>
+                    {d.dispute_resolved && (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-accent shrink-0" />
+                    )}
+                    {d.dispute_note && !d.dispute_resolved && (
+                      <MessageSquare className="h-3.5 w-3.5 text-primary shrink-0" />
+                    )}
                     <span className="text-sm font-semibold min-w-[80px] text-right text-destructive">
                       -{fmt(d.amount)}
                     </span>
@@ -296,6 +339,46 @@ export default function AdminDisputes() {
                       <span className="text-sm font-medium">{item.value}</span>
                     </div>
                   ))}
+
+                  {/* Resolution status */}
+                  {selectedDispute.dispute_resolved && (
+                    <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/20 p-3 text-sm text-accent">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      Resolvida em {selectedDispute.dispute_resolved_at
+                        ? new Date(selectedDispute.dispute_resolved_at).toLocaleDateString("pt-BR")
+                        : "—"}
+                    </div>
+                  )}
+
+                  {/* Admin note */}
+                  <div className="space-y-2 pt-1">
+                    <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                      Nota interna
+                    </Label>
+                    <Textarea
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      placeholder="Registre o que foi feito, contato com o cliente, resultado..."
+                      rows={3}
+                      className="bg-muted/50 border-transparent focus:border-border text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Button size="sm" variant="outline" onClick={() => saveNote(false)} disabled={savingNote} className="flex-1">
+                      {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                      Salvar Nota
+                    </Button>
+                    {!selectedDispute.dispute_resolved && (
+                      <Button size="sm" onClick={() => saveNote(true)} disabled={savingNote} className="flex-1 gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Marcar Resolvida
+                      </Button>
+                    )}
+                    {selectedDispute.dispute_resolved && (
+                      <Button size="sm" variant="outline" onClick={() => saveNote(false)} disabled={savingNote} className="flex-1 text-muted-foreground">
+                        Reabrir disputa
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
