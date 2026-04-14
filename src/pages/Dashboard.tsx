@@ -550,6 +550,8 @@ export default function Dashboard() {
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
+        {/* Banner Carousel */}
+        <BannerCarousel location="dashboard" />
         {/* Header */}
         <motion.div {...anim(0)} className="flex items-center justify-between">
           <h1 className="text-xl font-bold tracking-tight">Visão geral</h1>
@@ -695,6 +697,8 @@ export default function Dashboard() {
 
       {/* ═══════ DESKTOP LAYOUT ═══════ */}
       <div className="hidden md:block space-y-5">
+        {/* Banner Carousel */}
+        <BannerCarousel location="dashboard" />
         {/* Header: Title */}
         <motion.div {...anim(0)} className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">Visão geral</h1>
