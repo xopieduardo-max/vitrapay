@@ -912,23 +912,18 @@ export default function Landing() {
       </section>
 
       {/* ─── Fee Simulator Section ─── */}
-      <section id="simulador" className="relative overflow-hidden bg-[#0a0f0a]">
-        {/* Matrix-style binary background */}
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none select-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Ctext fill='%2300ff88' font-family='monospace' font-size='12'%3E%3Ctspan x='0' y='12'%3E01001101 10110010 01101001%3C/tspan%3E%3Ctspan x='0' y='28'%3E10101010 01010101 11001100%3C/tspan%3E%3Ctspan x='0' y='44'%3E01100110 10011001 01010010%3C/tspan%3E%3Ctspan x='0' y='60'%3E11010010 00101101 10110100%3C/tspan%3E%3Ctspan x='0' y='76'%3E01001011 11010010 01001101%3C/tspan%3E%3Ctspan x='0' y='92'%3E10110100 01001011 10100101%3C/tspan%3E%3Ctspan x='0' y='108'%3E01010010 10101001 01100110%3C/tspan%3E%3Ctspan x='0' y='124'%3E11001010 01010110 10011010%3C/tspan%3E%3C/text%3E%3C/svg%3E")`, backgroundSize: '400px' }} />
-        {/* Gradient glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_50%,hsl(var(--primary)/0.06),transparent_70%)] pointer-events-none" />
-        
+      <section id="simulador" className="relative overflow-hidden bg-white">
         <div className="container relative py-20 md:py-28">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left – Copy */}
             <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-sm text-amber-700">
                 <Wallet className="h-3.5 w-3.5" /> Simulador de Taxas
               </span>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-white">
-                Menos taxas.<br />Mais lucros no <span className="text-gradient-primary">seu bolso.</span>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900">
+                Menos taxas.<br />Mais lucros no <span className="text-primary">seu bolso.</span>
               </h2>
-              <p className="text-white/60 text-lg max-w-md">
+              <p className="text-gray-500 text-lg max-w-md">
                 Simule agora e descubra na hora qual plataforma te entrega mais lucro no final do mês.
               </p>
               <div className="h-1 w-16 rounded-full bg-primary" />
