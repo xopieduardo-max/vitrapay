@@ -574,23 +574,29 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Highlight Cards ─── */}
-      <section className="container pb-20">
-        <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
-          {highlights.map((item, i) =>
-          <motion.div
-            key={item.title}
-            {...stagger}
-            transition={{ delay: i * 0.08, duration: 0.5 }}
-            className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card hover:-translate-y-1 transition-all duration-300 cursor-default">
-            
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                <item.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
-              </div>
-              <h3 className="font-semibold text-sm md:text-base">{item.title}</h3>
-              <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-            </motion.div>
-          )}
+      {/* ─── Highlight Cards — Dark Premium ─── */}
+      <section className="relative bg-[#080808] border-y border-white/[0.06]">
+        <div className="container py-20">
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+            {highlights.map((item, i) =>
+            <motion.div
+              key={item.title}
+              {...stagger}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 md:p-7 space-y-4 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 cursor-default overflow-hidden">
+              
+                {/* Yellow top bar */}
+                <div className="absolute top-0 left-6 right-6 h-[2px]">
+                  <div className="w-16 h-full bg-primary rounded-b-full" />
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary group-hover:scale-110 transition-all duration-300">
+                  <item.icon className="h-6 w-6 text-primary-foreground" strokeWidth={1.5} />
+                </div>
+                <h3 className="font-semibold text-sm md:text-base text-white">{item.title}</h3>
+                <p className="text-xs md:text-sm text-white/50 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -623,7 +629,7 @@ export default function Landing() {
       <section className="bg-card/30">
         <div className="container py-20">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Sobre nós</span>
+            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Sobre nós</span>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mt-4">
               Somos muito mais que uma{" "}
               <span className="text-gradient-primary">plataforma</span>
@@ -648,9 +654,10 @@ export default function Landing() {
       </section>
 
       {/* ─── Features — Bento Grid ─── */}
-      <section id="features" className="container py-20 md:py-28">
+      <section id="features" className="relative bg-[#080808] py-20 md:py-28 border-y border-white/[0.06]">
+        <div className="container">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-widest text-primary">Recursos</span>
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Recursos</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Tudo que você precisa para{" "}
             <span className="text-gradient-primary">vender online</span>
@@ -663,34 +670,37 @@ export default function Landing() {
         {/* Bento Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(180px,auto)]">
           {bentoFeatures.map((f, i) =>
-          <motion.div
+           <motion.div
             key={f.title}
             {...stagger}
             transition={{ delay: i * 0.08, duration: 0.5 }}
-            className={`group relative rounded-2xl border border-border/50 bg-card/50 p-7 flex flex-col justify-between hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-default ${
+            className={`group relative rounded-2xl border border-border/50 bg-[#0a0a0a] p-7 flex flex-col justify-between hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-default ${
             f.size === "large" ? "lg:col-span-2 lg:row-span-1" : ""}`
             }>
             
+              {/* Yellow top bar */}
+              <div className="absolute top-0 left-7 w-16 h-[2px] bg-primary rounded-b-full" />
+
               {/* Glow effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-primary/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="relative space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
-                  <f.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary group-hover:scale-110 transition-all duration-300">
+                  <f.icon className="h-6 w-6 text-primary-foreground" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-lg font-semibold">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{f.desc}</p>
+                <h3 className="text-lg font-semibold text-white">{f.title}</h3>
+                <p className="text-sm text-white/50 leading-relaxed max-w-lg">{f.desc}</p>
               </div>
 
               {/* Numbered label */}
               <div className="relative mt-6">
-                <span className="text-6xl font-black text-primary/5 group-hover:text-primary/10 transition-colors duration-300">
+                <span className="text-6xl font-black text-white/[0.03] group-hover:text-white/[0.06] transition-colors duration-300">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
             </motion.div>
           )}
+        </div>
         </div>
       </section>
 
@@ -698,7 +708,7 @@ export default function Landing() {
       <section id="pricing" className="bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Pagamentos & Taxas</span>
+            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Pagamentos & Taxas</span>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Custo sob controle,{" "}
               <span className="text-gradient-primary">performance sem limite</span>
@@ -986,7 +996,7 @@ export default function Landing() {
       <section id="testimonials" className="bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Depoimentos</span>
+            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Depoimentos</span>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Quem usa, <span className="text-gradient-primary">recomenda</span>
             </h2>
@@ -1025,7 +1035,7 @@ export default function Landing() {
       {/* ─── Membros Black Carousel ─── */}
       <section className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-widest text-primary">Comunidade</span>
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Comunidade</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Nossos <span className="text-gradient-primary">Membros Black</span>
           </h2>
@@ -1042,7 +1052,7 @@ export default function Landing() {
       {/* ─── FAQ Section ─── */}
       <section id="faq" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="text-xs font-medium uppercase tracking-widest text-primary">Dúvidas frequentes</span>
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Dúvidas frequentes</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Perguntas <span className="text-gradient-primary">frequentes</span>
           </h2>
@@ -1122,6 +1132,10 @@ export default function Landing() {
 
       {/* ─── Footer ─── */}
       <footer className="relative bg-[#080808] overflow-hidden">
+        {/* Golden gradient at top */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(48,96%,53%)] to-transparent opacity-40" />
+        <div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-[hsl(48,96%,53%)]/[0.08] rounded-full blur-[100px] pointer-events-none" />
+        
         {/* Yellow glow — subtle, only peeking from bottom */}
         <div className="absolute -bottom-[350px] left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-[hsl(48,96%,53%)]/[0.12] rounded-full blur-[100px] pointer-events-none" />
 
