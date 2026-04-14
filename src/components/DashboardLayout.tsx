@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -12,20 +11,31 @@ import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
 import { ThemeLogo } from "@/components/ThemeLogo";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function DashboardLayout() {
   const { newSalesCount, notifications, clearCount } = useSalesNotifications();
   usePushNotifications();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const [searchOpen, setSearchOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { data: profile } = useQuery({
+    queryKey: ["layout-profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    if (searchOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [searchOpen]);
+  const firstName = profile?.display_name?.split(" ")[0] || "";
 
   return (
     <SidebarProvider>
@@ -44,28 +54,15 @@ export function DashboardLayout() {
               />
             </div>
 
-            {/* Mobile: icon-only, expands on click */}
+            {/* Mobile: logo + greeting */}
             <div className="md:hidden flex items-center gap-2">
               <button onClick={() => navigate("/dashboard")} className="shrink-0">
                 <ThemeLogo variant="horizontal" className="h-6" />
               </button>
-              {!searchOpen ? (
-                <button
-                  onClick={() => setSearchOpen(true)}
-                  className="h-9 w-9 flex items-center justify-center rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Search className="h-4 w-4" strokeWidth={1.5} />
-                </button>
-              ) : (
-                <div className="relative w-[calc(100vw-120px)] animate-in slide-in-from-left-2 duration-200">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
-                  <Input
-                    ref={inputRef}
-                    placeholder="Buscar..."
-                    className="pl-9 h-9 bg-muted/50 border-border text-sm"
-                    onBlur={() => setSearchOpen(false)}
-                  />
-                </div>
+              {firstName && (
+                <span className="text-sm text-muted-foreground truncate max-w-[140px]">
+                  Olá, <span className="text-foreground font-medium">{firstName}</span>
+                </span>
               )}
             </div>
 
