@@ -1021,10 +1021,18 @@ export default function Landing() {
               transition={{ type: "spring", damping: 20, stiffness: 60, duration: 1.2 }}
               className="flex justify-center"
             >
-              <img
+              <motion.img
                 src={integrationsOrbit}
                 alt="Integrações VitraPay — Facebook, TikTok, UTMify, WhatsApp e mais"
                 className="w-full max-w-xl md:max-w-2xl"
+                animate={{ rotate: [0, 3, -3, 2, -2, 0] }}
+                transition={{
+                  rotate: {
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }
+                }}
               />
             </motion.div>
           </div>
