@@ -487,7 +487,7 @@ export default function Dashboard() {
           <g key={i}>
             <circle
               cx={p.x} cy={p.y}
-              r={hoveredPoint === i ? 6 : 3.5}
+              r={hoveredPoint === i ? 5 : 3}
               fill={hoveredPoint === i ? "hsl(142 71% 45%)" : "hsl(var(--primary))"}
               stroke="hsl(var(--background))"
               strokeWidth="2"
@@ -499,23 +499,30 @@ export default function Dashboard() {
         {/* Hover tooltip */}
         {hoveredPoint !== null && points[hoveredPoint] && (() => {
           const p = points[hoveredPoint];
-          const tooltipW = 120;
-          const tooltipH = 28;
+          const text = `R$ ${(p.value / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`;
+          const tooltipW = Math.max(text.length * 7, 80);
+          const tooltipH = 22;
           let tx = p.x - tooltipW / 2;
           if (tx < padLeft) tx = padLeft;
           if (tx + tooltipW > width - padRight) tx = width - padRight - tooltipW;
-          const ty = p.y - tooltipH - 12;
+          
+          // Flip below if too close to top
+          const flipBelow = p.y - tooltipH - 10 < padTop;
+          const ty = flipBelow ? p.y + 10 : p.y - tooltipH - 10;
+          const arrowY = flipBelow
+            ? ty - 5
+            : ty + tooltipH;
+          const arrowPoints = flipBelow
+            ? `${p.x - 4},${ty} ${p.x + 4},${ty} ${p.x},${ty - 5}`
+            : `${p.x - 4},${ty + tooltipH} ${p.x + 4},${ty + tooltipH} ${p.x},${ty + tooltipH + 5}`;
+
           return (
             <g>
-              {/* Vertical line */}
-              <line x1={p.x} y1={padTop} x2={p.x} y2={padTop + chartH} stroke="hsl(var(--muted-foreground))" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.5" />
-              {/* Tooltip bg */}
-              <rect x={tx} y={ty} width={tooltipW} height={tooltipH} rx={6} fill="hsl(142 71% 45%)" />
-              {/* Arrow */}
-              <polygon points={`${p.x - 5},${ty + tooltipH} ${p.x + 5},${ty + tooltipH} ${p.x},${ty + tooltipH + 6}`} fill="hsl(142 71% 45%)" />
-              {/* Text */}
-              <text x={tx + tooltipW / 2} y={ty + tooltipH / 2 + 1} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="11" fontWeight="bold">
-                {`R$ ${(p.value / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+              <line x1={p.x} y1={padTop} x2={p.x} y2={padTop + chartH} stroke="hsl(var(--muted-foreground))" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
+              <rect x={tx} y={ty} width={tooltipW} height={tooltipH} rx={5} fill="hsl(142 71% 45%)" />
+              <polygon points={arrowPoints} fill="hsl(142 71% 45%)" />
+              <text x={tx + tooltipW / 2} y={ty + tooltipH / 2 + 1} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="10" fontWeight="bold">
+                {text}
               </text>
             </g>
           );
