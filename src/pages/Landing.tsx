@@ -120,21 +120,22 @@ const GridBackground = React.memo(function GridBackground() {
 
 });
 
-/* ─── Floating Particles ─── */
+/* ─── Floating Particles (CSS-only) ─── */
 const FloatingParticles = React.memo(function FloatingParticles() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {[...Array(6)].map((_, i) =>
-      <motion.div
+      <div
         key={i}
-        className="absolute w-1 h-1 rounded-full bg-primary/20"
-        style={{ left: `${15 + i * 15}%`, top: `${10 + i * 12}%` }}
-        animate={{ y: [0, -30, 0], opacity: [0.2, 0.6, 0.2] }}
-        transition={{ duration: 5 + i, repeat: Infinity, delay: i * 0.5, ease: "easeInOut" }} />
-
+        className="absolute w-1 h-1 rounded-full bg-primary/20 animate-float-particle"
+        style={{
+          left: `${15 + i * 15}%`,
+          top: `${10 + i * 12}%`,
+          animationDuration: `${5 + i}s`,
+          animationDelay: `${i * 0.5}s`,
+        }} />
       )}
     </div>);
-
 });
 
 /* ─── Membros Black Carousel (marquee rows) ─── */
@@ -546,7 +547,7 @@ export default function Landing() {
 
           {/* Dashboard Preview with notifications side by side */}
           <motion.div
-            style={{ y: dashboardY, scale: dashboardScale }}
+            style={{ y: dashboardY, scale: dashboardScale, willChange: "transform" }}
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
@@ -560,10 +561,9 @@ export default function Landing() {
             {/* Dashboard image with scroll-driven tilt */}
             <div className="flex-1 min-w-0" style={{ perspective: "1200px" }}>
               <motion.div
-                style={{ rotateX: dashboardRotateX }}
+                style={{ rotateX: dashboardRotateX, willChange: "transform" }}
                 className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group origin-bottom">
                 
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                 <img
                   src={dashboardPreview}
                   alt="Dashboard VitraPay com métricas de vendas em tempo real"
@@ -589,8 +589,7 @@ export default function Landing() {
             key={item.title}
             {...stagger}
             transition={{ delay: i * 0.08, duration: 0.5 }}
-            whileHover={{ y: -5, scale: 1.02 }}
-            className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card transition-all duration-300 cursor-default">
+            className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 md:p-6 space-y-3 hover:border-primary/30 hover:bg-card hover:-translate-y-1 transition-all duration-300 cursor-default">
             
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                 <item.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
