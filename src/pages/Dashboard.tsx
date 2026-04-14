@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import {
   Eye,
   EyeOff,
-  Zap,
   CreditCard,
   QrCode,
   ChevronRight,
@@ -18,9 +17,9 @@ import {
   Clock,
   RefreshCcw,
   ShoppingCart,
-  Wallet,
-  CalendarDays,
   Target,
+  CalendarDays,
+  Info,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +36,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
 import {
   Select,
   SelectContent,
@@ -45,13 +43,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// ─── Constants & Helpers ────────────────────────────────────────────────────
 
 const MILESTONES = [1000000, 10000000, 25000000, 50000000, 100000000];
+const MILESTONE_LABELS = ["10k", "100k", "250k", "500k", "1M"];
+const MILESTONE_NAMES = ["Iniciante", "Bronze", "Prata", "Ouro", "Diamante", "Lenda"];
+
 function getCurrentGoal(revenue: number) {
   for (const m of MILESTONES) {
     if (revenue < m) return m;
   }
   return MILESTONES[MILESTONES.length - 1];
+}
+
+function getMilestoneIndex(revenue: number) {
+  for (let i = 0; i < MILESTONES.length; i++) {
+    if (revenue < MILESTONES[i]) return i;
+  }
+  return MILESTONES.length;
 }
 
 const paymentMethods = [
@@ -79,7 +95,6 @@ const periodLabels: Record<PeriodKey, string> = {
 function getDateRange(period: PeriodKey, customFrom?: Date, customTo?: Date): { from: Date | null; to: Date } {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  // Use end-of-today for standard periods so sales generated later today are included
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
   switch (period) {
@@ -112,6 +127,8 @@ function getDateRange(period: PeriodKey, customFrom?: Date, customTo?: Date): { 
   }
 }
 
+// ─── Component ──────────────────────────────────────────────────────────────
+
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -119,8 +136,11 @@ export default function Dashboard() {
   const [showValues, setShowValues] = useState(true);
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
-  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [balanceTab, setBalanceTab] = useState<"pending" | "available">("available");
   const [regionView, setRegionView] = useState<'state' | 'city'>('state');
+  const [sideStatsView, setSideStatsView] = useState<'qty' | 'pct'>('qty');
+
+  // ─── Data Fetching ──────────────────────────────────────────────────────
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -205,7 +225,6 @@ export default function Dashboard() {
     refetchInterval: 30000,
   });
 
-  // All checkout initiations (all statuses) for conversion rate
   const { data: allCheckouts = [] } = useQuery({
     queryKey: ["dashboard-all-checkouts", user?.id, productIds],
     queryFn: async () => {
@@ -219,10 +238,10 @@ export default function Dashboard() {
     enabled: !!user && productIds.length > 0,
   });
 
-  // Date range from period filter
+  // ─── Computed Values ────────────────────────────────────────────────────
+
   const dateRange = useMemo(() => getDateRange(period, customFrom, customTo), [period, customFrom, customTo]);
 
-  // Filter sales by selected period
   const filteredSales = useMemo(() => {
     return salesData.filter((s) => {
       const d = new Date(s.created_at);
@@ -243,22 +262,18 @@ export default function Dashboard() {
   const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((acc, w) => acc + w.amount, 0);
   const WITHDRAWAL_FEE = 500;
   const pendingWithdrawalsGross = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount + WITHDRAWAL_FEE, 0);
-  const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount, 0);
 
-  // Available balance from wallet, deducting pending withdrawal reserves (aligned with Finance page)
   const walletAvailable = Number(wallet?.balance_available ?? 0);
+  const walletPending = Number(wallet?.balance_pending ?? 0);
   const availableBalance = Math.max(0, walletAvailable - pendingWithdrawalsGross);
   const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
   const refundedSales = filteredSales.filter((s) => s.status === "refunded");
   const chargebackSales = filteredSales.filter((s) => s.status === "chargeback");
   const medSales = filteredSales.filter((s) => s.status === "med");
-  const allDisputeSales = [...refundedSales, ...chargebackSales, ...medSales];
   const refundRate = filteredSales.length > 0 ? ((refundedSales.length / filteredSales.length) * 100).toFixed(1) : "0";
   const chargebackRate = filteredSales.length > 0 ? (((chargebackSales.length + medSales.length) / filteredSales.length) * 100).toFixed(1) : "0";
   const refundAmount = refundedSales.reduce((acc, s) => acc + s.amount, 0);
-  const abandonedSales = filteredSales.filter((s) => s.status === "abandoned").length;
 
-  // Checkout conversion rate
   const filteredCheckouts = useMemo(() => {
     return allCheckouts.filter((c) => {
       const d = new Date(c.created_at);
@@ -267,22 +282,15 @@ export default function Dashboard() {
       return true;
     });
   }, [allCheckouts, dateRange]);
-  const totalCheckoutInitiations = filteredCheckouts.length + salesCount; // checkouts + completed sales = total visitors who initiated
+  const totalCheckoutInitiations = filteredCheckouts.length + salesCount;
   const checkoutConversionRate = totalCheckoutInitiations > 0
     ? ((salesCount / totalCheckoutInitiations) * 100).toFixed(1)
     : "0";
-  const checkoutConversionColor = parseFloat(checkoutConversionRate) >= 3 ? "text-primary" : parseFloat(checkoutConversionRate) >= 1 ? "text-warning" : "text-destructive";
 
-  const currentGoal = getCurrentGoal(totalRevenue);
-  const revenueProgress = Math.min((totalRevenue / currentGoal) * 100, 100);
-
-  // Achievement level (global)
   const totalRevenueAll = completedSalesAll.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
-  const level = totalRevenueAll >= 10000000 ? "Diamante" : totalRevenueAll >= 5000000 ? "Ouro" : totalRevenueAll >= 1000000 ? "Prata" : "Explorador";
-  const levelIcon = totalRevenueAll >= 10000000 ? "💎" : totalRevenueAll >= 5000000 ? "🥇" : totalRevenueAll >= 1000000 ? "🥈" : "🧭";
-  const nextLevel = totalRevenueAll >= 10000000 ? "Máximo" : totalRevenueAll >= 5000000 ? "Diamante" : totalRevenueAll >= 1000000 ? "Ouro" : "Prata";
+  const milestoneIdx = getMilestoneIndex(totalRevenueAll);
 
-  // Sales by provider (period-filtered)
+  // Sales by provider
   const salesByProvider = completedSales.reduce<Record<string, { count: number; amount: number }>>((acc, s) => {
     const provider = s.payment_provider || "Outro";
     if (!acc[provider]) acc[provider] = { count: 0, amount: 0 };
@@ -291,412 +299,261 @@ export default function Dashboard() {
     return acc;
   }, {});
 
-  // Health score
-  const healthScore = Math.max(0, 10 - Math.round(parseFloat(refundRate) * 0.5) - Math.round(parseFloat(chargebackRate) * 1.5) - abandonedSales * 0.1);
-  const healthColor = healthScore >= 8 ? "text-primary" : healthScore >= 5 ? "text-warning" : "text-destructive";
+  const cardApproval = salesByProvider["card"]?.count || 0;
+  const pixConversion = salesByProvider["pix"]?.count || 0;
+  const boletoConversion = salesByProvider["boleto"]?.count || 0;
+  const totalFiltered = filteredSales.length || 1;
+
+  // ─── Chart Data (line chart style, monthly) ─────────────────────────────
+
+  const [chartMode, setChartMode] = useState<"day" | "month" | "year">("month");
+  const [chartYear, setChartYear] = useState(new Date().getFullYear());
+  const [chartProduct, setChartProduct] = useState("all");
+
+  const chartData = useMemo(() => {
+    const salesForChart = chartProduct === "all"
+      ? completedSalesAll
+      : completedSalesAll; // product filter would need product_id in the query
+
+    if (chartMode === "day") {
+      // Last 30 days
+      const days: { label: string; value: number }[] = [];
+      const now = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        const label = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+        const value = salesForChart
+          .filter(s => new Date(s.created_at).toISOString().slice(0, 10) === key)
+          .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+        days.push({ label, value });
+      }
+      return days;
+    }
+
+    if (chartMode === "year") {
+      // By year
+      const years = new Map<number, number>();
+      salesForChart.forEach(s => {
+        const y = new Date(s.created_at).getFullYear();
+        years.set(y, (years.get(y) || 0) + (s.amount - (s.platform_fee || 0)));
+      });
+      const sorted = Array.from(years.entries()).sort((a, b) => a[0] - b[0]);
+      return sorted.map(([y, v]) => ({ label: y.toString(), value: v }));
+    }
+
+    // month mode - by month for selected year
+    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    return monthNames.map((label, i) => {
+      const value = salesForChart
+        .filter(s => {
+          const d = new Date(s.created_at);
+          return d.getFullYear() === chartYear && d.getMonth() === i;
+        })
+        .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+      return { label, value };
+    });
+  }, [completedSalesAll, chartMode, chartYear, chartProduct]);
+
+  const maxChartValue = Math.max(...chartData.map(d => d.value), 1);
+
+  // ─── Formatters ─────────────────────────────────────────────────────────
 
   const fmt = (v: number) => showValues
     ? `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
     : "R$ •••••";
 
-  const fmtShort = (v: number) => {
-    if (!showValues) return "R$ •••••";
+  const fmtCompact = (v: number) => {
     const val = v / 100;
-    if (val >= 1000) return `R$ ${(val / 1000).toFixed(0)}K`;
-    return `R$ ${val.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+    if (val >= 1000000) return `${(val / 1000000).toFixed(0)}M`;
+    if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
+    return val.toFixed(0);
   };
-
-  const displayName = profile?.display_name || user?.email?.split("@")[0] || "Produtor";
-  const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
-  const chartBars = useMemo(() => {
-    if (completedSalesAll.length === 0) return Array.from({ length: 10 }).map(() => 5);
-    const days: Record<string, number> = {};
-    const now = new Date();
-    for (let i = 9; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      days[d.toISOString().slice(0, 10)] = 0;
-    }
-    completedSalesAll.forEach((s) => {
-      const key = new Date(s.created_at).toISOString().slice(0, 10);
-      if (key in days) days[key] += s.amount - (s.platform_fee || 0);
-    });
-    const vals = Object.values(days);
-    const max = Math.max(...vals, 1);
-    return vals.map((v) => Math.max((v / max) * 95, 5));
-  }, [completedSalesAll]);
-
-  // Chart comparison mode
-  const [chartMode, setChartMode] = useState<"week" | "month" | "day" | "hour">("week");
-
-  // Unified comparison data
-  const comparisonData = useMemo(() => {
-    const now = new Date();
-
-    if (chartMode === "hour") {
-      // Hourly breakdown for today
-      const hours = Array.from({ length: 24 }, (_, i) => i);
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const hourData = hours.map((h) => {
-        const total = completedSalesAll
-          .filter((s) => {
-            const d = new Date(s.created_at);
-            return d >= todayStart && d.getHours() === h;
-          })
-          .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
-        return { label: `${h}h`, current: total, previous: 0, isFuture: h > now.getHours() };
-      });
-      const max = Math.max(...hourData.map((d) => d.current), 1);
-      return {
-        items: hourData.map((d) => ({
-          ...d,
-          currentPct: Math.max((d.current / max) * 95, 3),
-          previousPct: 3,
-        })),
-        currentTotal: hourData.reduce((a, d) => a + d.current, 0),
-        previousTotal: 0,
-        currentLabel: "Hoje por hora",
-        previousLabel: "",
-        showPrevious: false,
-      };
-    }
-
-    if (chartMode === "day") {
-      // Last 7 days vs previous 7 days
-      const labels: string[] = [];
-      const current: number[] = [];
-      const previous: number[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - i);
-        const key = d.toISOString().slice(0, 10);
-        const dayName = d.toLocaleDateString("pt-BR", { weekday: "short" }).slice(0, 3);
-        labels.push(dayName);
-
-        const prev = new Date(d);
-        prev.setDate(prev.getDate() - 7);
-        const prevKey = prev.toISOString().slice(0, 10);
-
-        current.push(
-          completedSalesAll
-            .filter((s) => new Date(s.created_at).toISOString().slice(0, 10) === key)
-            .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
-        );
-        previous.push(
-          completedSalesAll
-            .filter((s) => new Date(s.created_at).toISOString().slice(0, 10) === prevKey)
-            .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0)
-        );
-      }
-      const allVals = [...current, ...previous];
-      const max = Math.max(...allVals, 1);
-      return {
-        items: labels.map((label, i) => ({
-          label,
-          current: current[i],
-          previous: previous[i],
-          currentPct: Math.max((current[i] / max) * 95, 3),
-          previousPct: Math.max((previous[i] / max) * 95, 3),
-          isFuture: false,
-        })),
-        currentTotal: current.reduce((a, b) => a + b, 0),
-        previousTotal: previous.reduce((a, b) => a + b, 0),
-        currentLabel: "Últimos 7 dias",
-        previousLabel: "7 dias anteriores",
-        showPrevious: true,
-      };
-    }
-
-    if (chartMode === "month") {
-      // This month vs last month, by week
-      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-
-      const weeks = ["Sem 1", "Sem 2", "Sem 3", "Sem 4", "Sem 5"];
-      const current = Array(5).fill(0);
-      const previous = Array(5).fill(0);
-
-      completedSalesAll.forEach((s) => {
-        const d = new Date(s.created_at);
-        const net = s.amount - (s.platform_fee || 0);
-        if (d >= thisMonthStart) {
-          const week = Math.min(Math.floor((d.getDate() - 1) / 7), 4);
-          current[week] += net;
-        } else if (d >= lastMonthStart && d <= lastMonthEnd) {
-          const week = Math.min(Math.floor((d.getDate() - 1) / 7), 4);
-          previous[week] += net;
-        }
-      });
-
-      const allVals = [...current, ...previous];
-      const max = Math.max(...allVals, 1);
-      return {
-        items: weeks.map((label, i) => ({
-          label,
-          current: current[i],
-          previous: previous[i],
-          currentPct: Math.max((current[i] / max) * 95, 3),
-          previousPct: Math.max((previous[i] / max) * 95, 3),
-          isFuture: false,
-        })),
-        currentTotal: current.reduce((a, b) => a + b, 0),
-        previousTotal: previous.reduce((a, b) => a + b, 0),
-        currentLabel: "Este mês",
-        previousLabel: "Mês passado",
-        showPrevious: true,
-      };
-    }
-
-    // Default: week mode
-    const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    const todayDow = now.getDay();
-    const thisWeekStart = new Date(now);
-    thisWeekStart.setDate(now.getDate() - todayDow);
-    thisWeekStart.setHours(0, 0, 0, 0);
-    const lastWeekStart = new Date(thisWeekStart);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-
-    const thisWeek = Array(7).fill(0);
-    const lastWeek = Array(7).fill(0);
-
-    completedSalesAll.forEach((s) => {
-      const d = new Date(s.created_at);
-      const net = s.amount - (s.platform_fee || 0);
-      const dow = d.getDay();
-      if (d >= thisWeekStart) {
-        thisWeek[dow] += net;
-      } else if (d >= lastWeekStart && d < thisWeekStart) {
-        lastWeek[dow] += net;
-      }
-    });
-
-    const allVals = [...thisWeek, ...lastWeek];
-    const max = Math.max(...allVals, 1);
-    return {
-      items: dayNames.map((label, i) => ({
-        label,
-        current: thisWeek[i],
-        previous: lastWeek[i],
-        currentPct: Math.max((thisWeek[i] / max) * 95, 3),
-        previousPct: Math.max((lastWeek[i] / max) * 95, 3),
-        isFuture: i > todayDow,
-      })),
-      currentTotal: thisWeek.reduce((a, b) => a + b, 0),
-      previousTotal: lastWeek.reduce((a, b) => a + b, 0),
-      currentLabel: "Esta semana",
-      previousLabel: "Semana passada",
-      showPrevious: true,
-    };
-  }, [completedSalesAll, chartMode]);
-
-  const weekChange = comparisonData.previousTotal > 0
-    ? (((comparisonData.currentTotal - comparisonData.previousTotal) / comparisonData.previousTotal) * 100).toFixed(0)
-    : comparisonData.currentTotal > 0 ? "+100" : "0";
-
-  const quickLinks = [
-    { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
-    { label: "Meus Produtos", icon: Package, path: "/products" },
-    { label: "Afiliados", icon: Users, path: "/affiliates" },
-    { label: "Suporte", icon: HelpCircle, path: "/help" },
-  ];
 
   const handlePeriodChange = (p: PeriodKey) => {
     if (p === "custom") {
-      setShowCustomPicker(true);
       setPeriod("custom");
     } else {
-      setShowCustomPicker(false);
       setPeriod(p);
     }
   };
 
-  const periodFilterButtons = (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {(Object.keys(periodLabels) as PeriodKey[]).map((p) => (
-        <button
-          key={p}
-          onClick={() => handlePeriodChange(p)}
-          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-            period === p
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-        >
-          {periodLabels[p]}
-        </button>
-      ))}
-    </div>
-  );
+  // ─── SVG Line Chart ────────────────────────────────────────────────────
 
-  const customDatePickers = period === "custom" && (
-    <div className="flex flex-wrap items-center gap-2 mt-2">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {customFrom ? format(customFrom, "dd/MM/yyyy") : "De"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={customFrom}
-            onSelect={setCustomFrom}
-            className="p-3 pointer-events-auto"
-          />
-        </PopoverContent>
-      </Popover>
-      <span className="text-xs text-muted-foreground">até</span>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {customTo ? format(customTo, "dd/MM/yyyy") : "Até"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={customTo}
-            onSelect={setCustomTo}
-            className="p-3 pointer-events-auto"
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
+  const renderLineChart = () => {
+    if (chartData.length === 0) return null;
+
+    const width = 800;
+    const height = 250;
+    const padLeft = 50;
+    const padRight = 20;
+    const padTop = 20;
+    const padBottom = 40;
+    const chartW = width - padLeft - padRight;
+    const chartH = height - padTop - padBottom;
+
+    // Y-axis ticks
+    const yTicks = 5;
+    const yMax = maxChartValue;
+    const yStep = yMax / yTicks;
+
+    const points = chartData.map((d, i) => {
+      const x = padLeft + (i / Math.max(chartData.length - 1, 1)) * chartW;
+      const y = padTop + chartH - (d.value / yMax) * chartH;
+      return { x, y, ...d };
+    });
+
+    const pathD = points.map((p, i) => {
+      if (i === 0) return `M ${p.x} ${p.y}`;
+      // Smooth curve
+      const prev = points[i - 1];
+      const cpx = (prev.x + p.x) / 2;
+      return `C ${cpx} ${prev.y}, ${cpx} ${p.y}, ${p.x} ${p.y}`;
+    }).join(" ");
+
+    // Gradient area
+    const areaD = pathD + ` L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
+
+    return (
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+
+        {/* Grid lines */}
+        {Array.from({ length: yTicks + 1 }, (_, i) => {
+          const y = padTop + (i / yTicks) * chartH;
+          const val = yMax - (i / yTicks) * yMax;
+          return (
+            <g key={i}>
+              <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="4 4" />
+              <text x={padLeft - 8} y={y + 4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize="10">
+                {fmtCompact(val)}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Area fill */}
+        <path d={areaD} fill="url(#chartGradient)" />
+
+        {/* Line */}
+        <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Points */}
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="3.5" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="2" />
+          </g>
+        ))}
+
+        {/* X labels */}
+        {points.map((p, i) => {
+          // Show every label or skip some if too many
+          const skip = chartData.length > 15 ? Math.ceil(chartData.length / 12) : 1;
+          if (i % skip !== 0 && i !== chartData.length - 1) return null;
+          return (
+            <text key={i} x={p.x} y={height - 8} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize="10">
+              {p.label}
+            </text>
+          );
+        })}
+      </svg>
+    );
+  };
+
+  // Find the hovered/max point for tooltip
+  const maxPoint = chartData.reduce((max, d) => d.value > max.value ? d : max, chartData[0] || { label: "", value: 0 });
+
+  // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
       <MilestoneCelebration revenue={totalRevenueAll} milestones={MILESTONES} />
-      
-      {/* Promotional Banner Carousel */}
-      <motion.div {...anim(0)}>
-        <BannerCarousel
-          location="dashboard"
-          fallbackSrc={dashboardBanner}
-          fallbackAlt="Banner promocional VitraPay"
-          maxHeight={160}
-        />
-      </motion.div>
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
-        {/* Date + Eye toggle */}
-        <motion.div {...anim(0)} className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CalendarIcon className="h-4 w-4" />
-            <span className="capitalize text-xs">{today}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select defaultValue="all">
-              <SelectTrigger className="w-[110px] h-7 bg-card border-border text-[0.65rem]">
-                <SelectValue placeholder="Todos os..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os...</SelectItem>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Period filters mobile */}
+        <motion.div {...anim(0)} className="flex flex-wrap items-center gap-1.5">
+          {(Object.keys(periodLabels) as PeriodKey[]).filter(p => p !== "custom").map((p) => (
             <button
-              onClick={() => setShowValues(!showValues)}
-              className="h-7 w-7 flex items-center justify-center rounded-full bg-accent text-accent-foreground"
+              key={p}
+              onClick={() => handlePeriodChange(p)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                period === p ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
             >
-              {showValues ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+              {periodLabels[p]}
+            </button>
+          ))}
+          <button
+            onClick={() => setShowValues(!showValues)}
+            className="ml-auto h-7 w-7 flex items-center justify-center rounded-full bg-accent text-accent-foreground"
+          >
+            {showValues ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+          </button>
+        </motion.div>
+
+        {/* Balance card mobile */}
+        <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <button
+              onClick={() => setBalanceTab("pending")}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${balanceTab === "pending" ? "bg-muted text-foreground" : "text-muted-foreground"}`}
+            >
+              À receber
+            </button>
+            <button
+              onClick={() => setBalanceTab("available")}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${balanceTab === "available" ? "bg-muted text-foreground" : "text-muted-foreground"}`}
+            >
+              Disponível
             </button>
           </div>
-        </motion.div>
-
-        {/* Period filter mobile */}
-        <motion.div {...anim(0.02)}>
-          {periodFilterButtons}
-          {customDatePickers}
-        </motion.div>
-
-        {/* Greeting */}
-        <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Olá,</p>
-          <h2 className="text-lg font-bold mt-0.5">{displayName} 👋</h2>
-          <p className="text-[0.7rem] text-muted-foreground mt-0.5">
-            Pequenas ações geram grandes resultados
+          <p className="text-2xl font-bold">
+            {balanceTab === "available" ? fmt(availableBalance) : fmt(walletPending)}
           </p>
+          <Button
+            size="sm"
+            className="mt-3 h-8 text-xs gap-1.5"
+            onClick={() => navigate("/finance")}
+          >
+            <ArrowDownToLine className="h-3.5 w-3.5" /> Solicitar saque
+          </Button>
         </motion.div>
 
-
-        {/* Saldo + Total de Vendas */}
+        {/* Stats grid mobile */}
         <div className="grid grid-cols-2 gap-3">
-          <motion.div
-            {...anim(0.15)}
-            className="rounded-xl border border-primary/30 bg-card p-4 space-y-3"
-          >
-            <p className="text-[0.65rem] text-muted-foreground font-medium">Saldo disponível</p>
-            <p className="text-lg font-bold">{fmt(availableBalance)}</p>
-            <Button
-              size="sm"
-              className="w-full h-8 text-xs gap-1.5"
-              onClick={() => navigate("/finance")}
-            >
-              <ArrowDownToLine className="h-3.5 w-3.5" /> Solicitar saque
-            </Button>
-          </motion.div>
-          <motion.div
-            {...anim(0.18)}
-            className="rounded-xl border border-border bg-card p-4 space-y-2"
-          >
-            <p className="text-[0.65rem] text-muted-foreground font-medium">Total de vendas</p>
+          <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-3">
+            <p className="text-[0.65rem] text-muted-foreground">Vendas</p>
             <p className="text-lg font-bold">{salesCount}</p>
-            <p className="text-[0.55rem] text-muted-foreground">Período: {periodLabels[period]}</p>
           </motion.div>
-        </div>
-
-        {/* Ticket médio + Reembolso */}
-        <div className="grid grid-cols-2 gap-3">
-          <motion.div {...anim(0.2)} className="rounded-xl border border-border bg-card p-4">
-            <p className="text-[0.65rem] text-muted-foreground font-medium">Ticket médio</p>
+          <motion.div {...anim(0.12)} className="rounded-xl border border-border bg-card p-3">
+            <p className="text-[0.65rem] text-muted-foreground">Ticket médio</p>
             <p className="text-lg font-bold">{fmt(ticketMedio)}</p>
-            <p className="text-[0.55rem] text-muted-foreground">Período: {periodLabels[period]}</p>
           </motion.div>
-          <motion.div {...anim(0.22)} className="rounded-xl border border-border bg-card p-4">
-            <p className="text-[0.65rem] text-muted-foreground font-medium">Reembolsos</p>
-            <p className={`text-lg font-bold ${parseFloat(refundRate) > 5 ? "text-destructive" : ""}`}>{refundRate}%</p>
-            <p className="text-[0.55rem] text-muted-foreground">{refundedSales.length} reembolso(s)</p>
+          <motion.div {...anim(0.14)} className="rounded-xl border border-border bg-card p-3">
+            <p className="text-[0.65rem] text-muted-foreground">Carrinhos abandonados</p>
+            <p className="text-lg font-bold">{pendingCheckoutsCount}</p>
+          </motion.div>
+          <motion.div {...anim(0.16)} className="rounded-xl border border-border bg-card p-3">
+            <p className="text-[0.65rem] text-muted-foreground">Conv. Checkout</p>
+            <p className="text-lg font-bold">{checkoutConversionRate}%</p>
           </motion.div>
         </div>
 
-        {/* Conversão do Checkout */}
-        <motion.div {...anim(0.24)} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Target className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[0.65rem] text-muted-foreground font-medium">Conversão do checkout</p>
-            <p className={`text-lg font-bold ${checkoutConversionColor}`}>{checkoutConversionRate}%</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[0.55rem] text-muted-foreground">{salesCount} de {totalCheckoutInitiations}</p>
-            <p className="text-[0.55rem] text-muted-foreground">visitantes</p>
-          </div>
-        </motion.div>
-        {/* Vendas Pendentes */}
-        {pendingCheckoutsCount > 0 && (
-          <motion.div {...anim(0.28)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
-              <Clock className="h-5 w-5 text-warning" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-medium text-warning">Vendas Pendentes</p>
-              <p className="text-sm font-bold">{pendingCheckoutsCount} checkout(s) • {fmt(pendingCheckoutsValue)}</p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Quick Links */}
+        {/* Quick links mobile */}
         <div className="space-y-2">
-          {quickLinks.map((link, i) => (
+          {[
+            { label: "Minhas Vendas", icon: BarChart3, path: "/sales" },
+            { label: "Meus Produtos", icon: Package, path: "/products" },
+            { label: "Afiliados", icon: Users, path: "/affiliates" },
+            { label: "Suporte", icon: HelpCircle, path: "/help" },
+          ].map((link, i) => (
             <motion.button
               key={link.path}
               {...anim(0.2 + i * 0.04)}
@@ -715,418 +572,421 @@ export default function Dashboard() {
 
       {/* ═══════ DESKTOP LAYOUT ═══════ */}
       <div className="hidden md:block space-y-5">
-        {/* Date Range + Filters */}
-        <motion.div {...anim(0)} className="flex flex-col gap-3">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CalendarIcon className="h-4 w-4" />
-              <span className="capitalize">{today}</span>
-            </div>
-            <div className="flex-1" />
-            <div className="flex flex-wrap items-center gap-2">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-[140px] h-8 bg-card border-border text-xs">
-                  <SelectValue placeholder="Buscar produto..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os produtos</SelectItem>
-                  {products.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setShowValues(!showValues)}
-              >
-                {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </Button>
-            </div>
+        {/* Header: Title */}
+        <motion.div {...anim(0)} className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">Visão geral</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setShowValues(!showValues)}
+            >
+              {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </Button>
           </div>
-          {/* Period filter desktop */}
-          <div className="flex flex-wrap items-center gap-2">
-            {periodFilterButtons}
-          </div>
-          {customDatePickers}
         </motion.div>
 
-        {/* Top Row: Greeting + Saldo + Vendas + Ticket Médio */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Row 1: Balance Card + Milestone Tracker */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Balance Card */}
           <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">Olá,</p>
-            <h2 className="text-lg font-bold mt-1">{displayName} 👋</h2>
-            <p className="text-[0.7rem] text-muted-foreground mt-1 line-clamp-1">
-              Pequenas ações geram grandes resultados
-            </p>
-          </motion.div>
-
-          <motion.div {...anim(0.1)} className="rounded-xl border border-primary/30 bg-card p-5 flex flex-col">
-            <p className="text-xs text-muted-foreground">Saldo disponível</p>
-            <p className="text-2xl font-bold mt-1">{fmt(availableBalance)}</p>
-            <div className="flex-1" />
-            <Button
-              size="sm"
-              className="w-full h-8 text-xs gap-1.5 mt-3"
-              onClick={() => navigate("/finance")}
-            >
-              <ArrowDownToLine className="h-3.5 w-3.5" /> Solicitar saque
-            </Button>
-          </motion.div>
-
-          <motion.div {...anim(0.15)} className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">Total de vendas • {periodLabels[period]}</p>
-            <p className="text-2xl font-bold mt-1">{salesCount}</p>
-            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
-              <ShoppingCart className="h-3 w-3" /> {fmt(totalRevenue)} faturado
-            </p>
-          </motion.div>
-
-          <motion.div {...anim(0.2)} className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">Ticket médio • {periodLabels[period]}</p>
-            <p className="text-2xl font-bold mt-1">{fmt(ticketMedio)}</p>
-            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
-              <CreditCard className="h-3 w-3" /> Base: {salesCount} venda(s)
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Second Row: Conversão + Reembolso + Conquistas */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-
-          <motion.div {...anim(0.28)} className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">Taxa de reembolso • {periodLabels[period]}</p>
-            <p className={`text-2xl font-bold mt-1 ${parseFloat(refundRate) > 5 ? "text-destructive" : "text-primary"}`}>
-              {refundRate}%
-            </p>
-            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
-              <RefreshCcw className="h-3 w-3" /> {refundedSales.length} reembolso(s) • {fmt(refundAmount)}
-            </p>
-          </motion.div>
-
-          <motion.div {...anim(0.3)} className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">Conversão do checkout • {periodLabels[period]}</p>
-            <p className={`text-2xl font-bold mt-1 ${checkoutConversionColor}`}>
-              {checkoutConversionRate}%
-            </p>
-            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
-              <Target className="h-3 w-3" /> {salesCount} de {totalCheckoutInitiations} visitantes
-            </p>
-          </motion.div>
-
-          <motion.div {...anim(0.33)} className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">Jornada de conquistas</p>
-              <button onClick={() => navigate("/sales")} className="text-[0.6rem] text-primary hover:underline">
-                Saiba mais →
+            <div className="flex items-center gap-1 mb-4">
+              <button
+                onClick={() => setBalanceTab("pending")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  balanceTab === "pending" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                À receber
+              </button>
+              <button
+                onClick={() => setBalanceTab("available")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  balanceTab === "available" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Disponível
               </button>
             </div>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-lg">{levelIcon}</span>
-              <span className="text-sm font-bold">{level}</span>
+            <div className="flex items-center gap-4">
+              <p className="text-3xl font-bold tracking-tight">
+                {balanceTab === "available" ? fmt(availableBalance) : fmt(walletPending)}
+              </p>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5 rounded-full px-4"
+                onClick={() => navigate("/finance")}
+              >
+                <ArrowDownToLine className="h-3.5 w-3.5" /> Antecipar
+              </Button>
             </div>
-            <p className="text-[0.65rem] text-muted-foreground mt-1.5 flex items-center gap-1">
-              <Flame className="h-3 w-3" /> Próximo nível: {nextLevel}
-            </p>
+          </motion.div>
+
+          {/* Milestone Tracker */}
+          <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-5">
+            <div className="relative">
+              {/* Progress bar */}
+              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min((milestoneIdx / MILESTONES.length) * 100 + (milestoneIdx < MILESTONES.length ? ((totalRevenueAll / MILESTONES[milestoneIdx]) * (100 / MILESTONES.length)) : 0), 100)}%`,
+                    background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.6))`,
+                  }}
+                />
+              </div>
+
+              {/* Milestone markers */}
+              <div className="flex justify-between mt-3">
+                {MILESTONE_LABELS.map((label, i) => {
+                  const reached = milestoneIdx > i;
+                  const current = milestoneIdx === i;
+                  return (
+                    <div key={label} className="flex flex-col items-center gap-1.5">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.55rem] font-bold transition-all ${
+                        reached ? "bg-primary text-primary-foreground" : current ? "bg-primary/30 text-primary ring-2 ring-primary/50" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {reached ? "✓" : <Flame className="h-3 w-3" />}
+                      </div>
+                      <span className={`text-[0.6rem] font-medium ${reached ? "text-primary" : current ? "text-foreground" : "text-muted-foreground"}`}>
+                        {label}
+                      </span>
+                      <span className={`text-[0.5rem] ${reached ? "text-primary/70" : "text-muted-foreground/60"}`}>
+                        {MILESTONE_NAMES[i]}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </motion.div>
         </div>
 
-        {/* Vendas Pendentes (Desktop) */}
-        {pendingCheckoutsCount > 0 && (
-          <motion.div {...anim(0.22)} className="rounded-xl border border-warning/30 bg-warning/5 p-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/15">
-              <Clock className="h-5 w-5 text-warning" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-medium text-warning">Vendas Pendentes</p>
-              <p className="text-sm font-bold">{pendingCheckoutsCount} checkout(s) aguardando pagamento • {fmt(pendingCheckoutsValue)}</p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Comparison Chart + Conversion by Payment */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          <motion.div {...anim(0.25)} className="lg:col-span-3 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-1">
+        {/* Row 2: Revenue Chart (left) + Side Stats (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
+          {/* Revenue Chart */}
+          <motion.div {...anim(0.15)} className="rounded-xl border border-border bg-card p-5">
+            {/* Chart header */}
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs text-muted-foreground">{comparisonData.currentLabel}{comparisonData.showPrevious ? ` vs ${comparisonData.previousLabel.toLowerCase()}` : ""}</p>
-                <p className="text-2xl font-bold mt-1">{fmt(comparisonData.currentTotal)}</p>
-              </div>
-              <div className="text-right">
-                {comparisonData.showPrevious && (
-                  <>
-                    <span className={`text-sm font-bold ${Number(weekChange) >= 0 ? "text-primary" : "text-destructive"}`}>
-                      {Number(weekChange) >= 0 ? "+" : ""}{weekChange}%
-                    </span>
-                    <p className="text-[0.6rem] text-muted-foreground">vs {comparisonData.previousLabel.toLowerCase()}</p>
-                  </>
-                )}
-              </div>
-            </div>
-            {/* Chart mode selector */}
-            <div className="flex items-center gap-1 mb-3">
-              {(["day", "week", "month", "hour"] as const).map((mode) => {
-                const labels = { day: "Dia", week: "Semana", month: "Mês", hour: "Horário" };
-                return (
-                  <button
-                    key={mode}
-                    onClick={() => setChartMode(mode)}
-                    className={`px-2 py-1 rounded text-[0.6rem] font-medium transition-colors ${
-                      chartMode === mode
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {labels[mode]}
-                  </button>
-                );
-              })}
-            </div>
-            {comparisonData.showPrevious && (
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
-                  <span className="text-[0.6rem] text-muted-foreground">{comparisonData.currentLabel}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-sm bg-muted-foreground/30" />
-                  <span className="text-[0.6rem] text-muted-foreground">{comparisonData.previousLabel}</span>
-                </div>
-              </div>
-            )}
-            <div className="h-40 flex items-end gap-1">
-              {comparisonData.items.map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                  <div className="w-full flex items-end gap-0.5 h-32">
-                    {comparisonData.showPrevious && (
-                      <div className="flex-1 h-full relative group flex flex-col justify-end">
-                        <div
-                          className="w-full rounded-t bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
-                          style={{ height: `${d.previousPct}%` }}
-                        />
-                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          {fmt(d.previous)}
-                        </div>
-                      </div>
-                    )}
-                    <div className={`${comparisonData.showPrevious ? "flex-1" : "w-full"} h-full relative group flex flex-col justify-end`}>
-                      <div
-                        className={`w-full rounded-t transition-colors ${d.isFuture ? "bg-primary/10" : "bg-primary/60 hover:bg-primary/80"}`}
-                        style={{ height: d.isFuture ? "3%" : `${d.currentPct}%` }}
-                      />
-                      {!d.isFuture && (
-                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card border border-border rounded px-1 py-0.5 text-[0.5rem] font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          {fmt(d.current)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-[0.5rem] text-muted-foreground">{d.label}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div {...anim(0.3)} className="lg:col-span-2 rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground mb-4">Conversão de pagamento</p>
-            <div className="space-y-5">
-              {paymentMethods.map((method) => {
-                const data = salesByProvider[method.key] || { count: 0, amount: 0 };
-                const total = filteredSales.length || 1;
-                const pct = ((data.count / total) * 100);
-                return (
-                  <div key={method.name} className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <method.icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />
-                        <span className="text-xs font-medium">{method.name}</span>
-                      </div>
-                      <span className="text-xs font-bold">{pct.toFixed(0)}% <span className="font-normal text-muted-foreground">{data.count}/{total}</span></span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.max(pct, 2)}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Vendas por Região (dados reais via geolocalização) */}
-        {(() => {
-          // Aggregate region data from filtered completed sales
-          const completedWithGeo = filteredSales.filter(s => s.status === "completed");
-          
-          const stateMap = new Map<string, { orders: number; value: number }>();
-          const cityMap = new Map<string, { orders: number; value: number; state: string }>();
-
-          for (const s of completedWithGeo) {
-            const sale = s as any;
-            if (sale.buyer_state) {
-              const existing = stateMap.get(sale.buyer_state) || { orders: 0, value: 0 };
-              existing.orders += 1;
-              existing.value += sale.amount || 0;
-              stateMap.set(sale.buyer_state, existing);
-            }
-            if (sale.buyer_city && sale.buyer_state) {
-              const key = `${sale.buyer_city}|${sale.buyer_state}`;
-              const existing = cityMap.get(key) || { orders: 0, value: 0, state: sale.buyer_state };
-              existing.orders += 1;
-              existing.value += sale.amount || 0;
-              cityMap.set(key, existing);
-            }
-          }
-
-          const stateData = Array.from(stateMap.entries())
-            .map(([name, d]) => ({ name, abbr: "", orders: d.orders, value: d.value }))
-            .sort((a, b) => b.orders - a.orders)
-            .slice(0, 5)
-            .map((item, i) => ({ ...item, rank: i + 1 }));
-
-          const cityData = Array.from(cityMap.entries())
-            .map(([key, d]) => {
-              const [city] = key.split("|");
-              return { name: city, abbr: d.state, orders: d.orders, value: d.value };
-            })
-            .sort((a, b) => b.orders - a.orders)
-            .slice(0, 5)
-            .map((item, i) => ({ ...item, rank: i + 1 }));
-
-          const currentRegionData = regionView === 'state' ? stateData : cityData;
-          const maxOrders = currentRegionData[0]?.orders || 1;
-          const totalOrders = regionView === 'state'
-            ? Array.from(stateMap.values()).reduce((acc, d) => acc + d.orders, 0)
-            : Array.from(cityMap.values()).reduce((acc, d) => acc + d.orders, 0);
-          const activeCount = regionView === 'state' ? stateMap.size : cityMap.size;
-          const activeLabel = regionView === 'state' ? "Estados ativos" : "Cidades ativas";
-          const hasData = currentRegionData.length > 0;
-
-          return (
-            <motion.div {...anim(0.32)} className="rounded-xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" strokeWidth={1.5} />
-                  <p className="text-xs text-muted-foreground">Vendas por região • {periodLabels[period]}</p>
-                  <div className="flex items-center gap-0.5 ml-2 bg-muted rounded-full p-0.5">
-                    <button
-                      onClick={() => setRegionView('state')}
-                      className={`text-[0.6rem] px-2.5 py-1 rounded-full font-medium transition-all ${regionView === 'state' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                      Estado
-                    </button>
-                    <button
-                      onClick={() => setRegionView('city')}
-                      className={`text-[0.6rem] px-2.5 py-1 rounded-full font-medium transition-all ${regionView === 'city' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                      Cidade
-                    </button>
-                  </div>
+                  <p className="text-xs text-muted-foreground">Receita líquida total</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Receita líquida após taxas da plataforma</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-                <div className="flex items-center gap-3 text-[0.6rem] text-muted-foreground">
-                  <span>Total: <strong className="text-foreground">{totalOrders} pedidos</strong></span>
-                  <span>{activeLabel}: <strong className="text-foreground">{activeCount}</strong></span>
-                </div>
+                <p className="text-2xl font-bold mt-1">{fmt(totalRevenue)}</p>
               </div>
-              {hasData ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {currentRegionData.map((item) => {
-                    const pct = (item.orders / maxOrders) * 100;
+              <div className="flex items-center gap-2">
+                {/* Chart mode selector */}
+                <div className="flex items-center bg-muted rounded-lg p-0.5">
+                  {(["day", "month", "year"] as const).map(mode => {
+                    const labels = { day: "Dia", month: "Mês", year: "Ano" };
                     return (
-                      <div key={item.name + item.abbr} className="flex items-center gap-3">
-                        <span className="text-[0.6rem] font-bold text-muted-foreground w-4 text-right">{item.rank}</span>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium">
-                              {item.name}
-                              {item.abbr && <span className="text-muted-foreground"> ({item.abbr})</span>}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[0.6rem] text-muted-foreground">{item.orders} pedidos</span>
-                              <span className="text-xs font-bold">{fmt(item.value)}</span>
-                            </div>
-                          </div>
-                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
-                          </div>
-                        </div>
-                      </div>
+                      <button
+                        key={mode}
+                        onClick={() => setChartMode(mode)}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          chartMode === mode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {labels[mode]}
+                      </button>
                     );
                   })}
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <MapPin className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                  <p className="text-xs text-muted-foreground">Dados regionais aparecerão aqui após as próximas vendas</p>
+                {chartMode === "month" && (
+                  <Select value={chartYear.toString()} onValueChange={(v) => setChartYear(Number(v))}>
+                    <SelectTrigger className="w-[90px] h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <Select value={chartProduct} onValueChange={setChartProduct}>
+                  <SelectTrigger className="w-[160px] h-8 text-xs">
+                    <SelectValue placeholder="Todos os produtos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os produtos</SelectItem>
+                    {products.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="h-[250px] w-full">
+              {renderLineChart()}
+            </div>
+          </motion.div>
+
+          {/* Side Stats */}
+          <motion.div {...anim(0.2)} className="rounded-xl border border-border bg-card p-5 space-y-0">
+            {/* Toggle Qty / % */}
+            <div className="flex items-center justify-end mb-4">
+              <div className="flex items-center bg-muted rounded-lg p-0.5">
+                <button
+                  onClick={() => setSideStatsView('qty')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    sideStatsView === 'qty' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  }`}
+                >
+                  Qtd.
+                </button>
+                <button
+                  onClick={() => setSideStatsView('pct')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    sideStatsView === 'pct' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  }`}
+                >
+                  %
+                </button>
+              </div>
+            </div>
+
+            {/* Stats list */}
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs text-primary mb-1">Aprovação cartão</p>
+                <p className="text-2xl font-bold">
+                  {sideStatsView === 'qty' ? cardApproval.toLocaleString("pt-BR") : `${totalFiltered > 0 ? ((cardApproval / totalFiltered) * 100).toFixed(1) : 0}%`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-primary mb-1">Conversão pix</p>
+                <p className="text-2xl font-bold">
+                  {sideStatsView === 'qty' ? pixConversion.toLocaleString("pt-BR") : `${totalFiltered > 0 ? ((pixConversion / totalFiltered) * 100).toFixed(1) : 0}%`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-primary mb-1">Conversão boleto</p>
+                <p className="text-2xl font-bold">
+                  {sideStatsView === 'qty' ? boletoConversion.toLocaleString("pt-BR") : `${totalFiltered > 0 ? ((boletoConversion / totalFiltered) * 100).toFixed(1) : 0}%`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-destructive mb-1">Reembolsos</p>
+                <p className="text-2xl font-bold">
+                  {sideStatsView === 'qty' ? refundedSales.length.toLocaleString("pt-BR") : `${refundRate}%`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-destructive mb-1">Chargebacks</p>
+                <p className="text-2xl font-bold">
+                  {sideStatsView === 'qty' ? (chargebackSales.length + medSales.length).toLocaleString("pt-BR") : `${chargebackRate}%`}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Row 3: Bottom Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <motion.div {...anim(0.25)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground mb-1">Número de vendas</p>
+            <p className="text-2xl font-bold">{salesCount.toLocaleString("pt-BR")}</p>
+          </motion.div>
+          <motion.div {...anim(0.27)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground mb-1">Ticket médio</p>
+            <p className="text-2xl font-bold">{fmt(ticketMedio)}</p>
+          </motion.div>
+          <motion.div {...anim(0.29)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground mb-1">Carrinhos abandonados</p>
+            <p className="text-2xl font-bold">{pendingCheckoutsCount.toLocaleString("pt-BR")}</p>
+          </motion.div>
+          <motion.div {...anim(0.31)} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground mb-1">Conv. Checkout</p>
+            <p className="text-2xl font-bold">{checkoutConversionRate}%</p>
+          </motion.div>
+          <motion.div {...anim(0.33)} className="rounded-xl border border-border bg-card p-5 col-span-2 lg:col-span-1">
+            <p className="text-xs text-muted-foreground mb-1">Faturamento bruto</p>
+            <p className="text-2xl font-bold">{fmt(completedSales.reduce((a, s) => a + s.amount, 0))}</p>
+          </motion.div>
+        </div>
+
+        {/* Row 4: Regional Sales + Period Filter */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Vendas por Região */}
+          {(() => {
+            const completedWithGeo = filteredSales.filter(s => s.status === "completed");
+            const stateMap = new Map<string, { orders: number; value: number }>();
+            const cityMap = new Map<string, { orders: number; value: number; state: string }>();
+
+            for (const s of completedWithGeo) {
+              const sale = s as any;
+              if (sale.buyer_state) {
+                const existing = stateMap.get(sale.buyer_state) || { orders: 0, value: 0 };
+                existing.orders += 1;
+                existing.value += sale.amount || 0;
+                stateMap.set(sale.buyer_state, existing);
+              }
+              if (sale.buyer_city && sale.buyer_state) {
+                const key = `${sale.buyer_city}|${sale.buyer_state}`;
+                const existing = cityMap.get(key) || { orders: 0, value: 0, state: sale.buyer_state };
+                existing.orders += 1;
+                existing.value += sale.amount || 0;
+                cityMap.set(key, existing);
+              }
+            }
+
+            const stateData = Array.from(stateMap.entries())
+              .map(([name, d]) => ({ name, abbr: "", orders: d.orders, value: d.value }))
+              .sort((a, b) => b.orders - a.orders)
+              .slice(0, 5)
+              .map((item, i) => ({ ...item, rank: i + 1 }));
+
+            const cityData = Array.from(cityMap.entries())
+              .map(([key, d]) => {
+                const [city] = key.split("|");
+                return { name: city, abbr: d.state, orders: d.orders, value: d.value };
+              })
+              .sort((a, b) => b.orders - a.orders)
+              .slice(0, 5)
+              .map((item, i) => ({ ...item, rank: i + 1 }));
+
+            const currentRegionData = regionView === 'state' ? stateData : cityData;
+            const maxOrders = currentRegionData[0]?.orders || 1;
+            const totalOrders = regionView === 'state'
+              ? Array.from(stateMap.values()).reduce((acc, d) => acc + d.orders, 0)
+              : Array.from(cityMap.values()).reduce((acc, d) => acc + d.orders, 0);
+            const hasData = currentRegionData.length > 0;
+
+            return (
+              <motion.div {...anim(0.35)} className="rounded-xl border border-border bg-card p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" strokeWidth={1.5} />
+                    <p className="text-xs text-muted-foreground">Vendas por região</p>
+                    <div className="flex items-center gap-0.5 ml-2 bg-muted rounded-full p-0.5">
+                      <button
+                        onClick={() => setRegionView('state')}
+                        className={`text-[0.6rem] px-2.5 py-1 rounded-full font-medium transition-all ${regionView === 'state' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Estado
+                      </button>
+                      <button
+                        onClick={() => setRegionView('city')}
+                        className={`text-[0.6rem] px-2.5 py-1 rounded-full font-medium transition-all ${regionView === 'city' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Cidade
+                      </button>
+                    </div>
+                  </div>
+                  <span className="text-[0.6rem] text-muted-foreground">Total: <strong className="text-foreground">{totalOrders}</strong></span>
                 </div>
-              )}
-            </motion.div>
-          );
-        })()}
+                {hasData ? (
+                  <div className="space-y-3">
+                    {currentRegionData.map((item) => {
+                      const pct = (item.orders / maxOrders) * 100;
+                      return (
+                        <div key={item.name + item.abbr} className="flex items-center gap-3">
+                          <span className="text-[0.6rem] font-bold text-muted-foreground w-4 text-right">{item.rank}</span>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium">
+                                {item.name}
+                                {item.abbr && <span className="text-muted-foreground"> ({item.abbr})</span>}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[0.6rem] text-muted-foreground">{item.orders} pedidos</span>
+                                <span className="text-xs font-bold">{fmt(item.value)}</span>
+                              </div>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                              <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <MapPin className="h-8 w-8 text-muted-foreground/30 mb-2" />
+                    <p className="text-xs text-muted-foreground">Dados regionais aparecerão aqui após as próximas vendas</p>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })()}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <motion.div {...anim(0.35)} className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
-            <h3 className="text-sm font-bold">Transforme sua ideia em produto digital</h3>
-            <p className="text-[0.7rem] text-muted-foreground leading-relaxed">
-              Do zero ao primeiro cliente: crie, publique e venda.
-            </p>
-            <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => navigate("/products/new")}>
-              Criar Produto <ExternalLink className="h-3 w-3" />
-            </Button>
-          </motion.div>
+          {/* Period filter card */}
+          <motion.div {...anim(0.37)} className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <p className="text-xs text-muted-foreground">Filtro de período</p>
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.keys(periodLabels) as PeriodKey[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => handlePeriodChange(p)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    period === p ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {periodLabels[p]}
+                </button>
+              ))}
+            </div>
+            {period === "custom" && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {customFrom ? format(customFrom, "dd/MM/yyyy") : "De"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+                <span className="text-xs text-muted-foreground">até</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {customTo ? format(customTo, "dd/MM/yyyy") : "Até"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={customTo} onSelect={setCustomTo} className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
 
-          <motion.div {...anim(0.38)}
-            className="rounded-xl border border-border bg-card p-5 space-y-2 cursor-pointer hover:border-primary/30 transition-colors"
-            onClick={() => navigate("/help")}
-          >
-            <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Tire dúvidas</p>
-            <div className="flex items-center gap-2">
-              <HelpCircle className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">Central de ajuda</span>
-            </div>
-            <div className="flex gap-1.5 mt-1">
-              <span className="text-[0.6rem] rounded-full bg-muted px-2 py-0.5 text-muted-foreground">+50 artigos</span>
-              <span className="text-[0.6rem] rounded-full bg-muted px-2 py-0.5 text-muted-foreground">Suporte</span>
-            </div>
-          </motion.div>
-
-          <motion.div {...anim(0.41)}
-            className="rounded-xl border border-border bg-card p-5 space-y-2 cursor-pointer hover:border-primary/30 transition-colors"
-            onClick={() => navigate("/affiliates")}
-          >
-            <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Lucre mais</p>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">Marketplace de afiliados</span>
-            </div>
-            <button className="text-[0.6rem] text-primary hover:underline flex items-center gap-0.5 mt-1">
-              Acessar <ExternalLink className="h-2.5 w-2.5" />
-            </button>
-          </motion.div>
-
-          <motion.div {...anim(0.44)} className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className={`text-3xl font-bold ${healthColor}`}>{healthScore.toFixed(0)}</span>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">A saúde da conta está</p>
-                <p className="text-xs font-bold">{healthScore >= 8 ? "ótima" : healthScore >= 5 ? "regular" : "crítica"}</p>
-              </div>
-            </div>
-            <Progress value={healthScore * 10} className="h-2 mb-3" />
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <p className="text-xs font-bold">{refundRate}%</p>
-                <p className="text-[0.55rem] text-muted-foreground">Estorno</p>
-              </div>
-              <div>
-                <p className={`text-xs font-bold ${parseFloat(chargebackRate) > 1 ? "text-destructive" : ""}`}>{chargebackRate}%</p>
-                <p className="text-[0.55rem] text-muted-foreground">Chargeback</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold">{(parseFloat(refundRate) + parseFloat(chargebackRate)).toFixed(1)}%</p>
-                <p className="text-[0.55rem] text-muted-foreground">Disputas</p>
-              </div>
+            {/* Quick actions */}
+            <div className="pt-2 space-y-2">
+              <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Ações rápidas</p>
+              {[
+                { label: "Criar Produto", icon: Package, path: "/products/new" },
+                { label: "Central de Ajuda", icon: HelpCircle, path: "/help" },
+                { label: "Afiliados", icon: Users, path: "/affiliates" },
+              ].map(link => (
+                <button
+                  key={link.path}
+                  onClick={() => navigate(link.path)}
+                  className="w-full flex items-center gap-3 rounded-lg p-2.5 hover:bg-muted/50 transition-colors text-left"
+                >
+                  <link.icon className="h-4 w-4 text-primary" strokeWidth={1.5} />
+                  <span className="text-xs font-medium flex-1">{link.label}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              ))}
             </div>
           </motion.div>
         </div>
