@@ -44,7 +44,10 @@ export function DashboardLayout() {
             </div>
 
             {/* Mobile: icon-only, expands on click */}
-            <div className="md:hidden flex items-center">
+            <div className="md:hidden flex items-center gap-2">
+              <button onClick={() => navigate("/dashboard")} className="shrink-0">
+                <ThemeLogo variant="horizontal" className="h-6" />
+              </button>
               {!searchOpen ? (
                 <button
                   onClick={() => setSearchOpen(true)}
