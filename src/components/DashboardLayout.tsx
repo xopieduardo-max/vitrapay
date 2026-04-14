@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -11,6 +11,7 @@ import { useSalesNotifications } from "@/hooks/useSalesNotifications";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
+import { ThemeLogo } from "@/components/ThemeLogo";
 
 export function DashboardLayout() {
   const { newSalesCount, notifications, clearCount } = useSalesNotifications();
