@@ -1010,6 +1010,26 @@ export default function Landing() {
         <MembrosBlackCarousel />
       </section>
 
+      {/* ─── Fee Simulator Section ─── */}
+      <section id="simulador" className="container py-20 md:py-28">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
+            <span className="text-xs font-medium uppercase tracking-widest text-primary">Simulador de taxas</span>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight">
+              Menos taxas.<br />Mais lucros no <span className="text-gradient-primary">seu bolso.</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-md">
+              Simule agora e descubra na hora qual plataforma te entrega mais lucro no final do mês.
+            </p>
+            <div className="h-1 w-16 rounded-full bg-primary" />
+          </motion.div>
+
+          <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }}>
+            <FeeSimulatorCard />
+          </motion.div>
+        </div>
+      </section>
+
       {/* ─── FAQ Section ─── */}
       <section id="faq" className="container py-20 md:py-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
