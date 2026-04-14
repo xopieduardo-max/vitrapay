@@ -71,7 +71,6 @@ export default function Sales() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [showFilters, setShowFilters] = useState(false);
 
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["sales-stats", user?.id],
