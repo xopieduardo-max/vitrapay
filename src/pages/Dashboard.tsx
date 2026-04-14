@@ -556,12 +556,61 @@ export default function Dashboard() {
         {/* Header */}
         <motion.div {...anim(0)} className="flex items-center justify-between">
           <h1 className="text-xl font-bold tracking-tight">Visão geral</h1>
-          <button
-            onClick={() => setShowValues(!showValues)}
-            className="h-8 w-8 flex items-center justify-center rounded-full bg-accent text-accent-foreground"
-          >
-            {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Filter button */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="h-8 px-2.5 flex items-center gap-1.5 rounded-lg bg-muted/60 border border-border text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  {periodLabels[period]}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="space-y-1">
+                  {(["today", "7d", "30d", "all"] as PeriodKey[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => { setPeriod(key); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        period === key ? "bg-primary text-primary-foreground" : "hover:bg-muted text-foreground"
+                      }`}
+                    >
+                      {periodLabels[key]}
+                    </button>
+                  ))}
+                  <div className="border-t border-border my-1" />
+                  <button
+                    onClick={() => setPeriod("custom")}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      period === "custom" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-foreground"
+                    }`}
+                  >
+                    📅 Personalizado
+                  </button>
+                  {period === "custom" && (
+                    <div className="pt-2 space-y-2">
+                      <Calendar
+                        mode="range"
+                        selected={{ from: customFrom, to: customTo }}
+                        onSelect={(range) => {
+                          setCustomFrom(range?.from);
+                          setCustomTo(range?.to);
+                        }}
+                        locale={ptBR}
+                        className="rounded-md border"
+                      />
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <button
+              onClick={() => setShowValues(!showValues)}
+              className="h-8 w-8 flex items-center justify-center rounded-lg bg-muted/60 border border-border text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </button>
+          </div>
         </motion.div>
 
         {/* Faturamento do dia card */}
