@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   Eye,
   EyeOff,
@@ -20,13 +20,14 @@ import {
   Target,
   CalendarDays,
   Info,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
@@ -49,12 +50,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // ─── Constants & Helpers ────────────────────────────────────────────────────
 
 const MILESTONES = [1000000, 10000000, 25000000, 50000000, 100000000];
 const MILESTONE_LABELS = ["10k", "100k", "250k", "500k", "1M"];
-const MILESTONE_NAMES = ["Iniciante", "Bronze", "Prata", "Ouro", "Diamante", "Lenda"];
+const MILESTONE_NAMES = ["Jalapeño", "Habanero", "Carolina Reaper", "Trinidad Scorpion", "Pepper X"];
+const MILESTONE_EMOJIS = ["🌶️", "🌶️", "🔥", "🔥", "💎"];
 
 function getCurrentGoal(revenue: number) {
   for (const m of MILESTONES) {
@@ -68,6 +77,16 @@ function getMilestoneIndex(revenue: number) {
     if (revenue < MILESTONES[i]) return i;
   }
   return MILESTONES.length;
+}
+
+function getCurrentLevelName(idx: number) {
+  if (idx === 0) return "Primeira venda";
+  return `${MILESTONE_LABELS[idx - 1]} - ${MILESTONE_NAMES[idx - 1]}`;
+}
+
+function getNextLevelName(idx: number) {
+  if (idx >= MILESTONES.length) return "Nível máximo";
+  return `${MILESTONE_LABELS[idx]} - ${MILESTONE_NAMES[idx]}`;
 }
 
 const paymentMethods = [
