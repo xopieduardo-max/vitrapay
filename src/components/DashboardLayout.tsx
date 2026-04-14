@@ -16,6 +16,7 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 export function DashboardLayout() {
   const { newSalesCount, notifications, clearCount } = useSalesNotifications();
   usePushNotifications();
+  const navigate = useNavigate();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
