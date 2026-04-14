@@ -413,6 +413,63 @@ export default function AdminCartRecovery() {
                 </CardContent>
               </Card>
 
+              {/* Email templates */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-primary" />
+                    Templates de Email
+                  </CardTitle>
+                  <CardDescription>
+                    Use <code className="bg-muted px-1 rounded text-xs">{"{nome}"}</code>, <code className="bg-muted px-1 rounded text-xs">{"{produto}"}</code> e <code className="bg-muted px-1 rounded text-xs">{"{link}"}</code> como variáveis
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">1º Email de Recuperação</p>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Assunto</Label>
+                      <Input
+                        value={effectiveSettings.email_first_subject || ""}
+                        onChange={(e) => updateField("email_first_subject", e.target.value)}
+                        placeholder="Você esqueceu algo, {nome}!"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Corpo do email</Label>
+                      <Textarea
+                        value={effectiveSettings.email_first_body || ""}
+                        onChange={(e) => updateField("email_first_body", e.target.value)}
+                        rows={6}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">2º Email de Recuperação (Última Chance)</p>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Assunto</Label>
+                      <Input
+                        value={effectiveSettings.email_second_subject || ""}
+                        onChange={(e) => updateField("email_second_subject", e.target.value)}
+                        placeholder="Última chance — {produto} ainda está disponível"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Corpo do email</Label>
+                      <Textarea
+                        value={effectiveSettings.email_second_body || ""}
+                        onChange={(e) => updateField("email_second_body", e.target.value)}
+                        rows={6}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Button onClick={() => saveSettings.mutate()} disabled={saveSettings.isPending} className="w-full gap-2">
                 <Save className="h-4 w-4" />
                 {saveSettings.isPending ? "Salvando..." : "Salvar Mensagens"}
