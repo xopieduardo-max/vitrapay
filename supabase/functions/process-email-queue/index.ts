@@ -6,6 +6,51 @@ const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
+const FALLBACK_RECIPIENT_EMAIL = 'unknown@queue.invalid'
+
+type QueueName = 'auth_emails' | 'transactional_emails'
+
+type EmailQueuePayload = Record<string, unknown> & {
+  from?: string
+  html?: string
+  idempotency_key?: string
+  label?: string
+  message_id?: string
+  purpose?: string
+  queued_at?: string
+  run_id?: string
+  sender_domain?: string
+  subject?: string
+  text?: string
+  to?: string
+  unsubscribe_token?: string
+}
+
+type EmailQueueMessage = {
+  message: EmailQueuePayload
+  msg_id: number
+  read_ct: number
+}
+
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
+}
+
+async function logEmailSendStatus(
+  supabase: any,
+  queue: string,
+  payload: EmailQueuePayload,
+  status: string,
+  errorMessage?: string
+): Promise<void> {
+  await supabase.from('email_send_log').insert({
+    message_id: getString(payload.message_id) ?? null,
+    template_name: getString(payload.label) ?? queue,
+    recipient_email: getString(payload.to) ?? FALLBACK_RECIPIENT_EMAIL,
+    status,
+    ...(errorMessage ? { error_message: errorMessage } : {}),
+  })
+}
 
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
@@ -54,19 +99,13 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
+  msg: EmailQueueMessage,
   reason: string
 ): Promise<void> {
   const payload = msg.message
-  await supabase.from('email_send_log').insert({
-    message_id: payload.message_id,
-    template_name: (payload.label || queue) as string,
-    recipient_email: payload.to,
-    status: 'dlq',
-    error_message: reason,
-  })
+  await logEmailSendStatus(supabase, queue, payload, 'dlq', reason)
   const { error } = await supabase.rpc('move_to_dlq', {
     source_queue: queue,
     dlq_name: `${queue}_dlq`,
@@ -111,7 +150,7 @@ Deno.serve(async (req) => {
     )
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase: any = createClient(supabaseUrl, supabaseServiceKey)
 
   // 1. Check rate-limit cooldown and read queue config
   const { data: state } = await supabase
@@ -128,16 +167,17 @@ Deno.serve(async (req) => {
 
   const batchSize = state?.batch_size ?? DEFAULT_BATCH_SIZE
   const sendDelayMs = state?.send_delay_ms ?? DEFAULT_SEND_DELAY_MS
-  const ttlMinutes: Record<string, number> = {
+  const ttlMinutes: Record<QueueName, number> = {
     auth_emails: state?.auth_email_ttl_minutes ?? DEFAULT_AUTH_TTL_MINUTES,
     transactional_emails: state?.transactional_email_ttl_minutes ?? DEFAULT_TRANSACTIONAL_TTL_MINUTES,
   }
 
   let totalProcessed = 0
+  const queues: QueueName[] = ['auth_emails', 'transactional_emails']
 
   // 2. Process auth_emails first (priority), then transactional_emails
-  for (const queue of ['auth_emails', 'transactional_emails']) {
-    const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
+  for (const queue of queues) {
+    const { data: rawMessages, error: readError } = await supabase.rpc('read_email_batch', {
       queue_name: queue,
       batch_size: batchSize,
       vt: 30,
@@ -148,20 +188,18 @@ Deno.serve(async (req) => {
       continue
     }
 
-    if (!messages?.length) continue
+    const messages = (rawMessages ?? []) as EmailQueueMessage[]
+
+    if (!messages.length) continue
 
     // Retry budget is based on real send failures, not pgmq read_ct.
     // read_ct increments for every message in a claimed batch, including
     // messages not attempted when a 429 stops processing early.
     const messageIds = Array.from(
       new Set(
-        messages
-          .map((msg) =>
-            msg?.message?.message_id && typeof msg.message.message_id === 'string'
-              ? msg.message.message_id
-              : null
-          )
-          .filter((id): id is string => Boolean(id))
+          messages
+            .map((msg: EmailQueueMessage) => getString(msg?.message?.message_id) ?? null)
+            .filter((id: string | null): id is string => Boolean(id))
       )
     )
     const failedAttemptsByMessageId = new Map<string, number>()
@@ -268,12 +306,7 @@ Deno.serve(async (req) => {
         )
 
         // Log success
-        await supabase.from('email_send_log').insert({
-          message_id: payload.message_id,
-          template_name: payload.label || queue,
-          recipient_email: payload.to,
-          status: 'sent',
-        })
+        await logEmailSendStatus(supabase, queue, payload, 'sent')
 
         // Delete from queue
         const { error: delError } = await supabase.rpc('delete_email', {
@@ -295,13 +328,7 @@ Deno.serve(async (req) => {
         })
 
         if (isRateLimited(error)) {
-          await supabase.from('email_send_log').insert({
-            message_id: payload.message_id,
-            template_name: payload.label || queue,
-            recipient_email: payload.to,
-            status: 'rate_limited',
-            error_message: errorMsg.slice(0, 1000),
-          })
+          await logEmailSendStatus(supabase, queue, payload, 'rate_limited', errorMsg.slice(0, 1000))
 
           const retryAfterSecs = getRetryAfterSeconds(error)
           await supabase
@@ -332,13 +359,7 @@ Deno.serve(async (req) => {
         }
 
         // Log non-429 failures to track real retry attempts.
-        await supabase.from('email_send_log').insert({
-          message_id: payload.message_id,
-          template_name: payload.label || queue,
-          recipient_email: payload.to,
-          status: 'failed',
-          error_message: errorMsg.slice(0, 1000),
-        })
+        await logEmailSendStatus(supabase, queue, payload, 'failed', errorMsg.slice(0, 1000))
         if (payload?.message_id && typeof payload.message_id === 'string') {
           failedAttemptsByMessageId.set(payload.message_id, failedAttempts + 1)
         }
