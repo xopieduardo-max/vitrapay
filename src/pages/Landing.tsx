@@ -492,28 +492,6 @@ export default function Landing() {
             transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
             className="max-w-4xl mx-auto text-center space-y-6">
 
-      {/* ─── Fee Simulator Section ─── */}
-      <section id="simulador" className="container py-20 md:py-28">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left – Copy */}
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">Simulador de taxas</span>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight">
-              Menos taxas.<br />Mais lucros no <span className="text-gradient-primary">seu bolso.</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-md">
-              Simule agora e descubra na hora qual plataforma te entrega mais lucro no final do mês.
-            </p>
-            <div className="h-1 w-16 rounded-full bg-primary" />
-          </motion.div>
-
-          {/* Right – Simulator Card */}
-          <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }}>
-            <FeeSimulatorCard />
-          </motion.div>
-        </div>
-      </section>
-
 
             <motion.div
               initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
