@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { ExportButton } from "@/components/ExportButton";
-import { DollarSign, ShoppingCart, CreditCard, Loader2, Calendar, Percent, User, Mail, FileText, Search, SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import { DollarSign, ShoppingCart, CreditCard, Loader2, Calendar, Percent, User, Mail, FileText, Search, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
