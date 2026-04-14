@@ -759,13 +759,13 @@ export default function Dashboard() {
                         background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
                       }}
                     />
-                    {/* Pepper emoji at end of bar */}
+                    {/* Level emoji at end of bar */}
                     {milestoneIdx < MILESTONES.length && (
                       <span
-                        className="absolute top-1/2 -translate-y-1/2 text-lg transition-all duration-700"
+                        className="absolute top-1/2 -translate-y-1/2 text-sm transition-all duration-700"
                         style={{ left: `calc(${Math.min(progressInLevel, 97)}% - 4px)` }}
                       >
-                        🌶️
+                        {MILESTONE_EMOJIS[milestoneIdx]}
                       </span>
                     )}
                   </div>
