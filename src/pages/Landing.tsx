@@ -618,9 +618,9 @@ export default function Landing() {
           )}
         </div>
         <div className="flex whitespace-nowrap animate-marquee-reverse">
-          {[...Array(10)].map((_, i) =>
-          <span key={i} className="mx-8 text-lg md:text-xl font-bold text-primary/80 flex items-center gap-3">
-              <Zap className="h-4 w-4" /> {marqueeText}
+          {[...Array(12)].map((_, i) =>
+          <span key={i} className="mx-6 text-sm md:text-base font-medium tracking-wide text-white/30 flex items-center gap-6 uppercase">
+              VitraPay <span className="text-white/15 text-xs">✦</span> Vendas <span className="text-white/15 text-xs">✦</span> Resultados <span className="text-white/15 text-xs">✦</span> Digital <span className="text-white/15 text-xs">✦</span> Lucros <span className="text-white/15 text-xs">✦</span>
             </span>
           )}
         </div>
