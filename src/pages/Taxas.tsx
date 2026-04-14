@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import {
-  Loader2, Save, CreditCard, Zap, Clock, Calculator, QrCode,
-  FileText, Monitor, ChevronRight,
+  Loader2, Save, CreditCard, Zap, Clock, Calculator, QrCode, Percent,
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const PLANS = [
   {
@@ -35,17 +34,13 @@ const PLANS = [
   },
 ];
 
-const anim = (delay: number) => ({
-  initial: { opacity: 0, y: 10 } as const,
-  animate: { opacity: 1, y: 0 } as const,
-  transition: { delay, duration: 0.4, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
-});
-
 export default function Taxas() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [cardPlan, setCardPlan] = useState("d30");
   const [savingPlan, setSavingPlan] = useState(false);
+
+  // Simulator
   const [simValue, setSimValue] = useState("100");
   const [simMethod, setSimMethod] = useState<"pix" | "card">("pix");
 
@@ -81,11 +76,16 @@ export default function Taxas() {
     setSavingPlan(false);
   };
 
+  // Simulator math
   const valueCents = Math.round(parseFloat(simValue || "0") * 100);
-  const SERVICE_FEE = 99;
+  const SERVICE_FEE = 99; // R$ 0,99
+
   const selectedPlan = PLANS.find((p) => p.id === cardPlan) || PLANS[0];
 
-  const pixPlatformFee = 249;
+  const pixPlatformFee = 249; // R$ 2,49
+  const pixGatewayCost = 199; // R$ 1,99
+  const pixPlatformProfit = pixPlatformFee - pixGatewayCost; // R$ 0,50
+
   const cardPctFee = Math.round(valueCents * (selectedPlan.pct / 100));
   const cardFixedFee = selectedPlan.fixed;
   const cardTotalFee = cardPctFee + cardFixedFee;
@@ -116,159 +116,70 @@ export default function Taxas() {
   }
 
   return (
-    <div className="space-y-6 pb-20 md:pb-6">
-      {/* Header */}
-      <motion.div {...anim(0)} className="rounded-xl border border-border bg-card p-6">
-        <h1 className="text-2xl font-bold tracking-tight">Taxas e Pagamentos</h1>
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Taxas e Plano</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Gerencie suas taxas e opções de pagamento
+          Escolha seu plano de recebimento e simule suas taxas
         </p>
-      </motion.div>
+      </div>
 
-      {/* Breadcrumb */}
-      <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card px-5 py-3 flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Home</span>
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="font-medium">Taxas e Pagamentos</span>
-      </motion.div>
-
-      {/* Meios de Pagamento */}
-      <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <h2 className="text-lg font-bold">Meios de Pagamento</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Boleto */}
-          <div className="rounded-xl border border-border bg-muted/20 p-5 space-y-3">
-            <div className="flex items-start justify-between">
-              <h3 className="font-bold text-base">Boletos</h3>
-              <FileText className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Boletos emitidos não são cobrados, apenas os pagos.
-              <br />Se você não vender, não paga!
-            </p>
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-base font-bold">
-                  R$ 2,49 + {selectedPlan.pct.toFixed(2).replace(".", ",")}%{" "}
-                  <span className="text-xs font-normal text-muted-foreground">/boleto</span>
-                </p>
-                <p className="text-[0.65rem] text-muted-foreground mt-1">Reserva de Emergência: 5%</p>
-              </div>
-              <span className="text-[0.65rem] font-bold uppercase px-2.5 py-1 rounded-full border border-primary text-primary">
-                Disponível
-              </span>
-            </div>
+      {/* Fixed fees info */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <QrCode className="h-4 w-4 text-primary" />
+          Taxas por Método de Pagamento
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-lg bg-muted/50 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">PIX</p>
+            <p className="text-lg font-bold">R$ 2,49 <span className="text-xs font-normal text-muted-foreground">por venda</span></p>
+            <p className="text-[0.65rem] text-muted-foreground">Taxa fixa. Liberação D+0 (imediato).</p>
           </div>
-
-          {/* Cartão de Crédito */}
-          <div className="rounded-xl border border-border bg-muted/20 p-5 space-y-3">
-            <div className="flex items-start justify-between">
-              <h3 className="font-bold text-base">Cartão de Crédito</h3>
-              <CreditCard className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Para ver as taxas por parcela, <span className="text-primary cursor-pointer">clique aqui</span>.
+          <div className="rounded-lg bg-muted/50 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cartão de Crédito</p>
+            <p className="text-lg font-bold">
+              {selectedPlan.pct}% + R$ 2,49
             </p>
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-base font-bold">
-                  R$ 2,49 + {selectedPlan.pct.toFixed(2).replace(".", ",")}%{" "}
-                  <span className="text-xs font-normal text-muted-foreground">/transação</span>
-                </p>
-                <p className="text-[0.65rem] text-muted-foreground mt-1">Reserva de Emergência: 10%</p>
-              </div>
-              <span className="text-[0.65rem] font-bold uppercase px-2.5 py-1 rounded-full border border-primary text-primary">
-                Disponível
-              </span>
-            </div>
-          </div>
-
-          {/* PIX */}
-          <div className="rounded-xl border border-border bg-muted/20 p-5 space-y-3">
-            <div className="flex items-start justify-between">
-              <h3 className="font-bold text-base">PIX</h3>
-              <QrCode className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              PIX é o meio de pagamento instantâneo da plataforma.
+            <p className="text-[0.65rem] text-muted-foreground">
+              Plano {selectedPlan.id === "d2" ? "D+2 (Antecipação)" : "D+30 (Padrão)"}
             </p>
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-base font-bold">
-                  R$ 2,49{" "}
-                  <span className="text-xs font-normal text-muted-foreground">/transação</span>
-                </p>
-                <p className="text-[0.65rem] text-muted-foreground mt-1">Liberação D+0 (imediato)</p>
-              </div>
-              <span className="text-[0.65rem] font-bold uppercase px-2.5 py-1 rounded-full border border-primary text-primary">
-                Disponível
-              </span>
-            </div>
-          </div>
-
-          {/* VitraPay */}
-          <div className="rounded-xl border border-border bg-muted/20 p-5 space-y-3">
-            <div className="flex items-start justify-between">
-              <h3 className="font-bold text-base">VITRAPAY</h3>
-              <Monitor className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Venda mais com a melhor plataforma de pagamentos.
-            </p>
-            <div className="mt-2 space-y-2">
-              <p className="text-xs font-semibold">Ticket máximo</p>
-              <p className="text-[0.65rem] text-muted-foreground leading-relaxed">
-                Limite máximo para transações via cartão de crédito, Pix e Boleto. Caso no checkout o pedido do cliente ultrapasse este limite, não será autorizado.
-              </p>
-              <div className="grid grid-cols-3 gap-3 mt-2">
-                <div>
-                  <p className="text-[0.6rem] text-muted-foreground">Pix:</p>
-                  <p className="text-sm font-bold">R$ 1.000</p>
-                </div>
-                <div>
-                  <p className="text-[0.6rem] text-muted-foreground">Crédito:</p>
-                  <p className="text-sm font-bold">R$ 200</p>
-                </div>
-                <div>
-                  <p className="text-[0.6rem] text-muted-foreground">Boleto:</p>
-                  <p className="text-sm font-bold">R$ 200</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-      </motion.div>
+        <p className="text-[0.65rem] text-muted-foreground">
+          + R$ 0,99 de taxa de serviço cobrada do comprador em todas as transações.
+        </p>
+      </div>
 
-      {/* Plano de Recebimento */}
-      <motion.div {...anim(0.15)} className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <div className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold">Plano de Recebimento (Cartão)</h2>
+      {/* Plan Selection */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-5">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <CreditCard className="h-4 w-4 text-primary" />
+          Plano de Recebimento (Cartão)
         </div>
         <p className="text-xs text-muted-foreground">
-          Escolha quando deseja receber os valores das vendas por cartão de crédito.
+          Escolha quando deseja receber os valores das vendas por cartão de crédito. 
           Vendas via PIX são sempre D+0 (imediato). Todos começam no plano Padrão (D+30).
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PLANS.map((plan) => (
             <button
               key={plan.id}
               onClick={() => setCardPlan(plan.id)}
-              className={`relative rounded-xl border-2 p-5 text-left transition-all ${
+              className={`relative rounded-xl border-2 p-4 text-left transition-all ${
                 cardPlan === plan.id
                   ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                   : "border-border hover:border-muted-foreground/30"
               }`}
             >
               {cardPlan === plan.id && (
-                <span className="absolute top-3 right-3 text-[0.6rem] font-bold uppercase px-2 py-0.5 rounded bg-primary text-primary-foreground">
+                <span className="absolute top-2 right-2 text-[0.6rem] font-bold uppercase px-1.5 py-0.5 rounded bg-primary text-primary-foreground">
                   Ativo
                 </span>
               )}
               {plan.default && cardPlan !== plan.id && (
-                <span className="absolute top-3 right-3 text-[0.6rem] font-medium uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                <span className="absolute top-2 right-2 text-[0.6rem] font-medium uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                   Padrão
                 </span>
               )}
@@ -277,7 +188,7 @@ export default function Taxas() {
                 <span className="font-bold text-sm">{plan.label}</span>
               </div>
               <p className="text-xs text-muted-foreground mb-3">{plan.desc}</p>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Taxa percentual</span>
                   <span className="font-semibold">{plan.pct.toFixed(2).replace(".", ",")}%</span>
@@ -301,13 +212,13 @@ export default function Taxas() {
             Salvar Plano
           </Button>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Simulador de Taxas */}
-      <motion.div {...anim(0.2)} className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <div className="flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold">Simulador de Taxas</h2>
+      {/* Fee Simulator */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-5">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Calculator className="h-4 w-4 text-primary" />
+          Simulador de Taxas
         </div>
         <p className="text-xs text-muted-foreground">
           Simule quanto você vai receber em cada venda de acordo com o método de pagamento e seu plano atual.
@@ -331,7 +242,7 @@ export default function Taxas() {
             <div className="flex gap-2">
               <button
                 onClick={() => setSimMethod("pix")}
-                className={`flex-1 rounded-lg border-2 py-2.5 px-3 text-xs font-semibold transition-all ${
+                className={`flex-1 rounded-lg border-2 py-2 px-3 text-xs font-semibold transition-all ${
                   simMethod === "pix"
                     ? "border-primary bg-primary/5 text-primary"
                     : "border-border text-muted-foreground hover:border-muted-foreground/30"
@@ -341,7 +252,7 @@ export default function Taxas() {
               </button>
               <button
                 onClick={() => setSimMethod("card")}
-                className={`flex-1 rounded-lg border-2 py-2.5 px-3 text-xs font-semibold transition-all ${
+                className={`flex-1 rounded-lg border-2 py-2 px-3 text-xs font-semibold transition-all ${
                   simMethod === "card"
                     ? "border-primary bg-primary/5 text-primary"
                     : "border-border text-muted-foreground hover:border-muted-foreground/30"
@@ -353,8 +264,10 @@ export default function Taxas() {
           </div>
         </div>
 
+        <Separator />
+
         {valueCents > 0 && (
-          <div className="rounded-xl border border-border bg-muted/20 p-5 space-y-3">
+          <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Valor do produto</span>
               <span className="font-medium">{fmt(valueCents)}</span>
@@ -367,37 +280,41 @@ export default function Taxas() {
               <span className="font-medium text-destructive">- {fmt(platformFee)}</span>
             </div>
 
-            <div className="h-px bg-border" />
+            <Separator />
 
             <div className="flex justify-between text-base">
               <span className="font-semibold">Você recebe</span>
-              <span className={`font-bold ${producerReceives >= 0 ? "text-primary" : "text-destructive"}`}>
+              <span className={`font-bold ${producerReceives >= 0 ? "text-emerald-500" : "text-destructive"}`}>
                 {fmt(producerReceives)}
               </span>
             </div>
 
-            <div className="h-px bg-border" />
+            <Separator />
 
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Comprador paga (produto + taxa de serviço)</span>
               <span className="font-medium">{fmt(buyerPays)}</span>
             </div>
 
-            <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-              {simMethod === "card" ? (
+            {simMethod === "card" && (
+              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
                 <p>
                   <strong>Plano selecionado:</strong> {selectedPlan.label} — liberação em{" "}
                   {selectedPlan.id === "d2" ? "2 dias úteis" : "30 dias corridos"}.
                 </p>
-              ) : (
+              </div>
+            )}
+
+            {simMethod === "pix" && (
+              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
                 <p>
                   <strong>PIX:</strong> Taxa fixa de R$ 2,49. Liberação D+0 (imediato).
                 </p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }
