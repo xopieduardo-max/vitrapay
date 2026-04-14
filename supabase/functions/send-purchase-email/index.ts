@@ -23,10 +23,14 @@ interface PurchaseEmailParams {
 
 function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
   const { buyer_name, product_title, product_type, product_id, temp_password, buyer_email } = params;
+  const isCourse = product_type === "course";
 
-  // Always direct to /minha-conta — the buyer's portal
-  const accessLink = `https://www.vitrapay.com.br/minha-conta`;
-  const accessText = product_type === "course" ? "Acessar Meu Curso" : "Acessar Meus Produtos";
+  // For courses, link directly to the course page; otherwise go to the portal
+  const isCourse = product_type === "course";
+  const accessLink = isCourse
+    ? `https://www.vitrapay.com.br/learn/${product_id}`
+    : `https://www.vitrapay.com.br/minha-conta`;
+  const accessText = isCourse ? "Começar Meu Curso Agora" : "Acessar Meus Produtos";
 
   // Account credentials section (only shown for new accounts)
   const isCpfPassword = temp_password === "cpf";
@@ -90,10 +94,22 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
 
           ${credentialsSection}
 
+          ${isCourse ? `
+          <!-- Course welcome section -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0faf0;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;margin:0 0 24px;">
+            <tr><td style="padding:16px 20px;">
+              <p style="font-size:15px;color:#1a1a1a;margin:0 0 8px;font-weight:bold;">&#127891; Boas-vindas ao seu novo curso!</p>
+              <p style="font-size:14px;color:#444;margin:0;line-height:1.6;">
+                Voc&#234; agora tem acesso completo ao curso <strong>${product_title}</strong>.
+                Avance no seu ritmo, marque as aulas como conclu&#237;das e ao final ganhe seu certificado de conclus&#227;o.
+              </p>
+            </td></tr>
+          </table>` : ''}
+
           <p style="font-size:16px;color:#333;margin:0 0 24px;line-height:1.6;">
-            ${temp_password 
-              ? 'Acesse sua conta agora para ver seus produtos:' 
-              : 'Voc&#234; pode acessar seus produtos a qualquer momento clicando no bot&#227;o abaixo:'}
+            ${temp_password
+              ? (isCourse ? 'Acesse sua conta e comece a estudar agora:' : 'Acesse sua conta agora para ver seus produtos:')
+              : (isCourse ? 'Clique abaixo para come&#231;ar sua jornada de aprendizado:' : 'Voc&#234; pode acessar seus produtos a qualquer momento clicando no bot&#227;o abaixo:')}
           </p>
 
           <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
@@ -123,16 +139,23 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
 }
 
 function buildPlainText(params: PurchaseEmailParams): string {
-  const { buyer_name, product_title, temp_password, buyer_email } = params;
-  const accessLink = `https://www.vitrapay.com.br/minha-conta`;
-  
+  const { buyer_name, product_title, product_type, product_id, temp_password, buyer_email } = params;
+  const isCourse = product_type === "course";
+  const accessLink = isCourse
+    ? `https://www.vitrapay.com.br/learn/${product_id}`
+    : `https://www.vitrapay.com.br/minha-conta`;
+
   let credentialsText = "";
   if (temp_password) {
     const passText = temp_password === "cpf" ? "os 6 primeiros dígitos do seu CPF" : temp_password;
     credentialsText = `\n\nSua conta foi criada automaticamente!\nE-mail: ${buyer_email}\nSenha: ${passText}\n\nRecomendamos trocar sua senha após o primeiro acesso.`;
   }
-  
-  return `Olá ${buyer_name},\n\nSeu pagamento foi confirmado com sucesso!\n\nProduto: ${product_title}${credentialsText}\n\nAcesse seus produtos: ${accessLink}\n\nBom proveito!\nEquipe VitraPay`;
+
+  const welcomeText = isCourse
+    ? `\n\nBoas-vindas ao curso! Avance no seu ritmo e ao final ganhe seu certificado de conclusão.`
+    : "";
+
+  return `Olá ${buyer_name},\n\nSeu pagamento foi confirmado com sucesso!\n\nProduto: ${product_title}${credentialsText}${welcomeText}\n\n${isCourse ? "Começar meu curso" : "Acessar meus produtos"}: ${accessLink}\n\nBom proveito!\nEquipe VitraPay`;
 }
 
 Deno.serve(async (req) => {
