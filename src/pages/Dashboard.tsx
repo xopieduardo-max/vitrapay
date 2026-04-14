@@ -879,7 +879,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Milestone Tracker - Pepper Style */}
-          <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-5">
+          <motion.div {...anim(0.1)} className="rounded-xl border border-primary/30 bg-card p-5 milestone-glow">
             {(() => {
               const currentGoal = getCurrentGoal(totalRevenueAll);
               const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
