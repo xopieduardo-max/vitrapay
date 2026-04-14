@@ -657,57 +657,68 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold">Receita por dia</p>
           </div>
-          <div className="flex items-end gap-1" style={{ height: 96 }}>
-            {(() => {
-              const BAR_AREA_H = 80;
-              const now = new Date();
-              const { from: rangeFrom } = getDateRange(period, customFrom, customTo);
-              // Determine how many days to show (max 14 for readability)
-              let numDays = 7;
-              if (period === "today") numDays = 1;
-              else if (period === "7d") numDays = 7;
-              else if (period === "30d") numDays = 14;
-              else if (period === "all") numDays = 14;
-              else if (period === "custom" && customFrom && customTo) {
-                const diff = Math.ceil((customTo.getTime() - customFrom.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-                numDays = Math.min(diff, 14);
-              }
+          {(() => {
+            const BAR_AREA_H = 80;
+            const now = new Date();
+            const { from: rangeFrom } = getDateRange(period, customFrom, customTo);
+            let numDays = 7;
+            if (period === "today") numDays = 1;
+            else if (period === "7d") numDays = 7;
+            else if (period === "30d") numDays = 30;
+            else if (period === "all") numDays = 14;
+            else if (period === "custom" && customFrom && customTo) {
+              const diff = Math.ceil((customTo.getTime() - customFrom.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+              numDays = Math.min(diff, 30);
+            }
 
-              const days: { label: string; value: number }[] = [];
-              const startDate = rangeFrom || new Date(now.getTime() - (numDays - 1) * 86400000);
-              for (let i = numDays - 1; i >= 0; i--) {
-                const d = new Date(now);
-                d.setDate(d.getDate() - i);
-                // Only include days within the range
-                if (d < startDate) continue;
-                const key = d.toISOString().slice(0, 10);
-                const label = numDays <= 7
-                  ? d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")
-                  : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-                const value = salesData
-                  .filter(s => s.status === "completed" && new Date(s.created_at).toISOString().slice(0, 10) === key)
-                  .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
-                days.push({ label, value });
-              }
-              if (days.length === 0) days.push({ label: "hoje", value: 0 });
-              const maxVal = Math.max(...days.map(d => d.value), 1);
-              return days.map((d, i) => {
-                const isLast = i === days.length - 1;
-                const barH = Math.max((d.value / maxVal) * BAR_AREA_H, 4);
-                return (
-                  <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1">
-                    <div
-                      className={`w-full max-w-[28px] rounded-md transition-all ${isLast ? "bg-primary" : "bg-muted"}`}
-                      style={{ height: barH }}
-                    />
-                    <span className={`text-[0.55rem] leading-none ${isLast ? "text-primary font-semibold" : "text-muted-foreground"}`}>
-                      {d.label}
-                    </span>
-                  </div>
-                );
-              });
-            })()}
-          </div>
+            const days: { date: Date; value: number }[] = [];
+            const startDate = rangeFrom || new Date(now.getTime() - (numDays - 1) * 86400000);
+            for (let i = numDays - 1; i >= 0; i--) {
+              const d = new Date(now);
+              d.setDate(d.getDate() - i);
+              if (d < startDate) continue;
+              const key = d.toISOString().slice(0, 10);
+              const value = salesData
+                .filter(s => s.status === "completed" && new Date(s.created_at).toISOString().slice(0, 10) === key)
+                .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+              days.push({ date: new Date(d), value });
+            }
+            if (days.length === 0) days.push({ date: now, value: 0 });
+            const maxVal = Math.max(...days.map(d => d.value), 1);
+            const showLabels = days.length <= 7;
+            const firstDate = days[0].date;
+            const lastDate = days[days.length - 1].date;
+            const fmtDate = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+
+            return (
+              <>
+                <div className="flex items-end gap-[2px]" style={{ height: 96 }}>
+                  {days.map((d, i) => {
+                    const isLast = i === days.length - 1;
+                    const barH = Math.max((d.value / maxVal) * BAR_AREA_H, 4);
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1">
+                        <div
+                          className={`w-full max-w-[28px] rounded-md transition-all ${isLast ? "bg-primary" : "bg-muted"}`}
+                          style={{ height: barH }}
+                        />
+                        {showLabels && (
+                          <span className={`text-[0.55rem] leading-none ${isLast ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                            {d.date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {!showLabels && (
+                  <p className="text-[0.65rem] text-muted-foreground text-center mt-2">
+                    {fmtDate(firstDate)} a {fmtDate(lastDate)} · {days.length} dias
+                  </p>
+                )}
+              </>
+            );
+          })()}
         </motion.div>
 
         {/* Ticket médio + Vendas */}
