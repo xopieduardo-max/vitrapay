@@ -14,6 +14,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useAdminAudit } from "@/hooks/useAdminAudit";
 
 const WITHDRAWAL_FEE = 500;
 
@@ -43,6 +44,7 @@ export default function AdminWithdrawals() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState("all");
+  const { logAction } = useAdminAudit();
 
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin", user?.id],
@@ -91,8 +93,10 @@ export default function AdminWithdrawals() {
       const { error } = await supabase.from("withdrawals").update(updates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       toast({ title: "Status atualizado!" });
+      const action = vars.status === "completed" ? "withdrawal_approved" : "withdrawal_rejected";
+      logAction(action as any, "withdrawal", vars.id, { status: vars.status });
       queryClient.invalidateQueries({ queryKey: ["admin-withdrawals"] });
     },
     onError: (err: any) => {
@@ -109,8 +113,9 @@ export default function AdminWithdrawals() {
       if (data?.error) throw new Error(data.error + (data.details ? `: ${data.details}` : ""));
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, withdrawalId) => {
       toast({ title: "PIX enviado!", description: `Transfer: ${data.transfer_id}` });
+      logAction("withdrawal_pix_sent", "withdrawal", withdrawalId, { transfer_id: data.transfer_id });
       queryClient.invalidateQueries({ queryKey: ["admin-withdrawals"] });
     },
     onError: (err: any) => {

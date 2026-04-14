@@ -66,6 +66,7 @@ const AdminDisputes = lazy(() => import("./pages/admin/AdminDisputes"));
 const AdminTransactions = lazy(() => import("./pages/admin/AdminTransactions"));
 const AdminProductDetail = lazy(() => import("./pages/admin/AdminProductDetail"));
 const AdminCartRecovery = lazy(() => import("./pages/admin/AdminCartRecovery"));
+const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
 
 const queryClient = new QueryClient();
 
@@ -151,6 +152,7 @@ const App = () => {
                 <Route path="/admin/settings" element={<AdminSettings />} />
                 <Route path="/admin/cart-recovery" element={<AdminCartRecovery />} />
                 <Route path="/admin/product/:productId" element={<AdminProductDetail />} />
+                <Route path="/admin/audit" element={<AdminAuditLog />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

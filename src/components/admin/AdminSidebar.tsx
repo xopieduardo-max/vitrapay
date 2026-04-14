@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, ArrowLeft, ShoppingBag, Lightbulb, Bell, Calculator, ShieldAlert, Receipt, ShoppingCart,
+  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, ArrowLeft, ShoppingBag, Lightbulb, Bell, Calculator, ShieldAlert, Receipt, ShoppingCart, ClipboardList,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
@@ -23,6 +23,7 @@ const navItems = [
   { title: "Recuperação", url: "/admin/cart-recovery", icon: ShoppingCart },
   { title: "Disputas", url: "/admin/disputes", icon: ShieldAlert },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
+  { title: "Log Admin", url: "/admin/audit", icon: ClipboardList },
 ];
 
 export function AdminSidebar() {

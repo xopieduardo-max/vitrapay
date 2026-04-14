@@ -31,6 +31,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { useAdminAudit } from "@/hooks/useAdminAudit";
 
 const roleConfig = {
   admin: { label: "Admin", icon: Shield, className: "bg-accent/10 text-accent border-accent/20" },
@@ -69,6 +70,7 @@ export default function AdminUsers() {
   const [savingSuspend, setSavingSuspend] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { logAction } = useAdminAudit();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users-list"],
@@ -179,6 +181,7 @@ export default function AdminUsers() {
       toast.error("Erro ao salvar taxas.");
     } else {
       toast.success("Taxas atualizadas!");
+      await logAction("user_fee_updated", "user", editingUser.id, { customPercentage, customFixed });
       queryClient.invalidateQueries({ queryKey: ["admin-users-list"] });
       setEditingUser(null);
     }
@@ -223,6 +226,7 @@ export default function AdminUsers() {
       toast.error("Erro ao suspender usuário.");
     } else {
       toast.success(`${suspendingUser.name} foi suspenso.`);
+      await logAction("user_suspended", "user", suspendingUser.id, { reason: suspendReason.trim() || null, name: suspendingUser.name });
       queryClient.invalidateQueries({ queryKey: ["admin-users-list"] });
       setSuspendingUser(null);
       setSuspendReason("");
@@ -244,6 +248,7 @@ export default function AdminUsers() {
       toast.error("Erro ao reativar usuário.");
     } else {
       toast.success(`${user.name} foi reativado.`);
+      await logAction("user_reactivated", "user", user.id, { name: user.name });
       queryClient.invalidateQueries({ queryKey: ["admin-users-list"] });
     }
   };

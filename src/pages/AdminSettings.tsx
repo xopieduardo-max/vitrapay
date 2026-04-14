@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, AlertTriangle, Wrench, Banknote, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { useAdminAudit } from "@/hooks/useAdminAudit";
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
+  const { logAction } = useAdminAudit();
 
   const { data: config, isLoading } = useQuery({
     queryKey: ["platform-settings"],
@@ -69,6 +71,12 @@ export default function AdminSettings() {
       toast.error("Erro ao salvar configurações.");
     } else {
       toast.success("Configurações salvas!");
+      await logAction("platform_settings_saved", "platform", "1", {
+        maintenance_mode: maintenanceMode,
+        withdrawal_fee: wFee,
+        min_withdrawal_amount: minW,
+        support_email: supportEmail.trim(),
+      });
       queryClient.invalidateQueries({ queryKey: ["platform-settings"] });
     }
     setSaving(false);
