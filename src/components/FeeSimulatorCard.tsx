@@ -40,7 +40,7 @@ export function FeeSimulatorCard() {
   };
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-[#111a11] p-6 md:p-8 space-y-6 shadow-2xl shadow-black/40">
+    <div className="rounded-3xl bg-[#111111] p-6 md:p-8 space-y-6 shadow-2xl shadow-black/20">
       {/* Value input */}
       <div className="space-y-3">
         <p className="font-semibold text-white text-lg">Se você vender</p>
@@ -49,7 +49,7 @@ export function FeeSimulatorCard() {
           inputMode="numeric"
           value={`R$ ${formatBRL(amount)}`}
           onChange={handleInputChange}
-          className="w-full text-center text-lg font-medium rounded-xl border border-white/15 bg-white/5 py-3.5 px-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/40 transition-all"
+          className="w-full text-center text-lg font-medium rounded-xl border border-white/10 bg-white/5 py-3.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
         />
       </div>
 
@@ -77,7 +77,7 @@ export function FeeSimulatorCard() {
         {results.competitors.map((c, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-white/8 bg-white/[0.03] p-5 flex items-end justify-between transition-colors hover:bg-white/[0.05]"
+            className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 flex items-end justify-between"
           >
             <div className="space-y-1">
               <p className="text-sm text-white/40">No '{c.name}' você recebe</p>
@@ -89,7 +89,7 @@ export function FeeSimulatorCard() {
       </div>
 
       {/* VitraPay highlight */}
-      <div className="rounded-2xl bg-primary p-5 flex items-end justify-between shadow-lg shadow-primary/25 ring-1 ring-primary/50">
+      <div className="rounded-2xl bg-primary p-5 flex items-end justify-between shadow-lg shadow-primary/25">
         <div className="space-y-1">
           <p className="text-sm text-primary-foreground/70 font-medium">Na VitraPay você recebe</p>
           <p className="text-2xl font-bold text-primary-foreground">R$ {formatBRL(results.vitrapay)}</p>
