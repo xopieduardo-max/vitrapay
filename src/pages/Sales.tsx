@@ -139,12 +139,37 @@ export default function Sales() {
   const totalRevenue = completed.reduce((acc: number, s: any) => acc + s.amount, 0);
   const refundedVolume = refunded.reduce((acc: number, s: any) => acc + s.amount, 0);
   const avgTicket = completed.length > 0 ? totalRevenue / completed.length : 0;
+  const pendingRevenue = pending.reduce((acc: number, s: any) => acc + s.amount, 0);
 
   const totalPages = Math.max(1, Math.ceil(filteredSales.length / perPage));
   const paginatedSales = filteredSales.slice((page - 1) * perPage, page * perPage);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => { setPage(1); }, [dateFilter, productFilter, searchTerm]);
+
+  // Chart data: group by day for last 7 days
+  const chartData = useMemo(() => {
+    const days = 7;
+    const now = new Date();
+    const buckets: { label: string; value: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dayStr = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      const count = filteredSales.filter((s: any) => {
+        if (s.status !== "completed") return false;
+        const sd = new Date(s.created_at);
+        return sd >= start && sd < end;
+      }).length;
+      buckets.push({ label: dayStr, value: count });
+    }
+    return buckets;
+  }, [filteredSales]);
+
+  const maxChart = Math.max(1, ...chartData.map((d) => d.value));
 
   const exportColumns = [
     { key: "product_title", label: "Produto" },
