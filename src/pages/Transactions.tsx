@@ -63,11 +63,22 @@ export default function Transactions() {
     queryKey: ["transactions", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      const allData: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: page } = await supabase
+          .from("transactions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (!page || page.length === 0) break;
+        allData.push(...page);
+        if (page.length < pageSize) break;
+        from += pageSize;
+      }
+      const data = allData;
       return data || [];
     },
     enabled: !!user,

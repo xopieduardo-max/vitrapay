@@ -101,12 +101,22 @@ export default function Finance() {
     queryKey: ["transactions", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await supabase
-        .from("transactions")
-        .select("id, type, category, amount, balance_type, status, release_date, created_at, reference_id")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(200);
+      const allData: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: page } = await supabase
+          .from("transactions")
+          .select("id, type, category, amount, balance_type, status, release_date, created_at, reference_id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (!page || page.length === 0) break;
+        allData.push(...page);
+        if (page.length < pageSize) break;
+        from += pageSize;
+      }
+      const data = allData;
       return data || [];
     },
     enabled: !!user,
