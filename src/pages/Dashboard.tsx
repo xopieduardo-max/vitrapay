@@ -328,6 +328,8 @@ export default function Dashboard() {
   const [chartMode, setChartMode] = useState<"day" | "month" | "year">("month");
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
   const [chartProduct, setChartProduct] = useState("all");
+  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
+  const chartRef = useRef<SVGSVGElement>(null);
 
   const chartData = useMemo(() => {
     const salesForChart = chartProduct === "all"
