@@ -849,7 +849,7 @@ export default function Landing() {
                       <span className="text-xl md:text-2xl font-black tracking-tight italic" style={{ color: 'hsla(40, 30%, 30%, 0.5)' }}>VISA</span>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </div>
             </div>
           </motion.div>
