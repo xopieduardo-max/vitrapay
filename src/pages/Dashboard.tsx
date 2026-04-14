@@ -689,43 +689,87 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* Milestone Tracker */}
+          {/* Milestone Tracker - Pepper Style */}
           <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-5">
-            <div className="relative">
-              {/* Progress bar */}
-              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${Math.min((milestoneIdx / MILESTONES.length) * 100 + (milestoneIdx < MILESTONES.length ? ((totalRevenueAll / MILESTONES[milestoneIdx]) * (100 / MILESTONES.length)) : 0), 100)}%`,
-                    background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.6))`,
-                  }}
-                />
-              </div>
+            {(() => {
+              const currentGoal = getCurrentGoal(totalRevenueAll);
+              const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
+              const progressInLevel = milestoneIdx < MILESTONES.length
+                ? ((totalRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
+                : 100;
+              const remaining = Math.max(0, currentGoal - totalRevenueAll);
 
-              {/* Milestone markers */}
-              <div className="flex justify-between mt-3">
-                {MILESTONE_LABELS.map((label, i) => {
-                  const reached = milestoneIdx > i;
-                  const current = milestoneIdx === i;
-                  return (
-                    <div key={label} className="flex flex-col items-center gap-1.5">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.55rem] font-bold transition-all ${
-                        reached ? "bg-primary text-primary-foreground" : current ? "bg-primary/30 text-primary ring-2 ring-primary/50" : "bg-muted text-muted-foreground"
-                      }`}>
-                        {reached ? "✓" : <Flame className="h-3 w-3" />}
-                      </div>
-                      <span className={`text-[0.6rem] font-medium ${reached ? "text-primary" : current ? "text-foreground" : "text-muted-foreground"}`}>
-                        {label}
-                      </span>
-                      <span className={`text-[0.5rem] ${reached ? "text-primary/70" : "text-muted-foreground/60"}`}>
-                        {MILESTONE_NAMES[i]}
-                      </span>
+              return (
+                <div className="space-y-3">
+                  {/* Header with current level and next level */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground italic">{getCurrentLevelName(milestoneIdx)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{getNextLevelName(milestoneIdx)}</span>
+                      {/* Info button to see all levels */}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors">
+                            <Info className="h-3 w-3 text-muted-foreground" />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Níveis de vendas</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-3 py-2">
+                            {MILESTONES.map((m, i) => {
+                              const reached = milestoneIdx > i;
+                              const current = milestoneIdx === i;
+                              return (
+                                <div key={i} className={`flex items-center gap-3 p-3 rounded-lg ${current ? "bg-primary/10 border border-primary/30" : reached ? "bg-muted/50" : "opacity-60"}`}>
+                                  <span className="text-xl">{MILESTONE_EMOJIS[i]}</span>
+                                  <div className="flex-1">
+                                    <p className={`text-sm font-semibold ${reached ? "text-primary" : current ? "text-foreground" : ""}`}>
+                                      {MILESTONE_LABELS[i]} - {MILESTONE_NAMES[i]}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      R$ {(m / 100).toLocaleString("pt-BR")} em faturamento
+                                    </p>
+                                  </div>
+                                  {reached && <span className="text-primary font-bold text-sm">✓</span>}
+                                  {current && <span className="text-xs text-primary font-medium">Atual</span>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+                      style={{
+                        width: `${Math.min(progressInLevel, 100)}%`,
+                        background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
+                      }}
+                    />
+                    {/* Pepper emoji at end of bar */}
+                    {milestoneIdx < MILESTONES.length && (
+                      <span
+                        className="absolute top-1/2 -translate-y-1/2 text-lg transition-all duration-700"
+                        style={{ left: `calc(${Math.min(progressInLevel, 97)}% - 4px)` }}
+                      >
+                        🌶️
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Remaining text */}
+                  <p className="text-center text-sm text-muted-foreground">
+                    Faltam <strong className="text-foreground">R$ {(remaining / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong> em saques para você atingir o próximo nível
+                  </p>
+                </div>
+              );
+            })()}
           </motion.div>
         </div>
 
