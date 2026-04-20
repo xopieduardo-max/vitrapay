@@ -82,12 +82,24 @@ export default function Sales() {
     queryKey: ["sales-stats", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await supabase
-        .from("sales")
-        .select("id, amount, platform_fee, status, created_at, payment_provider, payment_id, product_id, buyer_id, products(title)")
-        .eq("producer_id", user.id)
-        .order("created_at", { ascending: false });
-      return data || [];
+      // Paginate to bypass Supabase's 1000-row default limit
+      const PAGE_SIZE = 1000;
+      const all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from("sales")
+          .select("id, amount, platform_fee, status, created_at, payment_provider, payment_id, product_id, buyer_id, products(title)")
+          .eq("producer_id", user.id)
+          .order("created_at", { ascending: false })
+          .range(from, from + PAGE_SIZE - 1);
+        if (error) break;
+        const batch = data || [];
+        all.push(...batch);
+        if (batch.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+      return all;
     },
     enabled: !!user,
   });

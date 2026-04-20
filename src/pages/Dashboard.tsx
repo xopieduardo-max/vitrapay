@@ -195,11 +195,23 @@ export default function Dashboard() {
     queryKey: ["dashboard-sales", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await supabase
-        .from("sales")
-        .select("amount, platform_fee, status, created_at, payment_provider, buyer_city, buyer_state, buyer_country")
-        .eq("producer_id", user.id);
-      return data || [];
+      // Paginate to bypass Supabase's 1000-row default limit
+      const PAGE_SIZE = 1000;
+      const all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from("sales")
+          .select("amount, platform_fee, status, created_at, payment_provider, buyer_city, buyer_state, buyer_country")
+          .eq("producer_id", user.id)
+          .range(from, from + PAGE_SIZE - 1);
+        if (error) break;
+        const batch = data || [];
+        all.push(...batch);
+        if (batch.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+      return all;
     },
     enabled: !!user,
   });
