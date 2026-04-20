@@ -286,7 +286,8 @@ export default function Dashboard() {
 
   const completedSalesAll = salesData.filter((s) => s.status === "completed");
   const completedSales = filteredSales.filter((s) => s.status === "completed");
-  const totalRevenue = completedSales.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+  const grossRevenue = completedSales.reduce((acc, s) => acc + s.amount, 0);
+  const netRevenue = completedSales.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
   const salesCount = completedSales.length;
 
   const pendingCheckoutsCount = pendingCheckouts.length;
@@ -299,7 +300,7 @@ export default function Dashboard() {
   const walletAvailable = Number(wallet?.balance_available ?? 0);
   const walletPending = Number(wallet?.balance_pending ?? 0);
   const availableBalance = Math.max(0, walletAvailable - pendingWithdrawalsGross);
-  const ticketMedio = salesCount > 0 ? totalRevenue / salesCount : 0;
+  const ticketMedio = salesCount > 0 ? grossRevenue / salesCount : 0;
   const refundedSales = filteredSales.filter((s) => s.status === "refunded");
   const chargebackSales = filteredSales.filter((s) => s.status === "chargeback");
   const medSales = filteredSales.filter((s) => s.status === "med");
@@ -320,15 +321,15 @@ export default function Dashboard() {
     ? ((salesCount / totalCheckoutInitiations) * 100).toFixed(1)
     : "0";
 
-  const totalRevenueAll = completedSalesAll.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
-  const milestoneIdx = getMilestoneIndex(totalRevenueAll);
+  const grossRevenueAll = completedSalesAll.reduce((acc, s) => acc + s.amount, 0);
+  const milestoneIdx = getMilestoneIndex(grossRevenueAll);
 
   // Sales by provider
   const salesByProvider = completedSales.reduce<Record<string, { count: number; amount: number }>>((acc, s) => {
     const provider = s.payment_provider || "Outro";
     if (!acc[provider]) acc[provider] = { count: 0, amount: 0 };
     acc[provider].count += 1;
-    acc[provider].amount += s.amount - (s.platform_fee || 0);
+    acc[provider].amount += s.amount;
     return acc;
   }, {});
 
@@ -359,9 +360,9 @@ export default function Dashboard() {
         d.setDate(d.getDate() - i);
         const key = d.toISOString().slice(0, 10);
         const label = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-        const value = salesForChart
+      const value = salesForChart
           .filter(s => new Date(s.created_at).toISOString().slice(0, 10) === key)
-          .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+          .reduce((acc, s) => acc + s.amount, 0);
         days.push({ label, value });
       }
       return days;
@@ -372,7 +373,7 @@ export default function Dashboard() {
       const years = new Map<number, number>();
       salesForChart.forEach(s => {
         const y = new Date(s.created_at).getFullYear();
-        years.set(y, (years.get(y) || 0) + (s.amount - (s.platform_fee || 0)));
+        years.set(y, (years.get(y) || 0) + s.amount);
       });
       const sorted = Array.from(years.entries()).sort((a, b) => a[0] - b[0]);
       return sorted.map(([y, v]) => ({ label: y.toString(), value: v }));
@@ -386,7 +387,7 @@ export default function Dashboard() {
           const d = new Date(s.created_at);
           return d.getFullYear() === chartYear && d.getMonth() === i;
         })
-        .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+        .reduce((acc, s) => acc + s.amount, 0);
       return { label, value };
     });
   }, [completedSalesAll, chartMode, chartYear, chartProduct]);
@@ -560,7 +561,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
-      <MilestoneCelebration revenue={totalRevenueAll} milestones={MILESTONES} />
+      <MilestoneCelebration revenue={grossRevenueAll} milestones={MILESTONES} />
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
@@ -630,7 +631,7 @@ export default function Dashboard() {
         <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-1">
           <p className="text-xs text-muted-foreground font-medium">Faturamento — {periodLabels[period]}</p>
           <p className="text-2xl font-bold text-primary">
-            {fmt(totalRevenue)}
+            {fmt(grossRevenue)}
           </p>
           <p className="text-[0.65rem] text-muted-foreground">
             {salesCount} venda(s) no período
@@ -693,7 +694,7 @@ export default function Dashboard() {
               const key = d.toISOString().slice(0, 10);
               const value = salesData
                 .filter(s => s.status === "completed" && new Date(s.created_at).toISOString().slice(0, 10) === key)
-                .reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+                .reduce((acc, s) => acc + s.amount, 0);
               days.push({ date: new Date(d), value });
             }
             if (days.length === 0) days.push({ date: now, value: 0 });
@@ -755,10 +756,10 @@ export default function Dashboard() {
         {/* Milestone Tracker Mobile */}
         <motion.div {...anim(0.24)} className="rounded-2xl border border-primary/30 bg-card p-4 milestone-glow">
           {(() => {
-            const currentGoal = getCurrentGoal(totalRevenueAll);
+            const currentGoal = getCurrentGoal(grossRevenueAll);
             const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
             const progressInLevel = milestoneIdx < MILESTONES.length
-              ? ((totalRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
+              ? ((grossRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
               : 100;
 
             return (
@@ -893,12 +894,12 @@ export default function Dashboard() {
           {/* Milestone Tracker - Pepper Style */}
           <motion.div {...anim(0.1)} className="rounded-xl border border-primary/30 bg-card p-5 milestone-glow">
             {(() => {
-              const currentGoal = getCurrentGoal(totalRevenueAll);
+              const currentGoal = getCurrentGoal(grossRevenueAll);
               const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
               const progressInLevel = milestoneIdx < MILESTONES.length
-                ? ((totalRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
+                ? ((grossRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
                 : 100;
-              const remaining = Math.max(0, currentGoal - totalRevenueAll);
+              const remaining = Math.max(0, currentGoal - grossRevenueAll);
 
               return (
                 <div className="space-y-3">
@@ -970,7 +971,7 @@ export default function Dashboard() {
 
                   {/* Remaining text */}
                   <p className="text-center text-sm text-muted-foreground">
-                    Faltam <strong className="text-foreground">R$ {(remaining / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong> em saques para você atingir o próximo nível
+                    Faltam <strong className="text-foreground">R$ {(remaining / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong> em faturamento para você atingir o próximo nível
                   </p>
                 </div>
               );
@@ -986,19 +987,19 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-xs text-muted-foreground">Receita líquida total</p>
+                  <p className="text-xs text-muted-foreground">Faturamento bruto total</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="h-3.5 w-3.5 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p className="text-xs">Receita líquida após taxas da plataforma</p>
+                          <p className="text-xs">Total aprovado antes das taxas da plataforma</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <p className="text-2xl font-bold mt-1">{fmt(totalRevenue)}</p>
+                <p className="text-2xl font-bold mt-1">{fmt(grossRevenue)}</p>
               </div>
               <div className="flex items-center gap-2">
                 {/* Chart mode selector */}
@@ -1133,9 +1134,9 @@ export default function Dashboard() {
             <p className="text-[0.6rem] text-muted-foreground mt-1">{salesCount} vendas de {totalCheckoutInitiations} visitas</p>
           </motion.div>
           <motion.div {...anim(0.33)} className="rounded-xl border border-border bg-card p-5 col-span-2 lg:col-span-1">
-            <p className="text-xs text-muted-foreground mb-1">Faturamento bruto</p>
-            <p className="text-2xl font-bold">{fmt(completedSales.reduce((a, s) => a + s.amount, 0))}</p>
-            <p className="text-[0.6rem] text-muted-foreground mt-1">Antes das taxas da plataforma</p>
+            <p className="text-xs text-muted-foreground mb-1">Receita líquida</p>
+            <p className="text-2xl font-bold">{fmt(netRevenue)}</p>
+            <p className="text-[0.6rem] text-muted-foreground mt-1">Após as taxas da plataforma</p>
           </motion.div>
         </div>
 
