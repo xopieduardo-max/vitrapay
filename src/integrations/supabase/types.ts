@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       affiliates: {
         Row: {
           affiliate_link: string
@@ -52,6 +82,10 @@ export type Database = {
       cart_recovery_settings: {
         Row: {
           email_enabled: boolean
+          email_first_body: string
+          email_first_subject: string
+          email_second_body: string
+          email_second_subject: string
           first_delay_minutes: number
           id: number
           max_age_hours: number
@@ -64,6 +98,10 @@ export type Database = {
         }
         Insert: {
           email_enabled?: boolean
+          email_first_body?: string
+          email_first_subject?: string
+          email_second_body?: string
+          email_second_subject?: string
           first_delay_minutes?: number
           id?: number
           max_age_hours?: number
@@ -76,6 +114,10 @@ export type Database = {
         }
         Update: {
           email_enabled?: boolean
+          email_first_body?: string
+          email_first_subject?: string
+          email_second_body?: string
+          email_second_subject?: string
           first_delay_minutes?: number
           id?: number
           max_age_hours?: number
@@ -929,9 +971,13 @@ export type Database = {
           card_fixed: number
           card_percentage: number
           id: number
+          maintenance_mode: boolean
+          min_withdrawal_amount: number
           pix_fixed: number
           pix_percentage: number
+          support_email: string
           updated_at: string
+          withdrawal_fee: number
         }
         Insert: {
           banner_interval_seconds?: number
@@ -940,9 +986,13 @@ export type Database = {
           card_fixed?: number
           card_percentage?: number
           id?: number
+          maintenance_mode?: boolean
+          min_withdrawal_amount?: number
           pix_fixed?: number
           pix_percentage?: number
+          support_email?: string
           updated_at?: string
+          withdrawal_fee?: number
         }
         Update: {
           banner_interval_seconds?: number
@@ -951,9 +1001,13 @@ export type Database = {
           card_fixed?: number
           card_percentage?: number
           id?: number
+          maintenance_mode?: boolean
+          min_withdrawal_amount?: number
           pix_fixed?: number
           pix_percentage?: number
+          support_email?: string
           updated_at?: string
+          withdrawal_fee?: number
         }
         Relationships: []
       }
@@ -1249,6 +1303,7 @@ export type Database = {
           custom_fee_percentage: number | null
           display_name: string | null
           id: string
+          is_suspended: boolean
           monthly_revenue: string | null
           onboarding_completed: boolean | null
           phone: string | null
@@ -1256,6 +1311,8 @@ export type Database = {
           pix_key_type: string | null
           profile_verified: boolean | null
           referral_source: string | null
+          suspended_at: string | null
+          suspended_reason: string | null
           terms_accepted_at: string | null
           updated_at: string
           user_id: string
@@ -1281,6 +1338,7 @@ export type Database = {
           custom_fee_percentage?: number | null
           display_name?: string | null
           id?: string
+          is_suspended?: boolean
           monthly_revenue?: string | null
           onboarding_completed?: boolean | null
           phone?: string | null
@@ -1288,6 +1346,8 @@ export type Database = {
           pix_key_type?: string | null
           profile_verified?: boolean | null
           referral_source?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
           user_id: string
@@ -1313,6 +1373,7 @@ export type Database = {
           custom_fee_percentage?: number | null
           display_name?: string | null
           id?: string
+          is_suspended?: boolean
           monthly_revenue?: string | null
           onboarding_completed?: boolean | null
           phone?: string | null
@@ -1320,6 +1381,8 @@ export type Database = {
           pix_key_type?: string | null
           profile_verified?: boolean | null
           referral_source?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
           user_id?: string
@@ -1395,6 +1458,9 @@ export type Database = {
           buyer_id: string | null
           buyer_state: string | null
           created_at: string
+          dispute_note: string | null
+          dispute_resolved: boolean
+          dispute_resolved_at: string | null
           id: string
           payment_id: string | null
           payment_provider: string | null
@@ -1411,6 +1477,9 @@ export type Database = {
           buyer_id?: string | null
           buyer_state?: string | null
           created_at?: string
+          dispute_note?: string | null
+          dispute_resolved?: boolean
+          dispute_resolved_at?: string | null
           id?: string
           payment_id?: string | null
           payment_provider?: string | null
@@ -1427,6 +1496,9 @@ export type Database = {
           buyer_id?: string | null
           buyer_state?: string | null
           created_at?: string
+          dispute_note?: string | null
+          dispute_resolved?: boolean
+          dispute_resolved_at?: string | null
           id?: string
           payment_id?: string | null
           payment_provider?: string | null
@@ -1444,6 +1516,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scheduled_admin_pushes: {
+        Row: {
+          body: string | null
+          broadcast: boolean
+          created_at: string
+          id: string
+          scheduled_at: string
+          sent_at: string | null
+          sent_by: string
+          target_user_id: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          body?: string | null
+          broadcast?: boolean
+          created_at?: string
+          id?: string
+          scheduled_at: string
+          sent_at?: string | null
+          sent_by: string
+          target_user_id?: string | null
+          title: string
+          url?: string
+        }
+        Update: {
+          body?: string | null
+          broadcast?: boolean
+          created_at?: string
+          id?: string
+          scheduled_at?: string
+          sent_at?: string | null
+          sent_by?: string
+          target_user_id?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: []
       }
       scheduled_fake_pushes: {
         Row: {
