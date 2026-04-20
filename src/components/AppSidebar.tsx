@@ -84,12 +84,24 @@ export function AppSidebar() {
     queryKey: ["sidebar-revenue", user?.id],
     queryFn: async () => {
       if (!user) return 0;
-      const { data } = await supabase
-        .from("sales")
-        .select("amount, platform_fee, status")
-        .eq("producer_id", user.id)
-        .eq("status", "completed");
-      return (data || []).reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+      // Paginate to bypass Supabase's 1000-row default limit
+      const PAGE_SIZE = 1000;
+      let total = 0;
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from("sales")
+          .select("amount, platform_fee")
+          .eq("producer_id", user.id)
+          .eq("status", "completed")
+          .range(from, from + PAGE_SIZE - 1);
+        if (error) break;
+        const batch = data || [];
+        total += batch.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+        if (batch.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+      return total;
     },
     enabled: !!user,
   });

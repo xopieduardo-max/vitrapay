@@ -34,8 +34,8 @@ export function useAdminAudit() {
           action,
           target_type: targetType ?? null,
           target_id: targetId ?? null,
-          details: details ?? null,
-        });
+          details: (details ?? null) as never,
+        } as never);
       } catch (e) {
         // Non-blocking — never throw
         console.error("Admin audit log error:", e);
