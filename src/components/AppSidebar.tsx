@@ -91,13 +91,13 @@ export function AppSidebar() {
       while (true) {
         const { data, error } = await supabase
           .from("sales")
-          .select("amount, platform_fee")
+          .select("amount")
           .eq("producer_id", user.id)
           .eq("status", "completed")
           .range(from, from + PAGE_SIZE - 1);
         if (error) break;
         const batch = data || [];
-        total += batch.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
+        total += batch.reduce((acc, s) => acc + s.amount, 0);
         if (batch.length < PAGE_SIZE) break;
         from += PAGE_SIZE;
       }
