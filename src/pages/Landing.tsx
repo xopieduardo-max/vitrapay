@@ -1083,13 +1083,13 @@ export default function Landing() {
       {/* ─── Placas de Premiação ─── */}
       <section className="bg-white py-20 md:py-28">
         <div className="container">
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-5xl mx-auto">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-7xl mx-auto">
             {/* Imagem das placas */}
             <div className="flex justify-center mb-12">
               <img
                 src={placasVitraPay}
                 alt="Placas de Premiação VitraPay — 10K, 100K, 250K, 500K e 1 Milhão faturados"
-                className="w-full max-w-6xl"
+                className="w-full max-w-7xl"
                 loading="lazy"
                 decoding="async"
               />
