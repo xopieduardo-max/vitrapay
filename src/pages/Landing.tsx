@@ -1116,7 +1116,20 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ─── Membros Black Carousel ─── */}
+      <section className="container py-20 md:py-28">
+        <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Comunidade</span>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            Nossos <span className="text-gradient-primary">Membros Black</span>
+          </h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Conheça quem já faz parte da elite VitraPay e está escalando resultados todos os dias.
+          </p>
+        </motion.div>
 
+        <MembrosBlackCarousel />
+      </section>
 
       {/* ─── FAQ Section ─── */}
       <section id="faq" className="container py-20 md:py-28">
