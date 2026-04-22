@@ -17,6 +17,7 @@ import iphoneMockup3d from "@/assets/iphone-mockup-3d.png";
 import iphone3dMockup from "@/assets/iphone-3d-mockup.png";
 import membroBlack1 from "@/assets/membro-black-1.png";
 import membroBlack2 from "@/assets/membro-black-2.png";
+import placasVitraPay from "@/assets/placas-vitrapay.png";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
@@ -1079,19 +1080,40 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Membros Black Carousel ─── */}
-      <section className="container py-20 md:py-28">
-        <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Comunidade</span>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            Nossos <span className="text-gradient-primary">Membros Black</span>
-          </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            Conheça quem já faz parte da elite VitraPay e está escalando resultados todos os dias.
-          </p>
-        </motion.div>
+      {/* ─── Placas de Premiação ─── */}
+      <section className="bg-white py-20 md:py-28">
+        <div className="container">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-5xl mx-auto">
+            {/* Imagem das placas */}
+            <div className="flex justify-center mb-12">
+              <img
+                src={placasVitraPay}
+                alt="Placas de Premiação VitraPay — 10K, 100K, 250K, 500K e 1 Milhão faturados"
+                className="w-full max-w-3xl"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
 
-        <MembrosBlackCarousel />
+            {/* Texto */}
+            <div className="grid md:grid-cols-[1.2fr_1fr] gap-8 items-end">
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 leading-tight">
+                Destaque-se{" "}
+                <br className="hidden md:block" />
+                com a{" "}
+                <span className="text-[hsl(48,96%,53%)]">VitraPay!</span>
+              </h2>
+              <div className="space-y-4">
+                <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                  Ultrapasse suas metas, atinja novos níveis de faturamento e celebre suas conquistas com as Placas de Premiação da VitraPay.
+                </p>
+                <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                  Ganhe prêmios incríveis, desfrute de viagens exclusivas e tratamento VIP. Seu sucesso merece ser reconhecido e celebrado!
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
 
