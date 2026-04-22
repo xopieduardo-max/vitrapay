@@ -878,6 +878,32 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ─── Fee Simulator Section ─── */}
+      <section id="simulador" className="relative overflow-hidden bg-white">
+        <div className="container relative py-20 md:py-28">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left – Copy */}
+            <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-sm text-amber-700">
+                <Wallet className="h-3.5 w-3.5" /> Simulador de Taxas
+              </span>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900">
+                Menos taxas.<br />Mais lucros no <span className="text-primary">seu bolso.</span>
+              </h2>
+              <p className="text-gray-500 text-lg max-w-md">
+                Simule agora e descubra na hora qual plataforma te entrega mais lucro no final do mês.
+              </p>
+              <div className="h-1 w-16 rounded-full bg-primary" />
+            </motion.div>
+
+            {/* Right – Simulator Card */}
+            <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }}>
+              <FeeSimulatorCard />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── Smart Payment Section ─── */}
       <section className="relative overflow-hidden bg-card/30 border-y border-border/50">
         <div className="container py-20 md:py-28">
@@ -918,32 +944,6 @@ export default function Landing() {
                 alt="VitraPay - Vendas aprovadas com sistema inteligente"
                 className="w-[320px] md:w-[420px] drop-shadow-2xl"
               />
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Fee Simulator Section ─── */}
-      <section id="simulador" className="relative overflow-hidden bg-white">
-        <div className="container relative py-20 md:py-28">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left – Copy */}
-            <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-sm text-amber-700">
-                <Wallet className="h-3.5 w-3.5" /> Simulador de Taxas
-              </span>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900">
-                Menos taxas.<br />Mais lucros no <span className="text-primary">seu bolso.</span>
-              </h2>
-              <p className="text-gray-500 text-lg max-w-md">
-                Simule agora e descubra na hora qual plataforma te entrega mais lucro no final do mês.
-              </p>
-              <div className="h-1 w-16 rounded-full bg-primary" />
-            </motion.div>
-
-            {/* Right – Simulator Card */}
-            <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }}>
-              <FeeSimulatorCard />
             </motion.div>
           </div>
         </div>
