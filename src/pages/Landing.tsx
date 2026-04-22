@@ -1089,7 +1089,7 @@ export default function Landing() {
               <img
                 src={placasVitraPay}
                 alt="Placas de Premiação VitraPay — 10K, 100K, 250K, 500K e 1 Milhão faturados"
-                className="w-full max-w-5xl"
+                className="w-full max-w-6xl"
                 loading="lazy"
                 decoding="async"
               />
