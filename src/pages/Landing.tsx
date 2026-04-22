@@ -232,7 +232,7 @@ function FloatingWhatsApp() {
             <p className="text-sm font-medium text-foreground">Oi! 👋</p>
             <p className="text-xs text-muted-foreground mt-1">Está com dúvidas? Fale com nosso time agora.</p>
             <a
-            href="https://wa.me/5500000000000"
+            href="https://wa.me/5543984668997"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
@@ -243,7 +243,7 @@ function FloatingWhatsApp() {
         }
       </AnimatePresence>
       <motion.a
-        href="https://wa.me/5500000000000"
+        href="https://wa.me/5543984668997"
         target="_blank"
         rel="noopener noreferrer"
         whileHover={{ scale: 1.1 }}
@@ -870,7 +870,7 @@ export default function Landing() {
           <motion.div {...fadeUp} transition={{ delay: 0.4, duration: 0.6 }} className="max-w-5xl mx-auto mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               💎 <strong className="text-foreground">Condições especiais</strong> para volumes elevados.{" "}
-              <a href="https://wa.me/5500000000000" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">
+              <a href="https://wa.me/5543984668997" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">
                 Fale com nossa equipe →
               </a>
             </p>
@@ -1191,7 +1191,7 @@ export default function Landing() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold gap-2 border-border/50" asChild>
-                <a href="https://wa.me/5500000000000" target="_blank" rel="noopener noreferrer">
+                <a href="https://wa.me/5543984668997" target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="h-4 w-4" />
                   Falar com especialista
                 </a>
