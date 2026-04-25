@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon, Bell, Palette } from "lucide-react";
+import { Plus, Trash2, Star, Loader2, Copy, Check, ExternalLink, MessageSquareQuote, Paintbrush, Sun, Moon, Bell, Palette, ClipboardList } from "lucide-react";
 
 const COLOR_THEMES = [
   { id: "classic", label: "Clássico", color: "hsl(0, 0%, 15%)" },
@@ -266,6 +266,41 @@ export default function EditProductCheckout({ productId, form, updateField, chec
             </div>
           </div>
         )}
+      </div>
+
+      {/* Dados solicitados no checkout */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <div>
+          <h3 className="text-sm font-bold flex items-center gap-1.5">
+            <ClipboardList className="h-4 w-4" /> Dados solicitados no checkout
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Escolha quais dados serão pedidos ao cliente. O e-mail é sempre obrigatório. Para pagamento com cartão, nome e CPF são sempre exigidos.
+          </p>
+        </div>
+        {(["name", "cpf", "phone"] as const).map((field) => {
+          const labels: Record<string, { label: string; desc: string }> = {
+            name:  { label: "Nome",      desc: "Solicitar nome completo" },
+            cpf:   { label: "CPF/CNPJ", desc: "Solicitar número do CPF ou CNPJ" },
+            phone: { label: "Telefone",  desc: "Solicitar número de telefone" },
+          };
+          const fields = (form.checkout_fields as Record<string, boolean>) || { name: true, cpf: true, phone: true };
+          const isOn = fields[field] !== false;
+          return (
+            <div key={field} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+              <div>
+                <p className="text-sm font-semibold">{labels[field].label}</p>
+                <p className="text-xs text-muted-foreground">{labels[field].desc}</p>
+              </div>
+              <Switch
+                checked={isOn}
+                onCheckedChange={(checked) =>
+                  updateField("checkout_fields", { ...fields, [field]: checked })
+                }
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Depoimentos */}

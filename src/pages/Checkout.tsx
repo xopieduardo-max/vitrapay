@@ -391,26 +391,41 @@ export default function Checkout() {
 
   const isCardDisabled = paymentMethod === "card" && calculateTotal() < 500;
 
+  const checkoutFields = (product as any)?.checkout_fields as Record<string, boolean> | null;
+  const showField = (field: "name" | "cpf" | "phone") => {
+    if (paymentMethod === "card") return true; // cartão sempre exige todos
+    return checkoutFields ? checkoutFields[field] !== false : true;
+  };
+
   const handlePurchase = async () => {
-    if (!form.name) {
-      toast({ title: "Preencha seu nome", variant: "destructive" });
-      return;
-    }
     if (!form.email) {
       toast({ title: "Preencha seu email", variant: "destructive" });
       return;
     }
-    if (!form.cpf.replace(/\D/g, "")) {
-      toast({ title: "CPF/CNPJ é obrigatório", variant: "destructive" });
-      return;
+    // Para cartão ou se o campo nome está ativo, validar nome
+    if (paymentMethod === "card" || showField("name")) {
+      if (!form.name) {
+        toast({ title: "Preencha seu nome", variant: "destructive" });
+        return;
+      }
     }
-    if (!validateCPF(form.cpf)) {
-      toast({ title: "CPF/CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
-      return;
+    // Para cartão ou se o campo CPF está ativo, validar CPF
+    if (paymentMethod === "card" || showField("cpf")) {
+      if (!form.cpf.replace(/\D/g, "")) {
+        toast({ title: "CPF/CNPJ é obrigatório", variant: "destructive" });
+        return;
+      }
+      if (!validateCPF(form.cpf)) {
+        toast({ title: "CPF/CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
+        return;
+      }
     }
-    if (!form.phone || form.phone.replace(/\D/g, "").length < 10) {
-      toast({ title: "Telefone é obrigatório", description: "Informe um telefone com DDD.", variant: "destructive" });
-      return;
+    // Para cartão ou se o campo telefone está ativo, validar telefone
+    if (paymentMethod === "card" || showField("phone")) {
+      if (!form.phone || form.phone.replace(/\D/g, "").length < 10) {
+        toast({ title: "Telefone é obrigatório", description: "Informe um telefone com DDD.", variant: "destructive" });
+        return;
+      }
     }
     if (paymentMethod === "card") {
       if (!form.cardNumber || !form.cardExpiry || !form.cardCvv || !form.cardHolder) {
@@ -919,19 +934,21 @@ export default function Checkout() {
                 Informações de Contato
               </h3>
               <div className="space-y-3">
-                <div>
-                  <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Nome completo</Label>
-                  <div className="relative mt-1">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
-                    <Input
-                      placeholder="Preencha seu nome completo"
-                      value={form.name}
-                      onChange={(e) => updateForm("name", e.target.value)}
-                      className="pl-10 border-0 h-11"
-                      style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
-                    />
+                {showField("name") && (
+                  <div>
+                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Nome completo</Label>
+                    <div className="relative mt-1">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
+                      <Input
+                        placeholder="Preencha seu nome completo"
+                        value={form.name}
+                        onChange={(e) => updateForm("name", e.target.value)}
+                        className="pl-10 border-0 h-11"
+                        style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
                 <div>
                   <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Email</Label>
                   <div className="relative mt-1">
@@ -946,39 +963,45 @@ export default function Checkout() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CPF / CNPJ</Label>
-                    <div className="relative mt-1">
-                      <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
-                      <Input
-                        placeholder="000.000.000-00"
-                        value={form.cpf}
-                        onChange={(e) => updateForm("cpf", formatCPF(e.target.value))}
-                        className="pl-10 border-0 h-11"
-                        style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Celular</Label>
-                    <div className="flex gap-1.5 mt-1">
-                      <div className="flex items-center gap-1 rounded-md px-3 text-xs shrink-0 h-11" style={{ background: "var(--ck-input)", color: "var(--ck-subtle)" }}>
-                        🇧🇷 +55
+                {(showField("cpf") || showField("phone")) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {showField("cpf") && (
+                      <div>
+                        <Label className="text-xs" style={{ color: "var(--ck-label)" }}>CPF / CNPJ</Label>
+                        <div className="relative mt-1">
+                          <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
+                          <Input
+                            placeholder="000.000.000-00"
+                            value={form.cpf}
+                            onChange={(e) => updateForm("cpf", formatCPF(e.target.value))}
+                            className="pl-10 border-0 h-11"
+                            style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                          />
+                        </div>
                       </div>
-                      <div className="relative flex-1">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
-                        <Input
-                          placeholder="(00) 00000-0000"
-                          value={form.phone}
-                          onChange={(e) => updateForm("phone", formatPhone(e.target.value))}
-                          className="pl-10 border-0 h-11"
-                          style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
-                        />
+                    )}
+                    {showField("phone") && (
+                      <div>
+                        <Label className="text-xs" style={{ color: "var(--ck-label)" }}>Celular</Label>
+                        <div className="flex gap-1.5 mt-1">
+                          <div className="flex items-center gap-1 rounded-md px-3 text-xs shrink-0 h-11" style={{ background: "var(--ck-input)", color: "var(--ck-subtle)" }}>
+                            🇧🇷 +55
+                          </div>
+                          <div className="relative flex-1">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--ck-faint)" }} />
+                            <Input
+                              placeholder="(00) 00000-0000"
+                              value={form.phone}
+                              onChange={(e) => updateForm("phone", formatPhone(e.target.value))}
+                              className="pl-10 border-0 h-11"
+                              style={{ background: "var(--ck-input)", color: "var(--ck-input-fg)" }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
             </div>
 

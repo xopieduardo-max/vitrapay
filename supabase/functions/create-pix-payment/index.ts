@@ -14,8 +14,8 @@ Deno.serve(async (req) => {
     const { product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, amount, service_fee, description, affiliate_ref, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
 
-    if (!product_id || !amount || !buyer_cpf) {
-      return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount, buyer_cpf)" }), {
+    if (!product_id || !amount) {
+      return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount)" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -33,12 +33,14 @@ Deno.serve(async (req) => {
     );
 
     // ── Rate limiting ──
-    const cpfClean = buyer_cpf.replace(/\D/g, "");
-    const cpfCheck = await checkCpfRateLimit(supabase, cpfClean);
-    if (!cpfCheck.allowed) {
-      return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const cpfClean = buyer_cpf ? buyer_cpf.replace(/\D/g, "") : "";
+    if (cpfClean) {
+      const cpfCheck = await checkCpfRateLimit(supabase, cpfClean);
+      if (!cpfCheck.allowed) {
+        return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
     const clientIp = getClientIp(req);
     if (clientIp) {
@@ -81,13 +83,38 @@ Deno.serve(async (req) => {
     dueDate.setDate(dueDate.getDate() + 3);
     const dueDateStr = dueDate.toISOString().split("T")[0];
 
+    // Gera CPF matematicamente válido para compradores anônimos (PIX sem CPF)
+    function generateValidCpf(): string {
+      const digits: number[] = [];
+      while (digits.length < 9 || new Set(digits).size === 1) {
+        digits.length = 0;
+        for (let i = 0; i < 9; i++) digits.push(Math.floor(Math.random() * 10));
+      }
+      let sum = digits.reduce((acc, d, i) => acc + d * (10 - i), 0);
+      let r1 = (sum * 10) % 11; if (r1 >= 10) r1 = 0;
+      sum = [...digits, r1].reduce((acc, d, i) => acc + d * (11 - i), 0);
+      let r2 = (sum * 10) % 11; if (r2 >= 10) r2 = 0;
+      return [...digits, r1, r2].join("");
+    }
+
+    // Auto-gera nome quando não informado
+    let resolvedName = buyer_name || "";
+    if (!resolvedName) {
+      const { count } = await supabase
+        .from("pending_payments")
+        .select("*", { count: "exact", head: true })
+        .eq("product_id", product_id);
+      const seq = String((count || 0) + 1).padStart(2, "0");
+      resolvedName = `Cliente ${seq}`;
+    }
+
     // Create customer on Asaas (or use existing)
     let customerId: string | null = null;
-    const cpfClean = buyer_cpf?.replace(/\D/g, "") || "";
+    const resolvedCpf = cpfClean || generateValidCpf();
     
-    if (buyer_name && buyer_email) {
+    if (cpfClean && buyer_email) {
       const searchRes = await fetch(
-        `https://api.asaas.com/v3/customers?cpfCnpj=${cpfClean}`,
+        `https://api.asaas.com/v3/customers?cpfCnpj=${resolvedCpf}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -106,9 +133,9 @@ Deno.serve(async (req) => {
             "access_token": ASAAS_API_KEY,
           },
           body: JSON.stringify({
-            name: buyer_name,
+            name: resolvedName,
             email: buyer_email,
-            cpfCnpj: cpfClean,
+            cpfCnpj: resolvedCpf,
           }),
         });
       } else {
@@ -119,9 +146,9 @@ Deno.serve(async (req) => {
             "access_token": ASAAS_API_KEY,
           },
           body: JSON.stringify({
-            name: buyer_name || "Cliente VitraPay",
+            name: resolvedName,
             email: buyer_email,
-            cpfCnpj: cpfClean,
+            cpfCnpj: resolvedCpf,
           }),
         });
         const customerData = await customerRes.json();
@@ -137,9 +164,9 @@ Deno.serve(async (req) => {
           "access_token": ASAAS_API_KEY,
         },
         body: JSON.stringify({
-          name: buyer_name || "Cliente VitraPay",
+          name: resolvedName,
           email: buyer_email || "cliente@vitrapay.com",
-          cpfCnpj: cpfClean,
+          cpfCnpj: resolvedCpf,
         }),
       });
       const fallbackData = await fallbackRes.json();
@@ -190,7 +217,7 @@ Deno.serve(async (req) => {
     const { error: pendingErr } = await supabase.from("pending_payments").insert({
       asaas_payment_id: paymentData.id,
       product_id,
-      buyer_name: buyer_name || null,
+      buyer_name: resolvedName,
       buyer_email: buyer_email || null,
       buyer_cpf: cpfClean || null,
       amount,
