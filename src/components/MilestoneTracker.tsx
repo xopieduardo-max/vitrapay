@@ -47,6 +47,7 @@ interface Props {
 
 export function MilestoneTracker({ revenue, variant = "full" }: Props) {
   const [open, setOpen] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const currentIdx = getTierIndex(revenue);
   // Quando ainda não conquistou nenhum tier, exibimos o Start como "alvo".
   const display = currentIdx >= 0 ? TIERS[currentIdx] : TIERS[0];
@@ -169,9 +170,11 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
                   const reached = i <= currentIdx;
                   const isCurrent = i === currentIdx;
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={tier.name}
-                      className={`relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all ${
+                      onClick={() => setSelectedIdx(i)}
+                      className={`group relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all hover:scale-[1.03] hover:border-primary/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ${
                         isCurrent
                           ? "border-primary/60 bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
                           : reached
@@ -195,17 +198,17 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
                         width={80}
                         height={80}
                         decoding="async"
-                        className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all ${
-                          reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "grayscale opacity-40"
+                        className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all group-hover:scale-110 ${
+                          reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "opacity-30 saturate-50"
                         }`}
                       />
-                      <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+                      <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground/70"}`}>
                         {tier.name}
                       </p>
-                      <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
+                      <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
                         {tier.label}
                       </p>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -217,6 +220,80 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
                   Os níveis consideram o total transacionado bruto, isento de taxas ou deduções.
                 </p>
               </div>
+            </DialogContent>
+          </Dialog>
+        </Suspense>
+      )}
+
+      {/* Tier detail dialog - large badge view */}
+      {selectedIdx !== null && (
+        <Suspense fallback={null}>
+          <Dialog open={selectedIdx !== null} onOpenChange={(o) => !o && setSelectedIdx(null)}>
+            <DialogContent className="sm:max-w-md text-center overflow-hidden">
+              {(() => {
+                const tier = TIERS[selectedIdx];
+                const reached = selectedIdx <= currentIdx;
+                return (
+                  <>
+                    {/* Glow background */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 pointer-events-none opacity-60"
+                      style={{
+                        background: `radial-gradient(circle at 50% 30%, ${tier.glow}, transparent 65%)`,
+                      }}
+                    />
+                    <div className="relative flex flex-col items-center pt-2 pb-1">
+                      <DialogHeader>
+                        <DialogTitle className="sr-only">{tier.name}</DialogTitle>
+                      </DialogHeader>
+
+                      {/* Big badge */}
+                      <div className="relative">
+                        <img
+                          src={tier.image}
+                          alt={tier.name}
+                          width={240}
+                          height={240}
+                          decoding="async"
+                          className={`h-48 w-48 md:h-56 md:w-56 object-contain tier-float drop-shadow-[0_12px_28px_rgba(0,0,0,0.45)] ${
+                            reached ? "" : "opacity-40 saturate-50"
+                          }`}
+                        />
+                        {!reached && (
+                          <div className="absolute top-2 right-2 h-9 w-9 rounded-full bg-muted/90 backdrop-blur flex items-center justify-center border border-border">
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        {reached && (
+                          <div className="absolute -top-1 -right-1 h-9 w-9 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                            <Check className="h-5 w-5 text-primary-foreground" strokeWidth={3} />
+                          </div>
+                        )}
+                      </div>
+
+                      <h2 className="mt-4 text-2xl md:text-3xl font-extrabold tracking-tight">{tier.name}</h2>
+                      <p className="text-sm text-muted-foreground mt-1">Meta: <strong className="text-foreground">{tier.label}</strong></p>
+
+                      {reached ? (
+                        <div className="mt-4 px-4 py-3 rounded-xl bg-primary/10 border border-primary/30 w-full">
+                          <p className="text-base font-bold text-primary">Parabéns pela conquista!</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Você desbloqueou a placa {tier.name} ao atingir {tier.label} em faturamento.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-4 px-4 py-3 rounded-xl bg-muted/40 border border-border w-full">
+                          <p className="text-base font-bold text-foreground">Ainda não conquistada</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Faltam <strong className="text-foreground">{fmtBRL(Math.max(0, tier.threshold - revenue))}</strong> para desbloquear esta placa.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
             </DialogContent>
           </Dialog>
         </Suspense>
