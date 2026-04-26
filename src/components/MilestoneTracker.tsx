@@ -1,7 +1,7 @@
 import { useState, lazy, Suspense } from "react";
 import { Info, Lock, Check } from "lucide-react";
 import tierStarter from "@/assets/tier-starter.webp";
-import tierLite from "@/assets/tier-lite.webp";
+
 import tierBronze from "@/assets/tier-bronze.webp";
 import tierGold from "@/assets/tier-gold.webp";
 import tierPlatinum from "@/assets/tier-platinum.webp";
