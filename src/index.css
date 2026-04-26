@@ -1,4 +1,4 @@
-/* Darker Grotesque + Inter loaded via index.html for faster preconnect */
+@import url('@fontsource-variable/instrument-sans');
 
 @tailwind base;
 @tailwind components;
@@ -104,73 +104,15 @@
     @apply border-border;
   }
 
-  html {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-  }
-
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 400;
+    font-family: 'Instrument Sans Variable', 'Instrument Sans', system-ui, sans-serif;
     font-feature-settings: 'cv01' 1;
   }
 
   .dark body,
   body {
     font-variant-numeric: tabular-nums;
-  }
-
-  /* Typographic hierarchy — expressive, attention-grabbing headlines */
-  h1 {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 900;
-    letter-spacing: -0.035em;
-    line-height: 0.95;
-    /* Fluid 40px → 88px */
-    font-size: clamp(2.5rem, 6.5vw, 5.5rem);
-  }
-
-  h2 {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    /* Fluid 32px → 72px */
-    font-size: clamp(2rem, 5.2vw, 4.5rem);
-  }
-
-  h3 {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-    /* Fluid 24px → 44px */
-    font-size: clamp(1.5rem, 3vw, 2.75rem);
-  }
-
-  h4 {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    line-height: 1.15;
-    /* Fluid 20px → 32px */
-    font-size: clamp(1.25rem, 2vw, 2rem);
-  }
-
-  h5, h6 {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-
-  p {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 400;
-  }
-
-  button, label, .btn {
-    font-family: 'Darker Grotesque', system-ui, sans-serif;
-    font-weight: 600;
   }
 }
 
