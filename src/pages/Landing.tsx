@@ -1007,15 +1007,15 @@ export default function Landing() {
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.7 }}
-              className="relative h-[480px] md:h-[600px] lg:h-[680px] -mb-px overflow-hidden">
+              className="relative h-[460px] md:h-[560px] lg:h-[640px] -mb-px overflow-hidden">
               {/* Bloco de fundo amarelo — encosta na base e à esquerda */}
-              <div className="absolute left-0 bottom-0 w-[82%] h-[78%] bg-primary" />
+              <div className="absolute left-0 bottom-0 w-[82%] h-[72%] bg-primary" />
 
-              {/* iPhone — posicionado pra baixo, cortado pela borda inferior da seção */}
+              {/* iPhone — bem maior, apenas a metade superior visível (cortado embaixo) */}
               <img
                 src={iphoneVitrapay}
                 alt="App VitraPay no iPhone"
-                className="absolute left-1/2 -translate-x-1/2 bottom-[-12%] md:bottom-[-15%] h-[115%] md:h-[120%] w-auto object-contain object-bottom z-10 drop-shadow-[0_25px_60px_rgba(0,0,0,0.7)]"
+                className="absolute left-1/2 -translate-x-1/2 top-[8%] md:top-[6%] h-[170%] md:h-[180%] lg:h-[185%] w-auto object-contain object-top z-10 drop-shadow-[0_25px_60px_rgba(0,0,0,0.7)]"
                 loading="lazy"
                 decoding="async" />
 
