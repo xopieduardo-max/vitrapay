@@ -120,22 +120,47 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Typographic hierarchy */
-  h1, h2 {
+  /* Typographic hierarchy — expressive, attention-grabbing headlines */
+  h1 {
     font-family: 'Darker Grotesque', system-ui, sans-serif;
     font-weight: 900;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+    /* Fluid 40px → 88px */
+    font-size: clamp(2.5rem, 6.5vw, 5.5rem);
   }
 
-  h3, h4 {
+  h2 {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    /* Fluid 32px → 72px */
+    font-size: clamp(2rem, 5.2vw, 4.5rem);
+  }
+
+  h3 {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    /* Fluid 24px → 44px */
+    font-size: clamp(1.5rem, 3vw, 2.75rem);
+  }
+
+  h4 {
     font-family: 'Darker Grotesque', system-ui, sans-serif;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    /* Fluid 20px → 32px */
+    font-size: clamp(1.25rem, 2vw, 2rem);
   }
 
   h5, h6 {
     font-family: 'Darker Grotesque', system-ui, sans-serif;
     font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   p {
