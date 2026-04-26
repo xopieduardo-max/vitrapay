@@ -847,7 +847,7 @@ export default function Dashboard() {
             <div>
               <p className="text-3xl font-bold tracking-tight">{fmt(grossRevenueAll)}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-foreground font-semibold">{totalSalesCount}</span> vendas aprovadas
+                <span className="text-foreground font-semibold">{completedSalesAll.length}</span> vendas aprovadas
               </p>
             </div>
           </motion.div>
