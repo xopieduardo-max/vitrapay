@@ -350,3 +350,13 @@
 @keyframes rotate-border {
   to { --angle: 360deg; }
 }
+
+/* Tier badge subtle floating animation */
+@keyframes tier-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}
+.tier-float {
+  animation: tier-float 4s ease-in-out infinite;
+  will-change: transform;
+}
