@@ -673,18 +673,18 @@ export default function Landing() {
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
         </div>
 
-        <div className="container py-20 md:py-28 relative z-10">
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-14 md:mb-20">
-            <p className="text-sm md:text-base font-medium text-primary mb-5 tracking-wide">
+        <div className="container py-14 md:py-20 relative z-10">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-10 md:mb-14">
+            <p className="text-xs md:text-sm font-medium text-primary mb-3.5 tracking-wide">
               Prazos de recebimento
             </p>
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] max-w-5xl mx-auto">
+            <h2 className="text-2xl md:text-[2.6rem] lg:text-5xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mx-auto">
               Receba rapidamente e facilite seu{" "}
               <span className="text-primary">fluxo de caixa!</span>
             </h2>
           </motion.div>
 
-          <div className="grid gap-5 md:grid-cols-3 max-w-6xl mx-auto">
+          <div className="grid gap-3.5 md:grid-cols-3 max-w-4xl mx-auto">
             {[
               { icon: CreditCard, title: "Cartão", subtitle: "Em 30 Dias" },
               { icon: Zap, title: "PIX", subtitle: "Dia + 0" },
@@ -694,20 +694,20 @@ export default function Landing() {
                 key={item.title}
                 {...stagger}
                 transition={{ delay: i * 0.12, duration: 0.5 }}
-                className="group relative rounded-2xl border border-white/[0.08] bg-[#0a0a0a] p-10 md:p-12 text-center overflow-hidden cursor-default transition-all duration-500 hover:border-primary/40"
+                className="group relative rounded-2xl border border-white/[0.08] bg-[#0a0a0a] p-7 md:p-8 text-center overflow-hidden cursor-default transition-all duration-500 hover:border-primary/40"
               >
                 {/* Hover glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 <div className="absolute -inset-px rounded-2xl bg-primary/0 group-hover:bg-primary/[0.03] transition-all duration-500 pointer-events-none" />
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/30 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 bg-primary/30 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col items-center gap-5">
-                  <item.icon className="h-12 w-12 md:h-14 md:w-14 text-primary stroke-[1.5]" />
-                  <div className="space-y-1.5">
-                    <h3 className="text-2xl md:text-3xl font-bold text-white">
+                <div className="relative z-10 flex flex-col items-center gap-3.5">
+                  <item.icon className="h-8 w-8 md:h-10 md:w-10 text-primary stroke-[1.5]" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg md:text-xl font-bold text-white">
                       {item.title}
                     </h3>
-                    <p className="text-sm md:text-base text-primary/90 font-medium">
+                    <p className="text-xs md:text-sm text-primary/90 font-medium">
                       {item.subtitle}
                     </p>
                   </div>
