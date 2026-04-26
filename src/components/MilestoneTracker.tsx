@@ -170,9 +170,11 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
                   const reached = i <= currentIdx;
                   const isCurrent = i === currentIdx;
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={tier.name}
-                      className={`relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all ${
+                      onClick={() => setSelectedIdx(i)}
+                      className={`group relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all hover:scale-[1.03] hover:border-primary/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ${
                         isCurrent
                           ? "border-primary/60 bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
                           : reached
@@ -196,17 +198,17 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
                         width={80}
                         height={80}
                         decoding="async"
-                        className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all ${
-                          reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "grayscale opacity-40"
+                        className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all group-hover:scale-110 ${
+                          reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "opacity-30 saturate-50"
                         }`}
                       />
-                      <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+                      <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground/70"}`}>
                         {tier.name}
                       </p>
-                      <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
+                      <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
                         {tier.label}
                       </p>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
