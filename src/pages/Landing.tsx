@@ -24,6 +24,7 @@ import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
 import logoCard from "@/assets/logo-vitrapay-card.png";
 import celularVitra from "@/assets/celular_vitra.png";
 import ctaWomanYellow from "@/assets/cta-woman-yellow.jpg";
+import iphoneVitrapay from "@/assets/iphone-vitrapay.png";
 import {
   Accordion,
   AccordionContent,
@@ -999,43 +1000,138 @@ export default function Landing() {
       </section>
 
       {/* ─── App Coming Soon ─── */}
-      <section className="relative overflow-hidden">
-        <FloatingParticles />
-        <div className="container relative py-20 md:py-28">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
-                <Smartphone className="h-3.5 w-3.5" /> Novidade
-              </span>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-                Em breve o app da{" "}
-                <span className="text-gradient-primary">VitraPay!</span>
-              </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Com o app da VitraPay você terá tudo o que precisa para gerenciar suas vendas na palma da sua mão. Acompanhe métricas, receba notificações de vendas e saque seus ganhos de qualquer lugar.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" /></svg>
-                  App Store — Em breve
-                </Button>
-                <Button variant="outline" className="h-12 px-6 gap-2 border-border/50" disabled>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 1.33a1.004 1.004 0 010 1.724l-2.302 1.33-2.498-2.498 2.498-2.886zM5.864 2.658L16.8 8.99l-2.302 2.302-8.635-8.635z" /></svg>
-                  Google Play — Em breve
-                </Button>
-              </div>
-            </motion.div>
+      <section className="relative overflow-hidden bg-black">
+        <div className="container relative py-16 md:py-24">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-6 items-center">
+            {/* ── iPhone com bloco amarelo ── */}
             <motion.div
               {...fadeUp}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              whileHover={{ scale: 1.03 }}
-              className="flex justify-center">
+              transition={{ duration: 0.7 }}
+              className="relative h-[460px] md:h-[560px] lg:h-[620px] flex items-center justify-center">
+              {/* Bloco de fundo amarelo */}
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[78%] h-[82%] bg-primary rounded-sm" />
+
+              {/* iPhone */}
               <img
-                src={iphone3dMockup}
-                alt="Dashboard VitraPay no iPhone"
-                className="w-[300px] md:w-[380px] drop-shadow-2xl"
+                src={iphoneVitrapay}
+                alt="App VitraPay no iPhone"
+                className="relative z-10 h-full w-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]"
                 loading="lazy"
                 decoding="async" />
+
+              {/* Notificação 1 — topo */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="absolute z-20 top-[14%] left-[28%] md:left-[32%] w-[58%] md:w-[55%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-2.5 shadow-2xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
+                    <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] md:text-xs font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
+                    <p className="text-[10px] md:text-[11px] text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Notificação 2 — meio esquerda */}
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.7, duration: 0.6 }}
+                className="absolute z-20 top-[42%] left-0 md:-left-4 w-[60%] md:w-[58%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-2.5 shadow-2xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
+                    <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] md:text-xs font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
+                    <p className="text-[10px] md:text-[11px] text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Notificação 3 — meio direita */}
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 1.0, duration: 0.6 }}
+                className="absolute z-20 top-[58%] right-[2%] md:right-[-2%] w-[58%] md:w-[55%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-2.5 shadow-2xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
+                    <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] md:text-xs font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
+                    <p className="text-[10px] md:text-[11px] text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Notificação 4 — base */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 1.3, duration: 0.6 }}
+                className="absolute z-20 bottom-[6%] left-[8%] md:left-[12%] w-[78%] md:w-[72%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-3 shadow-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-primary flex items-center justify-center">
+                    <img src={logoIcon} alt="" className="h-7 w-7 object-contain" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs md:text-sm font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
+                    <p className="text-[11px] md:text-xs text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* ── Texto à direita ── */}
+            <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }} className="space-y-7 lg:pl-8">
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05]">
+                Acompanhe<br />
+                todas as suas<br />
+                vendas no{" "}
+                <span className="text-primary">seu celular</span>
+              </h2>
+              <p className="text-base md:text-lg text-white/70 leading-relaxed max-w-md">
+                Tenha tudo na palma da sua mão, a um clique de distância, faturando não só mais dinheiro como mais tempo.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/10 px-5 py-3 hover:bg-white/[0.08] transition-colors disabled:cursor-not-allowed">
+                  <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none">
+                    <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92z" fill="#EA4335" />
+                    <path d="M16.802 8.99l-3.01 3.01 3.01 3.01 3.74-2.16c1.07-.62 1.07-2.18 0-2.8l-3.74-2.06z" fill="#FBBC04" />
+                    <path d="M3.609 1.814a.997.997 0 011.024.045L16.802 8.99 13.792 12 3.609 1.814z" fill="#34A853" />
+                    <path d="M13.792 12l3.01 3.01L4.633 22.14a.997.997 0 01-1.024.046L13.792 12z" fill="#4285F4" />
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-[10px] text-white/60 leading-none">Disponível no</p>
+                    <p className="text-base font-semibold text-white leading-tight mt-0.5">Google Play</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/10 px-5 py-3 hover:bg-white/[0.08] transition-colors disabled:cursor-not-allowed">
+                  <svg viewBox="0 0 24 24" className="h-7 w-7" fill="white">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-[10px] text-white/60 leading-none">Disponível na</p>
+                    <p className="text-base font-semibold text-white leading-tight mt-0.5">App Store</p>
+                  </div>
+                </button>
+              </div>
             </motion.div>
           </div>
         </div>
