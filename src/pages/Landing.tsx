@@ -666,30 +666,54 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Big Stats ─── */}
-      <section className="bg-card/30">
-        <div className="container py-20">
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Sobre nós</span>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mt-4">
-              Somos muito mais que uma{" "}
-              <span className="text-gradient-primary">plataforma</span>
+      {/* ─── Prazos de recebimento ─── */}
+      <section className="relative bg-[#080808] overflow-hidden">
+        {/* Radial yellow glow background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
+        </div>
+
+        <div className="container py-20 md:py-28 relative z-10">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-14 md:mb-20">
+            <p className="text-sm md:text-base font-medium text-primary mb-5 tracking-wide">
+              Prazos de recebimento
+            </p>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] max-w-5xl mx-auto">
+              Receba rapidamente e facilite seu{" "}
+              <span className="text-primary">fluxo de caixa!</span>
             </h2>
           </motion.div>
 
-          <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-            {bigStats.map((stat, i) =>
-            <motion.div
-              key={stat.label}
-              {...stagger}
-              transition={{ delay: i * 0.15, duration: 0.5 }}
-              whileHover={{ scale: 1.05 }}
-              className="text-center rounded-2xl border border-border/50 bg-background p-8 space-y-2 hover:border-primary/30 transition-all duration-300">
-              
-                <AnimatedCounter value={stat.value} />
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+          <div className="grid gap-5 md:grid-cols-3 max-w-6xl mx-auto">
+            {[
+              { icon: CreditCard, title: "Cartão", subtitle: "Em 30 Dias" },
+              { icon: Zap, title: "PIX", subtitle: "Dia + 0" },
+              { icon: Receipt, title: "Boleto", subtitle: "Dia + 2" },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                {...stagger}
+                transition={{ delay: i * 0.12, duration: 0.5 }}
+                className="group relative rounded-2xl border border-white/[0.08] bg-[#0a0a0a] p-10 md:p-12 text-center overflow-hidden cursor-default transition-all duration-500 hover:border-primary/40"
+              >
+                {/* Hover glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="absolute -inset-px rounded-2xl bg-primary/0 group-hover:bg-primary/[0.03] transition-all duration-500 pointer-events-none" />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/30 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col items-center gap-5">
+                  <item.icon className="h-12 w-12 md:h-14 md:w-14 text-primary stroke-[1.5]" />
+                  <div className="space-y-1.5">
+                    <h3 className="text-2xl md:text-3xl font-bold text-white">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm md:text-base text-primary/90 font-medium">
+                      {item.subtitle}
+                    </p>
+                  </div>
+                </div>
               </motion.div>
-            )}
+            ))}
           </div>
         </div>
       </section>
