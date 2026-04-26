@@ -104,15 +104,48 @@
     @apply border-border;
   }
 
+  html {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Instrument Sans Variable', 'Instrument Sans', system-ui, sans-serif;
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 400;
     font-feature-settings: 'cv01' 1;
   }
 
   .dark body,
   body {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Typographic hierarchy */
+  h1, h2 {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  h3, h4 {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  h5, h6 {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 700;
+  }
+
+  p {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 400;
+  }
+
+  button, label, .btn {
+    font-family: 'Darker Grotesque', system-ui, sans-serif;
+    font-weight: 600;
   }
 }
 
