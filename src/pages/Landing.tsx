@@ -1225,24 +1225,6 @@ export default function Landing() {
               <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#0a0a0a] to-transparent pointer-events-none" />
               <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#0a0a0a] to-transparent pointer-events-none" />
             </div>
-
-            {/* Right: Woman image */}
-            <div className="relative h-[420px] md:h-[560px] lg:h-[600px] overflow-hidden">
-              {/* Left fade to blend with dark bg */}
-              <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
-              {/* Bottom fade */}
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
-              {/* Top fade */}
-              <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
-              <img
-                src={ctaWomanYellow}
-                alt="Empreendedora vendendo com a VitraPay"
-                width={1024}
-                height={1024}
-                loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover object-center"
-              />
-            </div>
           </div>
         </motion.div>
       </section>
