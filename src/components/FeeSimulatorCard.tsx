@@ -115,14 +115,22 @@ export function FeeSimulatorCard() {
               </p>
             </div>
 
-            <Slider
+            <SliderPrimitive.Root
               value={[amount]}
               onValueChange={(v) => setAmount(v[0])}
               min={MIN_AMOUNT}
               max={MAX_AMOUNT}
               step={STEP}
-              className="pt-1"
-            />
+              className="relative flex w-full touch-none select-none items-center pt-1"
+            >
+              <SliderPrimitive.Track className="relative h-3 w-full grow overflow-hidden rounded-full bg-white/[0.06]">
+                <SliderPrimitive.Range className="absolute h-full bg-white/10" />
+              </SliderPrimitive.Track>
+              <SliderPrimitive.Thumb
+                aria-label="Valor de vendas"
+                className="block h-7 w-2 rounded-sm bg-primary shadow-[0_0_15px_hsl(var(--primary)/0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-transform hover:scale-110"
+              />
+            </SliderPrimitive.Root>
 
             {/* Comparison: side-by-side fees */}
             <div className="grid grid-cols-2 gap-4 pt-4">
