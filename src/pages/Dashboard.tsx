@@ -837,7 +837,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Faturamento Total Card */}
-          <motion.div {...anim(0.075)} className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between lg:col-span-1">
+          <motion.div {...anim(0.075)} className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between lg:col-span-1 h-full">
             <div className="flex items-center gap-2 mb-4">
               <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
