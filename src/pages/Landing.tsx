@@ -506,6 +506,18 @@ export default function Landing() {
               <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
             </motion.div>
 
+            <p
+              className="text-primary"
+              style={{
+                fontFamily: "'Darker Grotesque', sans-serif",
+                fontWeight: 500,
+                fontSize: "clamp(1rem, 1.6vw, 1.375rem)",
+                letterSpacing: "0",
+              }}
+            >
+              Prazos de recebimento
+            </p>
+
             <h1
               className="relative text-white"
               style={{
@@ -517,10 +529,8 @@ export default function Landing() {
               }}
             >
               <span className="relative z-10">
-                A VitraPay enxerga o{" "}
-                <span className="text-primary">caminho</span>
-                <br />
-                para não te deixar no escuro
+                Receba rapidamente e facilite seu{" "}
+                <span className="text-primary">fluxo de caixa!</span>
               </span>
               {/* Glow central sutil */}
               <span className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--primary)/0.06),transparent_70%)] blur-2xl pointer-events-none" />
