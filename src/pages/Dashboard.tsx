@@ -862,7 +862,7 @@ export default function Dashboard() {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <p className="text-2xl font-bold mt-1">{fmt(grossRevenue)}</p>
+                <p className="text-2xl font-bold mt-1">{fmt(grossRevenueAll)}</p>
               </div>
               <div className="flex items-center gap-2">
                 {/* Chart mode selector */}
