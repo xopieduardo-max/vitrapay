@@ -5,7 +5,7 @@ import {
   Zap, ArrowRight, Package, Users, TrendingUp, Shield, CreditCard,
   BarChart3, Rocket, Clock, Headphones, Award, Star,
   DollarSign, Wallet, Globe, Play, CheckCircle2, Sparkles, Smartphone,
-  Bell, ChevronDown, MessageCircle, X } from
+  Bell, ChevronDown, MessageCircle, X, Receipt } from
 "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
