@@ -76,13 +76,13 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
           style={{ background: display.glow }}
         />
 
-        <div className="relative flex items-center gap-4 md:gap-5">
+        <div className="relative flex items-center gap-4 md:gap-5 w-full">
           {/* Tier badge - large 3D image */}
           <div className="relative flex-shrink-0">
             <img
               src={display.image}
               alt={display.name}
-              className={`h-20 w-20 md:h-24 md:w-24 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)] tier-float ${
+              className={`h-20 w-20 md:h-24 md:w-24 lg:h-28 lg:w-28 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)] tier-float ${
                 currentIdx < 0 ? "opacity-50 saturate-50" : ""
               }`}
               loading="lazy"
@@ -115,7 +115,7 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
             </div>
 
             {/* Bottom labels */}
-            <div className="flex items-center justify-between text-xs md:text-sm">
+            <div className="flex items-center justify-between gap-3 text-xs md:text-sm flex-wrap">
               {next ? (
                 <>
                   <span className="text-muted-foreground">
