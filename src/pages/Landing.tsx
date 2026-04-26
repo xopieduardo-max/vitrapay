@@ -571,10 +571,9 @@ export default function Landing() {
 
             {/* Dashboard image with scroll-driven tilt */}
             <div className="flex-1 min-w-0 relative" style={{ perspective: "1200px" }}>
-              {/* Top light beam — intense glow above the dashboard */}
-              <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[80%] h-40 bg-primary/40 blur-[100px] rounded-full pointer-events-none" />
-              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[55%] h-24 bg-primary/60 blur-[70px] rounded-full pointer-events-none" />
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-[35%] h-12 bg-primary/80 blur-[40px] rounded-full pointer-events-none" />
+              {/* Top light beam — single thin strip glow above the dashboard */}
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-[60%] h-[2px] bg-primary/80 blur-[2px] rounded-full pointer-events-none" />
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-[50%] h-3 bg-primary/40 blur-[20px] rounded-full pointer-events-none" />
 
               <motion.div
                 style={{ rotateX: dashboardRotateX, willChange: "transform" }}
