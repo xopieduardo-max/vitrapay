@@ -14,7 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["'Instrument Sans Variable'", "'Instrument Sans'", "system-ui", "sans-serif"],
+        sans: ["'Darker Grotesque'", "system-ui", "sans-serif"],
+        inter: ["'Inter'", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
