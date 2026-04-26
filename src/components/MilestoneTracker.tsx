@@ -1,25 +1,29 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState, lazy, Suspense } from "react";
 import { Info, Lock, Check } from "lucide-react";
-import tierStarter from "@/assets/tier-starter.png";
-import tierLite from "@/assets/tier-lite.png";
-import tierBronze from "@/assets/tier-bronze.png";
-import tierGold from "@/assets/tier-gold.png";
-import tierPlatinum from "@/assets/tier-platinum.png";
-import tierBlack from "@/assets/tier-black.png";
-import tierDiamond from "@/assets/tier-diamond.png";
-import tierSapphire from "@/assets/tier-sapphire.png";
-import tierRuby from "@/assets/tier-ruby.png";
+import tierStarter from "@/assets/tier-starter.webp";
+import tierLite from "@/assets/tier-lite.webp";
+import tierBronze from "@/assets/tier-bronze.webp";
+import tierGold from "@/assets/tier-gold.webp";
+import tierPlatinum from "@/assets/tier-platinum.webp";
+import tierBlack from "@/assets/tier-black.webp";
+import tierDiamond from "@/assets/tier-diamond.webp";
+import tierSapphire from "@/assets/tier-sapphire.webp";
+import tierRuby from "@/assets/tier-ruby.webp";
+
+const Dialog = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.Dialog })));
+const DialogContent = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogContent })));
+const DialogHeader = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogHeader })));
+const DialogTitle = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogTitle })));
 
 // ─── Tiers ──────────────────────────────────────────────────────────────────
-// Threshold = valor (em centavos) que o usuário precisa atingir para entrar no tier.
-// Starter é o tier inicial (0). O próximo é Lite a partir de R$ 10k, etc.
+// Threshold = valor (em centavos). Starter é o tier inicial.
+// Start 10k → Bronze 100k → Platinum 250k → Gold 500k → Black 1M → Diamond 5M → Sapphire 10M → Ruby 25M
 export const TIERS = [
   { name: "Starter", threshold: 0, label: "Primeiros passos", image: tierStarter, glow: "rgba(255, 200, 30, 0.45)" },
-  { name: "Lite", threshold: 1_000_000, label: "R$ 10k", image: tierLite, glow: "rgba(200, 200, 210, 0.45)" },
-  { name: "Bronze", threshold: 5_000_000, label: "R$ 50k", image: tierBronze, glow: "rgba(205, 127, 50, 0.45)" },
-  { name: "Gold", threshold: 10_000_000, label: "R$ 100k", image: tierGold, glow: "rgba(255, 200, 30, 0.55)" },
-  { name: "Platinum", threshold: 50_000_000, label: "R$ 500k", image: tierPlatinum, glow: "rgba(220, 220, 230, 0.5)" },
+  { name: "Start", threshold: 1_000_000, label: "R$ 10k", image: tierLite, glow: "rgba(200, 200, 210, 0.45)" },
+  { name: "Bronze", threshold: 10_000_000, label: "R$ 100k", image: tierBronze, glow: "rgba(205, 127, 50, 0.45)" },
+  { name: "Platinum", threshold: 25_000_000, label: "R$ 250k", image: tierPlatinum, glow: "rgba(220, 220, 230, 0.5)" },
+  { name: "Gold", threshold: 50_000_000, label: "R$ 500k", image: tierGold, glow: "rgba(255, 200, 30, 0.55)" },
   { name: "Black", threshold: 100_000_000, label: "R$ 1M", image: tierBlack, glow: "rgba(40, 40, 40, 0.6)" },
   { name: "Diamond", threshold: 500_000_000, label: "R$ 5M", image: tierDiamond, glow: "rgba(180, 220, 255, 0.55)" },
   { name: "Sapphire", threshold: 1_000_000_000, label: "R$ 10M", image: tierSapphire, glow: "rgba(50, 100, 240, 0.55)" },
