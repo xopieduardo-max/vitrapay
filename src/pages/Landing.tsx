@@ -607,33 +607,33 @@ export default function Landing() {
       {/* ─── "Trabalhar com a VitraPay é muita vantagem!" + Marquee ─── */}
       <section className="relative bg-[#080808] border-y border-white/[0.06] overflow-hidden">
         {/* Headline — layout idêntico Zippify: "Trabalhar / com a" empilhado | LOGO Vitrapay | é muita / vantagem! */}
-        <div className="container py-10 md:py-14">
+        <div className="container py-8 md:py-12">
           <motion.div
             {...fadeUp}
             transition={{ duration: 0.6 }}
-            className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 lg:gap-7"
+            className="flex items-center justify-center gap-2.5 sm:gap-3 md:gap-4 lg:gap-6"
           >
             {/* Bloco esquerdo: "Trabalhar / com a" empilhado, alinhado à direita */}
-            <div className="text-right leading-[0.95] text-white font-light text-base sm:text-2xl md:text-3xl lg:text-5xl">
+            <div className="text-right leading-[0.95] text-white font-light text-sm sm:text-xl md:text-2xl lg:text-[2.6rem]">
               <div>Trabalhar</div>
               <div>com a</div>
             </div>
 
             {/* Logo + nome VitraPay (centro) */}
-            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5 shrink-0">
               <img
                 src={logoIcon}
                 alt="VitraPay"
-                className="h-8 sm:h-11 md:h-14 lg:h-20 object-contain"
+                className="h-7 sm:h-9 md:h-12 lg:h-[68px] object-contain"
                 loading="lazy"
               />
-              <span className="text-white font-bold leading-none text-xl sm:text-3xl md:text-4xl lg:text-[5.5rem] tracking-tight">
+              <span className="text-white font-bold leading-none text-lg sm:text-2xl md:text-[2rem] lg:text-[4.7rem] tracking-tight">
                 VitraPay
               </span>
             </div>
 
             {/* Bloco direito: "é muita / vantagem!" empilhado, alinhado à esquerda, em amarelo */}
-            <div className="text-left leading-[0.95] text-primary text-base sm:text-2xl md:text-3xl lg:text-5xl">
+            <div className="text-left leading-[0.95] text-primary text-sm sm:text-xl md:text-2xl lg:text-[2.6rem]">
               <div className="font-light">é muita</div>
               <div className="font-extrabold">vantagem!</div>
             </div>
