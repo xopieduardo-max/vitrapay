@@ -47,6 +47,7 @@ interface Props {
 
 export function MilestoneTracker({ revenue, variant = "full" }: Props) {
   const [open, setOpen] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const currentIdx = getTierIndex(revenue);
   // Quando ainda não conquistou nenhum tier, exibimos o Start como "alvo".
   const display = currentIdx >= 0 ? TIERS[currentIdx] : TIERS[0];
