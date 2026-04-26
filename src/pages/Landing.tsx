@@ -1171,43 +1171,66 @@ export default function Landing() {
       {/* ─── CTA Section ─── */}
       <section className="container pb-20 md:pb-28">
         <motion.div {...fadeUp} transition={{ duration: 0.6 }}
-        className="relative rounded-3xl border border-primary/20 bg-primary/5 overflow-hidden">
-          
+        className="relative rounded-3xl border border-primary/20 bg-[#0a0a0a] overflow-hidden">
+
           <FloatingParticles />
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/10 blur-[100px]" />
+            <div className="absolute top-1/2 left-0 w-[600px] h-[500px] rounded-full bg-primary/10 blur-[120px]" />
           </div>
-          <div className="relative px-8 py-16 md:py-24 text-center space-y-6">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Comece a vender{" "}
-              <span className="text-gradient-primary">agora mesmo</span>
-            </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-              Crie sua conta grátis em menos de 2 minutos e comece a faturar com seus produtos digitais.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="h-14 px-12 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200" asChild>
-                <Link to="/auth">
-                  Criar minha conta grátis <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold gap-2 border-border/50" asChild>
-                <a href="https://wa.me/5543984668997" target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-4 w-4" />
-                  Falar com especialista
-                </a>
-              </Button>
+
+          <div className="relative grid md:grid-cols-2 gap-8 md:gap-4 items-center">
+            {/* Left: Text content */}
+            <div className="px-8 md:px-12 lg:px-16 py-16 md:py-20 space-y-6">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+                Comece hoje.{" "}
+                <span className="text-foreground/90">Venda melhor.</span>{" "}
+                <span className="text-gradient-primary">Cresça de verdade.</span>
+              </h2>
+              <p className="text-muted-foreground text-base md:text-lg max-w-md leading-relaxed">
+                Chega de travar com ferramentas que não te entendem. A VitraPay é pra quem quer liberdade com lucro.
+              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
+                <Button size="lg" className="h-14 px-8 text-base font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200 rounded-full" asChild>
+                  <Link to="/auth">
+                    Quero vender agora <ArrowRight className="h-4 w-4 rotate-[-45deg]" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="h-14 px-6 text-base font-semibold gap-2 border-border/50 rounded-full" asChild>
+                  <a href="https://wa.me/5543984668997" target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="h-4 w-4" />
+                    Falar com especialista
+                  </a>
+                </Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground pt-4">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Sem taxa de adesão
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Pix instantâneo
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Suporte 24/7
+                </span>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground pt-4">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Sem taxa de adesão
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Pix instantâneo
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Suporte 24/7
-              </span>
+
+            {/* Right: Woman image */}
+            <div className="relative h-[420px] md:h-[560px] lg:h-[600px] overflow-hidden">
+              {/* Left fade to blend with dark bg */}
+              <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
+              {/* Bottom fade */}
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
+              {/* Top fade */}
+              <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
+              <img
+                src={ctaWomanYellow}
+                alt="Empreendedora vendendo com a VitraPay"
+                width={1024}
+                height={1024}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
             </div>
           </div>
         </motion.div>
