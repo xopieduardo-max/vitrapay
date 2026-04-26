@@ -16,11 +16,10 @@ const DialogHeader = lazy(() => import("@/components/ui/dialog").then(m => ({ de
 const DialogTitle = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogTitle })));
 
 // ─── Tiers ──────────────────────────────────────────────────────────────────
-// Threshold = valor (em centavos). Starter é o tier inicial.
+// Threshold = valor (em centavos). O usuário desbloqueia o tier ao atingir o threshold.
 // Start 10k → Bronze 100k → Platinum 250k → Gold 500k → Black 1M → Diamond 5M → Sapphire 10M → Ruby 25M
 export const TIERS = [
-  { name: "Starter", threshold: 0, label: "Primeiros passos", image: tierStarter, glow: "rgba(255, 200, 30, 0.45)" },
-  { name: "Start", threshold: 1_000_000, label: "R$ 10k", image: tierLite, glow: "rgba(200, 200, 210, 0.45)" },
+  { name: "Start", threshold: 1_000_000, label: "R$ 10k", image: tierStarter, glow: "rgba(255, 200, 30, 0.45)" },
   { name: "Bronze", threshold: 10_000_000, label: "R$ 100k", image: tierBronze, glow: "rgba(205, 127, 50, 0.45)" },
   { name: "Platinum", threshold: 25_000_000, label: "R$ 250k", image: tierPlatinum, glow: "rgba(220, 220, 230, 0.5)" },
   { name: "Gold", threshold: 50_000_000, label: "R$ 500k", image: tierGold, glow: "rgba(255, 200, 30, 0.55)" },
