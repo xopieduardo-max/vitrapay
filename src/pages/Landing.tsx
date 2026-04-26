@@ -523,22 +523,36 @@ export default function Landing() {
 
             {/* ─── Dual CTAs ─── */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="relative h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20" asChild>
-                <Link to="/auth" className="text-sm">
-                  Criar minha conta
-                  <div className="h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200" asChild>
-                <Link to="/auth">
-                  Fazer login
-                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                </Link>
-              </Button>
+              {/* Primary CTA — glassmorphism ring + gradient core + intense glow */}
+              <div className="relative group">
+                {/* Outer ambient glow */}
+                <div className="absolute -inset-4 bg-primary/30 blur-3xl rounded-full opacity-70 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                {/* Glassmorphism outer ring */}
+                <div className="relative rounded-full p-[6px] bg-gradient-to-b from-white/15 to-white/[0.02] backdrop-blur-md border border-white/10 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.6)]">
+                  <Button size="lg" className="relative h-12 px-8 text-base font-semibold gap-3 rounded-full bg-gradient-to-b from-primary via-primary to-[hsl(48,96%,45%)] text-primary-foreground hover:brightness-110 active:scale-[0.98] transition-all duration-200 shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.4),inset_0_-2px_8px_0_hsl(48_96%_30%/0.5)] border-0" asChild>
+                    <Link to="/auth">
+                      Criar minha conta
+                      <div className="h-7 w-7 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Secondary CTA — matching glassmorphism ring, dark core */}
+              <div className="relative">
+                <div className="rounded-full p-[6px] bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-md border border-white/[0.06]">
+                  <Button size="lg" variant="ghost" className="h-12 px-8 text-base font-semibold gap-3 rounded-full bg-[#0a0a0a] text-foreground hover:bg-[#111] hover:text-foreground transition-all duration-200 border-0" asChild>
+                    <Link to="/auth">
+                      Fazer login
+                      <div className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center">
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           </motion.div>
 
