@@ -130,88 +130,94 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
         </div>
       </div>
 
-      {/* Achievements Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <img src={current.image} alt="" className="h-10 w-10 object-contain" />
-              <div>
-                <p className="text-base font-bold">{current.name}</p>
-                {next && (
-                  <p className="text-xs font-normal text-muted-foreground mt-0.5">
-                    Próxima conquista: <strong>{next.label}</strong>
-                  </p>
-                )}
-              </div>
-            </DialogTitle>
-          </DialogHeader>
+      {/* Achievements Dialog (lazy mounted only when opened) */}
+      {open && (
+        <Suspense fallback={null}>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <img src={current.image} alt="" className="h-10 w-10 object-contain" decoding="async" />
+                  <div>
+                    <p className="text-base font-bold">{current.name}</p>
+                    {next && (
+                      <p className="text-xs font-normal text-muted-foreground mt-0.5">
+                        Próxima conquista: <strong>{next.label}</strong>
+                      </p>
+                    )}
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
 
-          {/* Top progress bar */}
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden -mt-2">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${progress}%`,
-                background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
-              }}
-            />
-          </div>
-
-          {/* Tier grid 3x3 */}
-          <div className="grid grid-cols-3 gap-3 md:gap-4 pt-3">
-            {TIERS.map((tier, i) => {
-              const reached = i <= currentIdx;
-              const isCurrent = i === currentIdx;
-              return (
+              {/* Top progress bar */}
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden -mt-2">
                 <div
-                  key={tier.name}
-                  className={`relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all ${
-                    isCurrent
-                      ? "border-primary/60 bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
-                      : reached
-                        ? "border-border bg-card"
-                        : "border-border/60 bg-muted/20"
-                  }`}
-                >
-                  {reached && !isCurrent && (
-                    <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
-                    </div>
-                  )}
-                  {!reached && (
-                    <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-muted flex items-center justify-center">
-                      <Lock className="h-2.5 w-2.5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <img
-                    src={tier.image}
-                    alt={tier.name}
-                    className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all ${
-                      reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "grayscale opacity-40"
-                    }`}
-                    loading="lazy"
-                  />
-                  <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
-                    {tier.name}
-                  </p>
-                  <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
-                    {i === 0 ? tier.label : tier.label}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${progress}%`,
+                    background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
+                  }}
+                />
+              </div>
 
-          {/* Footer note */}
-          <div className="flex items-start gap-2 mt-2 p-3 rounded-lg border border-border/60 bg-muted/30">
-            <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Os níveis consideram o total transacionado bruto, isento de taxas ou deduções.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+              {/* Tier grid 3x3 */}
+              <div className="grid grid-cols-3 gap-3 md:gap-4 pt-3">
+                {TIERS.map((tier, i) => {
+                  const reached = i <= currentIdx;
+                  const isCurrent = i === currentIdx;
+                  return (
+                    <div
+                      key={tier.name}
+                      className={`relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all ${
+                        isCurrent
+                          ? "border-primary/60 bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+                          : reached
+                            ? "border-border bg-card"
+                            : "border-border/60 bg-muted/20"
+                      }`}
+                    >
+                      {reached && !isCurrent && (
+                        <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
+                        </div>
+                      )}
+                      {!reached && (
+                        <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                          <Lock className="h-2.5 w-2.5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <img
+                        src={tier.image}
+                        alt={tier.name}
+                        width={80}
+                        height={80}
+                        decoding="async"
+                        className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all ${
+                          reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "grayscale opacity-40"
+                        }`}
+                      />
+                      <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+                        {tier.name}
+                      </p>
+                      <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
+                        {tier.label}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer note */}
+              <div className="flex items-start gap-2 mt-2 p-3 rounded-lg border border-border/60 bg-muted/30">
+                <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Os níveis consideram o total transacionado bruto, isento de taxas ou deduções.
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </Suspense>
+      )}
     </>
   );
 }
