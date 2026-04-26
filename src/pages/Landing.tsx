@@ -657,6 +657,7 @@ export default function Landing() {
             </span>
           )}
         </div>
+        </div>
       </section>
 
       {/* ─── Big Stats ─── */}
