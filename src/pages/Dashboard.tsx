@@ -801,9 +801,9 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Row 1: Balance Card + Faturamento Total + Milestone Tracker */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Balance Card */}
-          <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-5">
+          <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-5 lg:col-span-1">
             <div className="flex items-center gap-1 mb-4">
               <button
                 onClick={() => setBalanceTab("pending")}
