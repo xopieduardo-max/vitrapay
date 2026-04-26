@@ -115,7 +115,7 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
             </div>
 
             {/* Bottom labels */}
-            <div className="flex items-center justify-between text-xs md:text-sm">
+            <div className="flex items-center justify-between gap-3 text-xs md:text-sm flex-wrap">
               {next ? (
                 <>
                   <span className="text-muted-foreground">
