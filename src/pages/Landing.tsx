@@ -1015,7 +1015,7 @@ export default function Landing() {
               <img
                 src={iphoneVitrapay}
                 alt="App VitraPay no iPhone"
-                className="absolute left-1/2 top-[18%] md:top-[16%] h-[250%] md:h-[269%] lg:h-[281%] w-auto object-contain object-top z-10 drop-shadow-[0_25px_60px_rgba(0,0,0,0.7)] [transform:translateX(-50%)_rotate(10deg)] origin-center"
+                className="absolute left-1/2 top-[18%] md:top-[16%] h-[250%] md:h-[269%] lg:h-[281%] w-auto object-contain object-top z-10 drop-shadow-[0_25px_60px_rgba(0,0,0,0.7)] [transform:translateX(calc(-50%-40px))_rotate(10deg)] origin-center"
                 loading="lazy"
                 decoding="async" />
 
