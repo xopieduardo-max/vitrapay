@@ -1210,6 +1210,7 @@ export type Database = {
           checkout_banner_url: string | null
           checkout_color_theme: string
           checkout_contact_model: number
+          checkout_fields: Json | null
           checkout_headline: string | null
           checkout_sidebar_banner_url: string | null
           checkout_social_proof: boolean
@@ -1235,6 +1236,7 @@ export type Database = {
           checkout_banner_url?: string | null
           checkout_color_theme?: string
           checkout_contact_model?: number
+          checkout_fields?: Json | null
           checkout_headline?: string | null
           checkout_sidebar_banner_url?: string | null
           checkout_social_proof?: boolean
@@ -1260,6 +1262,7 @@ export type Database = {
           checkout_banner_url?: string | null
           checkout_color_theme?: string
           checkout_contact_model?: number
+          checkout_fields?: Json | null
           checkout_headline?: string | null
           checkout_sidebar_banner_url?: string | null
           checkout_social_proof?: boolean
