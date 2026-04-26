@@ -1,25 +1,29 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState, lazy, Suspense } from "react";
 import { Info, Lock, Check } from "lucide-react";
-import tierStarter from "@/assets/tier-starter.png";
-import tierLite from "@/assets/tier-lite.png";
-import tierBronze from "@/assets/tier-bronze.png";
-import tierGold from "@/assets/tier-gold.png";
-import tierPlatinum from "@/assets/tier-platinum.png";
-import tierBlack from "@/assets/tier-black.png";
-import tierDiamond from "@/assets/tier-diamond.png";
-import tierSapphire from "@/assets/tier-sapphire.png";
-import tierRuby from "@/assets/tier-ruby.png";
+import tierStarter from "@/assets/tier-starter.webp";
+import tierLite from "@/assets/tier-lite.webp";
+import tierBronze from "@/assets/tier-bronze.webp";
+import tierGold from "@/assets/tier-gold.webp";
+import tierPlatinum from "@/assets/tier-platinum.webp";
+import tierBlack from "@/assets/tier-black.webp";
+import tierDiamond from "@/assets/tier-diamond.webp";
+import tierSapphire from "@/assets/tier-sapphire.webp";
+import tierRuby from "@/assets/tier-ruby.webp";
+
+const Dialog = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.Dialog })));
+const DialogContent = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogContent })));
+const DialogHeader = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogHeader })));
+const DialogTitle = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogTitle })));
 
 // ─── Tiers ──────────────────────────────────────────────────────────────────
-// Threshold = valor (em centavos) que o usuário precisa atingir para entrar no tier.
-// Starter é o tier inicial (0). O próximo é Lite a partir de R$ 10k, etc.
+// Threshold = valor (em centavos). Starter é o tier inicial.
+// Start 10k → Bronze 100k → Platinum 250k → Gold 500k → Black 1M → Diamond 5M → Sapphire 10M → Ruby 25M
 export const TIERS = [
   { name: "Starter", threshold: 0, label: "Primeiros passos", image: tierStarter, glow: "rgba(255, 200, 30, 0.45)" },
-  { name: "Lite", threshold: 1_000_000, label: "R$ 10k", image: tierLite, glow: "rgba(200, 200, 210, 0.45)" },
-  { name: "Bronze", threshold: 5_000_000, label: "R$ 50k", image: tierBronze, glow: "rgba(205, 127, 50, 0.45)" },
-  { name: "Gold", threshold: 10_000_000, label: "R$ 100k", image: tierGold, glow: "rgba(255, 200, 30, 0.55)" },
-  { name: "Platinum", threshold: 50_000_000, label: "R$ 500k", image: tierPlatinum, glow: "rgba(220, 220, 230, 0.5)" },
+  { name: "Start", threshold: 1_000_000, label: "R$ 10k", image: tierLite, glow: "rgba(200, 200, 210, 0.45)" },
+  { name: "Bronze", threshold: 10_000_000, label: "R$ 100k", image: tierBronze, glow: "rgba(205, 127, 50, 0.45)" },
+  { name: "Platinum", threshold: 25_000_000, label: "R$ 250k", image: tierPlatinum, glow: "rgba(220, 220, 230, 0.5)" },
+  { name: "Gold", threshold: 50_000_000, label: "R$ 500k", image: tierGold, glow: "rgba(255, 200, 30, 0.55)" },
   { name: "Black", threshold: 100_000_000, label: "R$ 1M", image: tierBlack, glow: "rgba(40, 40, 40, 0.6)" },
   { name: "Diamond", threshold: 500_000_000, label: "R$ 5M", image: tierDiamond, glow: "rgba(180, 220, 255, 0.55)" },
   { name: "Sapphire", threshold: 1_000_000_000, label: "R$ 10M", image: tierSapphire, glow: "rgba(50, 100, 240, 0.55)" },
@@ -126,88 +130,94 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
         </div>
       </div>
 
-      {/* Achievements Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <img src={current.image} alt="" className="h-10 w-10 object-contain" />
-              <div>
-                <p className="text-base font-bold">{current.name}</p>
-                {next && (
-                  <p className="text-xs font-normal text-muted-foreground mt-0.5">
-                    Próxima conquista: <strong>{next.label}</strong>
-                  </p>
-                )}
-              </div>
-            </DialogTitle>
-          </DialogHeader>
+      {/* Achievements Dialog (lazy mounted only when opened) */}
+      {open && (
+        <Suspense fallback={null}>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <img src={current.image} alt="" className="h-10 w-10 object-contain" decoding="async" />
+                  <div>
+                    <p className="text-base font-bold">{current.name}</p>
+                    {next && (
+                      <p className="text-xs font-normal text-muted-foreground mt-0.5">
+                        Próxima conquista: <strong>{next.label}</strong>
+                      </p>
+                    )}
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
 
-          {/* Top progress bar */}
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden -mt-2">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${progress}%`,
-                background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
-              }}
-            />
-          </div>
-
-          {/* Tier grid 3x3 */}
-          <div className="grid grid-cols-3 gap-3 md:gap-4 pt-3">
-            {TIERS.map((tier, i) => {
-              const reached = i <= currentIdx;
-              const isCurrent = i === currentIdx;
-              return (
+              {/* Top progress bar */}
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden -mt-2">
                 <div
-                  key={tier.name}
-                  className={`relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all ${
-                    isCurrent
-                      ? "border-primary/60 bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
-                      : reached
-                        ? "border-border bg-card"
-                        : "border-border/60 bg-muted/20"
-                  }`}
-                >
-                  {reached && !isCurrent && (
-                    <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
-                    </div>
-                  )}
-                  {!reached && (
-                    <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-muted flex items-center justify-center">
-                      <Lock className="h-2.5 w-2.5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <img
-                    src={tier.image}
-                    alt={tier.name}
-                    className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all ${
-                      reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "grayscale opacity-40"
-                    }`}
-                    loading="lazy"
-                  />
-                  <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
-                    {tier.name}
-                  </p>
-                  <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
-                    {i === 0 ? tier.label : tier.label}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${progress}%`,
+                    background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
+                  }}
+                />
+              </div>
 
-          {/* Footer note */}
-          <div className="flex items-start gap-2 mt-2 p-3 rounded-lg border border-border/60 bg-muted/30">
-            <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Os níveis consideram o total transacionado bruto, isento de taxas ou deduções.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+              {/* Tier grid 3x3 */}
+              <div className="grid grid-cols-3 gap-3 md:gap-4 pt-3">
+                {TIERS.map((tier, i) => {
+                  const reached = i <= currentIdx;
+                  const isCurrent = i === currentIdx;
+                  return (
+                    <div
+                      key={tier.name}
+                      className={`relative flex flex-col items-center justify-center text-center p-3 md:p-4 rounded-xl border transition-all ${
+                        isCurrent
+                          ? "border-primary/60 bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+                          : reached
+                            ? "border-border bg-card"
+                            : "border-border/60 bg-muted/20"
+                      }`}
+                    >
+                      {reached && !isCurrent && (
+                        <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
+                        </div>
+                      )}
+                      {!reached && (
+                        <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                          <Lock className="h-2.5 w-2.5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <img
+                        src={tier.image}
+                        alt={tier.name}
+                        width={80}
+                        height={80}
+                        decoding="async"
+                        className={`h-16 w-16 md:h-20 md:w-20 object-contain mb-2 transition-all ${
+                          reached ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" : "grayscale opacity-40"
+                        }`}
+                      />
+                      <p className={`text-sm font-bold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+                        {tier.name}
+                      </p>
+                      <p className={`text-xs mt-0.5 ${reached ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
+                        {tier.label}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer note */}
+              <div className="flex items-start gap-2 mt-2 p-3 rounded-lg border border-border/60 bg-muted/30">
+                <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Os níveis consideram o total transacionado bruto, isento de taxas ou deduções.
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </Suspense>
+      )}
     </>
   );
 }
