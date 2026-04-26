@@ -800,8 +800,8 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Row 1: Balance Card + Milestone Tracker */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Row 1: Balance Card + Faturamento Total + Milestone Tracker */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Balance Card */}
           <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-1 mb-4">
@@ -822,7 +822,7 @@ export default function Dashboard() {
                 Disponível
               </button>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <p className="text-3xl font-bold tracking-tight">
                 {balanceTab === "available" ? fmt(availableBalance) : fmt(walletPending)}
               </p>
@@ -833,6 +833,22 @@ export default function Dashboard() {
               >
                 <ArrowDownToLine className="h-3.5 w-3.5" /> Antecipar
               </Button>
+            </div>
+          </motion.div>
+
+          {/* Faturamento Total Card */}
+          <motion.div {...anim(0.075)} className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <p className="text-xs font-medium text-muted-foreground">Faturamento total</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold tracking-tight">{fmt(grossRevenueAll)}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="text-foreground font-semibold">{completedSalesAll.length}</span> vendas aprovadas
+              </p>
             </div>
           </motion.div>
 
