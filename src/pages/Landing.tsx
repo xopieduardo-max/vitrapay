@@ -510,14 +510,15 @@ export default function Landing() {
               className="relative text-white"
               style={{
                 fontFamily: "'Darker Grotesque', sans-serif",
-                fontWeight: 300,
+                fontWeight: 800,
                 fontSize: "clamp(2.5rem, 8.5vw, 89px)",
-                lineHeight: "0.806",
-                letterSpacing: "0px",
+                lineHeight: "0.95",
+                letterSpacing: "-0.02em",
               }}
             >
               <span className="relative z-10">
-                A VitraPay enxerga o caminho
+                A VitraPay enxerga o{" "}
+                <span className="text-primary">caminho</span>
                 <br />
                 para não te deixar no escuro
               </span>
