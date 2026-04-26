@@ -1195,12 +1195,6 @@ export default function Landing() {
                     Quero vender agora <ArrowRight className="h-4 w-4 rotate-[-45deg]" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="h-14 px-6 text-base font-semibold gap-2 border-border/50 rounded-full" asChild>
-                  <a href="https://wa.me/5543984668997" target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="h-4 w-4" />
-                    Falar com especialista
-                  </a>
-                </Button>
               </div>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground pt-4">
                 <span className="flex items-center gap-1.5">
@@ -1213,6 +1207,23 @@ export default function Landing() {
                   <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Suporte 24/7
                 </span>
               </div>
+            </div>
+
+            {/* Right: Woman image — blended into card */}
+            <div className="relative h-[420px] md:h-[560px] lg:h-[620px] overflow-hidden">
+              <img
+                src={ctaWomanYellow}
+                alt="Empreendedora vendendo com a VitraPay"
+                width={1024}
+                height={1024}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover object-center mix-blend-lighten"
+              />
+              {/* Soft fades to seamlessly blend edges with card */}
+              <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#0a0a0a] to-transparent pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#0a0a0a] to-transparent pointer-events-none" />
             </div>
 
             {/* Right: Woman image */}
