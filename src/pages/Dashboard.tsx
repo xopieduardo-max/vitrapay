@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
 import BannerCarousel from "@/components/BannerCarousel";
 import { MilestoneCelebration } from "@/components/MilestoneCelebration";
+import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -754,64 +755,8 @@ export default function Dashboard() {
         </div>
 
         {/* Milestone Tracker Mobile */}
-        <motion.div {...anim(0.24)} className="rounded-2xl border border-primary/30 bg-card p-4 milestone-glow">
-          {(() => {
-            const currentGoal = getCurrentGoal(grossRevenueAll);
-            const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
-            const progressInLevel = milestoneIdx < MILESTONES.length
-              ? ((grossRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
-              : 100;
-
-            return (
-              <div className="space-y-3">
-                {/* Level labels row */}
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{getCurrentLevelName(milestoneIdx)}</span>
-                  <span className={`font-bold ${milestoneIdx < MILESTONES.length ? MILESTONE_COLORS[milestoneIdx] : "text-foreground"}`}>
-                    → {getNextLevelName(milestoneIdx)}
-                  </span>
-                </div>
-
-                {/* Progress bar with rocket outside */}
-                <div className="relative">
-                  <div className="h-3 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${Math.min(progressInLevel, 100)}%`,
-                        background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
-                      }}
-                    />
-                  </div>
-                  {/* Rocket emoji positioned outside/above the bar */}
-                  <span
-                    className="absolute -top-3 text-lg transition-all duration-700"
-                    style={{ left: `calc(${Math.min(progressInLevel, 95)}%)` }}
-                  >
-                    🚀
-                  </span>
-                </div>
-
-                {/* Milestone dots */}
-                <div className="flex items-center justify-between px-1 mt-1">
-                  {MILESTONES.map((_, i) => {
-                    const reached = milestoneIdx > i;
-                    const current = milestoneIdx === i;
-                    return (
-                      <div key={i} className="flex flex-col items-center gap-0.5">
-                        <span className={`text-[0.6rem] font-semibold ${reached ? "text-primary" : current ? MILESTONE_COLORS[i] + " font-bold" : "text-muted-foreground/50"}`}>
-                          {MILESTONE_LABELS[i]}
-                        </span>
-                        <span className={`text-[0.5rem] ${reached ? "text-primary/70" : current ? "text-foreground" : "text-muted-foreground/40"}`}>
-                          {MILESTONE_NAMES[i]}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
+        <motion.div {...anim(0.24)}>
+          <MilestoneTracker revenue={grossRevenueAll} variant="compact" />
         </motion.div>
 
         <div className="space-y-2">
@@ -892,90 +837,8 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Milestone Tracker - Pepper Style */}
-          <motion.div {...anim(0.1)} className="rounded-xl border border-primary/30 bg-card p-5 milestone-glow">
-            {(() => {
-              const currentGoal = getCurrentGoal(grossRevenueAll);
-              const prevGoal = milestoneIdx > 0 ? MILESTONES[milestoneIdx - 1] : 0;
-              const progressInLevel = milestoneIdx < MILESTONES.length
-                ? ((grossRevenueAll - prevGoal) / (currentGoal - prevGoal)) * 100
-                : 100;
-              const remaining = Math.max(0, currentGoal - grossRevenueAll);
-
-              return (
-                <div className="space-y-3">
-                  {/* Header with current level and next level */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground italic">{getCurrentLevelName(milestoneIdx)}</span>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-bold ${milestoneIdx < MILESTONES.length ? MILESTONE_COLORS[milestoneIdx] : "text-foreground"}`}>
-                        → {getNextLevelName(milestoneIdx)}
-                      </span>
-                      {/* Info button to see all levels */}
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <button className="h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors">
-                            <Info className="h-3 w-3 text-muted-foreground" />
-                          </button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>Níveis de vendas</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-3 py-2">
-                            {MILESTONES.map((m, i) => {
-                              const reached = milestoneIdx > i;
-                              const current = milestoneIdx === i;
-                              return (
-                                <div key={i} className={`flex items-center gap-3 p-3 rounded-lg ${current ? "bg-primary/10 border border-primary/30" : reached ? "bg-muted/50" : "opacity-60"}`}>
-                                  <span className="text-xl">{MILESTONE_EMOJIS[i]}</span>
-                                  <div className="flex-1">
-                                    <p className={`text-sm font-semibold ${reached ? "text-primary" : current ? "text-foreground" : ""}`}>
-                                      {MILESTONE_LABELS[i]} - {MILESTONE_NAMES[i]}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      R$ {(m / 100).toLocaleString("pt-BR")} em faturamento
-                                    </p>
-                                  </div>
-                                  {reached && <span className="text-primary font-bold text-sm">✓</span>}
-                                  {current && <span className="text-xs text-primary font-medium">Atual</span>}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="relative">
-                    <div className="h-3 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${Math.min(progressInLevel, 100)}%`,
-                          background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))`,
-                        }}
-                      />
-                    </div>
-                    {/* Rocket emoji outside the bar */}
-                    {milestoneIdx < MILESTONES.length && (
-                      <span
-                        className="absolute -top-3 text-lg transition-all duration-700"
-                        style={{ left: `calc(${Math.min(progressInLevel, 95)}%)` }}
-                      >
-                        🚀
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Remaining text */}
-                  <p className="text-center text-sm text-muted-foreground">
-                    Faltam <strong className="text-foreground">R$ {(remaining / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong> em faturamento para você atingir o próximo nível
-                  </p>
-                </div>
-              );
-            })()}
+          <motion.div {...anim(0.1)}>
+            <MilestoneTracker revenue={grossRevenueAll} variant="full" />
           </motion.div>
         </div>
 
