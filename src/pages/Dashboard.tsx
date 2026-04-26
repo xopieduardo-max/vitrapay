@@ -853,7 +853,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Milestone Tracker - Pepper Style */}
-          <motion.div {...anim(0.1)}>
+          <motion.div {...anim(0.1)} className="lg:col-span-2">
             <MilestoneTracker revenue={grossRevenueAll} variant="full" />
           </motion.div>
         </div>
