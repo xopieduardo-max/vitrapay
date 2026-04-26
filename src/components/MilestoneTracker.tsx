@@ -82,9 +82,7 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
             <img
               src={display.image}
               alt={display.name}
-              className={`h-20 w-20 md:h-24 md:w-24 lg:h-28 lg:w-28 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)] tier-float ${
-                currentIdx < 0 ? "opacity-50 saturate-50" : ""
-              }`}
+              className="h-20 w-20 md:h-24 md:w-24 lg:h-28 lg:w-28 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)] tier-float"
               loading="lazy"
               decoding="async"
             />
