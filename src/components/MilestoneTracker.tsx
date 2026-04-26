@@ -30,7 +30,7 @@ export const TIERS = [
 ] as const;
 
 export function getTierIndex(revenue: number) {
-  let idx = 0;
+  let idx = -1;
   for (let i = 0; i < TIERS.length; i++) {
     if (revenue >= TIERS[i].threshold) idx = i;
   }
