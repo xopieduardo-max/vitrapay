@@ -23,6 +23,7 @@ import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
 import logoCard from "@/assets/logo-vitrapay-card.png";
 import celularVitra from "@/assets/celular_vitra.png";
+import ctaWomanYellow from "@/assets/cta-woman-yellow.jpg";
 import {
   Accordion,
   AccordionContent,
