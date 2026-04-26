@@ -224,6 +224,80 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
           </Dialog>
         </Suspense>
       )}
+
+      {/* Tier detail dialog - large badge view */}
+      {selectedIdx !== null && (
+        <Suspense fallback={null}>
+          <Dialog open={selectedIdx !== null} onOpenChange={(o) => !o && setSelectedIdx(null)}>
+            <DialogContent className="sm:max-w-md text-center overflow-hidden">
+              {(() => {
+                const tier = TIERS[selectedIdx];
+                const reached = selectedIdx <= currentIdx;
+                return (
+                  <>
+                    {/* Glow background */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 pointer-events-none opacity-60"
+                      style={{
+                        background: `radial-gradient(circle at 50% 30%, ${tier.glow}, transparent 65%)`,
+                      }}
+                    />
+                    <div className="relative flex flex-col items-center pt-2 pb-1">
+                      <DialogHeader>
+                        <DialogTitle className="sr-only">{tier.name}</DialogTitle>
+                      </DialogHeader>
+
+                      {/* Big badge */}
+                      <div className="relative">
+                        <img
+                          src={tier.image}
+                          alt={tier.name}
+                          width={240}
+                          height={240}
+                          decoding="async"
+                          className={`h-48 w-48 md:h-56 md:w-56 object-contain tier-float drop-shadow-[0_12px_28px_rgba(0,0,0,0.45)] ${
+                            reached ? "" : "opacity-40 saturate-50"
+                          }`}
+                        />
+                        {!reached && (
+                          <div className="absolute top-2 right-2 h-9 w-9 rounded-full bg-muted/90 backdrop-blur flex items-center justify-center border border-border">
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        {reached && (
+                          <div className="absolute -top-1 -right-1 h-9 w-9 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                            <Check className="h-5 w-5 text-primary-foreground" strokeWidth={3} />
+                          </div>
+                        )}
+                      </div>
+
+                      <h2 className="mt-4 text-2xl md:text-3xl font-extrabold tracking-tight">{tier.name}</h2>
+                      <p className="text-sm text-muted-foreground mt-1">Meta: <strong className="text-foreground">{tier.label}</strong></p>
+
+                      {reached ? (
+                        <div className="mt-4 px-4 py-3 rounded-xl bg-primary/10 border border-primary/30 w-full">
+                          <p className="text-base font-bold text-primary">Parabéns pela conquista!</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Você desbloqueou a placa {tier.name} ao atingir {tier.label} em faturamento.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-4 px-4 py-3 rounded-xl bg-muted/40 border border-border w-full">
+                          <p className="text-base font-bold text-foreground">Ainda não conquistada</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Faltam <strong className="text-foreground">{fmtBRL(Math.max(0, tier.threshold - revenue))}</strong> para desbloquear esta placa.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+            </DialogContent>
+          </Dialog>
+        </Suspense>
+      )}
     </>
   );
 }
