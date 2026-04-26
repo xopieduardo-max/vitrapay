@@ -604,8 +604,38 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Marquee ─── */}
-      <section className="relative border-y border-border/50 bg-card/30 py-6 overflow-hidden space-y-4">
+      {/* ─── "Trabalhar com a VitraPay é muita vantagem!" + Marquee ─── */}
+      <section className="relative bg-[#080808] border-y border-white/[0.06] overflow-hidden">
+        {/* Headline */}
+        <div className="container py-12 md:py-16">
+          <motion.div
+            {...fadeUp}
+            transition={{ duration: 0.6 }}
+            className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 md:gap-x-5 text-center"
+          >
+            <span className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-light text-white leading-tight">
+              Trabalhar<br className="sm:hidden" /> com a
+            </span>
+            <img
+              src={logoIcon}
+              alt="VitraPay"
+              className="h-10 sm:h-12 md:h-16 lg:h-20 object-contain"
+              loading="lazy"
+            />
+            <span className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+              VitraPay
+            </span>
+            <span className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-light text-primary leading-tight">
+              é muita
+            </span>
+            <span className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-primary leading-tight">
+              vantagem!
+            </span>
+          </motion.div>
+        </div>
+
+        {/* Marquee logo abaixo */}
+        <div className="relative border-t border-white/[0.06] py-6 space-y-4">
         {/* Fade lateral (sombra nos cantos) */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-32 md:w-48 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-32 md:w-48 z-10 bg-gradient-to-l from-background to-transparent" />
@@ -626,6 +656,7 @@ export default function Landing() {
               VitraPay <span className="text-white/15 text-xs">✦</span> Vendas <span className="text-white/15 text-xs">✦</span> Resultados <span className="text-white/15 text-xs">✦</span> Digital <span className="text-white/15 text-xs">✦</span> Lucros <span className="text-white/15 text-xs">✦</span>
             </span>
           )}
+        </div>
         </div>
       </section>
 
