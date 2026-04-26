@@ -447,11 +447,11 @@ export default function Landing() {
   const dashboardRotateX = useTransform(scrollYProgress, [0, 0.6], [12, 0]);
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen bg-background">
       {/* Announcement Bar — desativado por enquanto */}
 
       {/* ─── Header ─── */}
-      <header className="sticky top-0 z-50 py-3 px-2 sm:px-4">
+      <header className="fixed top-0 left-0 right-0 z-50 py-3 px-2 sm:px-4">
         <div className="container max-w-6xl mx-auto">
           <nav className="flex items-center justify-between rounded-full border border-border/40 bg-card/90 backdrop-blur-xl px-3 sm:px-5 py-2 sm:py-2.5 shadow-lg shadow-black/5 gap-2">
             <div className="flex items-center gap-4 sm:gap-6 min-w-0">
