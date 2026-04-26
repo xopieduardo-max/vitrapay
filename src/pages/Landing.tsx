@@ -506,8 +506,17 @@ export default function Landing() {
               <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
             </motion.div>
 
-            <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1]">
-              <span className="relative z-10 bg-gradient-to-b from-foreground via-foreground to-foreground/40 bg-clip-text text-transparent">
+            <h1
+              className="relative text-white"
+              style={{
+                fontFamily: "'Darker Grotesque', sans-serif",
+                fontWeight: 300,
+                fontSize: "clamp(2.5rem, 8.5vw, 89px)",
+                lineHeight: "0.806",
+                letterSpacing: "0px",
+              }}
+            >
+              <span className="relative z-10">
                 A VitraPay enxerga o caminho
                 <br />
                 para não te deixar no escuro
