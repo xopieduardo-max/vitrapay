@@ -1007,15 +1007,15 @@ export default function Landing() {
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.7 }}
-              className="relative h-[380px] sm:h-[460px] md:h-[560px] lg:h-[640px] -mb-px">
+              className="relative h-[340px] sm:h-[420px] md:h-[560px] lg:h-[640px] -mb-px overflow-hidden">
               {/* Bloco de fundo amarelo — encosta na base e estende até a borda esquerda da tela */}
-              <div className="absolute right-0 bottom-0 w-[calc(100%+50vw)] h-[68%] sm:h-[70%] md:h-[72%] bg-primary" />
+              <div className="absolute right-0 bottom-0 w-[calc(100%+50vw)] h-[60%] sm:h-[65%] md:h-[72%] bg-primary" />
 
               {/* iPhone — bem maior, empurrado mais para dentro da seção */}
               <img
                 src={iphoneVitrapay}
                 alt="App VitraPay no iPhone"
-                className="absolute left-1/2 top-[20%] sm:top-[18%] md:top-[16%] h-[200%] sm:h-[230%] md:h-[269%] lg:h-[281%] w-auto object-contain object-top z-10 drop-shadow-[0_25px_60px_rgba(0,0,0,0.7)] [transform:translateX(calc(-50%-15px))_rotate(10deg)] sm:[transform:translateX(calc(-50%-25px))_rotate(10deg)] md:[transform:translateX(calc(-50%-40px))_rotate(10deg)] origin-center"
+                className="absolute left-1/2 top-[22%] sm:top-[20%] md:top-[16%] h-[140%] sm:h-[180%] md:h-[269%] lg:h-[281%] w-auto object-contain object-top z-10 drop-shadow-[0_25px_60px_rgba(0,0,0,0.7)] [transform:translateX(-50%)_rotate(10deg)] md:[transform:translateX(calc(-50%-40px))_rotate(10deg)] origin-center"
                 loading="lazy"
                 decoding="async" />
 
