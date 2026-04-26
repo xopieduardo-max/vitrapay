@@ -1001,21 +1001,21 @@ export default function Landing() {
 
       {/* ─── App Coming Soon ─── */}
       <section className="relative overflow-hidden bg-black">
-        <div className="container relative py-16 md:py-24">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-6 items-center">
-            {/* ── iPhone com bloco amarelo ── */}
+        <div className="container relative pt-16 md:pt-24 pb-0">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-6 items-end">
+            {/* ── iPhone com bloco amarelo (cortado embaixo) ── */}
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.7 }}
-              className="relative h-[460px] md:h-[560px] lg:h-[620px] flex items-center justify-center">
-              {/* Bloco de fundo amarelo */}
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[78%] h-[82%] bg-primary rounded-sm" />
+              className="relative h-[480px] md:h-[600px] lg:h-[680px] -mb-px overflow-hidden">
+              {/* Bloco de fundo amarelo — encosta na base e à esquerda */}
+              <div className="absolute left-0 bottom-0 w-[82%] h-[78%] bg-primary" />
 
-              {/* iPhone */}
+              {/* iPhone — posicionado pra baixo, cortado pela borda inferior da seção */}
               <img
                 src={iphoneVitrapay}
                 alt="App VitraPay no iPhone"
-                className="relative z-10 h-full w-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]"
+                className="absolute left-1/2 -translate-x-1/2 bottom-[-12%] md:bottom-[-15%] h-[115%] md:h-[120%] w-auto object-contain object-bottom z-10 drop-shadow-[0_25px_60px_rgba(0,0,0,0.7)]"
                 loading="lazy"
                 decoding="async" />
 
@@ -1025,14 +1025,15 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                className="absolute z-20 top-[14%] left-[28%] md:left-[32%] w-[58%] md:w-[55%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-2.5 shadow-2xl">
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="group absolute z-20 top-[10%] left-[30%] md:left-[34%] w-[60%] md:w-[56%] rounded-2xl bg-black border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
                     <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] md:text-xs font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
-                    <p className="text-[10px] md:text-[11px] text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                    <p className="text-[10px] md:text-[11px] text-white/60 leading-tight mt-0.5">O valor foi de R$412,00</p>
                   </div>
                 </div>
               </motion.div>
@@ -1043,14 +1044,15 @@ export default function Landing() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.7, duration: 0.6 }}
-                className="absolute z-20 top-[42%] left-0 md:-left-4 w-[60%] md:w-[58%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-2.5 shadow-2xl">
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="group absolute z-20 top-[40%] left-0 md:-left-4 w-[62%] md:w-[58%] rounded-2xl bg-black border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
                     <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] md:text-xs font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
-                    <p className="text-[10px] md:text-[11px] text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                    <p className="text-[10px] md:text-[11px] text-white/60 leading-tight mt-0.5">O valor foi de R$412,00</p>
                   </div>
                 </div>
               </motion.div>
@@ -1061,32 +1063,34 @@ export default function Landing() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 1.0, duration: 0.6 }}
-                className="absolute z-20 top-[58%] right-[2%] md:right-[-2%] w-[58%] md:w-[55%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-2.5 shadow-2xl">
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="group absolute z-20 top-[56%] right-[2%] md:right-[-2%] w-[60%] md:w-[56%] rounded-2xl bg-black border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
                     <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] md:text-xs font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
-                    <p className="text-[10px] md:text-[11px] text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                    <p className="text-[10px] md:text-[11px] text-white/60 leading-tight mt-0.5">O valor foi de R$412,00</p>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Notificação 4 — base */}
+              {/* Notificação 4 — base (maior) */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 1.3, duration: 0.6 }}
-                className="absolute z-20 bottom-[6%] left-[8%] md:left-[12%] w-[78%] md:w-[72%] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 px-3 py-3 shadow-2xl">
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="group absolute z-20 bottom-[8%] left-[6%] md:left-[10%] w-[82%] md:w-[76%] rounded-2xl bg-black border border-white/10 px-3 py-3 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-primary flex items-center justify-center">
+                  <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-black border border-white/10 flex items-center justify-center">
                     <img src={logoIcon} alt="" className="h-7 w-7 object-contain" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs md:text-sm font-semibold text-white leading-tight">Uma nova venda foi realizada no Cartão!</p>
-                    <p className="text-[11px] md:text-xs text-white/70 leading-tight mt-0.5">O valor foi de R$412,00</p>
+                    <p className="text-[11px] md:text-xs text-white/60 leading-tight mt-0.5">O valor foi de R$412,00</p>
                   </div>
                 </div>
               </motion.div>
