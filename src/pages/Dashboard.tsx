@@ -801,9 +801,9 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Row 1: Balance Card + Faturamento Total + Milestone Tracker */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-stretch">
           {/* Balance Card */}
-          <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-5 lg:col-span-1">
+          <motion.div {...anim(0.05)} className="rounded-xl border border-border bg-card p-5 lg:col-span-1 h-full flex flex-col justify-between">
             <div className="flex items-center gap-1 mb-4">
               <button
                 onClick={() => setBalanceTab("pending")}
@@ -837,7 +837,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Faturamento Total Card */}
-          <motion.div {...anim(0.075)} className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between lg:col-span-1">
+          <motion.div {...anim(0.075)} className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between lg:col-span-1 h-full">
             <div className="flex items-center gap-2 mb-4">
               <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
@@ -853,7 +853,7 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Milestone Tracker - Pepper Style */}
-          <motion.div {...anim(0.1)} className="lg:col-span-2">
+          <motion.div {...anim(0.1)} className="lg:col-span-2 h-full">
             <MilestoneTracker revenue={grossRevenueAll} variant="full" />
           </motion.div>
         </div>

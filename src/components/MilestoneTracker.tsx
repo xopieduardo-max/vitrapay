@@ -64,7 +64,7 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
   return (
     <>
       <div
-        className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 md:p-6 transition-all hover:border-primary/40"
+        className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 md:p-6 transition-all hover:border-primary/40 h-full flex items-center"
         style={{
           background: `radial-gradient(circle at 0% 50%, ${display.glow}15 0%, transparent 50%), hsl(var(--card))`,
         }}
