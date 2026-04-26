@@ -140,9 +140,9 @@ export function MilestoneTracker({ revenue, variant = "full" }: Props) {
             <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
-                  <img src={current.image} alt="" className="h-10 w-10 object-contain" decoding="async" />
+                  <img src={display.image} alt="" className="h-10 w-10 object-contain" decoding="async" />
                   <div>
-                    <p className="text-base font-bold">{current.name}</p>
+                    <p className="text-base font-bold">{titleName}</p>
                     {next && (
                       <p className="text-xs font-normal text-muted-foreground mt-0.5">
                         Próxima conquista: <strong>{next.label}</strong>
