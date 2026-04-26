@@ -1007,9 +1007,9 @@ export default function Landing() {
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.7 }}
-              className="relative h-[460px] md:h-[560px] lg:h-[640px] -mb-px overflow-hidden">
-              {/* Bloco de fundo amarelo — encosta na base e à esquerda */}
-              <div className="absolute left-0 bottom-0 w-[82%] h-[72%] bg-primary" />
+              className="relative h-[460px] md:h-[560px] lg:h-[640px] -mb-px">
+              {/* Bloco de fundo amarelo — encosta na base e estende até a borda esquerda da tela */}
+              <div className="absolute right-0 bottom-0 w-[calc(100%+50vw)] h-[72%] bg-primary" />
 
               {/* iPhone — bem maior, apenas a metade superior visível (cortado embaixo) */}
               <img
