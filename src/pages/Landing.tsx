@@ -718,54 +718,184 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Features — Bento Grid ─── */}
-      <section id="features" className="relative bg-[#080808] py-20 md:py-28 border-y border-white/[0.06]">
-        <div className="container">
-        <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Recursos</span>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            Tudo que você precisa para{" "}
-            <span className="text-gradient-primary">vender online</span>
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Uma plataforma completa com checkout customizável, área de membros, programa de afiliados e muito mais.
-          </p>
-        </motion.div>
+      {/* ─── Features — 3 Cards estilo MasterFy ─── */}
+      <section id="features" className="relative bg-[#080808] py-20 md:py-28 border-y border-white/[0.06] overflow-hidden">
+        {/* Dotted background pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.18] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle, hsl(var(--primary) / 0.35) 1px, transparent 1px)",
+            backgroundSize: "28px 28px"
+          }}
+        />
 
-        {/* Bento Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(180px,auto)]">
-          {bentoFeatures.map((f, i) =>
-           <motion.div
-            key={f.title}
-            {...stagger}
-            transition={{ delay: i * 0.08, duration: 0.5 }}
-            className={`group relative rounded-2xl border border-border/50 bg-[#0a0a0a] p-7 flex flex-col justify-between hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-default ${
-            f.size === "large" ? "lg:col-span-2 lg:row-span-1" : ""}`
-            }>
-            
-              {/* Yellow top bar */}
-              <div className="absolute top-0 left-7 w-16 h-[2px] bg-primary rounded-b-full" />
+        <div className="container relative z-10">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-3xl mb-12 md:mb-16">
+            <span className="inline-flex items-center gap-2.5 text-xs md:text-sm font-medium text-primary mb-5">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+              </span>
+              Para quem quer vender mais e melhor
+            </span>
+            <h2 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-white leading-[1.05]">
+              Cada recurso foi feito para{" "}
+              <span className="text-primary">impulsionar suas vendas:</span>
+            </h2>
+          </motion.div>
 
-              {/* Glow effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {/* 3 Feature Cards */}
+          <div className="grid gap-5 md:gap-6 md:grid-cols-3">
+            {[
+              {
+                tag: "Nunca perca uma venda",
+                title: "Recuperação automática de vendas",
+                desc: "Identificamos abandonos e reconvertemos via WhatsApp. Tudo automatizado, tudo gratuito.",
+                mockup: "recovery" as const
+              },
+              {
+                tag: "Checkout Próprio",
+                title: "Checkout que converte de verdade",
+                desc: "Totalmente personalizável, com retentativas inteligentes que viram mais \"sim\" pra você.",
+                mockup: "checkout" as const
+              },
+              {
+                tag: "Área de Membros",
+                title: "Sua comunidade. Sua regra.",
+                desc: "Entregue conteúdo com estrutura, fidelize alunos e escale sua autoridade com nossa Área de Membros gratuita.",
+                mockup: "members" as const
+              }
+            ].map((f, i) =>
+              <motion.div
+                key={f.title}
+                {...stagger}
+                transition={{ delay: i * 0.1, duration: 0.55 }}
+                whileHover={{ y: -6 }}
+                className="group relative rounded-3xl border border-white/[0.07] bg-gradient-to-b from-[#0c0c0c] to-[#070707] p-5 md:p-6 hover:border-primary/40 transition-all duration-500 overflow-hidden"
+              >
+                {/* Hover glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.08] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="absolute -bottom-20 -right-20 w-56 h-56 rounded-full bg-primary/20 blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-              <div className="relative space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary group-hover:scale-110 transition-all duration-300">
-                  <f.icon className="h-6 w-6 text-primary-foreground" strokeWidth={1.5} />
+                {/* Mockup illustration */}
+                <div className="relative h-56 md:h-60 mb-6 rounded-2xl bg-[#0a0a0a] border border-white/[0.05] overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
+
+                  {f.mockup === "recovery" && (
+                    <div className="absolute inset-0 p-4 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="h-2 w-20 rounded-full bg-white/10" />
+                        <div className="flex gap-1.5">
+                          <div className="h-7 w-14 rounded-md bg-white/[0.06]" />
+                          <div className="h-7 w-14 rounded-md bg-white/[0.06]" />
+                        </div>
+                      </div>
+                      {/* Avatar bubble */}
+                      <div className="absolute left-4 bottom-16 h-8 w-8 rounded-full bg-gradient-to-br from-primary/60 to-primary/30 border border-primary/40" />
+                      {/* WhatsApp message bubble */}
+                      <div className="absolute right-4 bottom-4 max-w-[70%]">
+                        <div className="rounded-2xl rounded-br-sm bg-primary/90 px-3 py-2.5 shadow-lg shadow-primary/20">
+                          <div className="space-y-1.5">
+                            <div className="h-1.5 w-24 rounded-full bg-black/30" />
+                            <div className="h-1.5 w-16 rounded-full bg-black/20" />
+                          </div>
+                        </div>
+                      </div>
+                      {/* Arrow accent */}
+                      <div className="absolute -right-6 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-primary/30 blur-xl group-hover:bg-primary/50 transition-colors" />
+                    </div>
+                  )}
+
+                  {f.mockup === "checkout" && (
+                    <div className="absolute inset-0 p-4">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-4 w-4 rounded-md bg-primary" />
+                          <div className="h-2 w-12 rounded-full bg-white/40" />
+                        </div>
+                        <div className="flex gap-1.5">
+                          <div className="h-5 w-5 rounded-full bg-gradient-to-br from-primary/60 to-primary/30" />
+                          <div className="h-5 w-5 rounded-md bg-white/10" />
+                        </div>
+                      </div>
+                      {/* Balance */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="space-y-1">
+                          <div className="h-1.5 w-10 rounded-full bg-white/10" />
+                          <div className="text-base font-bold text-white/80">R$ 47.000,00</div>
+                        </div>
+                        <div className="rounded-md bg-primary px-2 py-1 text-[10px] font-bold text-black">
+                          Efetuar Saque
+                        </div>
+                      </div>
+                      {/* Cards rows */}
+                      <div className="space-y-2">
+                        <div className="h-9 rounded-lg bg-white/[0.04] border border-white/5" />
+                        <div className="h-9 rounded-lg bg-primary/15 border border-primary/30 flex items-center px-2 gap-2">
+                          <div className="h-5 w-5 rounded-md bg-primary/80" />
+                          <div className="h-1.5 flex-1 rounded-full bg-white/15" />
+                        </div>
+                        <div className="h-9 rounded-lg bg-primary/15 border border-primary/30 flex items-center px-2 gap-2">
+                          <div className="h-5 w-5 rounded-md bg-primary/80" />
+                          <div className="h-1.5 flex-1 rounded-full bg-white/15" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {f.mockup === "members" && (
+                    <div className="absolute inset-0 p-4">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-4 w-4 rounded-md bg-primary" />
+                          <div className="h-2 w-14 rounded-full bg-white/40" />
+                        </div>
+                        <div className="flex gap-1.5">
+                          <div className="h-5 w-5 rounded-full bg-gradient-to-br from-primary/60 to-primary/30" />
+                          <div className="h-5 w-5 rounded-md bg-white/10" />
+                        </div>
+                      </div>
+                      {/* Lines */}
+                      <div className="space-y-1.5 mb-3">
+                        <div className="h-1.5 w-3/4 rounded-full bg-white/10" />
+                        <div className="h-1.5 w-1/2 rounded-full bg-white/10" />
+                      </div>
+                      {/* Video player + sidebar */}
+                      <div className="flex gap-2">
+                        <div className="relative flex-1 h-24 rounded-lg bg-white/[0.04] border border-white/5 flex items-center justify-center">
+                          <div className="h-9 w-9 rounded-full bg-primary/80 flex items-center justify-center">
+                            <Play className="h-4 w-4 text-black fill-black ml-0.5" />
+                          </div>
+                        </div>
+                        <div className="w-16 space-y-1.5">
+                          <div className="h-7 rounded-md bg-white/[0.04]" />
+                          <div className="h-7 rounded-md bg-white/[0.04]" />
+                          <div className="h-7 rounded-md bg-primary/15 border border-primary/30" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-lg font-semibold text-white">{f.title}</h3>
-                <p className="text-sm text-white/50 leading-relaxed max-w-lg">{f.desc}</p>
-              </div>
 
-              {/* Numbered label */}
-              <div className="relative mt-6">
-                <span className="text-6xl font-black text-white/[0.03] group-hover:text-white/[0.06] transition-colors duration-300">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </div>
+                {/* Tag */}
+                <div className="relative inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 mb-4">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="text-xs font-semibold text-primary">{f.tag}</span>
+                </div>
+
+                {/* Title + desc */}
+                <div className="relative space-y-3">
+                  <h3 className="text-xl md:text-[1.35rem] font-bold text-white leading-tight">
+                    {f.title}
+                  </h3>
+                  <p className="text-sm text-white/55 leading-relaxed">
+                    {f.desc}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </section>
 
