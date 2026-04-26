@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Slider } from "@/components/ui/slider";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 import { Link2, BookOpen, Sparkles, Zap, Flame, Moon } from "lucide-react";
 
 type Competitor = {
