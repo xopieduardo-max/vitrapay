@@ -880,28 +880,28 @@ export default function Landing() {
       </section>
 
       {/* ─── Fee Simulator Section ─── */}
-      <section id="simulador" className="relative overflow-hidden bg-white">
-        <div className="container relative py-20 md:py-28">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left – Copy */}
-            <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-sm text-amber-700">
-                <Wallet className="h-3.5 w-3.5" /> Simulador de Taxas
-              </span>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900">
-                Menos taxas.<br />Mais lucros no <span className="text-primary">seu bolso.</span>
-              </h2>
-              <p className="text-gray-500 text-lg max-w-md">
-                Simule agora e descubra na hora qual plataforma te entrega mais lucro no final do mês.
-              </p>
-              <div className="h-1 w-16 rounded-full bg-primary" />
-            </motion.div>
+      <section id="simulador" className="relative overflow-hidden bg-[#080808]">
+        {/* Ambient glows */}
+        <div className="pointer-events-none absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-primary/[0.06] blur-[140px]" />
+        <div className="pointer-events-none absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-primary/[0.04] blur-[140px]" />
 
-            {/* Right – Simulator Card */}
-            <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.6 }}>
-              <FeeSimulatorCard />
-            </motion.div>
-          </div>
+        <div className="container relative py-20 md:py-28">
+          {/* Header */}
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-3xl mx-auto text-center space-y-5 mb-12 md:mb-16">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05] text-white">
+              Pare de perder dinheiro<br />
+              com <span className="text-primary">taxas abusivas</span>
+            </h2>
+            <p className="text-white/60 text-base md:text-lg max-w-xl mx-auto">
+              Na VitraPay, você paga apenas <span className="text-primary font-semibold">3,99%</span> em cada venda.
+              Aproveite essa economia e veja seu lucro aumentar.
+            </p>
+          </motion.div>
+
+          {/* Simulator Card */}
+          <motion.div {...fadeUp} transition={{ delay: 0.15, duration: 0.6 }} className="max-w-5xl mx-auto">
+            <FeeSimulatorCard />
+          </motion.div>
         </div>
       </section>
 
