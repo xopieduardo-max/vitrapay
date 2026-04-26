@@ -1025,7 +1025,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                whileHover={{ y: -6, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.15, ease: "easeOut" } }}
                 className="group absolute z-20 top-[10%] left-[30%] md:left-[34%] w-[60%] md:w-[56%] rounded-2xl bg-black border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-2.5">
                   <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
@@ -1044,7 +1044,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.7, duration: 0.6 }}
-                whileHover={{ y: -6, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.15, ease: "easeOut" } }}
                 className="group absolute z-20 top-[40%] left-0 md:-left-4 w-[62%] md:w-[58%] rounded-2xl bg-black border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-2.5">
                   <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
@@ -1063,7 +1063,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 1.0, duration: 0.6 }}
-                whileHover={{ y: -6, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.15, ease: "easeOut" } }}
                 className="group absolute z-20 top-[56%] right-[2%] md:right-[-2%] w-[60%] md:w-[56%] rounded-2xl bg-black border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-2.5">
                   <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
@@ -1082,7 +1082,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 1.3, duration: 0.6 }}
-                whileHover={{ y: -6, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.15, ease: "easeOut" } }}
                 className="group absolute z-20 bottom-[8%] left-[6%] md:left-[10%] w-[82%] md:w-[76%] rounded-2xl bg-black border border-white/10 px-3 py-3 shadow-[0_15px_40px_rgba(0,0,0,0.6)] cursor-pointer transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-black border border-white/10 flex items-center justify-center">
