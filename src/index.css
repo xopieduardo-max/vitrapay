@@ -1,4 +1,4 @@
-@import url('@fontsource-variable/instrument-sans');
+/* Darker Grotesque + Inter loaded via index.html for faster preconnect */
 
 @tailwind base;
 @tailwind components;
