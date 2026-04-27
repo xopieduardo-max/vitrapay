@@ -85,12 +85,6 @@ serve(async (req) => {
     // 3) Disparar push para todos os admins quando houver divergência
     let pushSent = 0;
     if (issues.length > 0) {
-      // Buscar admins
-      const { data: admins } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-
       const reaisDiff = (totalDifferenceCents / 100).toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
