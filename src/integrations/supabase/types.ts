@@ -2003,6 +2003,19 @@ export type Database = {
         }
         Returns: undefined
       }
+      insert_fake_sale_atomic: {
+        Args: {
+          p_amount: number
+          p_payment_id: string
+          p_payment_provider: string
+          p_platform_fee: number
+          p_producer_id: string
+          p_product_id: string
+          p_sale_date: string
+          p_sale_id: string
+        }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string

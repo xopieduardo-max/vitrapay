@@ -33,78 +33,27 @@ serve(async (req) => {
     if (pendingSales && pendingSales.length > 0) {
       for (const scheduled of pendingSales) {
         try {
-          // Insert the sale
-          const { error: saleErr } = await supabase.from("sales").insert({
-            id: scheduled.id,
-            product_id: scheduled.product_id,
-            producer_id: scheduled.producer_id,
-            buyer_id: null,
-            affiliate_id: null,
-            amount: scheduled.amount,
-            platform_fee: scheduled.platform_fee,
-            payment_provider: scheduled.payment_provider,
-            payment_id: scheduled.payment_id,
-            status: "completed",
-            created_at: scheduled.sale_date,
+          // ATOMIC: insere sale + transactions (credit + fee) + wallet em uma única transação.
+          // Se qualquer passo falhar, tudo é revertido — nunca mais cria vendas órfãs.
+          const { error: rpcErr } = await supabase.rpc("insert_fake_sale_atomic", {
+            p_sale_id: scheduled.id,
+            p_product_id: scheduled.product_id,
+            p_producer_id: scheduled.producer_id,
+            p_amount: scheduled.amount,
+            p_platform_fee: scheduled.platform_fee ?? 0,
+            p_payment_provider: scheduled.payment_provider,
+            p_payment_id: scheduled.payment_id,
+            p_sale_date: scheduled.sale_date,
           });
 
-          if (saleErr) {
-            console.error(`Sale insert error for ${scheduled.id}:`, saleErr);
-            // Mark as inserted to avoid infinite retries
-            await supabase
-              .from("scheduled_fake_sales")
-              .update({ inserted_at: new Date().toISOString() })
-              .eq("id", scheduled.id);
+          if (rpcErr) {
+            console.error(`Atomic sale insert failed for ${scheduled.id}:`, rpcErr);
+            // NÃO marcar como inserted — permite retry no próximo ciclo do cron.
+            // Apenas pula para a próxima venda agendada.
             continue;
           }
 
-          // Insert pending_payment record
-          await supabase.from("pending_payments").insert({
-            asaas_payment_id: scheduled.payment_id,
-            amount: scheduled.amount,
-            status: "confirmed",
-            product_id: scheduled.product_id,
-            producer_id: scheduled.producer_id,
-            buyer_name: "Cliente Simulado",
-            buyer_email: `fake_${scheduled.id.slice(0, 6)}@vitrapay.com`,
-            created_at: scheduled.sale_date,
-          });
-
-          // Insert credit transaction
-          const netAmount = scheduled.amount - scheduled.platform_fee;
-          await supabase.from("transactions").insert({
-            user_id: scheduled.producer_id,
-            type: "credit",
-            category: "sale",
-            amount: netAmount,
-            status: "completed",
-            balance_type: "available",
-            reference_id: scheduled.id,
-            created_at: scheduled.sale_date,
-          });
-
-          // Insert fee transaction if applicable
-          if (scheduled.platform_fee > 0) {
-            await supabase.from("transactions").insert({
-              user_id: scheduled.producer_id,
-              type: "debit",
-              category: "fee",
-              amount: scheduled.platform_fee,
-              status: "completed",
-              balance_type: "available",
-              reference_id: scheduled.id,
-              created_at: scheduled.sale_date,
-            });
-          }
-
-          // Update wallet
-          await supabase.rpc("increment_wallet", {
-            p_user_id: scheduled.producer_id,
-            p_available_delta: netAmount,
-            p_total_delta: netAmount,
-          });
-
-          // Mark as inserted
+          // Marcar como processada com sucesso
           await supabase
             .from("scheduled_fake_sales")
             .update({ inserted_at: new Date().toISOString() })
@@ -113,10 +62,7 @@ serve(async (req) => {
           salesInserted++;
         } catch (e) {
           console.error(`Error processing scheduled sale ${scheduled.id}:`, e);
-          await supabase
-            .from("scheduled_fake_sales")
-            .update({ inserted_at: new Date().toISOString() })
-            .eq("id", scheduled.id);
+          // NÃO marcar como inserted — permite retry. Erro inesperado.
         }
       }
     }
