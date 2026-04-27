@@ -668,11 +668,6 @@ export default function Landing() {
 
       {/* ─── Prazos de recebimento ─── */}
       <section className="relative bg-[#080808] overflow-hidden">
-        {/* Radial yellow glow background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
-        </div>
-
         <div className="container py-14 md:py-20 relative z-10">
           <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center mb-10 md:mb-14">
             <p className="text-xs md:text-sm font-medium text-primary mb-3.5 tracking-wide">
