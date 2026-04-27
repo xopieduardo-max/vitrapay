@@ -1967,6 +1967,17 @@ export type Database = {
       }
     }
     Functions: {
+      check_financial_integrity: {
+        Args: { p_tolerance_cents?: number }
+        Returns: {
+          difference: number
+          expected_net: number
+          producer_id: string
+          recorded_net: number
+          sales_count: number
+          sales_gross: number
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
