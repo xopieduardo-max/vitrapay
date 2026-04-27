@@ -64,16 +64,23 @@ serve(async (req) => {
       top_divergences: issues.slice(0, 10),
     };
 
-    // Usar um UUID fixo para identificar o "sistema" como admin no log
-    const SYSTEM_ADMIN_ID = "00000000-0000-0000-0000-000000000000";
+    // Buscar admins (usados tanto para o audit log quanto para os pushes)
+    const { data: admins } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
 
-    await supabase.from("admin_audit_log").insert({
-      admin_id: SYSTEM_ADMIN_ID,
-      action: issues.length > 0 ? "financial_integrity_alert" : "financial_integrity_check_ok",
-      target_type: "system",
-      target_id: "daily_check",
-      details: summary,
-    });
+    // Usar o primeiro admin como autor do log (admin_id exige uuid válido)
+    const systemAuthor = admins?.[0]?.user_id;
+    if (systemAuthor) {
+      await supabase.from("admin_audit_log").insert({
+        admin_id: systemAuthor,
+        action: issues.length > 0 ? "financial_integrity_alert" : "financial_integrity_check_ok",
+        target_type: "system",
+        target_id: "daily_check",
+        details: summary,
+      });
+    }
 
     // 3) Disparar push para todos os admins quando houver divergência
     let pushSent = 0;
