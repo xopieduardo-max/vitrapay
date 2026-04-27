@@ -719,25 +719,25 @@ export default function Landing() {
       </section>
 
       {/* ─── Features — 3 Cards estilo MasterFy ─── */}
-      <section id="features" className="relative bg-[#080808] py-16 md:py-24 border-y border-white/[0.06] overflow-hidden">
+      <section id="features" className="relative bg-[#080808] py-20 md:py-28 border-y border-white/[0.06] overflow-hidden">
         {/* Dotted background pattern */}
         <div
           className="absolute inset-0 opacity-[0.18] pointer-events-none"
           style={{
             backgroundImage: "radial-gradient(circle, hsl(var(--primary) / 0.35) 1px, transparent 1px)",
-            backgroundSize: "24px 24px"
+            backgroundSize: "28px 28px"
           }}
         />
 
         <div className="container relative z-10">
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-2xl mb-10 md:mb-14">
-            <span className="inline-flex items-center gap-2 text-[11px] md:text-xs font-medium text-primary mb-4">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/15">
-                <Sparkles className="h-3 w-3 text-primary" />
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-3xl mb-12 md:mb-16">
+            <span className="inline-flex items-center gap-2.5 text-xs md:text-sm font-medium text-primary mb-5">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
               </span>
               Para quem quer vender mais e melhor
             </span>
-            <h2 className="text-2xl md:text-4xl lg:text-[3rem] font-bold tracking-tight text-white leading-[1.05]">
+            <h2 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-white leading-[1.05]">
               Cada recurso foi feito para{" "}
               <span className="text-primary">impulsionar suas vendas:</span>
             </h2>
@@ -770,14 +770,14 @@ export default function Landing() {
                 {...stagger}
                 transition={{ delay: i * 0.1, duration: 0.55 }}
                 whileHover={{ y: -6 }}
-                className="group relative rounded-2xl border border-white/[0.07] bg-gradient-to-b from-[#0c0c0c] to-[#070707] p-4 md:p-5 hover:border-primary/40 transition-all duration-500 overflow-hidden"
+                className="group relative rounded-3xl border border-white/[0.07] bg-gradient-to-b from-[#0c0c0c] to-[#070707] p-5 md:p-6 hover:border-primary/40 transition-all duration-500 overflow-hidden"
               >
                 {/* Hover glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.08] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 <div className="absolute -bottom-20 -right-20 w-56 h-56 rounded-full bg-primary/20 blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
                 {/* Mockup illustration */}
-                <div className="relative h-48 md:h-52 mb-5 rounded-xl bg-[#0a0a0a] border border-white/[0.05] overflow-hidden">
+                <div className="relative h-56 md:h-60 mb-6 rounded-2xl bg-[#0a0a0a] border border-white/[0.05] overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
 
                   {f.mockup === "recovery" && (
@@ -879,17 +879,17 @@ export default function Landing() {
                 </div>
 
                 {/* Tag */}
-                <div className="relative inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 mb-3">
-                  <span className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-                  <span className="text-[11px] font-semibold text-primary">{f.tag}</span>
+                <div className="relative inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 mb-4">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="text-xs font-semibold text-primary">{f.tag}</span>
                 </div>
 
                 {/* Title + desc */}
-                <div className="relative space-y-2">
-                  <h3 className="text-base md:text-lg font-bold text-white leading-tight">
+                <div className="relative space-y-3">
+                  <h3 className="text-xl md:text-[1.35rem] font-bold text-white leading-tight">
                     {f.title}
                   </h3>
-                  <p className="text-[13px] text-white/55 leading-relaxed">
+                  <p className="text-sm text-white/55 leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
