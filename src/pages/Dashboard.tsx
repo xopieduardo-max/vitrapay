@@ -628,34 +628,48 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Faturamento do período card */}
-        <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-1">
-          <p className="text-xs text-muted-foreground font-medium">Faturamento — {periodLabels[period]}</p>
-          <p className="text-2xl font-bold text-primary">
-            {fmt(grossRevenue)}
-          </p>
-          <p className="text-[0.65rem] text-muted-foreground">
-            {salesCount} venda(s) no período
-          </p>
+        {/* Faturamento do período — narrativa completa */}
+        <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-3">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — {periodLabels[period]}</p>
+            <p className="text-2xl font-bold text-primary">{fmt(grossRevenue)}</p>
+            <p className="text-[0.65rem] text-muted-foreground">
+              {salesCount} venda(s) · líquido após taxas: <span className="font-semibold text-foreground">{fmt(netRevenue)}</span>
+            </p>
+          </div>
+          <div className="h-px bg-border" />
+          <div className="grid grid-cols-2 gap-3 text-[0.7rem]">
+            <div>
+              <p className="text-muted-foreground">Sacado no período</p>
+              <p className="text-sm font-semibold mt-0.5">{fmt(totalWithdrawn)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">À receber (D+)</p>
+              <p className="text-sm font-semibold mt-0.5">{fmt(walletPending)}</p>
+            </div>
+          </div>
         </motion.div>
 
-        {/* À receber + Disponível */}
-        <div className="grid grid-cols-2 gap-3">
-          <motion.div {...anim(0.08)} className="rounded-xl border border-border bg-card p-3 space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-[0.65rem] text-muted-foreground font-medium">À receber</p>
-            </div>
-            <p className="text-lg font-bold">{fmt(walletPending)}</p>
-          </motion.div>
-          <motion.div {...anim(0.1)} className="rounded-xl border border-border bg-card p-3 space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <ArrowDownToLine className="h-3 w-3 text-muted-foreground" />
-              <p className="text-[0.65rem] text-muted-foreground font-medium">Disponível</p>
-            </div>
-            <p className="text-lg font-bold">{fmt(availableBalance)}</p>
-          </motion.div>
-        </div>
+        {/* Disponível para saque (saldo histórico da carteira) */}
+        <motion.div {...anim(0.1)} className="rounded-2xl border border-primary/30 bg-primary/5 p-4 space-y-1">
+          <div className="flex items-center gap-1.5">
+            <ArrowDownToLine className="h-3.5 w-3.5 text-primary" />
+            <p className="text-xs text-foreground font-medium">Disponível para saque agora</p>
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button"><Info className="h-3 w-3 text-muted-foreground" /></button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[260px]">
+                  <p className="text-xs">
+                    Saldo total da sua carteira (histórico, todos os períodos) já liberado pelo D+ e descontando saques em processamento. Não é só o período filtrado.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <p className="text-2xl font-bold text-primary">{fmt(availableBalance)}</p>
+        </motion.div>
 
         {/* Botão Sacar */}
         <motion.div {...anim(0.12)}>
