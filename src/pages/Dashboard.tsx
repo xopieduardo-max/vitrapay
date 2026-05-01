@@ -835,9 +835,59 @@ export default function Dashboard() {
       <div className="hidden md:block space-y-5">
         {/* Banner Carousel */}
         <BannerCarousel location="dashboard" />
-        {/* Header: Title */}
-        <motion.div {...anim(0)} className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Visão geral</h1>
+        {/* Header: Title + period filter */}
+        <motion.div {...anim(0)} className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">Visão geral</h1>
+            {/* Period filter (top, next to title) */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="h-9 px-3 flex items-center gap-2 rounded-lg border border-border bg-card hover:bg-muted/40 transition-colors text-sm font-medium">
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                  <span>{periodLabels[period]}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground rotate-90" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="start">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(["today", "yesterday", "7d", "30d", "all"] as PeriodKey[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => handlePeriodChange(key)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        period === key ? "bg-primary text-primary-foreground" : "bg-muted/40 hover:bg-muted text-foreground"
+                      }`}
+                    >
+                      {periodLabels[key]}
+                    </button>
+                  ))}
+                </div>
+                <div className="border-t border-border my-2" />
+                <button
+                  onClick={() => handlePeriodChange("custom")}
+                  className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    period === "custom" ? "bg-primary text-primary-foreground" : "bg-muted/40 hover:bg-muted text-foreground"
+                  }`}
+                >
+                  Período personalizado
+                </button>
+                {period === "custom" && (
+                  <div className="pt-2">
+                    <Calendar
+                      mode="range"
+                      selected={{ from: customFrom, to: customTo }}
+                      onSelect={(range) => {
+                        setCustomFrom(range?.from);
+                        setCustomTo(range?.to);
+                      }}
+                      locale={ptBR}
+                      className="rounded-md border p-2 pointer-events-auto"
+                    />
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
