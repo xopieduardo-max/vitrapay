@@ -835,6 +835,18 @@ export default function Dashboard() {
               >
                 Disponível
               </button>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="ml-1"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-[280px]">
+                    <p className="text-xs">
+                      <strong>Saldo histórico da carteira</strong> (todos os períodos), já liberado pelo D+ e descontando saques em processamento. Não está limitado ao filtro de período acima.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <div className="flex items-center gap-4 flex-wrap">
               <p className="text-3xl font-bold tracking-tight">
@@ -856,7 +868,19 @@ export default function Dashboard() {
               <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
               </div>
-              <p className="text-xs font-medium text-muted-foreground">Faturamento total</p>
+              <p className="text-xs font-medium text-muted-foreground">Faturamento bruto histórico</p>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-[280px]">
+                    <p className="text-xs">
+                      Total de vendas aprovadas desde o início, antes das taxas. Para o filtro de período, veja os cards abaixo.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <div>
               <p className="text-3xl font-bold tracking-tight">{fmt(grossRevenueAll)}</p>
