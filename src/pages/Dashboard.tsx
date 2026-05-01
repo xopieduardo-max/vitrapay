@@ -835,9 +835,59 @@ export default function Dashboard() {
       <div className="hidden md:block space-y-5">
         {/* Banner Carousel */}
         <BannerCarousel location="dashboard" />
-        {/* Header: Title */}
-        <motion.div {...anim(0)} className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Visão geral</h1>
+        {/* Header: Title + period filter */}
+        <motion.div {...anim(0)} className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">Visão geral</h1>
+            {/* Period filter (top, next to title) */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="h-9 px-3 flex items-center gap-2 rounded-lg border border-border bg-card hover:bg-muted/40 transition-colors text-sm font-medium">
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                  <span>{periodLabels[period]}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground rotate-90" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="start">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(["today", "yesterday", "7d", "30d", "all"] as PeriodKey[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => handlePeriodChange(key)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        period === key ? "bg-primary text-primary-foreground" : "bg-muted/40 hover:bg-muted text-foreground"
+                      }`}
+                    >
+                      {periodLabels[key]}
+                    </button>
+                  ))}
+                </div>
+                <div className="border-t border-border my-2" />
+                <button
+                  onClick={() => handlePeriodChange("custom")}
+                  className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    period === "custom" ? "bg-primary text-primary-foreground" : "bg-muted/40 hover:bg-muted text-foreground"
+                  }`}
+                >
+                  Período personalizado
+                </button>
+                {period === "custom" && (
+                  <div className="pt-2">
+                    <Calendar
+                      mode="range"
+                      selected={{ from: customFrom, to: customTo }}
+                      onSelect={(range) => {
+                        setCustomFrom(range?.from);
+                        setCustomTo(range?.to);
+                      }}
+                      locale={ptBR}
+                      className="rounded-md border p-2 pointer-events-auto"
+                    />
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -1199,53 +1249,10 @@ export default function Dashboard() {
             );
           })()}
 
-          {/* Period filter card */}
-          <motion.div {...anim(0.37)} className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <p className="text-xs text-muted-foreground">Filtro de período</p>
-            <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(periodLabels) as PeriodKey[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => handlePeriodChange(p)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    period === p ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  {periodLabels[p]}
-                </button>
-              ))}
-            </div>
-            {period === "custom" && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {customFrom ? format(customFrom, "dd/MM/yyyy") : "De"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
-                <span className="text-xs text-muted-foreground">até</span>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {customTo ? format(customTo, "dd/MM/yyyy") : "Até"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={customTo} onSelect={setCustomTo} className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
-
-            {/* Quick actions */}
-            <div className="pt-2 space-y-2">
-              <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Ações rápidas</p>
+          {/* Ações rápidas */}
+          <motion.div {...anim(0.37)} className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Ações rápidas</p>
+            <div className="space-y-2">
               {[
                 { label: "Criar Produto", icon: Package, path: "/products/new" },
                 { label: "Central de Ajuda", icon: HelpCircle, path: "/help" },
