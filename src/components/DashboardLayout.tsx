@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -14,37 +14,62 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /**
- * Wrapper that opens the sidebar on hover and collapses on leave.
- * The user can still "pin" the sidebar open by clicking the SidebarTrigger.
+ * Wrapper that opens the sidebar on hover and collapses on mouse leave.
+ * Listens on the actual fixed sidebar panel (data-sidebar="sidebar") so the
+ * hover zone matches the visible width in both collapsed and expanded states.
+ * Click on the SidebarTrigger to "pin" it open.
  */
 function HoverSidebar({ pinned }: { pinned: boolean }) {
   const { setOpen, isMobile } = useSidebar();
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleEnter = useCallback(() => {
-    if (isMobile || pinned) return;
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    setOpen(true);
+  useEffect(() => {
+    if (isMobile) return;
+
+    const clearLeave = () => {
+      if (leaveTimer.current) {
+        clearTimeout(leaveTimer.current);
+        leaveTimer.current = null;
+      }
+    };
+
+    const onEnter = () => {
+      if (pinned) return;
+      clearLeave();
+      setOpen(true);
+    };
+
+    const onLeave = () => {
+      if (pinned) return;
+      clearLeave();
+      leaveTimer.current = setTimeout(() => setOpen(false), 150);
+    };
+
+    // Attach to both the gap wrapper (peer) and the fixed panel.
+    const targets = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        '[data-sidebar="sidebar"], [data-side="left"]'
+      )
+    );
+
+    targets.forEach((el) => {
+      el.addEventListener("mouseenter", onEnter);
+      el.addEventListener("mouseleave", onLeave);
+    });
+
+    return () => {
+      clearLeave();
+      targets.forEach((el) => {
+        el.removeEventListener("mouseenter", onEnter);
+        el.removeEventListener("mouseleave", onLeave);
+      });
+    };
   }, [isMobile, pinned, setOpen]);
 
-  const handleLeave = useCallback(() => {
-    if (isMobile || pinned) return;
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    leaveTimer.current = setTimeout(() => setOpen(false), 120);
-  }, [isMobile, pinned, setOpen]);
-
-  return (
-    <div
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-      className="contents"
-    >
-      <AppSidebar />
-    </div>
-  );
+  return <AppSidebar />;
 }
 
 export function DashboardLayout() {
@@ -88,10 +113,6 @@ export function DashboardLayout() {
         <HoverSidebar pinned={pinned} />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-            <SidebarTrigger
-              className="text-muted-foreground hover:text-foreground hidden md:flex"
-              title={pinned ? "Desafixar menu" : "Fixar menu"}
-            />
 
             {/* Desktop: always show full search */}
             <div className="relative w-full max-w-md hidden md:block">
