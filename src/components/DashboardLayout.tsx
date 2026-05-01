@@ -113,10 +113,6 @@ export function DashboardLayout() {
         <HoverSidebar pinned={pinned} />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-            <SidebarTrigger
-              className="text-muted-foreground hover:text-foreground hidden md:flex"
-              title={pinned ? "Desafixar menu" : "Fixar menu"}
-            />
 
             {/* Desktop: always show full search */}
             <div className="relative w-full max-w-md hidden md:block">
