@@ -1249,53 +1249,10 @@ export default function Dashboard() {
             );
           })()}
 
-          {/* Period filter card */}
-          <motion.div {...anim(0.37)} className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <p className="text-xs text-muted-foreground">Filtro de período</p>
-            <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(periodLabels) as PeriodKey[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => handlePeriodChange(p)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    period === p ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  {periodLabels[p]}
-                </button>
-              ))}
-            </div>
-            {period === "custom" && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {customFrom ? format(customFrom, "dd/MM/yyyy") : "De"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
-                <span className="text-xs text-muted-foreground">até</span>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {customTo ? format(customTo, "dd/MM/yyyy") : "Até"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={customTo} onSelect={setCustomTo} className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
-
-            {/* Quick actions */}
-            <div className="pt-2 space-y-2">
-              <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Ações rápidas</p>
+          {/* Ações rápidas */}
+          <motion.div {...anim(0.37)} className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <p className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">Ações rápidas</p>
+            <div className="space-y-2">
               {[
                 { label: "Criar Produto", icon: Package, path: "/products/new" },
                 { label: "Central de Ajuda", icon: HelpCircle, path: "/help" },
