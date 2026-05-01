@@ -358,6 +358,7 @@ export default function Dashboard() {
     : "0";
 
   const grossRevenueAll = completedSalesAll.reduce((acc, s) => acc + s.amount, 0);
+  const netRevenueAll = completedSalesAll.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
   const milestoneIdx = getMilestoneIndex(grossRevenueAll);
 
   // Sales by provider
@@ -667,16 +668,16 @@ export default function Dashboard() {
         <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-3">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — histórico</p>
-            <p className="text-2xl font-bold text-primary">{fmt(grossRevenue)}</p>
+            <p className="text-2xl font-bold text-primary">{fmt(grossRevenueAll)}</p>
             <p className="text-[0.65rem] text-muted-foreground">
-              {salesCount} venda(s) · líquido após taxas: <span className="font-semibold text-foreground">{fmt(netRevenue)}</span>
+              {completedSalesAll.length} venda(s) · líquido após taxas: <span className="font-semibold text-foreground">{fmt(netRevenueAll)}</span>
             </p>
           </div>
           <div className="h-px bg-border" />
           <div className="grid grid-cols-2 gap-3 text-[0.7rem]">
             <div>
               <p className="text-muted-foreground">Saques e taxas</p>
-              <p className="text-sm font-semibold mt-0.5">{fmt(totalWithdrawn)}</p>
+              <p className="text-sm font-semibold mt-0.5">{fmt(withdrawalReservations)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">À receber (D+)</p>
