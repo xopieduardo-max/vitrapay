@@ -105,15 +105,6 @@ export function DashboardLayout() {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
 
-            {/* Desktop: always show full search */}
-            <div className="relative w-full max-w-md hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
-              <Input
-                placeholder="Buscar... (Cmd+K)"
-                className="pl-9 h-9 bg-muted/50 border-transparent focus:border-border text-sm"
-              />
-            </div>
-
             {/* Mobile: logo + greeting */}
             <div className="md:hidden flex items-center gap-2">
               <button onClick={() => navigate("/dashboard")} className="shrink-0">
