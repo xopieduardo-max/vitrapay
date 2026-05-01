@@ -666,7 +666,7 @@ export default function Dashboard() {
         {/* Faturamento do período — narrativa completa */}
         <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-3">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — {periodLabels[period]}</p>
+            <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — histórico</p>
             <p className="text-2xl font-bold text-primary">{fmt(grossRevenue)}</p>
             <p className="text-[0.65rem] text-muted-foreground">
               {salesCount} venda(s) · líquido após taxas: <span className="font-semibold text-foreground">{fmt(netRevenue)}</span>
@@ -675,7 +675,7 @@ export default function Dashboard() {
           <div className="h-px bg-border" />
           <div className="grid grid-cols-2 gap-3 text-[0.7rem]">
             <div>
-              <p className="text-muted-foreground">Sacado no período</p>
+              <p className="text-muted-foreground">Saques e taxas</p>
               <p className="text-sm font-semibold mt-0.5">{fmt(totalWithdrawn)}</p>
             </div>
             <div>
@@ -697,7 +697,7 @@ export default function Dashboard() {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[260px]">
                   <p className="text-xs">
-                    Saldo total da sua carteira (histórico, todos os períodos) já liberado pelo D+ e descontando saques em processamento. Não é só o período filtrado.
+                    Vendas liberadas menos saques, taxas de saque, estornos, chargebacks e MED. Saldo retido no D+ aparece em “À receber”.
                   </p>
                 </TooltipContent>
               </Tooltip>
