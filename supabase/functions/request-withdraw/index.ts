@@ -83,14 +83,45 @@ serve(async (req) => {
       });
     }
 
-    // ── Validate balance from wallets table ──
+    // ── Validate balance from financial ledger, not the cached wallets table ──
     const { data: wallet } = await supabase
       .from("wallets")
       .select("id, balance_available, balance_pending")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    const availableBalance = wallet ? Number(wallet.balance_available) : 0;
+    const allTransactions: any[] = [];
+    let from = 0;
+    const pageSize = 1000;
+    while (true) {
+      const { data: page } = await supabase
+        .from("transactions")
+        .select("type, category, amount, balance_type, status")
+        .eq("user_id", user.id)
+        .range(from, from + pageSize - 1);
+      const rows = page || [];
+      allTransactions.push(...rows);
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    }
+
+    const { data: existingWithdrawals } = await supabase
+      .from("withdrawals")
+      .select("amount, status")
+      .eq("user_id", user.id);
+
+    const withdrawableCreditCategories = new Set(["sale", "commission"]);
+    const balanceDebitCategories = new Set(["refund", "chargeback", "med", "admin-withdrawal", "admin-service-fee-withdrawal"]);
+    const releasedCredits = allTransactions
+      .filter((tx) => tx.type === "credit" && tx.status === "completed" && tx.balance_type === "available" && withdrawableCreditCategories.has(tx.category))
+      .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
+    const balanceDebits = allTransactions
+      .filter((tx) => tx.type === "debit" && tx.status === "completed" && balanceDebitCategories.has(tx.category))
+      .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
+    const reservedWithdrawals = (existingWithdrawals || [])
+      .filter((w) => w.status === "completed" || w.status === "pending" || w.status === "processing")
+      .reduce((acc, w) => acc + Number(w.amount || 0) + WITHDRAWAL_FEE, 0);
+    const availableBalance = Math.max(0, releasedCredits - balanceDebits - reservedWithdrawals);
 
     if (availableBalance <= 0) {
       return new Response(JSON.stringify({ error: "Saldo disponível insuficiente" }), {
@@ -109,15 +140,11 @@ serve(async (req) => {
     }
 
     // Check for pending withdrawals to prevent double-spending
-    const { data: pendingWithdrawals } = await supabase
-      .from("withdrawals")
-      .select("amount")
-      .eq("user_id", user.id)
-      .in("status", ["pending", "processing"]);
+    const totalPending = (existingWithdrawals || [])
+      .filter((w) => w.status === "pending" || w.status === "processing")
+      .reduce((acc, w) => acc + Number(w.amount || 0) + WITHDRAWAL_FEE, 0);
 
-    const totalPending = (pendingWithdrawals || []).reduce((acc, w) => acc + w.amount + WITHDRAWAL_FEE, 0);
-
-    if (amount + WITHDRAWAL_FEE + totalPending > availableBalance) {
+    if (amount + WITHDRAWAL_FEE > availableBalance) {
       return new Response(JSON.stringify({
         error: `Saldo insuficiente considerando saques pendentes (R$ ${(totalPending / 100).toFixed(2)} em processamento)`,
       }), {
