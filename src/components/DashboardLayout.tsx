@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -14,12 +14,49 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState, useRef, useCallback } from "react";
+
+/**
+ * Wrapper that opens the sidebar on hover and collapses on leave.
+ * The user can still "pin" the sidebar open by clicking the SidebarTrigger.
+ */
+function HoverSidebar({ pinned }: { pinned: boolean }) {
+  const { setOpen, isMobile } = useSidebar();
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleEnter = useCallback(() => {
+    if (isMobile || pinned) return;
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    setOpen(true);
+  }, [isMobile, pinned, setOpen]);
+
+  const handleLeave = useCallback(() => {
+    if (isMobile || pinned) return;
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    leaveTimer.current = setTimeout(() => setOpen(false), 120);
+  }, [isMobile, pinned, setOpen]);
+
+  return (
+    <div
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      className="contents"
+    >
+      <AppSidebar />
+    </div>
+  );
+}
 
 export function DashboardLayout() {
   const { newSalesCount, notifications, clearCount } = useSalesNotifications();
   usePushNotifications();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Controlled sidebar: collapsed by default, expands on hover.
+  // "pinned" lets the user lock it open via the trigger button.
+  const [pinned, setPinned] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ["layout-profile", user?.id],
@@ -38,12 +75,23 @@ export function DashboardLayout() {
   const firstName = profile?.display_name?.split(" ")[0] || "";
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        // Manual toggle = pin/unpin
+        setPinned(o);
+      }}
+      defaultOpen={false}
+    >
       <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
+        <HoverSidebar pinned={pinned} />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground hidden md:flex" />
+            <SidebarTrigger
+              className="text-muted-foreground hover:text-foreground hidden md:flex"
+              title={pinned ? "Desafixar menu" : "Fixar menu"}
+            />
 
             {/* Desktop: always show full search */}
             <div className="relative w-full max-w-md hidden md:block">
