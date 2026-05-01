@@ -14,7 +14,7 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /**
  * Wrapper that opens the sidebar on hover and collapses on mouse leave.
