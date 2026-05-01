@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
