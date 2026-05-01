@@ -20,9 +20,8 @@ import { useState, useRef, useEffect } from "react";
  * Wrapper that opens the sidebar on hover and collapses on mouse leave.
  * Listens on the actual fixed sidebar panel (data-sidebar="sidebar") so the
  * hover zone matches the visible width in both collapsed and expanded states.
- * Click on the SidebarTrigger to "pin" it open.
  */
-function HoverSidebar({ pinned }: { pinned: boolean }) {
+function HoverSidebar() {
   const { setOpen, isMobile } = useSidebar();
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -37,13 +36,11 @@ function HoverSidebar({ pinned }: { pinned: boolean }) {
     };
 
     const onEnter = () => {
-      if (pinned) return;
       clearLeave();
       setOpen(true);
     };
 
     const onLeave = () => {
-      if (pinned) return;
       clearLeave();
       leaveTimer.current = setTimeout(() => setOpen(false), 150);
     };
@@ -67,7 +64,7 @@ function HoverSidebar({ pinned }: { pinned: boolean }) {
         el.removeEventListener("mouseleave", onLeave);
       });
     };
-  }, [isMobile, pinned, setOpen]);
+  }, [isMobile, setOpen]);
 
   return <AppSidebar />;
 }
@@ -78,9 +75,7 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Controlled sidebar: collapsed by default, expands on hover.
-  // "pinned" lets the user lock it open via the trigger button.
-  const [pinned, setPinned] = useState(false);
+  // Controlled sidebar: collapsed by default, expands on hover and closes on mouse leave.
   const [open, setOpen] = useState(false);
 
   const { data: profile } = useQuery({
@@ -102,15 +97,11 @@ export function DashboardLayout() {
   return (
     <SidebarProvider
       open={open}
-      onOpenChange={(o) => {
-        setOpen(o);
-        // Manual toggle = pin/unpin
-        setPinned(o);
-      }}
+      onOpenChange={setOpen}
       defaultOpen={false}
     >
       <div className="min-h-screen flex w-full bg-background">
-        <HoverSidebar pinned={pinned} />
+        <HoverSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
 
