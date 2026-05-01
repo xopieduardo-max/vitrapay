@@ -223,9 +223,32 @@ export default function Dashboard() {
       if (!user) return [];
       const { data } = await supabase
         .from("withdrawals")
-        .select("amount, status")
+        .select("id, amount, status")
         .eq("user_id", user.id);
       return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const { data: transactions = [] } = useQuery({
+    queryKey: ["dashboard-transactions", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const allData: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data } = await supabase
+          .from("transactions")
+          .select("type, category, amount, balance_type, status, created_at")
+          .eq("user_id", user.id)
+          .range(from, from + pageSize - 1);
+        const page = data || [];
+        allData.push(...page);
+        if (page.length < pageSize) break;
+        from += pageSize;
+      }
+      return allData;
     },
     enabled: !!user,
   });
@@ -296,11 +319,23 @@ export default function Dashboard() {
   const pendingSales = filteredSales.filter((s) => s.status === "pending").reduce((acc, s) => acc + s.amount, 0);
   const totalWithdrawn = withdrawals.filter((w) => w.status === "completed").reduce((acc, w) => acc + w.amount, 0);
   const WITHDRAWAL_FEE = 500;
-  const pendingWithdrawalsGross = withdrawals.filter((w) => w.status === "pending" || w.status === "processing").reduce((acc, w) => acc + w.amount + WITHDRAWAL_FEE, 0);
+  const withdrawableCreditCategories = new Set(["sale", "commission"]);
+  const balanceDebitCategories = new Set(["refund", "chargeback", "med", "admin-withdrawal", "admin-service-fee-withdrawal"]);
+  const releasedCredits = transactions
+    .filter((tx) => tx.type === "credit" && tx.status === "completed" && tx.balance_type === "available" && withdrawableCreditCategories.has(tx.category))
+    .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
+  const balanceDebits = transactions
+    .filter((tx) => tx.type === "debit" && tx.status === "completed" && balanceDebitCategories.has(tx.category))
+    .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
+  const withdrawalReservations = withdrawals
+    .filter((w) => w.status === "completed" || w.status === "pending" || w.status === "processing")
+    .reduce((acc, w) => acc + Number(w.amount || 0) + WITHDRAWAL_FEE, 0);
+  const pendingCredits = transactions
+    .filter((tx) => tx.type === "credit" && tx.status === "pending" && tx.balance_type === "pending" && withdrawableCreditCategories.has(tx.category))
+    .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
 
-  const walletAvailable = Number(wallet?.balance_available ?? 0);
-  const walletPending = Number(wallet?.balance_pending ?? 0);
-  const availableBalance = Math.max(0, walletAvailable - pendingWithdrawalsGross);
+  const walletPending = pendingCredits;
+  const availableBalance = Math.max(0, releasedCredits - balanceDebits - withdrawalReservations);
   const ticketMedio = salesCount > 0 ? grossRevenue / salesCount : 0;
   const refundedSales = filteredSales.filter((s) => s.status === "refunded");
   const chargebackSales = filteredSales.filter((s) => s.status === "chargeback");
@@ -323,6 +358,7 @@ export default function Dashboard() {
     : "0";
 
   const grossRevenueAll = completedSalesAll.reduce((acc, s) => acc + s.amount, 0);
+  const netRevenueAll = completedSalesAll.reduce((acc, s) => acc + (s.amount - (s.platform_fee || 0)), 0);
   const milestoneIdx = getMilestoneIndex(grossRevenueAll);
 
   // Sales by provider
@@ -631,17 +667,17 @@ export default function Dashboard() {
         {/* Faturamento do período — narrativa completa */}
         <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-3">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — {periodLabels[period]}</p>
-            <p className="text-2xl font-bold text-primary">{fmt(grossRevenue)}</p>
+            <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — histórico</p>
+            <p className="text-2xl font-bold text-primary">{fmt(grossRevenueAll)}</p>
             <p className="text-[0.65rem] text-muted-foreground">
-              {salesCount} venda(s) · líquido após taxas: <span className="font-semibold text-foreground">{fmt(netRevenue)}</span>
+              {completedSalesAll.length} venda(s) · líquido após taxas: <span className="font-semibold text-foreground">{fmt(netRevenueAll)}</span>
             </p>
           </div>
           <div className="h-px bg-border" />
           <div className="grid grid-cols-2 gap-3 text-[0.7rem]">
             <div>
-              <p className="text-muted-foreground">Sacado no período</p>
-              <p className="text-sm font-semibold mt-0.5">{fmt(totalWithdrawn)}</p>
+              <p className="text-muted-foreground">Saques e taxas</p>
+              <p className="text-sm font-semibold mt-0.5">{fmt(withdrawalReservations)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">À receber (D+)</p>
@@ -662,7 +698,7 @@ export default function Dashboard() {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[260px]">
                   <p className="text-xs">
-                    Saldo total da sua carteira (histórico, todos os períodos) já liberado pelo D+ e descontando saques em processamento. Não é só o período filtrado.
+                    Vendas liberadas menos saques, taxas de saque, estornos, chargebacks e MED. Saldo retido no D+ aparece em “À receber”.
                   </p>
                 </TooltipContent>
               </Tooltip>

@@ -126,14 +126,28 @@ export default function Finance() {
   const totalWithdrawn = withdrawals
     .filter((w) => w.status === "completed")
     .reduce((acc, w) => acc + Number(w.amount), 0);
+  const WITHDRAWABLE_CREDIT_CATEGORIES = new Set(["sale", "commission"]);
+  const BALANCE_DEBIT_CATEGORIES = new Set(["refund", "chargeback", "med", "admin-withdrawal", "admin-service-fee-withdrawal"]);
+  const releasedCredits = transactions
+    .filter((tx) => tx.type === "credit" && tx.status === "completed" && tx.balance_type === "available" && WITHDRAWABLE_CREDIT_CATEGORIES.has(tx.category))
+    .reduce((acc, tx) => acc + Number(tx.amount), 0);
+  const pendingCredits = transactions
+    .filter((tx) => tx.type === "credit" && tx.status === "pending" && tx.balance_type === "pending" && WITHDRAWABLE_CREDIT_CATEGORIES.has(tx.category))
+    .reduce((acc, tx) => acc + Number(tx.amount), 0);
+  const balanceDebits = transactions
+    .filter((tx) => tx.type === "debit" && tx.status === "completed" && BALANCE_DEBIT_CATEGORIES.has(tx.category))
+    .reduce((acc, tx) => acc + Number(tx.amount), 0);
+  const withdrawalReservations = withdrawals
+    .filter((w) => w.status === "completed" || w.status === "pending" || w.status === "processing")
+    .reduce((acc, w) => acc + Number(w.amount) + WITHDRAWAL_FEE, 0);
   const pendingWithdrawals = withdrawals
     .filter((w) => w.status === "pending" || w.status === "processing")
     .reduce((acc, w) => acc + Number(w.amount) + WITHDRAWAL_FEE, 0);
 
-  const walletAvailableBalance = Number(wallet?.balance_available ?? 0);
-  const availableBalance = Math.max(0, walletAvailableBalance - pendingWithdrawals);
-  const totalHeld = Number(wallet?.balance_pending ?? 0);
-  const totalEarnings = Number(wallet?.balance_total ?? 0) + totalWithdrawn;
+  const walletAvailableBalance = Math.max(0, releasedCredits - balanceDebits);
+  const availableBalance = Math.max(0, releasedCredits - balanceDebits - withdrawalReservations);
+  const totalHeld = pendingCredits;
+  const totalEarnings = releasedCredits + pendingCredits;
 
   const cardPlan = profile?.card_plan || "d30";
   const HOLDBACK_DAYS_CARD_LABEL = cardPlan === "d2" ? 2 : 30;
