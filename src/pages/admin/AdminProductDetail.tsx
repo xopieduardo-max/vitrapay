@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Package, Download, BookOpen, Image, FileDown, Users,
   TrendingUp, DollarSign, ShoppingCart, Loader2, Eye, ExternalLink,
-  EyeOff, Globe,
+  EyeOff, Globe, Mail, Phone, AlertCircle, FileSpreadsheet, Copy,
 } from "lucide-react";
 import { downloadFile } from "@/lib/downloadFile";
 import { Button } from "@/components/ui/button";
