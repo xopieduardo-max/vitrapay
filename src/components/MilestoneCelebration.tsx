@@ -14,7 +14,6 @@ import { toast } from "sonner";
 import { TIERS } from "@/components/MilestoneTracker";
 import { shareAchievement, playUnlockSound, isSoundEnabled, toggleSound } from "@/lib/achievementShare";
 
-const EMOJIS = ["🎉", "🚀", "💰", "⭐", "🔥", "✨", "🏆", "💎"];
 const PARTICLE_COUNT = 28;
 
 // Respeita prefers-reduced-motion globalmente
