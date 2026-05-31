@@ -871,8 +871,125 @@ export default function AdminProductDetail() {
         </CardContent>
       </Card>
 
+      {/* UTM aggregated insights */}
+      {buyers.length > 0 && (
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" strokeWidth={1.5} />
+              Origem das vendas (UTM)
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Top 6 origens e campanhas com mais conversão — descubra onde investir.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { title: "utm_source", rows: utmStats.sources },
+                { title: "utm_campaign", rows: utmStats.campaigns },
+              ].map((block) => (
+                <div key={block.title} className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {block.title}
+                  </p>
+                  {block.rows.map((r) => (
+                    <div key={r.name} className="space-y-1">
+                      <div className="flex items-baseline justify-between text-xs">
+                        <span className="font-medium truncate pr-2">{r.name}</span>
+                        <span className="text-muted-foreground tabular-nums">
+                          {r.count} · {fmt(r.revenue)}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${Math.max(2, r.pct)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Member-area engagement (courses only) */}
+      {product?.type === "course" && (
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-base flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-primary" strokeWidth={1.5} />
+              Engajamento da área de membros
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Progresso de cada aluno, última atividade e quem completou — identifique quem precisa de remarketing.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {loadingEngagement ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+              </div>
+            ) : !engagement || engagement.students.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                {engagement?.totalLessons === 0
+                  ? "Curso sem aulas cadastradas."
+                  : "Nenhum aluno com acesso ainda."}
+              </p>
+            ) : (
+              <div className="overflow-x-auto -mx-4">
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground border-b border-border">
+                    <tr>
+                      <th className="text-left font-medium px-4 py-2">Aluno</th>
+                      <th className="text-left font-medium px-2 py-2 w-1/3">Progresso</th>
+                      <th className="text-right font-medium px-2 py-2">Aulas</th>
+                      <th className="text-left font-medium px-4 py-2">
+                        <Clock className="h-3 w-3 inline mr-1" />Última atividade
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {engagement.students.map((s) => (
+                      <tr key={s.user_id} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="px-4 py-2">
+                          <p className="font-medium">{s.name}</p>
+                          <p className="text-muted-foreground text-[10px]">{s.email}</p>
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  s.progress === 100 ? "bg-green-500" : "bg-primary"
+                                }`}
+                                style={{ width: `${s.progress}%` }}
+                              />
+                            </div>
+                            <span className="tabular-nums text-[10px] w-9 text-right">{s.progress}%</span>
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-right tabular-nums">
+                          {s.completed}/{s.totalLessons}
+                        </td>
+                        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                          {formatRelative(s.lastAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Custom Audiences — Meta & Google ready-to-import */}
+
       <Card>
         <CardHeader className="space-y-1">
           <CardTitle className="text-base flex items-center gap-2">
