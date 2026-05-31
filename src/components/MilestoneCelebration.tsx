@@ -91,6 +91,32 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     setActiveMilestone(pendingTier.threshold);
   }, [pendingTier, user, activeMilestone, previewTierName]);
 
+  // Toca o som quando o modal abre
+  const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  useEffect(() => {
+    if (activeMilestone && !showForm) playUnlockSound();
+  }, [activeMilestone, showForm]);
+
+  const [sharing, setSharing] = useState(false);
+  const handleShare = async () => {
+    if (!activeTier) return;
+    setSharing(true);
+    try {
+      const r = await shareAchievement({
+        tierName: activeTier.name,
+        tierLabel: activeTier.label,
+        badgeSrc: activeTier.image,
+        userName: profile?.display_name,
+      });
+      toast.success(r === "shared" ? "Compartilhado!" : "Imagem baixada — pronto para postar.");
+    } catch {
+      toast.error("Não foi possível gerar a imagem.");
+    } finally {
+      setSharing(false);
+    }
+  };
+
+
   const activeTier = useMemo(
     () => TIERS.find((t) => t.threshold === activeMilestone) || null,
     [activeMilestone]
