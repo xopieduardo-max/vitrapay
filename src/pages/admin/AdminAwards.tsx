@@ -52,6 +52,7 @@ interface AwardRow {
   created_at: string;
   user_name: string;
   user_email: string;
+  user_avatar: string | null;
   total_revenue: number;
 }
 
