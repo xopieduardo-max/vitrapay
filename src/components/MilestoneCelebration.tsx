@@ -18,12 +18,13 @@ const PARTICLE_COUNT = 28;
 
 interface Props {
   revenue: number; // em centavos
+  previewTier?: string | null;
 }
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
-export function MilestoneCelebration({ revenue }: Props) {
+export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: Props) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [activeMilestone, setActiveMilestone] = useState<number | null>(null);
@@ -55,11 +56,13 @@ export function MilestoneCelebration({ revenue }: Props) {
     },
   });
 
-  // Preview mode via ?previewTier=Start|Bronze|Platinum|Gold|Black|Diamond|Sapphire|Ruby
-  const previewTierName = useMemo(() => {
+  // Preview mode via ?previewTier=Start|Bronze|... or via prop
+  const urlPreviewTier = useMemo(() => {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("previewTier");
   }, []);
+
+  const previewTierName = previewTierProp ?? urlPreviewTier;
 
   // Maior tier atingido ainda não solicitado
   const pendingTier = useMemo(() => {
