@@ -55,19 +55,33 @@ export function MilestoneCelebration({ revenue }: Props) {
     },
   });
 
+  // Preview mode via ?previewTier=Start|Bronze|Platinum|Gold|Black|Diamond|Sapphire|Ruby
+  const previewTierName = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("previewTier");
+  }, []);
+
   // Maior tier atingido ainda não solicitado
   const pendingTier = useMemo(() => {
+    if (previewTierName) {
+      return TIERS.find((t) => t.name.toLowerCase() === previewTierName.toLowerCase()) ?? null;
+    }
     const sorted = [...TIERS].sort((a, b) => b.threshold - a.threshold);
     return sorted.find((t) => revenue >= t.threshold && !requested.includes(t.threshold)) ?? null;
-  }, [revenue, requested]);
+  }, [revenue, requested, previewTierName]);
 
   useEffect(() => {
-    if (!user || activeMilestone !== null) return;
+    if (activeMilestone !== null) return;
     if (!pendingTier) return;
+    if (previewTierName) {
+      setActiveMilestone(pendingTier.threshold);
+      return;
+    }
+    if (!user) return;
     const key = `award_dismissed_${user.id}_${pendingTier.threshold}`;
     if (sessionStorage.getItem(key)) return;
     setActiveMilestone(pendingTier.threshold);
-  }, [pendingTier, user, activeMilestone]);
+  }, [pendingTier, user, activeMilestone, previewTierName]);
 
   const activeTier = useMemo(
     () => TIERS.find((t) => t.threshold === activeMilestone) || null,
