@@ -324,6 +324,7 @@ export default function AdminProductDetail() {
     }
   };
 
+  const copyEmails = (rows: any[]) => {
     const emails = Array.from(new Set(rows.map((r) => r.buyer_email).filter(Boolean)));
     if (!emails.length) {
       toast.error("Nenhum email encontrado.");
@@ -332,6 +333,7 @@ export default function AdminProductDetail() {
     navigator.clipboard.writeText(emails.join(", "));
     toast.success(`${emails.length} email(s) copiado(s).`);
   };
+
 
   if (isLoading) {
     return (
