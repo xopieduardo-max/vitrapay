@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Truck, CheckCircle, Copy, Search } from "lucide-react";
+import { Loader2, Trophy, Truck, CheckCircle, Copy, Search, Eye, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAdminAudit } from "@/hooks/useAdminAudit";
+import { TIERS } from "@/components/MilestoneTracker";
+import { motion, AnimatePresence } from "framer-motion";
 
 const fmt = (cents: number) =>
   `R$ ${(cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -61,6 +63,9 @@ export default function AdminAwards() {
   const [editTracking, setEditTracking] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [previewTier, setPreviewTier] = useState<string | null>(null);
+  const [showPreviewPicker, setShowPreviewPicker] = useState(false);
+  const [showUnlock, setShowUnlock] = useState(false);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-award-requests"],
@@ -157,14 +162,20 @@ export default function AdminAwards() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Trophy className="h-5 w-5 text-primary" strokeWidth={1.8} />
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Trophy className="h-5 w-5 text-primary" strokeWidth={1.8} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Placas de Premiação</h1>
+            <p className="text-sm text-muted-foreground">{rows.length} solicitação(ões) — produtores que atingiram metas de faturamento.</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Placas de Premiação</h1>
-          <p className="text-sm text-muted-foreground">{rows.length} solicitação(ões) — produtores que atingiram metas de faturamento.</p>
-        </div>
+        <Button variant="outline" size="sm" onClick={() => setShowPreviewPicker(true)}>
+          <Eye className="h-4 w-4 mr-1.5" />
+          Visualizar preview
+        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -286,6 +297,119 @@ export default function AdminAwards() {
               Salvar
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Tier preview picker ── */}
+      <Dialog open={showPreviewPicker} onOpenChange={setShowPreviewPicker}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Visualizar conquista</DialogTitle>
+            <DialogDescription>Escolha um nível para ver a animação de desbloqueio.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 py-2">
+            {TIERS.map((tier) => (
+              <button
+                key={tier.name}
+                onClick={() => {
+                  setPreviewTier(tier.name);
+                  setShowPreviewPicker(false);
+                  setShowUnlock(true);
+                }}
+                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 transition-all hover:border-primary/60 hover:scale-[1.02]"
+              >
+                <img
+                  src={tier.image}
+                  alt={tier.name}
+                  className="h-12 w-12 object-contain"
+                  decoding="async"
+                />
+                <div className="text-center">
+                  <p className="text-xs font-bold">{tier.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{tier.label}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Unlock animation preview ── */}
+      <Dialog open={showUnlock} onOpenChange={(o) => { if (!o) { setShowUnlock(false); setPreviewTier(null); } }}>
+        <DialogContent className="sm:max-w-md overflow-hidden border-primary/30">
+          {(() => {
+            const tier = TIERS.find((t) => t.name === previewTier);
+            if (!tier) return null;
+            return (
+              <>
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none opacity-80"
+                  style={{ background: `radial-gradient(circle at 50% 28%, ${tier.glow}, transparent 60%)` }}
+                />
+                <DialogHeader className="sr-only">
+                  <DialogTitle>Conquista desbloqueada: {tier.name}</DialogTitle>
+                </DialogHeader>
+                <div className="relative flex flex-col items-center text-center pt-2 pb-1">
+                  <div className="title-rise inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-primary mb-4">
+                    <Sparkles className="h-3 w-3" />
+                    Novo brasão desbloqueado
+                  </div>
+                  <div className="relative h-44 w-44 md:h-52 md:w-52 flex items-center justify-center mb-2">
+                    <div className="badge-burst-ring" style={{ borderColor: "hsl(var(--primary))" }} />
+                    <div
+                      className="absolute inset-2 rounded-full blur-2xl"
+                      style={{ background: tier.glow, opacity: 0.7 }}
+                    />
+                    <div className="relative h-full w-full flex items-center justify-center">
+                      <img
+                        src={tier.image}
+                        alt={tier.name}
+                        className="badge-unlock-anim h-40 w-40 md:h-48 md:w-48 object-contain drop-shadow-[0_14px_30px_rgba(0,0,0,0.55)]"
+                        decoding="async"
+                      />
+                      <div className="badge-light-sweep" aria-hidden />
+                    </div>
+                  </div>
+                  <h2 className="title-rise-late text-2xl md:text-3xl font-extrabold tracking-tight">{tier.name}</h2>
+                  <p className="title-rise-late text-sm text-muted-foreground mt-1">
+                    Você atingiu <span className="text-primary font-bold">{fmt(tier.threshold)}</span> em faturamento
+                  </p>
+                  <div className="title-rise-cta mt-6 w-full flex flex-col sm:flex-row gap-2 sm:justify-center">
+                    <Button variant="outline" onClick={() => { setShowUnlock(false); setPreviewTier(null); }}>Fechar</Button>
+                  </div>
+                </div>
+                {/* Confetti */}
+                <AnimatePresence>
+                  {showUnlock && (
+                    <div className="fixed inset-0 pointer-events-none z-[9998] overflow-hidden">
+                      {Array.from({ length: 28 }).map((_, i) => {
+                        const left = Math.random() * 100;
+                        const delay = 2.0 + Math.random() * 1.5;
+                        const duration = 2.8 + Math.random() * 1.5;
+                        const emojis = ["🎉", "🚀", "💰", "⭐", "🔥", "✨", "🏆", "💎"];
+                        const emoji = emojis[i % emojis.length];
+                        const size = 16 + Math.random() * 18;
+                        const rotation = Math.random() * 720 - 360;
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ y: -40, x: `${left}vw`, opacity: 1, rotate: 0, scale: 0 }}
+                            animate={{ y: "110vh", opacity: [1, 1, 0.8, 0], rotate: rotation, scale: [0, 1.2, 1, 0.8] }}
+                            transition={{ duration, delay, ease: "easeIn" }}
+                            className="absolute"
+                            style={{ fontSize: size, left: 0, top: 0 }}
+                          >
+                            {emoji}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </AnimatePresence>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
