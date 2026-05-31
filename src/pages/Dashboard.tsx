@@ -664,26 +664,11 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Faturamento do período — narrativa completa */}
-        <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-3">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — histórico</p>
-            <p className="text-2xl font-bold text-primary">{fmt(grossRevenueAll)}</p>
-            <p className="text-[0.65rem] text-muted-foreground">
-              {completedSalesAll.length} venda(s) · líquido após taxas: <span className="font-semibold text-foreground">{fmt(netRevenueAll)}</span>
-            </p>
-          </div>
-          <div className="h-px bg-border" />
-          <div className="grid grid-cols-2 gap-3 text-[0.7rem]">
-            <div>
-              <p className="text-muted-foreground">Saques e taxas</p>
-              <p className="text-sm font-semibold mt-0.5">{fmt(withdrawalReservations)}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">À receber (D+)</p>
-              <p className="text-sm font-semibold mt-0.5">{fmt(walletPending)}</p>
-            </div>
-          </div>
+        {/* Faturamento bruto do período selecionado */}
+        <motion.div {...anim(0.04)} className="rounded-2xl border border-primary/20 bg-card p-4 space-y-1">
+          <p className="text-xs text-muted-foreground font-medium">Faturamento bruto — {periodLabels[period].toLowerCase()}</p>
+          <p className="text-2xl font-bold text-primary">{fmt(grossRevenue)}</p>
+          <p className="text-[0.65rem] text-muted-foreground">{salesCount} venda(s)</p>
         </motion.div>
 
         {/* Disponível para saque (saldo histórico da carteira) */}
