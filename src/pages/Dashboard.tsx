@@ -1284,7 +1284,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Admin hidden preview button ── */}
-      {isAdmin && (
+      {(isAdmin || urlAdminPreview) && (
         <>
           <button
             onClick={() => setShowPreviewPicker(true)}
