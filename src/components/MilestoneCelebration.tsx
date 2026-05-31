@@ -264,6 +264,13 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
             </p>
 
             <div className="title-rise-cta mt-6 w-full flex flex-col sm:flex-row gap-2 sm:justify-center">
+              <Button variant="ghost" size="icon" onClick={() => { const v = !soundOn; setSoundOn(v); toggleSound(v); }} title={soundOn ? "Som ligado" : "Som desligado"}>
+                {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+              <Button variant="outline" onClick={handleShare} disabled={sharing} className="gap-1.5">
+                {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
+                Compartilhar
+              </Button>
               <Button variant="outline" onClick={closeAll}>Mais tarde</Button>
               <Button
                 onClick={() => setShowForm(true)}
@@ -272,6 +279,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
                 Solicitar minha placa
               </Button>
             </div>
+
           </div>
         </DialogContent>
       </Dialog>
