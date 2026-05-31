@@ -18,12 +18,13 @@ const PARTICLE_COUNT = 28;
 
 interface Props {
   revenue: number; // em centavos
+  previewTier?: string | null;
 }
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
-export function MilestoneCelebration({ revenue }: Props) {
+export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: Props) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [activeMilestone, setActiveMilestone] = useState<number | null>(null);

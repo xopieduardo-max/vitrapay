@@ -617,7 +617,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
-      <MilestoneCelebration revenue={grossRevenueAll} />
+      <MilestoneCelebration revenue={grossRevenueAll} previewTier={previewTier} />
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
@@ -1276,6 +1276,69 @@ export default function Dashboard() {
           </motion.div>
         </div>
       </div>
+
+      {/* ── Admin hidden preview button ── */}
+      {isAdmin && (
+        <>
+          <button
+            onClick={() => setShowPreviewPicker(true)}
+            className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border border-border/60 bg-card/90 backdrop-blur px-3 py-2 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all shadow-lg opacity-40 hover:opacity-100"
+            title="Pré-visualizar conquistas"
+          >
+            <Settings className="h-3 w-3" />
+            <span className="hidden sm:inline">Pré-visualizar conquistas</span>
+          </button>
+
+          <Dialog open={showPreviewPicker} onOpenChange={setShowPreviewPicker}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Pré-visualizar conquistas</DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-3 py-2">
+                {TIERS.map((tier) => (
+                  <button
+                    key={tier.name}
+                    onClick={() => {
+                      setPreviewTier(tier.name);
+                      setShowPreviewPicker(false);
+                      toast.success(`Pré-visualizando: ${tier.name}`);
+                    }}
+                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all hover:border-primary/60 hover:scale-[1.02] ${
+                      previewTier === tier.name
+                        ? "border-primary bg-primary/10"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <img
+                      src={tier.image}
+                      alt={tier.name}
+                      className="h-12 w-12 object-contain"
+                      decoding="async"
+                    />
+                    <div className="text-center">
+                      <p className="text-xs font-bold">{tier.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{tier.label}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {previewTier && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => {
+                      setPreviewTier(null);
+                      toast.success("Pré-visualização desativada");
+                    }}
+                    className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                  >
+                    Limpar pré-visualização
+                  </button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 }
