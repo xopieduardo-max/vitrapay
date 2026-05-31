@@ -63,6 +63,9 @@ export default function AdminAwards() {
   const [editTracking, setEditTracking] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [previewTier, setPreviewTier] = useState<string | null>(null);
+  const [showPreviewPicker, setShowPreviewPicker] = useState(false);
+  const [showUnlock, setShowUnlock] = useState(false);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-award-requests"],
