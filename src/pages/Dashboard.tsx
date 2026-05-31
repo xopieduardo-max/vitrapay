@@ -23,8 +23,6 @@ import {
   X,
   SlidersHorizontal,
   Settings,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
