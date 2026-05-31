@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,13 +13,6 @@ import { Loader2, Sparkles, Share2, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { TIERS } from "@/components/MilestoneTracker";
 import { shareAchievement, playUnlockSound, isSoundEnabled, toggleSound } from "@/lib/achievementShare";
-
-const EMOJIS = ["🎉", "🚀", "💰", "⭐", "🔥", "✨", "🏆", "💎"];
-const PARTICLE_COUNT = 28;
-
-// Respeita prefers-reduced-motion globalmente
-const prefersReducedMotion = typeof window !== "undefined"
-  && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 interface Props {
   revenue: number; // em centavos
@@ -183,35 +176,6 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
 
   return (
     <>
-      {/* ── Confetti background ── */}
-      <AnimatePresence>
-        {activeTier && !showForm && !prefersReducedMotion && (
-          <div className="fixed inset-0 pointer-events-none z-[9998] overflow-hidden">
-            {Array.from({ length: PARTICLE_COUNT }).map((_, i) => {
-              const left = Math.random() * 100;
-              const delay = 2.0 + Math.random() * 1.5;
-              const duration = 2.8 + Math.random() * 1.5;
-              const emoji = EMOJIS[i % EMOJIS.length];
-              const size = 16 + Math.random() * 18;
-              const rotation = Math.random() * 720 - 360;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ y: -40, x: `${left}vw`, opacity: 1, rotate: 0, scale: 0 }}
-                  animate={{ y: "110vh", opacity: [1, 1, 0.8, 0], rotate: rotation, scale: [0, 1.2, 1, 0.8] }}
-                  transition={{ duration, delay, ease: "easeIn" }}
-                  className="absolute"
-                  style={{ fontSize: size, left: 0, top: 0 }}
-                >
-                  {emoji}
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Cinematic unlock modal ── */}
       <Dialog open={!!activeTier && !showForm} onOpenChange={(o) => !o && closeAll()}>
         <DialogContent className="sm:max-w-md overflow-hidden border-primary/30">
           {/* Radial glow background */}
