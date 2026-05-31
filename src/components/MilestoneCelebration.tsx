@@ -181,6 +181,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
   if (!activeTier) return null;
 
   return (
+    <>
       <Dialog open={!!activeTier && !showForm} onOpenChange={(o) => !o && closeAll()}>
         <DialogContent className="sm:max-w-md overflow-hidden border-primary/30">
           {/* Radial glow background */}
