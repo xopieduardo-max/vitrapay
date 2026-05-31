@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Package, Download, BookOpen, Image, FileDown, Users,
   TrendingUp, DollarSign, ShoppingCart, Loader2, Eye, ExternalLink,
-  EyeOff, Globe,
+  EyeOff, Globe, Mail, Phone, AlertCircle, FileSpreadsheet, Copy,
 } from "lucide-react";
 import { downloadFile } from "@/lib/downloadFile";
 import { Button } from "@/components/ui/button";
@@ -98,6 +98,56 @@ export default function AdminProductDetail() {
     enabled: !!productId,
   });
 
+  // Buyers (confirmed) — full contact list for custom audiences
+  const { data: buyers = [] } = useQuery({
+    queryKey: ["admin-product-buyers", productId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("buyer_name, buyer_email, buyer_phone, buyer_cpf, buyer_city, buyer_state, amount, created_at, utm_source, utm_campaign")
+        .eq("product_id", productId!)
+        .eq("status", "confirmed")
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!productId,
+  });
+
+  // Abandoned carts (pending / not confirmed)
+  const { data: abandoned = [] } = useQuery({
+    queryKey: ["admin-product-abandoned", productId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("id, buyer_name, buyer_email, buyer_phone, buyer_cpf, amount, status, created_at, utm_source, utm_campaign")
+        .eq("product_id", productId!)
+        .neq("status", "confirmed")
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!productId,
+  });
+
+  // Platform-wide total spent per email (aggregated across all products)
+  const { data: platformSpentMap = {} } = useQuery<Record<string, number>>({
+    queryKey: ["admin-product-platform-spent", productId, buyers.length],
+    queryFn: async () => {
+      const emails = Array.from(new Set(buyers.map((b: any) => b.buyer_email).filter(Boolean)));
+      if (emails.length === 0) return {};
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("buyer_email, amount")
+        .in("buyer_email", emails)
+        .eq("status", "confirmed");
+      const map: Record<string, number> = {};
+      (data || []).forEach((r: any) => {
+        map[r.buyer_email] = (map[r.buyer_email] || 0) + (r.amount || 0);
+      });
+      return map;
+    },
+    enabled: !!productId && buyers.length > 0,
+  });
+
   // Modules & lessons (for courses)
   const { data: modules } = useQuery({
     queryKey: ["admin-product-modules", productId],
@@ -146,6 +196,45 @@ export default function AdminProductDetail() {
     if (total === 0) return 0;
     return ((salesData?.completedSales || 0) / total) * 100;
   })();
+
+  const exportCSV = (rows: any[], filename: string, headers: { key: string; label: string }[]) => {
+    if (!rows.length) {
+      toast.error("Nenhum dado para exportar.");
+      return;
+    }
+    const csv = [
+      headers.map((h) => h.label).join(","),
+      ...rows.map((r) =>
+        headers
+          .map((h) => {
+            const v = r[h.key];
+            if (v == null) return "";
+            const s = String(v).replace(/"/g, '""');
+            return /[",\n]/.test(s) ? `"${s}"` : s;
+          })
+          .join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Exportado!");
+    logAction("data_exported", "product", productId!, { filename, count: rows.length });
+  };
+
+  const copyEmails = (rows: any[]) => {
+    const emails = Array.from(new Set(rows.map((r) => r.buyer_email).filter(Boolean)));
+    if (!emails.length) {
+      toast.error("Nenhum email encontrado.");
+      return;
+    }
+    navigator.clipboard.writeText(emails.join(", "));
+    toast.success(`${emails.length} email(s) copiado(s).`);
+  };
 
   if (isLoading) {
     return (
@@ -384,6 +473,157 @@ export default function AdminProductDetail() {
                   Nenhum arquivo entregável configurado.
                 </p>
               )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Buyers — custom audience data */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Users className="h-4 w-4" strokeWidth={1.5} />
+            Compradores ({buyers.length})
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => copyEmails(buyers)}>
+              <Copy className="h-3.5 w-3.5" /> Copiar emails
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() =>
+                exportCSV(buyers, `compradores-${product.title}.csv`, [
+                  { key: "buyer_name", label: "Nome" },
+                  { key: "buyer_email", label: "Email" },
+                  { key: "buyer_phone", label: "Telefone" },
+                  { key: "buyer_cpf", label: "CPF" },
+                  { key: "buyer_city", label: "Cidade" },
+                  { key: "buyer_state", label: "UF" },
+                  { key: "amount", label: "Valor (centavos)" },
+                  { key: "created_at", label: "Data" },
+                  { key: "utm_source", label: "UTM Source" },
+                  { key: "utm_campaign", label: "UTM Campaign" },
+                ])
+              }
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" /> Exportar CSV
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {buyers.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum comprador ainda.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4">
+              <table className="w-full text-xs">
+                <thead className="text-muted-foreground border-b border-border">
+                  <tr>
+                    <th className="text-left font-medium px-4 py-2">Nome / Email</th>
+                    <th className="text-left font-medium px-2 py-2">Telefone</th>
+                    <th className="text-left font-medium px-2 py-2">Localização</th>
+                    <th className="text-right font-medium px-2 py-2">Pago</th>
+                    <th className="text-right font-medium px-2 py-2">Total na plataforma</th>
+                    <th className="text-left font-medium px-4 py-2">Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {buyers.map((b: any, i: number) => (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30">
+                      <td className="px-4 py-2">
+                        <p className="font-medium">{b.buyer_name || "—"}</p>
+                        <p className="text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
+                        </p>
+                      </td>
+                      <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
+                      <td className="px-2 py-2">{[b.buyer_city, b.buyer_state].filter(Boolean).join(", ") || "—"}</td>
+                      <td className="px-2 py-2 text-right font-medium text-primary">{fmt(b.amount)}</td>
+                      <td className="px-2 py-2 text-right font-medium">
+                        {fmt(platformSpentMap[b.buyer_email] || b.amount)}
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                        {new Date(b.created_at).toLocaleDateString("pt-BR")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Abandoned carts — remarketing pool */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-500" strokeWidth={1.5} />
+            Carrinhos Abandonados ({abandoned.length})
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => copyEmails(abandoned)}>
+              <Copy className="h-3.5 w-3.5" /> Copiar emails
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() =>
+                exportCSV(abandoned, `abandonos-${product.title}.csv`, [
+                  { key: "buyer_name", label: "Nome" },
+                  { key: "buyer_email", label: "Email" },
+                  { key: "buyer_phone", label: "Telefone" },
+                  { key: "buyer_cpf", label: "CPF" },
+                  { key: "amount", label: "Valor (centavos)" },
+                  { key: "status", label: "Status" },
+                  { key: "created_at", label: "Data" },
+                  { key: "utm_source", label: "UTM Source" },
+                  { key: "utm_campaign", label: "UTM Campaign" },
+                ])
+              }
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" /> Exportar CSV
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {abandoned.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum carrinho abandonado.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4">
+              <table className="w-full text-xs">
+                <thead className="text-muted-foreground border-b border-border">
+                  <tr>
+                    <th className="text-left font-medium px-4 py-2">Nome / Email</th>
+                    <th className="text-left font-medium px-2 py-2">Telefone</th>
+                    <th className="text-right font-medium px-2 py-2">Valor</th>
+                    <th className="text-left font-medium px-2 py-2">Status</th>
+                    <th className="text-left font-medium px-4 py-2">Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {abandoned.map((b: any) => (
+                    <tr key={b.id} className="border-b border-border/50 hover:bg-muted/30">
+                      <td className="px-4 py-2">
+                        <p className="font-medium">{b.buyer_name || "—"}</p>
+                        <p className="text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
+                        </p>
+                      </td>
+                      <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
+                      <td className="px-2 py-2 text-right font-medium">{fmt(b.amount)}</td>
+                      <td className="px-2 py-2">
+                        <Badge variant="outline" className="text-[0.6rem]">{b.status}</Badge>
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                        {new Date(b.created_at).toLocaleDateString("pt-BR")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
