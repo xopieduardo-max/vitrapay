@@ -9,28 +9,27 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { Trophy, Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { TIERS } from "@/components/MilestoneTracker";
 
 const EMOJIS = ["🎉", "🚀", "💰", "⭐", "🔥", "✨", "🏆", "💎"];
-const PARTICLE_COUNT = 24;
+const PARTICLE_COUNT = 28;
 
 interface Props {
   revenue: number; // em centavos
-  milestones: number[]; // em centavos
 }
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
-export function MilestoneCelebration({ revenue, milestones }: Props) {
+export function MilestoneCelebration({ revenue }: Props) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [activeMilestone, setActiveMilestone] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Solicitações já feitas
   const { data: requested = [] } = useQuery({
     queryKey: ["award-requests", user?.id],
     enabled: !!user,
@@ -56,21 +55,25 @@ export function MilestoneCelebration({ revenue, milestones }: Props) {
     },
   });
 
-  // Marco mais alto atingido ainda não solicitado
-  const pendingMilestone = useMemo(() => {
-    const sorted = [...milestones].sort((a, b) => b - a);
-    return sorted.find((m) => revenue >= m && !requested.includes(m)) ?? null;
-  }, [milestones, revenue, requested]);
+  // Maior tier atingido ainda não solicitado
+  const pendingTier = useMemo(() => {
+    const sorted = [...TIERS].sort((a, b) => b.threshold - a.threshold);
+    return sorted.find((t) => revenue >= t.threshold && !requested.includes(t.threshold)) ?? null;
+  }, [revenue, requested]);
 
   useEffect(() => {
     if (!user || activeMilestone !== null) return;
-    if (pendingMilestone === null) return;
-    const dismissedKey = `award_dismissed_${user.id}_${pendingMilestone}`;
-    if (sessionStorage.getItem(dismissedKey)) return;
-    setActiveMilestone(pendingMilestone);
-  }, [pendingMilestone, user, activeMilestone]);
+    if (!pendingTier) return;
+    const key = `award_dismissed_${user.id}_${pendingTier.threshold}`;
+    if (sessionStorage.getItem(key)) return;
+    setActiveMilestone(pendingTier.threshold);
+  }, [pendingTier, user, activeMilestone]);
 
-  // Form state
+  const activeTier = useMemo(
+    () => TIERS.find((t) => t.threshold === activeMilestone) || null,
+    [activeMilestone]
+  );
+
   const [form, setForm] = useState({
     shipping_name: "", shipping_phone: "", shipping_cep: "",
     shipping_street: "", shipping_number: "", shipping_complement: "",
@@ -128,72 +131,116 @@ export function MilestoneCelebration({ revenue, milestones }: Props) {
     setShowForm(false);
   };
 
-  if (!activeMilestone) return null;
+  if (!activeTier) return null;
 
   return (
     <>
-      {/* Confetti + banner inicial */}
+      {/* ── Confetti background ── */}
       <AnimatePresence>
-        {activeMilestone && !showForm && (
-          <>
-            <div className="fixed inset-0 pointer-events-none z-[9998] overflow-hidden">
-              {Array.from({ length: PARTICLE_COUNT }).map((_, i) => {
-                const left = Math.random() * 100;
-                const delay = Math.random() * 0.8;
-                const duration = 2.5 + Math.random() * 1.5;
-                const emoji = EMOJIS[i % EMOJIS.length];
-                const size = 16 + Math.random() * 16;
-                const rotation = Math.random() * 720 - 360;
-                return (
-                  <motion.div
-                    key={i}
-                    initial={{ y: -40, x: `${left}vw`, opacity: 1, rotate: 0, scale: 0 }}
-                    animate={{ y: "110vh", opacity: [1, 1, 0.8, 0], rotate: rotation, scale: [0, 1.2, 1, 0.8] }}
-                    transition={{ duration, delay, ease: "easeIn" }}
-                    className="absolute"
-                    style={{ fontSize: size, left: 0, top: 0 }}
-                  >
-                    {emoji}
-                  </motion.div>
-                );
-              })}
-            </div>
-          </>
+        {activeTier && !showForm && (
+          <div className="fixed inset-0 pointer-events-none z-[9998] overflow-hidden">
+            {Array.from({ length: PARTICLE_COUNT }).map((_, i) => {
+              const left = Math.random() * 100;
+              const delay = 2.0 + Math.random() * 1.5;
+              const duration = 2.8 + Math.random() * 1.5;
+              const emoji = EMOJIS[i % EMOJIS.length];
+              const size = 16 + Math.random() * 18;
+              const rotation = Math.random() * 720 - 360;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ y: -40, x: `${left}vw`, opacity: 1, rotate: 0, scale: 0 }}
+                  animate={{ y: "110vh", opacity: [1, 1, 0.8, 0], rotate: rotation, scale: [0, 1.2, 1, 0.8] }}
+                  transition={{ duration, delay, ease: "easeIn" }}
+                  className="absolute"
+                  style={{ fontSize: size, left: 0, top: 0 }}
+                >
+                  {emoji}
+                </motion.div>
+              );
+            })}
+          </div>
         )}
       </AnimatePresence>
 
-      {/* Modal de celebração */}
-      <Dialog open={!!activeMilestone && !showForm} onOpenChange={(o) => !o && closeAll()}>
-        <DialogContent className="sm:max-w-md text-center">
-          <DialogHeader className="space-y-3">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: [0, 1.3, 1] }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center"
-            >
-              <Trophy className="h-8 w-8 text-primary" strokeWidth={1.8} />
-            </motion.div>
-            <DialogTitle className="text-2xl">Parabéns! Meta atingida</DialogTitle>
-            <DialogDescription className="text-base">
-              Você ultrapassou <span className="text-primary font-bold">{fmt(activeMilestone)}</span> em faturamento.
-              Solicite agora sua placa de premiação VitraPay.
-            </DialogDescription>
+      {/* ── Cinematic unlock modal ── */}
+      <Dialog open={!!activeTier && !showForm} onOpenChange={(o) => !o && closeAll()}>
+        <DialogContent className="sm:max-w-md overflow-hidden border-primary/30">
+          {/* Radial glow background */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none opacity-80"
+            style={{
+              background: `radial-gradient(circle at 50% 28%, ${activeTier.glow}, transparent 60%)`,
+            }}
+          />
+
+          <DialogHeader className="sr-only">
+            <DialogTitle>Conquista desbloqueada: {activeTier.name}</DialogTitle>
           </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-center pt-2">
-            <Button variant="outline" onClick={closeAll}>Mais tarde</Button>
-            <Button onClick={() => setShowForm(true)}>Solicitar minha placa</Button>
-          </DialogFooter>
+
+          <div className="relative flex flex-col items-center text-center pt-2 pb-1">
+            {/* Tiny "novo nível" pill */}
+            <div className="title-rise inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-primary mb-4">
+              <Sparkles className="h-3 w-3" />
+              Novo brasão desbloqueado
+            </div>
+
+            {/* Badge with unlock sequence */}
+            <div className="relative h-44 w-44 md:h-52 md:w-52 flex items-center justify-center mb-2">
+              {/* Burst ring */}
+              <div className="badge-burst-ring" style={{ borderColor: "hsl(var(--primary))" }} />
+              <div
+                className="absolute inset-2 rounded-full blur-2xl"
+                style={{ background: activeTier.glow, opacity: 0.7 }}
+              />
+
+              {/* Badge image */}
+              <div className="relative h-full w-full flex items-center justify-center">
+                <img
+                  src={activeTier.image}
+                  alt={activeTier.name}
+                  className="badge-unlock-anim h-40 w-40 md:h-48 md:w-48 object-contain drop-shadow-[0_14px_30px_rgba(0,0,0,0.55)]"
+                  decoding="async"
+                />
+                {/* Light sweep overlay */}
+                <div className="badge-light-sweep" aria-hidden />
+              </div>
+            </div>
+
+            <h2 className="title-rise-late text-2xl md:text-3xl font-extrabold tracking-tight">
+              {activeTier.name}
+            </h2>
+            <p className="title-rise-late text-sm text-muted-foreground mt-1">
+              Você atingiu <span className="text-primary font-bold">{fmt(activeTier.threshold)}</span> em faturamento
+            </p>
+
+            <div className="title-rise-cta mt-6 w-full flex flex-col sm:flex-row gap-2 sm:justify-center">
+              <Button variant="outline" onClick={closeAll}>Mais tarde</Button>
+              <Button
+                onClick={() => setShowForm(true)}
+                className="shadow-[0_0_24px_hsl(var(--primary)/0.45)]"
+              >
+                Solicitar minha placa
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
-      {/* Formulário de envio */}
+      {/* ── Shipping form ── */}
       <Dialog open={showForm} onOpenChange={(o) => !o && closeAll()}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Dados para envio da placa — {fmt(activeMilestone)}</DialogTitle>
-            <DialogDescription>
-              Confira ou complete o endereço onde a placa será entregue.
+            <DialogTitle className="flex items-center gap-3">
+              <img src={activeTier.image} alt="" className="h-10 w-10 object-contain" decoding="async" />
+              <div>
+                <p className="text-base font-bold">Placa {activeTier.name} — {fmt(activeTier.threshold)}</p>
+                <p className="text-xs font-normal text-muted-foreground mt-0.5">Dados para envio</p>
+              </div>
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Confira ou complete o endereço onde sua placa de premiação será entregue.
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3 py-2">
