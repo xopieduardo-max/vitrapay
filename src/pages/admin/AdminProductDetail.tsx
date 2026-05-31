@@ -14,6 +14,9 @@ import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAdminAudit } from "@/hooks/useAdminAudit";
+import { exportMetaAudience, exportGoogleAudience, type AudienceContact } from "@/lib/audienceExport";
+import { Target, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
