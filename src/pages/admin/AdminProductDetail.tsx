@@ -784,9 +784,40 @@ export default function AdminProductDetail() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {buyers.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum comprador ainda.</p>
+        <CardContent className="space-y-3">
+          {/* Search + sort */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={buyersSearch}
+                onChange={(e) => setBuyersSearch(e.target.value)}
+                placeholder="Buscar por nome, email, telefone, CPF ou UTM..."
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+            <div className="flex gap-1.5">
+              {[
+                { id: "date", label: "Recentes" },
+                { id: "ltv", label: "Maior LTV" },
+                { id: "amount", label: "Maior compra" },
+              ].map((s) => (
+                <Button
+                  key={s.id}
+                  size="sm"
+                  variant={buyersSort === s.id ? "default" : "outline"}
+                  onClick={() => setBuyersSort(s.id as any)}
+                >
+                  {s.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {filteredBuyers.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              {buyers.length === 0 ? "Nenhum comprador ainda." : "Nenhum resultado para a busca."}
+            </p>
           ) : (
             <div className="overflow-x-auto -mx-4">
               <table className="w-full text-xs">
@@ -796,36 +827,50 @@ export default function AdminProductDetail() {
                     <th className="text-left font-medium px-2 py-2">Telefone</th>
                     <th className="text-left font-medium px-2 py-2">Localização</th>
                     <th className="text-right font-medium px-2 py-2">Pago</th>
-                    <th className="text-right font-medium px-2 py-2">Total na plataforma</th>
+                    <th className="text-right font-medium px-2 py-2">LTV plataforma</th>
                     <th className="text-left font-medium px-4 py-2">Data</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {buyers.map((b: any, i: number) => (
-                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30">
-                      <td className="px-4 py-2">
-                        <p className="font-medium">{b.buyer_name || "—"}</p>
-                        <p className="text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
-                        </p>
-                      </td>
-                      <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
-                      <td className="px-2 py-2">{[b.buyer_city, b.buyer_state].filter(Boolean).join(", ") || "—"}</td>
-                      <td className="px-2 py-2 text-right font-medium text-primary">{fmt(b.amount)}</td>
-                      <td className="px-2 py-2 text-right font-medium">
-                        {fmt(platformSpentMap[b.buyer_email] || b.amount)}
-                      </td>
-                      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
-                        {new Date(b.created_at).toLocaleDateString("pt-BR")}
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredBuyers.map((b: any, i: number) => {
+                    const ltv = platformSpentMap[b.buyer_email] || b.amount;
+                    const isVip = ltv >= vipThreshold && vipThreshold !== Infinity;
+                    return (
+                      <tr
+                        key={i}
+                        className="border-b border-border/50 hover:bg-muted/30 cursor-pointer"
+                        onClick={() => b.buyer_email && setSelectedEmail(b.buyer_email)}
+                      >
+                        <td className="px-4 py-2">
+                          <p className="font-medium flex items-center gap-1.5">
+                            {b.buyer_name || "—"}
+                            {isVip && (
+                              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                                <Crown className="h-2.5 w-2.5" /> VIP
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-muted-foreground flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
+                          </p>
+                        </td>
+                        <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
+                        <td className="px-2 py-2">{[b.buyer_city, b.buyer_state].filter(Boolean).join(", ") || "—"}</td>
+                        <td className="px-2 py-2 text-right font-medium text-primary">{fmt(b.amount)}</td>
+                        <td className={`px-2 py-2 text-right font-medium ${isVip ? "text-primary" : ""}`}>{fmt(ltv)}</td>
+                        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                          {new Date(b.created_at).toLocaleDateString("pt-BR")}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
         </CardContent>
       </Card>
+
 
       {/* Custom Audiences — Meta & Google ready-to-import */}
       <Card>
