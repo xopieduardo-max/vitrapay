@@ -654,7 +654,80 @@ export default function AdminProductDetail() {
         </CardContent>
       </Card>
 
+      {/* Custom Audiences — Meta & Google ready-to-import */}
+      <Card>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" strokeWidth={1.5} />
+            Públicos personalizados
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Segmentos prontos com hash SHA-256 — importe direto no Meta Ads ou Google Ads sem conversão manual.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {segments.map((seg) => {
+            const empty = seg.rows.length === 0;
+            const metaKey = `meta-${seg.id}`;
+            const googleKey = `google-${seg.id}`;
+            return (
+              <div
+                key={seg.id}
+                className={`rounded-xl border p-3 flex flex-col sm:flex-row sm:items-center gap-3 ${
+                  seg.tone === "amber" ? "border-amber-500/20 bg-amber-500/5" : "border-border bg-card"
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className={`h-3.5 w-3.5 ${seg.tone === "amber" ? "text-amber-500" : "text-primary"}`} strokeWidth={1.5} />
+                    <p className="font-medium text-sm">{seg.title}</p>
+                    <Badge variant="secondary" className="text-[10px] h-5">
+                      {seg.rows.length} {seg.rows.length === 1 ? "contato" : "contatos"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{seg.description}</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    disabled={empty || exporting === metaKey}
+                    onClick={() => handleAudienceExport("meta", seg)}
+                  >
+                    {exporting === metaKey ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileSpreadsheet className="h-3.5 w-3.5" />
+                    )}
+                    Meta Ads
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    disabled={empty || exporting === googleKey}
+                    onClick={() => handleAudienceExport("google", seg)}
+                  >
+                    {exporting === googleKey ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileSpreadsheet className="h-3.5 w-3.5" />
+                    )}
+                    Google Ads
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Os arquivos seguem o padrão exigido por cada plataforma (Meta: EMAIL_SHA256/PHONE_SHA256 + FN/LN/CT/ST; Google: Customer Match com email e telefone hasheados). Basta enviar na criação do público.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Abandoned carts — remarketing pool */}
+
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base flex items-center gap-2">
