@@ -221,9 +221,28 @@ export default function AdminAwards() {
               return (
                 <div key={r.id} className="p-4 hover:bg-muted/30 transition-colors">
                   <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 flex gap-3">
+                      <Link
+                        to={`/admin/users/${r.user_id}`}
+                        className="shrink-0"
+                        title="Ver perfil do usuário"
+                      >
+                        <Avatar className="h-12 w-12 ring-2 ring-border hover:ring-primary transition-all">
+                          <AvatarImage src={r.user_avatar || undefined} alt={r.user_name} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                            {r.user_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Link>
+                      <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">{r.user_name}</span>
+                        <Link
+                          to={`/admin/users/${r.user_id}`}
+                          className="font-semibold text-sm hover:text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          {r.user_name}
+                          <ExternalLink className="h-3 w-3 opacity-60" />
+                        </Link>
                         <Badge variant="outline" className="text-[0.65rem] gap-1 bg-primary/10 text-primary border-primary/30">
                           <Trophy className="h-3 w-3" />
                           {fmt(r.milestone)}
