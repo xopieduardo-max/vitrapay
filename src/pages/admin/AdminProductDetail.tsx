@@ -1168,6 +1168,58 @@ export default function AdminProductDetail() {
           </a>
         </CardContent>
       </Card>
+
+      {/* Buyer LTV / cross-product history modal */}
+      <Dialog open={!!selectedEmail} onOpenChange={(o) => !o && setSelectedEmail(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-4 w-4 text-primary" />
+              Histórico do comprador
+            </DialogTitle>
+            <DialogDescription className="font-mono text-xs">{selectedEmail}</DialogDescription>
+          </DialogHeader>
+          {loadingHistory ? (
+            <div className="space-y-2 py-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3 py-2">
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total na plataforma</p>
+                  <p className="text-xl font-bold text-primary mt-1">
+                    {fmt(emailHistory.reduce((a: number, r: any) => a + (r.amount || 0), 0))}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Compras</p>
+                  <p className="text-xl font-bold mt-1">{emailHistory.length}</p>
+                </div>
+              </div>
+              <div className="max-h-72 overflow-y-auto -mx-2">
+                <table className="w-full text-xs">
+                  <tbody>
+                    {emailHistory.map((r: any, i: number) => (
+                      <tr key={i} className="border-b border-border/50">
+                        <td className="px-2 py-2">
+                          <p className="font-medium">{r.product_title}</p>
+                          <p className="text-muted-foreground text-[10px]">
+                            {new Date(r.created_at).toLocaleString("pt-BR")}
+                          </p>
+                        </td>
+                        <td className="px-2 py-2 text-right font-medium text-primary">{fmt(r.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
