@@ -185,7 +185,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     <>
       {/* ── Confetti background ── */}
       <AnimatePresence>
-        {activeTier && !showForm && (
+        {activeTier && !showForm && !prefersReducedMotion && (
           <div className="fixed inset-0 pointer-events-none z-[9998] overflow-hidden">
             {Array.from({ length: PARTICLE_COUNT }).map((_, i) => {
               const left = Math.random() * 100;
