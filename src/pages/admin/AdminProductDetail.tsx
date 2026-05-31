@@ -428,6 +428,75 @@ export default function AdminProductDetail() {
     }
   };
 
+  // ===== Busca, ordenação e filtros das tabelas =====
+  const [buyersSearch, setBuyersSearch] = useState("");
+  const [buyersSort, setBuyersSort] = useState<"date" | "ltv" | "amount">("date");
+  const [abandonedSearch, setAbandonedSearch] = useState("");
+
+  const matches = (row: any, q: string) => {
+    const t = q.trim().toLowerCase();
+    if (!t) return true;
+    return [row.buyer_name, row.buyer_email, row.buyer_phone, row.buyer_cpf, row.utm_source, row.utm_campaign]
+      .some((v) => String(v || "").toLowerCase().includes(t));
+  };
+
+  // Threshold VIP (top 25% por gasto na plataforma)
+  const vipThreshold = useMemo(() => {
+    const values = Object.values(platformSpentMap).sort((a, b) => b - a);
+    if (!values.length) return Infinity;
+    const idx = Math.max(0, Math.floor(values.length * 0.25) - 1);
+    return values[idx] || Infinity;
+  }, [platformSpentMap]);
+
+  const filteredBuyers = useMemo(() => {
+    const list = (buyers as any[]).filter((b) => matches(b, buyersSearch));
+    const sorted = [...list].sort((a, b) => {
+      if (buyersSort === "ltv") {
+        return (platformSpentMap[b.buyer_email] || 0) - (platformSpentMap[a.buyer_email] || 0);
+      }
+      if (buyersSort === "amount") return (b.amount || 0) - (a.amount || 0);
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+    return sorted;
+  }, [buyers, buyersSearch, buyersSort, platformSpentMap]);
+
+  const filteredAbandoned = useMemo(
+    () => (abandoned as any[]).filter((a) => matches(a, abandonedSearch)),
+    [abandoned, abandonedSearch]
+  );
+
+  // ===== UTM agregado =====
+  const utmStats = useMemo(() => {
+    const aggregate = (key: "utm_source" | "utm_campaign") => {
+      const counts: Record<string, { count: number; revenue: number }> = {};
+      (buyers as any[]).forEach((b) => {
+        const k = (b[key] || "(sem)").trim() || "(sem)";
+        counts[k] = counts[k] || { count: 0, revenue: 0 };
+        counts[k].count += 1;
+        counts[k].revenue += b.amount || 0;
+      });
+      const total = (buyers as any[]).length || 1;
+      return Object.entries(counts)
+        .map(([name, v]) => ({ name, count: v.count, revenue: v.revenue, pct: (v.count / total) * 100 }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
+    };
+    return { sources: aggregate("utm_source"), campaigns: aggregate("utm_campaign") };
+  }, [buyers]);
+
+  const formatRelative = (iso: string | null) => {
+    if (!iso) return "Nunca acessou";
+    const diff = Date.now() - new Date(iso).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return "Hoje";
+    if (days === 1) return "Ontem";
+    if (days < 30) return `${days}d atrás`;
+    const months = Math.floor(days / 30);
+    return `${months}m atrás`;
+  };
+
+
+
   const copyEmails = (rows: any[]) => {
     const emails = Array.from(new Set(rows.map((r) => r.buyer_email).filter(Boolean)));
     if (!emails.length) {
