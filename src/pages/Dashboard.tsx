@@ -163,7 +163,25 @@ export default function Dashboard() {
   const [regionView, setRegionView] = useState<'state' | 'city'>('state');
   const [sideStatsView, setSideStatsView] = useState<'qty' | 'pct'>('qty');
 
+  const [previewTier, setPreviewTier] = useState<string | null>(null);
+  const [showPreviewPicker, setShowPreviewPicker] = useState(false);
+
   // ─── Data Fetching ──────────────────────────────────────────────────────
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["user-is-admin", user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user,
+  });
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
