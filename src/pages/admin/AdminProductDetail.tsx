@@ -229,7 +229,101 @@ export default function AdminProductDetail() {
     logAction("data_exported", "product", productId!, { filename, count: rows.length });
   };
 
-  const copyEmails = (rows: any[]) => {
+  // ===== Públicos personalizados (segmentos prontos) =====
+  const [exporting, setExporting] = useState<string | null>(null);
+
+  const segments = useMemo(() => {
+    const now = Date.now();
+    const buyersAll = buyers as AudienceContact[];
+
+    // Conta compras de cada email na plataforma inteira (já temos platformSpentMap como valor)
+    // Contagem usa o array buyers (deste produto) para repetidos no MESMO produto.
+    const countByEmail: Record<string, number> = {};
+    buyersAll.forEach((b: any) => {
+      if (b.buyer_email) countByEmail[b.buyer_email] = (countByEmail[b.buyer_email] || 0) + 1;
+    });
+
+    // Top spenders na plataforma (top 25%)
+    const spentValues = Object.values(platformSpentMap).sort((a, b) => b - a);
+    const cutoffIdx = Math.max(0, Math.floor(spentValues.length * 0.25) - 1);
+    const topThreshold = spentValues[cutoffIdx] || 0;
+
+    const recentAbandoned = (abandoned as any[]).filter(
+      (a) => now - new Date(a.created_at).getTime() < 7 * 24 * 60 * 60 * 1000
+    );
+
+    return [
+      {
+        id: "all-buyers",
+        title: "Todos os compradores",
+        description: "Quem já comprou este produto (conversão confirmada).",
+        rows: buyersAll,
+        tone: "primary" as const,
+      },
+      {
+        id: "vip",
+        title: "Clientes VIP",
+        description: "Top 25% que mais gastaram na plataforma toda — ideal para upsell premium.",
+        rows: buyersAll.filter((b: any) => (platformSpentMap[b.buyer_email] || 0) >= topThreshold && topThreshold > 0),
+        tone: "primary" as const,
+      },
+      {
+        id: "repeat",
+        title: "Compradores recorrentes",
+        description: "Compraram este produto mais de uma vez. Audiência quente.",
+        rows: buyersAll.filter((b: any) => (countByEmail[b.buyer_email] || 0) > 1),
+        tone: "primary" as const,
+      },
+      {
+        id: "abandoned-all",
+        title: "Todos os abandonos",
+        description: "Iniciaram o checkout mas não pagaram — público para remarketing.",
+        rows: abandoned as AudienceContact[],
+        tone: "amber" as const,
+      },
+      {
+        id: "abandoned-recent",
+        title: "Abandonos últimos 7 dias",
+        description: "Janela quente: lembrança recente do produto.",
+        rows: recentAbandoned as AudienceContact[],
+        tone: "amber" as const,
+      },
+    ];
+  }, [buyers, abandoned, platformSpentMap]);
+
+  const handleAudienceExport = async (
+    platform: "meta" | "google",
+    segment: { id: string; title: string; rows: AudienceContact[] }
+  ) => {
+    if (!segment.rows.length) {
+      toast.error("Segmento vazio.");
+      return;
+    }
+    const key = `${platform}-${segment.id}`;
+    setExporting(key);
+    try {
+      const safe = segment.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const filename = `${platform}-${safe}-${product?.title?.slice(0, 30).replace(/[^a-z0-9]+/gi, "-") || "produto"}.csv`;
+      if (platform === "meta") {
+        await exportMetaAudience(segment.rows, filename);
+      } else {
+        await exportGoogleAudience(segment.rows, filename);
+      }
+      toast.success(`${segment.rows.length} contatos exportados para ${platform === "meta" ? "Meta Ads" : "Google Ads"}.`);
+      await logAction("data_exported", "product", productId!, {
+        kind: "audience",
+        platform,
+        segment: segment.id,
+        count: segment.rows.length,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao gerar arquivo.");
+    } finally {
+      setExporting(null);
+    }
+  };
+
     const emails = Array.from(new Set(rows.map((r) => r.buyer_email).filter(Boolean)));
     if (!emails.length) {
       toast.error("Nenhum email encontrado.");
