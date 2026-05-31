@@ -478,6 +478,157 @@ export default function AdminProductDetail() {
         </CardContent>
       </Card>
 
+      {/* Buyers — custom audience data */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Users className="h-4 w-4" strokeWidth={1.5} />
+            Compradores ({buyers.length})
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => copyEmails(buyers)}>
+              <Copy className="h-3.5 w-3.5" /> Copiar emails
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() =>
+                exportCSV(buyers, `compradores-${product.title}.csv`, [
+                  { key: "buyer_name", label: "Nome" },
+                  { key: "buyer_email", label: "Email" },
+                  { key: "buyer_phone", label: "Telefone" },
+                  { key: "buyer_cpf", label: "CPF" },
+                  { key: "buyer_city", label: "Cidade" },
+                  { key: "buyer_state", label: "UF" },
+                  { key: "amount", label: "Valor (centavos)" },
+                  { key: "created_at", label: "Data" },
+                  { key: "utm_source", label: "UTM Source" },
+                  { key: "utm_campaign", label: "UTM Campaign" },
+                ])
+              }
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" /> Exportar CSV
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {buyers.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum comprador ainda.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4">
+              <table className="w-full text-xs">
+                <thead className="text-muted-foreground border-b border-border">
+                  <tr>
+                    <th className="text-left font-medium px-4 py-2">Nome / Email</th>
+                    <th className="text-left font-medium px-2 py-2">Telefone</th>
+                    <th className="text-left font-medium px-2 py-2">Localização</th>
+                    <th className="text-right font-medium px-2 py-2">Pago</th>
+                    <th className="text-right font-medium px-2 py-2">Total na plataforma</th>
+                    <th className="text-left font-medium px-4 py-2">Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {buyers.map((b: any, i: number) => (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30">
+                      <td className="px-4 py-2">
+                        <p className="font-medium">{b.buyer_name || "—"}</p>
+                        <p className="text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
+                        </p>
+                      </td>
+                      <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
+                      <td className="px-2 py-2">{[b.buyer_city, b.buyer_state].filter(Boolean).join(", ") || "—"}</td>
+                      <td className="px-2 py-2 text-right font-medium text-primary">{fmt(b.amount)}</td>
+                      <td className="px-2 py-2 text-right font-medium">
+                        {fmt(platformSpentMap[b.buyer_email] || b.amount)}
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                        {new Date(b.created_at).toLocaleDateString("pt-BR")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Abandoned carts — remarketing pool */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-500" strokeWidth={1.5} />
+            Carrinhos Abandonados ({abandoned.length})
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => copyEmails(abandoned)}>
+              <Copy className="h-3.5 w-3.5" /> Copiar emails
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() =>
+                exportCSV(abandoned, `abandonos-${product.title}.csv`, [
+                  { key: "buyer_name", label: "Nome" },
+                  { key: "buyer_email", label: "Email" },
+                  { key: "buyer_phone", label: "Telefone" },
+                  { key: "buyer_cpf", label: "CPF" },
+                  { key: "amount", label: "Valor (centavos)" },
+                  { key: "status", label: "Status" },
+                  { key: "created_at", label: "Data" },
+                  { key: "utm_source", label: "UTM Source" },
+                  { key: "utm_campaign", label: "UTM Campaign" },
+                ])
+              }
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" /> Exportar CSV
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {abandoned.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum carrinho abandonado.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4">
+              <table className="w-full text-xs">
+                <thead className="text-muted-foreground border-b border-border">
+                  <tr>
+                    <th className="text-left font-medium px-4 py-2">Nome / Email</th>
+                    <th className="text-left font-medium px-2 py-2">Telefone</th>
+                    <th className="text-right font-medium px-2 py-2">Valor</th>
+                    <th className="text-left font-medium px-2 py-2">Status</th>
+                    <th className="text-left font-medium px-4 py-2">Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {abandoned.map((b: any) => (
+                    <tr key={b.id} className="border-b border-border/50 hover:bg-muted/30">
+                      <td className="px-4 py-2">
+                        <p className="font-medium">{b.buyer_name || "—"}</p>
+                        <p className="text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
+                        </p>
+                      </td>
+                      <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
+                      <td className="px-2 py-2 text-right font-medium">{fmt(b.amount)}</td>
+                      <td className="px-2 py-2">
+                        <Badge variant="outline" className="text-[0.6rem]">{b.status}</Badge>
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                        {new Date(b.created_at).toLocaleDateString("pt-BR")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Checkout link */}
       <Card>
         <CardContent className="p-4 flex items-center justify-between">
