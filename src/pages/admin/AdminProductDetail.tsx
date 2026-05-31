@@ -5,17 +5,22 @@ import {
   ArrowLeft, Package, Download, BookOpen, Image, FileDown, Users,
   TrendingUp, DollarSign, ShoppingCart, Loader2, Eye, ExternalLink,
   EyeOff, Globe, Mail, Phone, AlertCircle, FileSpreadsheet, Copy,
+  Target, Sparkles, Search, Crown, BarChart3, GraduationCap, Clock,
 } from "lucide-react";
 import { downloadFile } from "@/lib/downloadFile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAdminAudit } from "@/hooks/useAdminAudit";
 import { exportMetaAudience, exportGoogleAudience, type AudienceContact } from "@/lib/audienceExport";
-import { Target, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
 const fmt = (v: number) =>
@@ -150,6 +155,105 @@ export default function AdminProductDetail() {
     },
     enabled: !!productId && buyers.length > 0,
   });
+
+  // Histórico cross-produto de um email (carregado on demand pelo modal)
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const { data: emailHistory = [], isLoading: loadingHistory } = useQuery({
+    queryKey: ["admin-buyer-history", selectedEmail],
+    enabled: !!selectedEmail,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("amount, status, created_at, product_id")
+        .eq("buyer_email", selectedEmail!)
+        .eq("status", "confirmed")
+        .order("created_at", { ascending: false });
+      const ids = Array.from(new Set((data || []).map((r: any) => r.product_id).filter(Boolean)));
+      let titleMap: Record<string, string> = {};
+      if (ids.length) {
+        const { data: prods } = await supabase
+          .from("products")
+          .select("id, title")
+          .in("id", ids);
+        (prods || []).forEach((p: any) => { titleMap[p.id] = p.title; });
+      }
+      return (data || []).map((r: any) => ({ ...r, product_title: titleMap[r.product_id] || "Produto" }));
+    },
+  });
+
+  // ===== Engajamento (apenas para cursos) — progresso por aluno =====
+  const { data: engagement, isLoading: loadingEngagement } = useQuery({
+    queryKey: ["admin-product-engagement", productId, product?.type],
+    enabled: !!productId && product?.type === "course",
+    queryFn: async () => {
+      // Pega todos os lessons do produto
+      const { data: mods } = await supabase
+        .from("modules").select("id").eq("product_id", productId!);
+      const moduleIds = (mods || []).map((m: any) => m.id);
+      if (!moduleIds.length) return null;
+      const { data: lessons } = await supabase
+        .from("lessons").select("id").in("module_id", moduleIds);
+      const lessonIds = (lessons || []).map((l: any) => l.id);
+      const totalLessons = lessonIds.length;
+      if (!totalLessons) return { totalLessons: 0, students: [] };
+
+      // Acessos liberados (alunos)
+      const { data: access } = await supabase
+        .from("product_access")
+        .select("user_id, buyer_email, granted_at")
+        .eq("product_id", productId!);
+      const userIds = Array.from(new Set((access || []).map((a: any) => a.user_id).filter(Boolean)));
+
+      // Progresso destes alunos nestes lessons
+      let progress: any[] = [];
+      if (userIds.length && lessonIds.length) {
+        const { data } = await supabase
+          .from("lesson_progress")
+          .select("user_id, lesson_id, completed, updated_at")
+          .in("user_id", userIds)
+          .in("lesson_id", lessonIds);
+        progress = data || [];
+      }
+
+      // Nomes/emails
+      const profMap: Record<string, { name: string; avatar: string | null }> = {};
+      if (userIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => {
+          profMap[p.user_id] = { name: p.display_name || "—", avatar: p.avatar_url };
+        });
+      }
+
+      const students = (access || [])
+        .filter((a: any) => a.user_id)
+        .map((a: any) => {
+          const mine = progress.filter((p: any) => p.user_id === a.user_id);
+          const completed = mine.filter((p: any) => p.completed).length;
+          const lastAt = mine.reduce<string | null>((acc, p: any) => {
+            if (!p.updated_at) return acc;
+            if (!acc || new Date(p.updated_at) > new Date(acc)) return p.updated_at;
+            return acc;
+          }, null);
+          return {
+            user_id: a.user_id,
+            email: a.buyer_email || "",
+            name: profMap[a.user_id]?.name || "—",
+            avatar: profMap[a.user_id]?.avatar || null,
+            completed,
+            totalLessons,
+            progress: totalLessons ? Math.round((completed / totalLessons) * 100) : 0,
+            lastAt,
+          };
+        })
+        .sort((a, b) => b.progress - a.progress);
+
+      return { totalLessons, students };
+    },
+  });
+
 
   // Modules & lessons (for courses)
   const { data: modules } = useQuery({
@@ -323,6 +427,75 @@ export default function AdminProductDetail() {
       setExporting(null);
     }
   };
+
+  // ===== Busca, ordenação e filtros das tabelas =====
+  const [buyersSearch, setBuyersSearch] = useState("");
+  const [buyersSort, setBuyersSort] = useState<"date" | "ltv" | "amount">("date");
+  const [abandonedSearch, setAbandonedSearch] = useState("");
+
+  const matches = (row: any, q: string) => {
+    const t = q.trim().toLowerCase();
+    if (!t) return true;
+    return [row.buyer_name, row.buyer_email, row.buyer_phone, row.buyer_cpf, row.utm_source, row.utm_campaign]
+      .some((v) => String(v || "").toLowerCase().includes(t));
+  };
+
+  // Threshold VIP (top 25% por gasto na plataforma)
+  const vipThreshold = useMemo(() => {
+    const values = Object.values(platformSpentMap).sort((a, b) => b - a);
+    if (!values.length) return Infinity;
+    const idx = Math.max(0, Math.floor(values.length * 0.25) - 1);
+    return values[idx] || Infinity;
+  }, [platformSpentMap]);
+
+  const filteredBuyers = useMemo(() => {
+    const list = (buyers as any[]).filter((b) => matches(b, buyersSearch));
+    const sorted = [...list].sort((a, b) => {
+      if (buyersSort === "ltv") {
+        return (platformSpentMap[b.buyer_email] || 0) - (platformSpentMap[a.buyer_email] || 0);
+      }
+      if (buyersSort === "amount") return (b.amount || 0) - (a.amount || 0);
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+    return sorted;
+  }, [buyers, buyersSearch, buyersSort, platformSpentMap]);
+
+  const filteredAbandoned = useMemo(
+    () => (abandoned as any[]).filter((a) => matches(a, abandonedSearch)),
+    [abandoned, abandonedSearch]
+  );
+
+  // ===== UTM agregado =====
+  const utmStats = useMemo(() => {
+    const aggregate = (key: "utm_source" | "utm_campaign") => {
+      const counts: Record<string, { count: number; revenue: number }> = {};
+      (buyers as any[]).forEach((b) => {
+        const k = (b[key] || "(sem)").trim() || "(sem)";
+        counts[k] = counts[k] || { count: 0, revenue: 0 };
+        counts[k].count += 1;
+        counts[k].revenue += b.amount || 0;
+      });
+      const total = (buyers as any[]).length || 1;
+      return Object.entries(counts)
+        .map(([name, v]) => ({ name, count: v.count, revenue: v.revenue, pct: (v.count / total) * 100 }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
+    };
+    return { sources: aggregate("utm_source"), campaigns: aggregate("utm_campaign") };
+  }, [buyers]);
+
+  const formatRelative = (iso: string | null) => {
+    if (!iso) return "Nunca acessou";
+    const diff = Date.now() - new Date(iso).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return "Hoje";
+    if (days === 1) return "Ontem";
+    if (days < 30) return `${days}d atrás`;
+    const months = Math.floor(days / 30);
+    return `${months}m atrás`;
+  };
+
+
 
   const copyEmails = (rows: any[]) => {
     const emails = Array.from(new Set(rows.map((r) => r.buyer_email).filter(Boolean)));
@@ -611,9 +784,40 @@ export default function AdminProductDetail() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {buyers.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum comprador ainda.</p>
+        <CardContent className="space-y-3">
+          {/* Search + sort */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={buyersSearch}
+                onChange={(e) => setBuyersSearch(e.target.value)}
+                placeholder="Buscar por nome, email, telefone, CPF ou UTM..."
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+            <div className="flex gap-1.5">
+              {[
+                { id: "date", label: "Recentes" },
+                { id: "ltv", label: "Maior LTV" },
+                { id: "amount", label: "Maior compra" },
+              ].map((s) => (
+                <Button
+                  key={s.id}
+                  size="sm"
+                  variant={buyersSort === s.id ? "default" : "outline"}
+                  onClick={() => setBuyersSort(s.id as any)}
+                >
+                  {s.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {filteredBuyers.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              {buyers.length === 0 ? "Nenhum comprador ainda." : "Nenhum resultado para a busca."}
+            </p>
           ) : (
             <div className="overflow-x-auto -mx-4">
               <table className="w-full text-xs">
@@ -623,30 +827,43 @@ export default function AdminProductDetail() {
                     <th className="text-left font-medium px-2 py-2">Telefone</th>
                     <th className="text-left font-medium px-2 py-2">Localização</th>
                     <th className="text-right font-medium px-2 py-2">Pago</th>
-                    <th className="text-right font-medium px-2 py-2">Total na plataforma</th>
+                    <th className="text-right font-medium px-2 py-2">LTV plataforma</th>
                     <th className="text-left font-medium px-4 py-2">Data</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {buyers.map((b: any, i: number) => (
-                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30">
-                      <td className="px-4 py-2">
-                        <p className="font-medium">{b.buyer_name || "—"}</p>
-                        <p className="text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
-                        </p>
-                      </td>
-                      <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
-                      <td className="px-2 py-2">{[b.buyer_city, b.buyer_state].filter(Boolean).join(", ") || "—"}</td>
-                      <td className="px-2 py-2 text-right font-medium text-primary">{fmt(b.amount)}</td>
-                      <td className="px-2 py-2 text-right font-medium">
-                        {fmt(platformSpentMap[b.buyer_email] || b.amount)}
-                      </td>
-                      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
-                        {new Date(b.created_at).toLocaleDateString("pt-BR")}
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredBuyers.map((b: any, i: number) => {
+                    const ltv = platformSpentMap[b.buyer_email] || b.amount;
+                    const isVip = ltv >= vipThreshold && vipThreshold !== Infinity;
+                    return (
+                      <tr
+                        key={i}
+                        className="border-b border-border/50 hover:bg-muted/30 cursor-pointer"
+                        onClick={() => b.buyer_email && setSelectedEmail(b.buyer_email)}
+                      >
+                        <td className="px-4 py-2">
+                          <p className="font-medium flex items-center gap-1.5">
+                            {b.buyer_name || "—"}
+                            {isVip && (
+                              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                                <Crown className="h-2.5 w-2.5" /> VIP
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-muted-foreground flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {b.buyer_email || "—"}
+                          </p>
+                        </td>
+                        <td className="px-2 py-2 font-mono">{b.buyer_phone || "—"}</td>
+                        <td className="px-2 py-2">{[b.buyer_city, b.buyer_state].filter(Boolean).join(", ") || "—"}</td>
+                        <td className="px-2 py-2 text-right font-medium text-primary">{fmt(b.amount)}</td>
+                        <td className={`px-2 py-2 text-right font-medium ${isVip ? "text-primary" : ""}`}>{fmt(ltv)}</td>
+                        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                          {new Date(b.created_at).toLocaleDateString("pt-BR")}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -654,7 +871,125 @@ export default function AdminProductDetail() {
         </CardContent>
       </Card>
 
+      {/* UTM aggregated insights */}
+      {buyers.length > 0 && (
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" strokeWidth={1.5} />
+              Origem das vendas (UTM)
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Top 6 origens e campanhas com mais conversão — descubra onde investir.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { title: "utm_source", rows: utmStats.sources },
+                { title: "utm_campaign", rows: utmStats.campaigns },
+              ].map((block) => (
+                <div key={block.title} className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {block.title}
+                  </p>
+                  {block.rows.map((r) => (
+                    <div key={r.name} className="space-y-1">
+                      <div className="flex items-baseline justify-between text-xs">
+                        <span className="font-medium truncate pr-2">{r.name}</span>
+                        <span className="text-muted-foreground tabular-nums">
+                          {r.count} · {fmt(r.revenue)}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${Math.max(2, r.pct)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Member-area engagement (courses only) */}
+      {product?.type === "course" && (
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-base flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-primary" strokeWidth={1.5} />
+              Engajamento da área de membros
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Progresso de cada aluno, última atividade e quem completou — identifique quem precisa de remarketing.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {loadingEngagement ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+              </div>
+            ) : !engagement || engagement.students.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                {engagement?.totalLessons === 0
+                  ? "Curso sem aulas cadastradas."
+                  : "Nenhum aluno com acesso ainda."}
+              </p>
+            ) : (
+              <div className="overflow-x-auto -mx-4">
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground border-b border-border">
+                    <tr>
+                      <th className="text-left font-medium px-4 py-2">Aluno</th>
+                      <th className="text-left font-medium px-2 py-2 w-1/3">Progresso</th>
+                      <th className="text-right font-medium px-2 py-2">Aulas</th>
+                      <th className="text-left font-medium px-4 py-2">
+                        <Clock className="h-3 w-3 inline mr-1" />Última atividade
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {engagement.students.map((s) => (
+                      <tr key={s.user_id} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="px-4 py-2">
+                          <p className="font-medium">{s.name}</p>
+                          <p className="text-muted-foreground text-[10px]">{s.email}</p>
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  s.progress === 100 ? "bg-green-500" : "bg-primary"
+                                }`}
+                                style={{ width: `${s.progress}%` }}
+                              />
+                            </div>
+                            <span className="tabular-nums text-[10px] w-9 text-right">{s.progress}%</span>
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-right tabular-nums">
+                          {s.completed}/{s.totalLessons}
+                        </td>
+                        <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                          {formatRelative(s.lastAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Custom Audiences — Meta & Google ready-to-import */}
+
       <Card>
         <CardHeader className="space-y-1">
           <CardTitle className="text-base flex items-center gap-2">
@@ -760,9 +1095,20 @@ export default function AdminProductDetail() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {abandoned.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum carrinho abandonado.</p>
+        <CardContent className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={abandonedSearch}
+              onChange={(e) => setAbandonedSearch(e.target.value)}
+              placeholder="Buscar abandono..."
+              className="pl-9 h-9 text-sm"
+            />
+          </div>
+          {filteredAbandoned.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              {abandoned.length === 0 ? "Nenhum carrinho abandonado." : "Nenhum resultado."}
+            </p>
           ) : (
             <div className="overflow-x-auto -mx-4">
               <table className="w-full text-xs">
@@ -776,7 +1122,7 @@ export default function AdminProductDetail() {
                   </tr>
                 </thead>
                 <tbody>
-                  {abandoned.map((b: any) => (
+                  {filteredAbandoned.map((b: any) => (
                     <tr key={b.id} className="border-b border-border/50 hover:bg-muted/30">
                       <td className="px-4 py-2">
                         <p className="font-medium">{b.buyer_name || "—"}</p>
@@ -799,6 +1145,7 @@ export default function AdminProductDetail() {
             </div>
           )}
         </CardContent>
+
       </Card>
 
       {/* Checkout link */}
@@ -821,6 +1168,58 @@ export default function AdminProductDetail() {
           </a>
         </CardContent>
       </Card>
+
+      {/* Buyer LTV / cross-product history modal */}
+      <Dialog open={!!selectedEmail} onOpenChange={(o) => !o && setSelectedEmail(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-4 w-4 text-primary" />
+              Histórico do comprador
+            </DialogTitle>
+            <DialogDescription className="font-mono text-xs">{selectedEmail}</DialogDescription>
+          </DialogHeader>
+          {loadingHistory ? (
+            <div className="space-y-2 py-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3 py-2">
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total na plataforma</p>
+                  <p className="text-xl font-bold text-primary mt-1">
+                    {fmt(emailHistory.reduce((a: number, r: any) => a + (r.amount || 0), 0))}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Compras</p>
+                  <p className="text-xl font-bold mt-1">{emailHistory.length}</p>
+                </div>
+              </div>
+              <div className="max-h-72 overflow-y-auto -mx-2">
+                <table className="w-full text-xs">
+                  <tbody>
+                    {emailHistory.map((r: any, i: number) => (
+                      <tr key={i} className="border-b border-border/50">
+                        <td className="px-2 py-2">
+                          <p className="font-medium">{r.product_title}</p>
+                          <p className="text-muted-foreground text-[10px]">
+                            {new Date(r.created_at).toLocaleString("pt-BR")}
+                          </p>
+                        </td>
+                        <td className="px-2 py-2 text-right font-medium text-primary">{fmt(r.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

@@ -9,12 +9,17 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Share2, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { TIERS } from "@/components/MilestoneTracker";
+import { shareAchievement, playUnlockSound, isSoundEnabled, toggleSound } from "@/lib/achievementShare";
 
 const EMOJIS = ["🎉", "🚀", "💰", "⭐", "🔥", "✨", "🏆", "💎"];
 const PARTICLE_COUNT = 28;
+
+// Respeita prefers-reduced-motion globalmente
+const prefersReducedMotion = typeof window !== "undefined"
+  && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 interface Props {
   revenue: number; // em centavos
@@ -86,6 +91,32 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     setActiveMilestone(pendingTier.threshold);
   }, [pendingTier, user, activeMilestone, previewTierName]);
 
+  // Toca o som quando o modal abre
+  const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  useEffect(() => {
+    if (activeMilestone && !showForm) playUnlockSound();
+  }, [activeMilestone, showForm]);
+
+  const [sharing, setSharing] = useState(false);
+  const handleShare = async () => {
+    if (!activeTier) return;
+    setSharing(true);
+    try {
+      const r = await shareAchievement({
+        tierName: activeTier.name,
+        tierLabel: activeTier.label,
+        badgeSrc: activeTier.image,
+        userName: profile?.display_name,
+      });
+      toast.success(r === "shared" ? "Compartilhado!" : "Imagem baixada — pronto para postar.");
+    } catch {
+      toast.error("Não foi possível gerar a imagem.");
+    } finally {
+      setSharing(false);
+    }
+  };
+
+
   const activeTier = useMemo(
     () => TIERS.find((t) => t.threshold === activeMilestone) || null,
     [activeMilestone]
@@ -154,7 +185,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     <>
       {/* ── Confetti background ── */}
       <AnimatePresence>
-        {activeTier && !showForm && (
+        {activeTier && !showForm && !prefersReducedMotion && (
           <div className="fixed inset-0 pointer-events-none z-[9998] overflow-hidden">
             {Array.from({ length: PARTICLE_COUNT }).map((_, i) => {
               const left = Math.random() * 100;
@@ -233,6 +264,13 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
             </p>
 
             <div className="title-rise-cta mt-6 w-full flex flex-col sm:flex-row gap-2 sm:justify-center">
+              <Button variant="ghost" size="icon" onClick={() => { const v = !soundOn; setSoundOn(v); toggleSound(v); }} title={soundOn ? "Som ligado" : "Som desligado"}>
+                {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+              <Button variant="outline" onClick={handleShare} disabled={sharing} className="gap-1.5">
+                {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
+                Compartilhar
+              </Button>
               <Button variant="outline" onClick={closeAll}>Mais tarde</Button>
               <Button
                 onClick={() => setShowForm(true)}
@@ -241,6 +279,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
                 Solicitar minha placa
               </Button>
             </div>
+
           </div>
         </DialogContent>
       </Dialog>
