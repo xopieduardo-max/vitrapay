@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Truck, CheckCircle, Copy, Search, Eye, Sparkles } from "lucide-react";
+import { Loader2, Trophy, Truck, CheckCircle, Copy, Search, Eye, Sparkles, ExternalLink } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +52,7 @@ interface AwardRow {
   created_at: string;
   user_name: string;
   user_email: string;
+  user_avatar: string | null;
   total_revenue: number;
 }
 
@@ -78,13 +81,17 @@ export default function AdminAwards() {
 
       const userIds = Array.from(new Set(requests.map((r: any) => r.user_id)));
       const [{ data: profiles }, { data: emails }, { data: sales }] = await Promise.all([
-        supabase.from("profiles").select("user_id, display_name").in("user_id", userIds),
+        supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", userIds),
         supabase.rpc("get_user_emails"),
         supabase.from("sales").select("producer_id, amount, status").in("producer_id", userIds).eq("status", "completed"),
       ]);
 
       const nameMap: Record<string, string> = {};
-      (profiles || []).forEach((p: any) => { nameMap[p.user_id] = p.display_name || "Sem nome"; });
+      const avatarMap: Record<string, string | null> = {};
+      (profiles || []).forEach((p: any) => {
+        nameMap[p.user_id] = p.display_name || "Sem nome";
+        avatarMap[p.user_id] = p.avatar_url || null;
+      });
       const emailMap: Record<string, string> = {};
       (emails || []).forEach((e: any) => { emailMap[e.user_id] = e.email; });
       const revMap: Record<string, number> = {};
@@ -95,6 +102,7 @@ export default function AdminAwards() {
         milestone: Number(r.milestone),
         user_name: nameMap[r.user_id] || "—",
         user_email: emailMap[r.user_id] || "",
+        user_avatar: avatarMap[r.user_id] || null,
         total_revenue: revMap[r.user_id] || 0,
       })) as AwardRow[];
     },
@@ -213,9 +221,28 @@ export default function AdminAwards() {
               return (
                 <div key={r.id} className="p-4 hover:bg-muted/30 transition-colors">
                   <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 flex gap-3">
+                      <Link
+                        to={`/admin/users/${r.user_id}`}
+                        className="shrink-0"
+                        title="Ver perfil do usuário"
+                      >
+                        <Avatar className="h-12 w-12 ring-2 ring-border hover:ring-primary transition-all">
+                          <AvatarImage src={r.user_avatar || undefined} alt={r.user_name} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                            {r.user_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Link>
+                      <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">{r.user_name}</span>
+                        <Link
+                          to={`/admin/users/${r.user_id}`}
+                          className="font-semibold text-sm hover:text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          {r.user_name}
+                          <ExternalLink className="h-3 w-3 opacity-60" />
+                        </Link>
                         <Badge variant="outline" className="text-[0.65rem] gap-1 bg-primary/10 text-primary border-primary/30">
                           <Trophy className="h-3 w-3" />
                           {fmt(r.milestone)}
@@ -241,6 +268,7 @@ export default function AdminAwards() {
                         {r.admin_notes && (
                           <p className="md:col-span-2"><span className="text-muted-foreground">Obs.:</span> {r.admin_notes}</p>
                         )}
+                      </div>
                       </div>
                     </div>
 
