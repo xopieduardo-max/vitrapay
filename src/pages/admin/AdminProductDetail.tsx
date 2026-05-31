@@ -5,17 +5,22 @@ import {
   ArrowLeft, Package, Download, BookOpen, Image, FileDown, Users,
   TrendingUp, DollarSign, ShoppingCart, Loader2, Eye, ExternalLink,
   EyeOff, Globe, Mail, Phone, AlertCircle, FileSpreadsheet, Copy,
+  Target, Sparkles, Search, Crown, BarChart3, GraduationCap, Clock,
 } from "lucide-react";
 import { downloadFile } from "@/lib/downloadFile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAdminAudit } from "@/hooks/useAdminAudit";
 import { exportMetaAudience, exportGoogleAudience, type AudienceContact } from "@/lib/audienceExport";
-import { Target, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
 const fmt = (v: number) =>
