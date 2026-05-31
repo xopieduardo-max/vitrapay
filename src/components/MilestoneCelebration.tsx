@@ -14,12 +14,6 @@ import { toast } from "sonner";
 import { TIERS } from "@/components/MilestoneTracker";
 import { shareAchievement, playUnlockSound, isSoundEnabled, toggleSound } from "@/lib/achievementShare";
 
-const PARTICLE_COUNT = 28;
-
-// Respeita prefers-reduced-motion globalmente
-const prefersReducedMotion = typeof window !== "undefined"
-  && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
 interface Props {
   revenue: number; // em centavos
   previewTier?: string | null;
