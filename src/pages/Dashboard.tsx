@@ -22,7 +22,6 @@ import {
   Info,
   X,
   SlidersHorizontal,
-  Settings,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -35,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
 import BannerCarousel from "@/components/BannerCarousel";
 import { MilestoneCelebration } from "@/components/MilestoneCelebration";
-import { MilestoneTracker, TIERS } from "@/components/MilestoneTracker";
+import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -164,30 +163,7 @@ export default function Dashboard() {
   const [regionView, setRegionView] = useState<'state' | 'city'>('state');
   const [sideStatsView, setSideStatsView] = useState<'qty' | 'pct'>('qty');
 
-  const [previewTier, setPreviewTier] = useState<string | null>(null);
-  const [showPreviewPicker, setShowPreviewPicker] = useState(false);
-
-  const urlAdminPreview = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return new URLSearchParams(window.location.search).has("adminPreview");
-  }, []);
-
   // ─── Data Fetching ──────────────────────────────────────────────────────
-
-  const { data: isAdmin } = useQuery({
-    queryKey: ["user-is-admin", user?.id],
-    queryFn: async () => {
-      if (!user) return false;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      return !!data;
-    },
-    enabled: !!user,
-  });
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -623,7 +599,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
-      <MilestoneCelebration revenue={grossRevenueAll} previewTier={previewTier} />
+      <MilestoneCelebration revenue={grossRevenueAll} />
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
