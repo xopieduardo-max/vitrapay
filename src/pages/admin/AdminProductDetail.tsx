@@ -197,6 +197,45 @@ export default function AdminProductDetail() {
     return ((salesData?.completedSales || 0) / total) * 100;
   })();
 
+  const exportCSV = (rows: any[], filename: string, headers: { key: string; label: string }[]) => {
+    if (!rows.length) {
+      toast.error("Nenhum dado para exportar.");
+      return;
+    }
+    const csv = [
+      headers.map((h) => h.label).join(","),
+      ...rows.map((r) =>
+        headers
+          .map((h) => {
+            const v = r[h.key];
+            if (v == null) return "";
+            const s = String(v).replace(/"/g, '""');
+            return /[",\n]/.test(s) ? `"${s}"` : s;
+          })
+          .join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Exportado!");
+    logAction("data_exported", "product", productId!, { filename, count: rows.length });
+  };
+
+  const copyEmails = (rows: any[]) => {
+    const emails = Array.from(new Set(rows.map((r) => r.buyer_email).filter(Boolean)));
+    if (!emails.length) {
+      toast.error("Nenhum email encontrado.");
+      return;
+    }
+    navigator.clipboard.writeText(emails.join(", "));
+    toast.success(`${emails.length} email(s) copiado(s).`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
