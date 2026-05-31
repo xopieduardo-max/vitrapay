@@ -298,6 +298,8 @@ export default function AdminAwards() {
             </Button>
           </DialogFooter>
         </DialogContent>
+      </Dialog>
+
       {/* ── Tier preview picker ── */}
       <Dialog open={showPreviewPicker} onOpenChange={setShowPreviewPicker}>
         <DialogContent className="sm:max-w-md">
