@@ -56,11 +56,13 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     },
   });
 
-  // Preview mode via ?previewTier=Start|Bronze|Platinum|Gold|Black|Diamond|Sapphire|Ruby
-  const previewTierName = useMemo(() => {
+  // Preview mode via ?previewTier=Start|Bronze|... or via prop
+  const urlPreviewTier = useMemo(() => {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("previewTier");
   }, []);
+
+  const previewTierName = previewTierProp ?? urlPreviewTier;
 
   // Maior tier atingido ainda não solicitado
   const pendingTier = useMemo(() => {
