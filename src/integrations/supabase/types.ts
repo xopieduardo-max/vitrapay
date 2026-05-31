@@ -79,6 +79,72 @@ export type Database = {
           },
         ]
       }
+      award_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          milestone: number
+          shipped_at: string | null
+          shipping_cep: string | null
+          shipping_city: string | null
+          shipping_complement: string | null
+          shipping_name: string | null
+          shipping_neighborhood: string | null
+          shipping_number: string | null
+          shipping_phone: string | null
+          shipping_state: string | null
+          shipping_street: string | null
+          status: string
+          tracking_code: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          milestone: number
+          shipped_at?: string | null
+          shipping_cep?: string | null
+          shipping_city?: string | null
+          shipping_complement?: string | null
+          shipping_name?: string | null
+          shipping_neighborhood?: string | null
+          shipping_number?: string | null
+          shipping_phone?: string | null
+          shipping_state?: string | null
+          shipping_street?: string | null
+          status?: string
+          tracking_code?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          milestone?: number
+          shipped_at?: string | null
+          shipping_cep?: string | null
+          shipping_city?: string | null
+          shipping_complement?: string | null
+          shipping_name?: string | null
+          shipping_neighborhood?: string | null
+          shipping_number?: string | null
+          shipping_phone?: string | null
+          shipping_state?: string | null
+          shipping_street?: string | null
+          status?: string
+          tracking_code?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_recovery_settings: {
         Row: {
           email_enabled: boolean
