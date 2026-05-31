@@ -167,6 +167,11 @@ export default function Dashboard() {
   const [previewTier, setPreviewTier] = useState<string | null>(null);
   const [showPreviewPicker, setShowPreviewPicker] = useState(false);
 
+  const urlAdminPreview = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).has("adminPreview");
+  }, []);
+
   // ─── Data Fetching ──────────────────────────────────────────────────────
 
   const { data: isAdmin } = useQuery({
