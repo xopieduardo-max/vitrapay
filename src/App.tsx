@@ -154,6 +154,7 @@ const App = () => {
                 <Route path="/admin/cart-recovery" element={<AdminCartRecovery />} />
                 <Route path="/admin/product/:productId" element={<AdminProductDetail />} />
                 <Route path="/admin/audit" element={<AdminAuditLog />} />
+                <Route path="/admin/awards" element={<AdminAwards />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
