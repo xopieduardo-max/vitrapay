@@ -98,6 +98,56 @@ export default function AdminProductDetail() {
     enabled: !!productId,
   });
 
+  // Buyers (confirmed) — full contact list for custom audiences
+  const { data: buyers = [] } = useQuery({
+    queryKey: ["admin-product-buyers", productId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("buyer_name, buyer_email, buyer_phone, buyer_cpf, buyer_city, buyer_state, amount, created_at, utm_source, utm_campaign")
+        .eq("product_id", productId!)
+        .eq("status", "confirmed")
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!productId,
+  });
+
+  // Abandoned carts (pending / not confirmed)
+  const { data: abandoned = [] } = useQuery({
+    queryKey: ["admin-product-abandoned", productId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("id, buyer_name, buyer_email, buyer_phone, buyer_cpf, amount, status, created_at, utm_source, utm_campaign")
+        .eq("product_id", productId!)
+        .neq("status", "confirmed")
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!productId,
+  });
+
+  // Platform-wide total spent per email (aggregated across all products)
+  const { data: platformSpentMap = {} } = useQuery<Record<string, number>>({
+    queryKey: ["admin-product-platform-spent", productId, buyers.length],
+    queryFn: async () => {
+      const emails = Array.from(new Set(buyers.map((b: any) => b.buyer_email).filter(Boolean)));
+      if (emails.length === 0) return {};
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("buyer_email, amount")
+        .in("buyer_email", emails)
+        .eq("status", "confirmed");
+      const map: Record<string, number> = {};
+      (data || []).forEach((r: any) => {
+        map[r.buyer_email] = (map[r.buyer_email] || 0) + (r.amount || 0);
+      });
+      return map;
+    },
+    enabled: !!productId && buyers.length > 0,
+  });
+
   // Modules & lessons (for courses)
   const { data: modules } = useQuery({
     queryKey: ["admin-product-modules", productId],
