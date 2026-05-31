@@ -22,6 +22,7 @@ const navItems = [
   { title: "Transações", url: "/admin/transactions", icon: Receipt },
   { title: "Recuperação", url: "/admin/cart-recovery", icon: ShoppingCart },
   { title: "Disputas", url: "/admin/disputes", icon: ShieldAlert },
+  { title: "Placas de Premiação", url: "/admin/awards", icon: Trophy },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
   { title: "Log Admin", url: "/admin/audit", icon: ClipboardList },
 ];
