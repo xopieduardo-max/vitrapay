@@ -598,7 +598,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
-      <MilestoneCelebration revenue={grossRevenueAll} milestones={MILESTONES} />
+      <MilestoneCelebration revenue={grossRevenueAll} />
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
