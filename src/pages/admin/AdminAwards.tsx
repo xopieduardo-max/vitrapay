@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Truck, CheckCircle, Copy, Search } from "lucide-react";
+import { Loader2, Trophy, Truck, CheckCircle, Copy, Search, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAdminAudit } from "@/hooks/useAdminAudit";
+import { TIERS } from "@/components/MilestoneTracker";
+import { motion, AnimatePresence } from "framer-motion";
 
 const fmt = (cents: number) =>
   `R$ ${(cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
