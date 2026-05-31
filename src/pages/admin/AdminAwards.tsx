@@ -81,13 +81,17 @@ export default function AdminAwards() {
 
       const userIds = Array.from(new Set(requests.map((r: any) => r.user_id)));
       const [{ data: profiles }, { data: emails }, { data: sales }] = await Promise.all([
-        supabase.from("profiles").select("user_id, display_name").in("user_id", userIds),
+        supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", userIds),
         supabase.rpc("get_user_emails"),
         supabase.from("sales").select("producer_id, amount, status").in("producer_id", userIds).eq("status", "completed"),
       ]);
 
       const nameMap: Record<string, string> = {};
-      (profiles || []).forEach((p: any) => { nameMap[p.user_id] = p.display_name || "Sem nome"; });
+      const avatarMap: Record<string, string | null> = {};
+      (profiles || []).forEach((p: any) => {
+        nameMap[p.user_id] = p.display_name || "Sem nome";
+        avatarMap[p.user_id] = p.avatar_url || null;
+      });
       const emailMap: Record<string, string> = {};
       (emails || []).forEach((e: any) => { emailMap[e.user_id] = e.email; });
       const revMap: Record<string, number> = {};
@@ -98,6 +102,7 @@ export default function AdminAwards() {
         milestone: Number(r.milestone),
         user_name: nameMap[r.user_id] || "—",
         user_email: emailMap[r.user_id] || "",
+        user_avatar: avatarMap[r.user_id] || null,
         total_revenue: revMap[r.user_id] || 0,
       })) as AwardRow[];
     },
