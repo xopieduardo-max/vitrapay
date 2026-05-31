@@ -14,6 +14,9 @@ import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAdminAudit } from "@/hooks/useAdminAudit";
+import { exportMetaAudience, exportGoogleAudience, type AudienceContact } from "@/lib/audienceExport";
+import { Target, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -226,6 +229,101 @@ export default function AdminProductDetail() {
     logAction("data_exported", "product", productId!, { filename, count: rows.length });
   };
 
+  // ===== Públicos personalizados (segmentos prontos) =====
+  const [exporting, setExporting] = useState<string | null>(null);
+
+  const segments = useMemo(() => {
+    const now = Date.now();
+    const buyersAll = buyers as AudienceContact[];
+
+    // Conta compras de cada email na plataforma inteira (já temos platformSpentMap como valor)
+    // Contagem usa o array buyers (deste produto) para repetidos no MESMO produto.
+    const countByEmail: Record<string, number> = {};
+    buyersAll.forEach((b: any) => {
+      if (b.buyer_email) countByEmail[b.buyer_email] = (countByEmail[b.buyer_email] || 0) + 1;
+    });
+
+    // Top spenders na plataforma (top 25%)
+    const spentValues = Object.values(platformSpentMap).sort((a, b) => b - a);
+    const cutoffIdx = Math.max(0, Math.floor(spentValues.length * 0.25) - 1);
+    const topThreshold = spentValues[cutoffIdx] || 0;
+
+    const recentAbandoned = (abandoned as any[]).filter(
+      (a) => now - new Date(a.created_at).getTime() < 7 * 24 * 60 * 60 * 1000
+    );
+
+    return [
+      {
+        id: "all-buyers",
+        title: "Todos os compradores",
+        description: "Quem já comprou este produto (conversão confirmada).",
+        rows: buyersAll,
+        tone: "primary" as const,
+      },
+      {
+        id: "vip",
+        title: "Clientes VIP",
+        description: "Top 25% que mais gastaram na plataforma toda — ideal para upsell premium.",
+        rows: buyersAll.filter((b: any) => (platformSpentMap[b.buyer_email] || 0) >= topThreshold && topThreshold > 0),
+        tone: "primary" as const,
+      },
+      {
+        id: "repeat",
+        title: "Compradores recorrentes",
+        description: "Compraram este produto mais de uma vez. Audiência quente.",
+        rows: buyersAll.filter((b: any) => (countByEmail[b.buyer_email] || 0) > 1),
+        tone: "primary" as const,
+      },
+      {
+        id: "abandoned-all",
+        title: "Todos os abandonos",
+        description: "Iniciaram o checkout mas não pagaram — público para remarketing.",
+        rows: abandoned as AudienceContact[],
+        tone: "amber" as const,
+      },
+      {
+        id: "abandoned-recent",
+        title: "Abandonos últimos 7 dias",
+        description: "Janela quente: lembrança recente do produto.",
+        rows: recentAbandoned as AudienceContact[],
+        tone: "amber" as const,
+      },
+    ];
+  }, [buyers, abandoned, platformSpentMap]);
+
+  const handleAudienceExport = async (
+    platform: "meta" | "google",
+    segment: { id: string; title: string; rows: AudienceContact[] }
+  ) => {
+    if (!segment.rows.length) {
+      toast.error("Segmento vazio.");
+      return;
+    }
+    const key = `${platform}-${segment.id}`;
+    setExporting(key);
+    try {
+      const safe = segment.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const filename = `${platform}-${safe}-${product?.title?.slice(0, 30).replace(/[^a-z0-9]+/gi, "-") || "produto"}.csv`;
+      if (platform === "meta") {
+        await exportMetaAudience(segment.rows, filename);
+      } else {
+        await exportGoogleAudience(segment.rows, filename);
+      }
+      toast.success(`${segment.rows.length} contatos exportados para ${platform === "meta" ? "Meta Ads" : "Google Ads"}.`);
+      await logAction("data_exported", "product", productId!, {
+        kind: "audience",
+        platform,
+        segment: segment.id,
+        count: segment.rows.length,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao gerar arquivo.");
+    } finally {
+      setExporting(null);
+    }
+  };
+
   const copyEmails = (rows: any[]) => {
     const emails = Array.from(new Set(rows.map((r) => r.buyer_email).filter(Boolean)));
     if (!emails.length) {
@@ -235,6 +333,7 @@ export default function AdminProductDetail() {
     navigator.clipboard.writeText(emails.join(", "));
     toast.success(`${emails.length} email(s) copiado(s).`);
   };
+
 
   if (isLoading) {
     return (
@@ -555,7 +654,80 @@ export default function AdminProductDetail() {
         </CardContent>
       </Card>
 
+      {/* Custom Audiences — Meta & Google ready-to-import */}
+      <Card>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" strokeWidth={1.5} />
+            Públicos personalizados
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Segmentos prontos com hash SHA-256 — importe direto no Meta Ads ou Google Ads sem conversão manual.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {segments.map((seg) => {
+            const empty = seg.rows.length === 0;
+            const metaKey = `meta-${seg.id}`;
+            const googleKey = `google-${seg.id}`;
+            return (
+              <div
+                key={seg.id}
+                className={`rounded-xl border p-3 flex flex-col sm:flex-row sm:items-center gap-3 ${
+                  seg.tone === "amber" ? "border-amber-500/20 bg-amber-500/5" : "border-border bg-card"
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className={`h-3.5 w-3.5 ${seg.tone === "amber" ? "text-amber-500" : "text-primary"}`} strokeWidth={1.5} />
+                    <p className="font-medium text-sm">{seg.title}</p>
+                    <Badge variant="secondary" className="text-[10px] h-5">
+                      {seg.rows.length} {seg.rows.length === 1 ? "contato" : "contatos"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{seg.description}</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    disabled={empty || exporting === metaKey}
+                    onClick={() => handleAudienceExport("meta", seg)}
+                  >
+                    {exporting === metaKey ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileSpreadsheet className="h-3.5 w-3.5" />
+                    )}
+                    Meta Ads
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    disabled={empty || exporting === googleKey}
+                    onClick={() => handleAudienceExport("google", seg)}
+                  >
+                    {exporting === googleKey ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileSpreadsheet className="h-3.5 w-3.5" />
+                    )}
+                    Google Ads
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Os arquivos seguem o padrão exigido por cada plataforma (Meta: EMAIL_SHA256/PHONE_SHA256 + FN/LN/CT/ST; Google: Customer Match com email e telefone hasheados). Basta enviar na criação do público.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Abandoned carts — remarketing pool */}
+
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base flex items-center gap-2">
