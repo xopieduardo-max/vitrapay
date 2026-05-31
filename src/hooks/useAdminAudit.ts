@@ -16,7 +16,8 @@ export type AdminAction =
   | "banner_deleted"
   | "community_approved"
   | "community_rejected"
-  | "award_request_updated";
+  | "award_request_updated"
+  | "data_exported";
 
 export function useAdminAudit() {
   const { user } = useAuth();
