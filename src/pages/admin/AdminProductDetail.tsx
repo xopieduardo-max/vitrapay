@@ -156,6 +156,105 @@ export default function AdminProductDetail() {
     enabled: !!productId && buyers.length > 0,
   });
 
+  // Histórico cross-produto de um email (carregado on demand pelo modal)
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const { data: emailHistory = [], isLoading: loadingHistory } = useQuery({
+    queryKey: ["admin-buyer-history", selectedEmail],
+    enabled: !!selectedEmail,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pending_payments")
+        .select("amount, status, created_at, product_id")
+        .eq("buyer_email", selectedEmail!)
+        .eq("status", "confirmed")
+        .order("created_at", { ascending: false });
+      const ids = Array.from(new Set((data || []).map((r: any) => r.product_id).filter(Boolean)));
+      let titleMap: Record<string, string> = {};
+      if (ids.length) {
+        const { data: prods } = await supabase
+          .from("products")
+          .select("id, title")
+          .in("id", ids);
+        (prods || []).forEach((p: any) => { titleMap[p.id] = p.title; });
+      }
+      return (data || []).map((r: any) => ({ ...r, product_title: titleMap[r.product_id] || "Produto" }));
+    },
+  });
+
+  // ===== Engajamento (apenas para cursos) — progresso por aluno =====
+  const { data: engagement, isLoading: loadingEngagement } = useQuery({
+    queryKey: ["admin-product-engagement", productId, product?.type],
+    enabled: !!productId && product?.type === "course",
+    queryFn: async () => {
+      // Pega todos os lessons do produto
+      const { data: mods } = await supabase
+        .from("modules").select("id").eq("product_id", productId!);
+      const moduleIds = (mods || []).map((m: any) => m.id);
+      if (!moduleIds.length) return null;
+      const { data: lessons } = await supabase
+        .from("lessons").select("id").in("module_id", moduleIds);
+      const lessonIds = (lessons || []).map((l: any) => l.id);
+      const totalLessons = lessonIds.length;
+      if (!totalLessons) return { totalLessons: 0, students: [] };
+
+      // Acessos liberados (alunos)
+      const { data: access } = await supabase
+        .from("product_access")
+        .select("user_id, buyer_email, granted_at")
+        .eq("product_id", productId!);
+      const userIds = Array.from(new Set((access || []).map((a: any) => a.user_id).filter(Boolean)));
+
+      // Progresso destes alunos nestes lessons
+      let progress: any[] = [];
+      if (userIds.length && lessonIds.length) {
+        const { data } = await supabase
+          .from("lesson_progress")
+          .select("user_id, lesson_id, completed, updated_at")
+          .in("user_id", userIds)
+          .in("lesson_id", lessonIds);
+        progress = data || [];
+      }
+
+      // Nomes/emails
+      const profMap: Record<string, { name: string; avatar: string | null }> = {};
+      if (userIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => {
+          profMap[p.user_id] = { name: p.display_name || "—", avatar: p.avatar_url };
+        });
+      }
+
+      const students = (access || [])
+        .filter((a: any) => a.user_id)
+        .map((a: any) => {
+          const mine = progress.filter((p: any) => p.user_id === a.user_id);
+          const completed = mine.filter((p: any) => p.completed).length;
+          const lastAt = mine.reduce<string | null>((acc, p: any) => {
+            if (!p.updated_at) return acc;
+            if (!acc || new Date(p.updated_at) > new Date(acc)) return p.updated_at;
+            return acc;
+          }, null);
+          return {
+            user_id: a.user_id,
+            email: a.buyer_email || "",
+            name: profMap[a.user_id]?.name || "—",
+            avatar: profMap[a.user_id]?.avatar || null,
+            completed,
+            totalLessons,
+            progress: totalLessons ? Math.round((completed / totalLessons) * 100) : 0,
+            lastAt,
+          };
+        })
+        .sort((a, b) => b.progress - a.progress);
+
+      return { totalLessons, students };
+    },
+  });
+
+
   // Modules & lessons (for courses)
   const { data: modules } = useQuery({
     queryKey: ["admin-product-modules", productId],
