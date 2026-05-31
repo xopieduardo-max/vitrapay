@@ -978,9 +978,20 @@ export default function AdminProductDetail() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {abandoned.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum carrinho abandonado.</p>
+        <CardContent className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={abandonedSearch}
+              onChange={(e) => setAbandonedSearch(e.target.value)}
+              placeholder="Buscar abandono..."
+              className="pl-9 h-9 text-sm"
+            />
+          </div>
+          {filteredAbandoned.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              {abandoned.length === 0 ? "Nenhum carrinho abandonado." : "Nenhum resultado."}
+            </p>
           ) : (
             <div className="overflow-x-auto -mx-4">
               <table className="w-full text-xs">
@@ -994,7 +1005,7 @@ export default function AdminProductDetail() {
                   </tr>
                 </thead>
                 <tbody>
-                  {abandoned.map((b: any) => (
+                  {filteredAbandoned.map((b: any) => (
                     <tr key={b.id} className="border-b border-border/50 hover:bg-muted/30">
                       <td className="px-4 py-2">
                         <p className="font-medium">{b.buyer_name || "—"}</p>
@@ -1017,6 +1028,7 @@ export default function AdminProductDetail() {
             </div>
           )}
         </CardContent>
+
       </Card>
 
       {/* Checkout link */}
