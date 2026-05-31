@@ -269,6 +269,7 @@ export default function AdminAwards() {
                           <p className="md:col-span-2"><span className="text-muted-foreground">Obs.:</span> {r.admin_notes}</p>
                         )}
                       </div>
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-2 shrink-0">
