@@ -9,12 +9,17 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Share2, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { TIERS } from "@/components/MilestoneTracker";
+import { shareAchievement, playUnlockSound, isSoundEnabled, toggleSound } from "@/lib/achievementShare";
 
 const EMOJIS = ["🎉", "🚀", "💰", "⭐", "🔥", "✨", "🏆", "💎"];
 const PARTICLE_COUNT = 28;
+
+// Respeita prefers-reduced-motion globalmente
+const prefersReducedMotion = typeof window !== "undefined"
+  && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 interface Props {
   revenue: number; // em centavos
