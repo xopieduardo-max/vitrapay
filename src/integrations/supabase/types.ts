@@ -145,6 +145,36 @@ export type Database = {
         }
         Relationships: []
       }
+      award_tier_customizations: {
+        Row: {
+          description: string | null
+          image_url: string | null
+          rewards: Json
+          tier_name: string
+          title: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          image_url?: string | null
+          rewards?: Json
+          tier_name: string
+          title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          image_url?: string | null
+          rewards?: Json
+          tier_name?: string
+          title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       cart_recovery_settings: {
         Row: {
           email_enabled: boolean
