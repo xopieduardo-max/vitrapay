@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Truck, CheckCircle, Copy, Search, Eye, Sparkles, ExternalLink } from "lucide-react";
+import { Loader2, Trophy, Truck, CheckCircle, Copy, Search, Eye, Sparkles, ExternalLink, Settings } from "lucide-react";
+import { AdminAwardTiersEditor } from "@/components/admin/AdminAwardTiersEditor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +70,7 @@ export default function AdminAwards() {
   const [previewTier, setPreviewTier] = useState<string | null>(null);
   const [showPreviewPicker, setShowPreviewPicker] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
+  const [showTiersEditor, setShowTiersEditor] = useState(false);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-award-requests"],
@@ -180,10 +182,16 @@ export default function AdminAwards() {
             <p className="text-sm text-muted-foreground">{rows.length} solicitação(ões) — produtores que atingiram metas de faturamento.</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setShowPreviewPicker(true)}>
-          <Eye className="h-4 w-4 mr-1.5" />
-          Visualizar preview
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowTiersEditor(true)}>
+            <Settings className="h-4 w-4 mr-1.5" />
+            Customizar conquistas
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowPreviewPicker(true)}>
+            <Eye className="h-4 w-4 mr-1.5" />
+            Visualizar preview
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -440,6 +448,8 @@ export default function AdminAwards() {
           })()}
         </DialogContent>
       </Dialog>
+
+      <AdminAwardTiersEditor open={showTiersEditor} onOpenChange={setShowTiersEditor} />
     </div>
   );
 }
