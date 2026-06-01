@@ -448,6 +448,8 @@ export default function AdminAwards() {
           })()}
         </DialogContent>
       </Dialog>
+
+      <AdminAwardTiersEditor open={showTiersEditor} onOpenChange={setShowTiersEditor} />
     </div>
   );
 }
