@@ -70,6 +70,7 @@ export default function AdminAwards() {
   const [previewTier, setPreviewTier] = useState<string | null>(null);
   const [showPreviewPicker, setShowPreviewPicker] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
+  const [showTiersEditor, setShowTiersEditor] = useState(false);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-award-requests"],
