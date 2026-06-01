@@ -182,10 +182,16 @@ export default function AdminAwards() {
             <p className="text-sm text-muted-foreground">{rows.length} solicitação(ões) — produtores que atingiram metas de faturamento.</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setShowPreviewPicker(true)}>
-          <Eye className="h-4 w-4 mr-1.5" />
-          Visualizar preview
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowTiersEditor(true)}>
+            <Settings className="h-4 w-4 mr-1.5" />
+            Customizar conquistas
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowPreviewPicker(true)}>
+            <Eye className="h-4 w-4 mr-1.5" />
+            Visualizar preview
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
