@@ -1,5 +1,4 @@
 import { useState, lazy, Suspense } from "react";
-import { Info, Lock, Check } from "lucide-react";
 import tierStarter from "@/assets/tier-starter.webp";
 
 import tierBronze from "@/assets/tier-bronze.webp";
@@ -10,10 +9,9 @@ import tierDiamond from "@/assets/tier-diamond.webp";
 import tierSapphire from "@/assets/tier-sapphire.webp";
 import tierRuby from "@/assets/tier-ruby.webp";
 
-const Dialog = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.Dialog })));
-const DialogContent = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogContent })));
-const DialogHeader = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogHeader })));
-const DialogTitle = lazy(() => import("@/components/ui/dialog").then(m => ({ default: m.DialogTitle })));
+const BenefitsProgram = lazy(() =>
+  import("@/components/BenefitsProgram").then((m) => ({ default: m.BenefitsProgram }))
+);
 
 // ─── Tiers ──────────────────────────────────────────────────────────────────
 // Threshold = valor (em centavos). O usuário desbloqueia o tier ao atingir o threshold.
