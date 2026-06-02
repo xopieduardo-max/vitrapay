@@ -2,6 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { autoCreateBuyerAccount } from "../_shared/auto-create-buyer.ts";
 import { geolocateIp } from "../_shared/geolocate-ip.ts";
 import { checkCpfRateLimit, checkIpRateLimit, checkCardTestingPattern, getClientIp } from "../_shared/rate-limit.ts";
+import { validatePaymentAmount } from "../_shared/validate-payment-amount.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
