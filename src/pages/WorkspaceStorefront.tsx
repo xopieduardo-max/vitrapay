@@ -459,17 +459,16 @@ export default function WorkspaceStorefront() {
                       {owned && product.type === "download" && files.length > 0 && (
                         <div className="mt-2 space-y-1" onClick={e => e.stopPropagation()}>
                           {files.map((f: any) => (
-                            <a
+                            <button
                               key={f.id}
-                              href={f.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-xs hover:underline rounded px-2 py-1 transition-colors"
+                              type="button"
+                              onClick={() => downloadProductFile(f.id, f.file_name)}
+                              className="flex items-center gap-1.5 text-xs hover:underline rounded px-2 py-1 transition-colors w-full text-left"
                               style={{ color: accentColor }}
                             >
                               <Download className="h-3 w-3 shrink-0" />
                               <span className="truncate">{f.file_name}</span>
-                            </a>
+                            </button>
                           ))}
                         </div>
                       )}
