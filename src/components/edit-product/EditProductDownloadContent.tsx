@@ -88,10 +88,10 @@ export default function EditProductDownloadContent({ productId }: Props) {
     if (!user) return null;
     const ext = file.name.split(".").pop();
     const path = `${user.id}/files/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("product-files").upload(path, file);
+    // Entregáveis vão sempre para o bucket privado
+    const { error } = await supabase.storage.from("product-deliverables").upload(path, file);
     if (error) throw error;
-    const { data } = supabase.storage.from("product-files").getPublicUrl(path);
-    return data.publicUrl;
+    return `/object/product-deliverables/${path}`;
   };
 
   const handleAddFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {

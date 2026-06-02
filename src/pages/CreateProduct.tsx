@@ -118,11 +118,15 @@ export default function CreateProduct() {
     if (!user) return null;
     const ext = file.name.split(".").pop();
     const path = `${user.id}/${folder}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage
-      .from("product-files")
-      .upload(path, file);
+    // Entregáveis baixáveis vão para o bucket privado; capas/marketing ficam no público
+    const bucket = folder === "files" ? "product-deliverables" : "product-files";
+    const { error } = await supabase.storage.from(bucket).upload(path, file);
     if (error) throw error;
-    const { data } = supabase.storage.from("product-files").getPublicUrl(path);
+    if (bucket === "product-deliverables") {
+      // Para entregáveis privados, guardamos apenas o path lógico; download é via signed URL
+      return `/object/${bucket}/${path}`;
+    }
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
     return data.publicUrl;
   };
 
