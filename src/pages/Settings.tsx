@@ -206,6 +206,13 @@ export default function Settings() {
       toast.success("Senha alterada com sucesso!");
       setNewPassword("");
       setConfirmPassword("");
+      // Registra evento de segurança (best-effort, não bloqueia UX)
+      supabase.rpc("log_security_event" as any, {
+        _event_type: "password_changed",
+        _metadata: { ua: navigator.userAgent } as any,
+      }).then(({ error: logErr }) => {
+        if (logErr) console.warn("[audit] password change log failed", logErr);
+      });
     }
     setChangingPassword(false);
   };
