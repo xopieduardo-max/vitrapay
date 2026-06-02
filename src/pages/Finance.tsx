@@ -163,7 +163,7 @@ export default function Finance() {
 
   // ── Withdrawal mutation ──
   const requestWithdrawal = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (actionToken: string) => {
       if (!user) throw new Error("Not authenticated");
       if (isNaN(parsedAmount) || parsedAmount <= 0) throw new Error("Valor inválido");
       if (parsedAmount < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
@@ -178,7 +178,7 @@ export default function Finance() {
       if (!pixKey.trim()) throw new Error("Configure sua chave Pix em Ajustes");
 
       const { data, error } = await supabase.functions.invoke("request-withdraw", {
-        body: { amount: netAfterFee, pix_key: pixKey.trim(), pix_key_type: pixKeyType },
+        body: { amount: netAfterFee, pix_key: pixKey.trim(), pix_key_type: pixKeyType, action_token: actionToken },
       });
       if (error) {
         try {
