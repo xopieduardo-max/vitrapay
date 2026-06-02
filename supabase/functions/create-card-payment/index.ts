@@ -105,6 +105,15 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(ipCheck.retryAfterSeconds ?? 300) },
         });
       }
+      // Card-testing fraud pattern: same IP, many different CPFs
+      const cardTest = await checkCardTestingPattern(supabase, clientIp, cpfClean);
+      if (!cardTest.allowed) {
+        console.warn("[create-card-payment] card-testing pattern blocked", { ip: clientIp });
+        return new Response(JSON.stringify({ error: "Atividade suspeita detectada. Tente novamente mais tarde." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(cardTest.retryAfterSeconds ?? 900) },
+        });
+      }
     }
 
     const { data: product, error: prodErr } = await supabase
