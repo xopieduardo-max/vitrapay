@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Badge } from "@/components/ui/badge";
+import { SecurityActivity } from "@/components/settings/SecurityActivity";
 
 const anim = (delay: number) => ({
   initial: { opacity: 0, y: 12 } as const,
@@ -206,6 +207,13 @@ export default function Settings() {
       toast.success("Senha alterada com sucesso!");
       setNewPassword("");
       setConfirmPassword("");
+      // Registra evento de segurança (best-effort, não bloqueia UX)
+      supabase.rpc("log_security_event" as any, {
+        _event_type: "password_changed",
+        _metadata: { ua: navigator.userAgent } as any,
+      }).then(({ error: logErr }) => {
+        if (logErr) console.warn("[audit] password change log failed", logErr);
+      });
     }
     setChangingPassword(false);
   };
@@ -521,6 +529,14 @@ export default function Settings() {
             </Button>
           </div>
         </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] }}
+      >
+        <SecurityActivity />
       </motion.div>
     </div>
   );

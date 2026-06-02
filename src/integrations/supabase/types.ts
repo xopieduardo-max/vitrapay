@@ -1730,6 +1730,42 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          new_value: string | null
+          old_value: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -2084,6 +2120,7 @@ export type Database = {
       }
     }
     Functions: {
+      _mask_sensitive: { Args: { v: string }; Returns: string }
       check_financial_integrity: {
         Args: { p_tolerance_cents?: number }
         Returns: {
@@ -2152,6 +2189,10 @@ export type Database = {
           p_sale_id: string
         }
         Returns: undefined
+      }
+      log_security_event: {
+        Args: { _event_type: string; _metadata?: Json }
+        Returns: string
       }
       move_to_dlq: {
         Args: {
