@@ -168,6 +168,9 @@ export default function MinhaContaDownload() {
     queryClient.invalidateQueries({ queryKey: ["download-stats", productId, user.id] });
   }, [user, productId, stats, queryClient]);
 
+  // Signed URLs for private bucket previews (audio/video/image/PDF inline)
+  const signedUrls = useSignedProductFileUrls(data?.files);
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
