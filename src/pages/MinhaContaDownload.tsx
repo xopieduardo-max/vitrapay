@@ -11,6 +11,8 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import MinhaContaLogin from "./MinhaContaLogin";
 import { useState, useCallback } from "react";
 import { downloadFile } from "@/lib/downloadFile";
+import { downloadProductFile } from "@/lib/productFiles";
+import { useSignedProductFileUrls } from "@/hooks/useSignedProductFileUrls";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
