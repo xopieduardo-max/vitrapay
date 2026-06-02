@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { downloadFile } from "@/lib/downloadFile";
+import { downloadProductFile } from "@/lib/productFiles";
 
 export default function BuyerLibrary() {
   const { user } = useAuth();
@@ -166,8 +167,13 @@ export default function BuyerLibrary() {
                           <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
                           {product.files.length} Arquivos
                         </Button>
+                      ) : product.files?.[0]?.id ? (
+                        <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => downloadProductFile(product.files[0].id, product.files[0].file_name || product.title || "arquivo")}>
+                            <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
+                            Baixar
+                        </Button>
                       ) : product.file_url ? (
-                        <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => downloadFile(product.files?.[0]?.file_url || product.file_url, product.title || "arquivo")}>
+                        <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => downloadFile(product.file_url, product.title || "arquivo")}>
                             <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
                             Baixar
                         </Button>
@@ -199,7 +205,7 @@ export default function BuyerLibrary() {
                         {product.files.map((f: any) => (
                           <button
                             key={f.id}
-                            onClick={() => downloadFile(f.file_url, f.file_name)}
+                            onClick={() => downloadProductFile(f.id, f.file_name)}
                             className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors w-full text-left"
                           >
                             <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />

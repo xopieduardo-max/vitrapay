@@ -11,6 +11,8 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import MinhaContaLogin from "./MinhaContaLogin";
 import { useState, useCallback } from "react";
 import { downloadFile } from "@/lib/downloadFile";
+import { downloadProductFile } from "@/lib/productFiles";
+import { useSignedProductFileUrls } from "@/hooks/useSignedProductFileUrls";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -166,6 +168,9 @@ export default function MinhaContaDownload() {
     queryClient.invalidateQueries({ queryKey: ["download-stats", productId, user.id] });
   }, [user, productId, stats, queryClient]);
 
+  // Signed URLs for private bucket previews (audio/video/image/PDF inline)
+  const signedUrls = useSignedProductFileUrls(data?.files);
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -263,11 +268,11 @@ export default function MinhaContaDownload() {
                     size="sm"
                     variant="outline"
                     className="gap-1.5 text-xs"
-                    onClick={() => {
+                    onClick={async () => {
                       trackDownload();
-                      data.files.forEach((f: any) => {
-                        downloadFile(f.file_url, f.file_name);
-                      });
+                      for (const f of data.files as any[]) {
+                        await downloadProductFile(f.id, f.file_name);
+                      }
                     }}
                   >
                     <Download className="h-3.5 w-3.5" />
@@ -298,10 +303,10 @@ export default function MinhaContaDownload() {
                         {isImage && (
                           <div
                             className="w-full h-40 bg-muted/20 flex items-center justify-center overflow-hidden cursor-pointer"
-                            onClick={() => setPreviewUrl(previewUrl === file.file_url ? null : file.file_url)}
+                            onClick={() => setPreviewUrl(previewUrl === signedUrls[file.id] ? null : signedUrls[file.id])}
                           >
                             <img
-                              src={file.file_url}
+                              src={signedUrls[file.id]}
                               alt={file.file_name}
                               className="w-full h-full object-contain"
                             />
@@ -309,10 +314,10 @@ export default function MinhaContaDownload() {
                         )}
 
                         {/* Audio player with progress tracking */}
-                        {isAudio && user && (
+                        {isAudio && user && signedUrls[file.id] && (
                           <MediaPlayer
                             type="audio"
-                            fileUrl={file.file_url}
+                            fileUrl={signedUrls[file.id]}
                             fileId={file.id}
                             productId={productId!}
                             userId={user.id}
@@ -320,10 +325,10 @@ export default function MinhaContaDownload() {
                         )}
 
                         {/* Video player with progress tracking */}
-                        {isVideo && user && (
+                        {isVideo && user && signedUrls[file.id] && (
                           <MediaPlayer
                             type="video"
-                            fileUrl={file.file_url}
+                            fileUrl={signedUrls[file.id]}
                             fileId={file.id}
                             productId={productId!}
                             userId={user.id}
@@ -358,9 +363,9 @@ export default function MinhaContaDownload() {
                             <Button
                               size="sm"
                               className="h-8 text-xs gap-1.5"
-                              onClick={() => {
+                              onClick={async () => {
                                 trackDownload();
-                                downloadFile(file.file_url, file.file_name);
+                                await downloadProductFile(file.id, file.file_name);
                               }}
                             >
                               <Download className="h-3.5 w-3.5" />
@@ -370,10 +375,10 @@ export default function MinhaContaDownload() {
                         </div>
 
                         {/* Embedded PDF viewer */}
-                        {isPdf && pdfExpanded && (
+                        {isPdf && pdfExpanded && signedUrls[file.id] && (
                           <div className="border-t border-border">
                             <iframe
-                              src={`${file.file_url}#toolbar=1&navpanes=0`}
+                              src={`${signedUrls[file.id]}#toolbar=1&navpanes=0`}
                               className="w-full h-[70vh] bg-muted/10"
                               title={file.file_name}
                             />
