@@ -23,7 +23,7 @@ export default function EditProductLinks({ productId, checkoutUrl }: Props) {
         .eq("product_id", productId);
       if (!data?.length) return [];
       const userIds = data.map((a) => a.user_id);
-      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name").in("user_id", userIds);
+      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", userIds);
       const profileMap = new Map((profiles || []).map((p) => [p.user_id, p.display_name]));
       return data.map((a) => ({ ...a, affiliateName: profileMap.get(a.user_id) || "Afiliado" }));
     },
