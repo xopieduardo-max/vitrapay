@@ -33,7 +33,7 @@ export function AdminAwardTiersEditor({ open, onOpenChange }: Props) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const { data: customizations = {}, isLoading } = useQuery({
+  const { data: customizations, isLoading } = useQuery({
     queryKey: ["award-tier-customizations-admin"],
     enabled: open,
     queryFn: async () => {
@@ -45,7 +45,7 @@ export function AdminAwardTiersEditor({ open, onOpenChange }: Props) {
   });
 
   useEffect(() => {
-    const c = customizations[activeTier];
+    const c = customizations?.[activeTier];
     setForm({
       title: c?.title || "",
       description: c?.description || "",
