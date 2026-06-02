@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { useDeviceTracking } from "@/hooks/useDeviceTracking";
 
 interface AuthContextType {
   user: User | null;
@@ -44,6 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
   };
+
+  // Registra dispositivo e dispara alerta em login novo
+  useDeviceTracking(user?.id);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signOut }}>
