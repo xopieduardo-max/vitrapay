@@ -1,8 +1,12 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const MAX_CUSTOM_MESSAGE_LEN = 2000;
 
 const WHATSAPP_ENGINE_URL =
   "https://whatsapp-saas-engine-production.up.railway.app";
@@ -45,6 +49,34 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ===== Authentication =====
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const token = authHeader.replace("Bearer ", "");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const isServiceRole = token === serviceKey;
+
+    if (!isServiceRole) {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const { data, error } = await supabase.auth.getClaims(token);
+      if (error || !data?.claims) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      // Authenticated non-service callers cannot send arbitrary custom messages
+    }
+
     const WHATSAPP_JWT = Deno.env.get("WHATSAPP_JWT_TOKEN");
     if (!WHATSAPP_JWT) {
       throw new Error("WHATSAPP_JWT_TOKEN not configured");
@@ -61,12 +93,19 @@ Deno.serve(async (req) => {
       ninth_digit_mode,
     } = body;
 
-    if (!phone) {
+    if (!phone || typeof phone !== "string") {
       return new Response(
         JSON.stringify({ error: "phone is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Only service-role callers can send fully custom messages.
+    // Authenticated users get the templated recovery message only.
+    const safeCustom =
+      isServiceRole && typeof custom_message === "string"
+        ? custom_message.slice(0, MAX_CUSTOM_MESSAGE_LEN)
+        : null;
 
     const digitMode: NinthDigitMode =
       ninth_digit_mode === "keep" || ninth_digit_mode === "remove"
@@ -75,7 +114,7 @@ Deno.serve(async (req) => {
 
     const jid = formatPhoneJid(phone, digitMode);
     const message =
-      custom_message ||
+      safeCustom ||
       buildRecoveryMessage(
         buyer_name || "",
         product_title || "Produto",
