@@ -43,9 +43,11 @@ export default function EditProductSettings({ form, updateField, productId, prod
     if (!user) return null;
     const ext = file.name.split(".").pop();
     const path = `${user.id}/${folder}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("product-files").upload(path, file);
+    const bucket = folder === "files" ? "product-deliverables" : "product-files";
+    const { error } = await supabase.storage.from(bucket).upload(path, file);
     if (error) throw error;
-    const { data } = supabase.storage.from("product-files").getPublicUrl(path);
+    if (bucket === "product-deliverables") return `/object/${bucket}/${path}`;
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
     return data.publicUrl;
   };
 
