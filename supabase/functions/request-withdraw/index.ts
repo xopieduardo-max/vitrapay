@@ -42,7 +42,7 @@ serve(async (req) => {
       });
     }
 
-    const { amount, pix_key, pix_key_type } = await req.json();
+    const { amount, pix_key, pix_key_type, action_token } = await req.json();
 
     // Validations
     if (!amount || typeof amount !== "number" || amount < MIN_WITHDRAWAL) {
@@ -67,7 +67,30 @@ serve(async (req) => {
       });
     }
 
+    if (!action_token || typeof action_token !== "string") {
+      return new Response(JSON.stringify({ error: "Confirmação por e-mail necessária.", code: "OTP_REQUIRED" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Consome token 2FA antes de qualquer ação financeira
+    const { data: tokenOk, error: tokenErr } = await supabase.rpc("consume_action_token", {
+      _user_id: user.id,
+      _action: "withdraw",
+      _token: action_token,
+    });
+    if (tokenErr || tokenOk !== true) {
+      return new Response(JSON.stringify({
+        error: "Código inválido ou expirado. Solicite um novo código.",
+        code: "OTP_INVALID",
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Check profile completeness before allowing withdrawal
     const { data: profileData } = await supabase
