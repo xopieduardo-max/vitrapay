@@ -505,7 +505,10 @@ export default function Checkout() {
             amount: totalCharged,
             service_fee: SERVICE_FEE,
             affiliate_ref: affiliateRef,
+            coupon_code: appliedCoupon?.code || null,
+            bump_ids: Array.from(selectedBumps),
             ...utmData,
+
           },
         });
         if (error) throw error;
