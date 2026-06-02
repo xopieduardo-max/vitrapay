@@ -529,6 +529,14 @@ export default function Settings() {
           </div>
         </div>
       </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] }}
+      >
+        <SecurityActivity />
+      </motion.div>
     </div>
   );
 }
