@@ -2061,6 +2061,27 @@ export type Database = {
         }
         Relationships: []
       }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          display_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          display_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          display_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_financial_integrity: {
@@ -2140,6 +2161,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      self_assign_producer_role: { Args: never; Returns: undefined }
       user_can_access_lesson: {
         Args: { _module_id: string; _user_id: string }
         Returns: boolean
