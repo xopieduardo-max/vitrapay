@@ -37,8 +37,9 @@ Deno.serve(async (req) => {
     if (cpfClean) {
       const cpfCheck = await checkCpfRateLimit(supabase, cpfClean);
       if (!cpfCheck.allowed) {
-        return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({ error: "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(cpfCheck.retryAfterSeconds ?? 600) },
         });
       }
     }
@@ -46,8 +47,9 @@ Deno.serve(async (req) => {
     if (clientIp) {
       const ipCheck = await checkIpRateLimit(supabase, clientIp);
       if (!ipCheck.allowed) {
-        return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({ error: "Muitas tentativas a partir do seu acesso. Aguarde alguns minutos." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(ipCheck.retryAfterSeconds ?? 300) },
         });
       }
     }
