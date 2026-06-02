@@ -1,6 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { geolocateIp } from "../_shared/geolocate-ip.ts";
 import { checkCpfRateLimit, checkIpRateLimit, getClientIp } from "../_shared/rate-limit.ts";
+import { validatePaymentAmount } from "../_shared/validate-payment-amount.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
