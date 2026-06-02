@@ -119,7 +119,7 @@ export default function MinhaContaDownload() {
         .maybeSingle();
 
       return {
-        product: { ...product, producerName: profile?.display_name || "Produtor" },
+        product: { ...product, producerName: (profile as any)?.display_name || "Produtor" },
         files: files || [],
       };
     },
