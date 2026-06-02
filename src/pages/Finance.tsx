@@ -435,7 +435,7 @@ export default function Finance() {
                   </div>
                   <div className="flex items-center gap-3 pt-2">
                     <Button variant="outline" className="flex-1 gap-2" onClick={() => setWithdrawStep(1)}><ArrowLeft className="h-4 w-4" />Voltar</Button>
-                    <Button className="flex-1 gap-2" disabled={requestWithdrawal.isPending} onClick={() => requestWithdrawal.mutate()}>
+                    <Button className="flex-1 gap-2" disabled={requestWithdrawal.isPending} onClick={() => setOtpOpen(true)}>
                       {requestWithdrawal.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle2 className="h-4 w-4" />Confirmar</>}
                     </Button>
                   </div>
