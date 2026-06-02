@@ -24,6 +24,7 @@ import {
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Badge } from "@/components/ui/badge";
 import { SecurityActivity } from "@/components/settings/SecurityActivity";
+import { KnownDevicesList } from "@/components/settings/KnownDevicesList";
 import { OtpChallengeDialog } from "@/components/security/OtpChallengeDialog";
 
 const anim = (delay: number) => ({
@@ -604,6 +605,16 @@ export default function Settings() {
         transition={{ delay: 0.18, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] }}
       >
         <SecurityActivity />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.22, duration: 0.45, ease: [0.2, 0, 0, 1] as [number, number, number, number] }}
+        className="space-y-3"
+      >
+        <h3 className="text-base font-semibold">Dispositivos conectados</h3>
+        <KnownDevicesList />
       </motion.div>
     </div>
   );
