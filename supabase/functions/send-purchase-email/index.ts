@@ -23,8 +23,6 @@ interface PurchaseEmailParams {
 
 function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
   const { buyer_name, product_title, product_type, product_id, temp_password, buyer_email } = params;
-  const isCourse = product_type === "course";
-
   // For courses, link directly to the course page; otherwise go to the portal
   const isCourse = product_type === "course";
   const accessLink = isCourse
