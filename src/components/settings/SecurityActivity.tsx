@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Shield, KeyRound, Smartphone, IdCard, BadgeCheck, Banknote, LogIn } from "lucide-react";
 
 type AuditRow = {
