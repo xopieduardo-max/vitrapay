@@ -527,6 +527,10 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Chave Pix</Label>
+                <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Sua chave Pix" className={inputCls} />
+              </div>
             </div>
             <div className="flex items-center justify-between gap-3 mt-4 rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3">
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
