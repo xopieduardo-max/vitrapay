@@ -42,7 +42,7 @@ export default function ProductDetail() {
       if (!data) return null;
 
       const { data: profile } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("display_name")
         .eq("user_id", data.producer_id)
         .maybeSingle();
