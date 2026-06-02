@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { autoCreateBuyerAccount } from "../_shared/auto-create-buyer.ts";
 import { geolocateIp } from "../_shared/geolocate-ip.ts";
-import { checkCpfRateLimit, checkIpRateLimit, getClientIp } from "../_shared/rate-limit.ts";
+import { checkCpfRateLimit, checkIpRateLimit, checkCardTestingPattern, getClientIp } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,19 +89,29 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 
     // ── Rate limiting ──
-    const cpfClean = buyer_cpf?.replace(/\D/g, "") || "";
     const cpfCheck = await checkCpfRateLimit(supabase, cpfClean);
     if (!cpfCheck.allowed) {
-      return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ error: "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(cpfCheck.retryAfterSeconds ?? 600) },
       });
     }
     const clientIp = getClientIp(req);
     if (clientIp) {
       const ipCheck = await checkIpRateLimit(supabase, clientIp);
       if (!ipCheck.allowed) {
-        return new Response(JSON.stringify({ error: "Muitas tentativas. Tente novamente em alguns minutos." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({ error: "Muitas tentativas a partir do seu acesso. Aguarde alguns minutos." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(ipCheck.retryAfterSeconds ?? 300) },
+        });
+      }
+      // Card-testing fraud pattern: same IP, many different CPFs
+      const cardTest = await checkCardTestingPattern(supabase, clientIp, cpfClean);
+      if (!cardTest.allowed) {
+        console.warn("[create-card-payment] card-testing pattern blocked", { ip: clientIp });
+        return new Response(JSON.stringify({ error: "Atividade suspeita detectada. Tente novamente mais tarde." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(cardTest.retryAfterSeconds ?? 900) },
         });
       }
     }
