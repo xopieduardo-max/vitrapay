@@ -192,6 +192,42 @@ export default function Settings() {
     setSavingVerification(false);
   };
 
+  const pixChanged = pixKey.trim() !== (initialPixKey || "").trim() || pixKeyType !== initialPixKeyType;
+
+  const handleSavePix = () => {
+    if (!pixKey.trim()) {
+      toast.error("Informe a chave PIX.");
+      return;
+    }
+    if (!pixChanged) {
+      toast.info("Nenhuma alteração na chave PIX.");
+      return;
+    }
+    setPixOtpOpen(true);
+  };
+
+  const confirmPixChange = async (actionToken: string) => {
+    setSavingPix(true);
+    try {
+      const { error } = await supabase.rpc("update_pix_key_with_token" as any, {
+        _token: actionToken,
+        _pix_key: pixKey.trim(),
+        _pix_key_type: pixKeyType,
+      });
+      if (error) throw error;
+      toast.success("Chave PIX atualizada com sucesso!");
+      setInitialPixKey(pixKey.trim());
+      setInitialPixKeyType(pixKeyType);
+      queryClient.invalidateQueries({ queryKey: ["profile", user!.id] });
+    } catch (e: any) {
+      toast.error("Erro ao atualizar PIX: " + (e?.message || ""));
+      throw e;
+    } finally {
+      setSavingPix(false);
+    }
+  };
+
+
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
       toast.error("A nova senha deve ter pelo menos 6 caracteres.");
