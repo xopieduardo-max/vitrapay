@@ -110,7 +110,7 @@ export default function Sales() {
       const buyerIds = [...new Set(sales.map((s: any) => s.buyer_id).filter(Boolean))];
       if (buyerIds.length === 0) return {};
       const { data } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name")
         .in("user_id", buyerIds);
       const map: Record<string, string> = {};

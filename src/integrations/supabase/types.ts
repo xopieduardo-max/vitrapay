@@ -2061,6 +2061,27 @@ export type Database = {
         }
         Relationships: []
       }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          display_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          display_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          display_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_financial_integrity: {
@@ -2083,6 +2104,15 @@ export type Database = {
         Returns: number
       }
       get_my_email: { Args: never; Returns: string }
+      get_public_profiles: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          avatar_url: string
+          bio: string
+          display_name: string
+          user_id: string
+        }[]
+      }
       get_user_emails: {
         Args: never
         Returns: {
@@ -2140,6 +2170,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      self_assign_producer_role: { Args: never; Returns: undefined }
       user_can_access_lesson: {
         Args: { _module_id: string; _user_id: string }
         Returns: boolean

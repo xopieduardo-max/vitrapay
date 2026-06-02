@@ -52,7 +52,7 @@ export default function Affiliates() {
 
       const producerIds = [...new Set((products || []).map((p) => p.producer_id))];
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name")
         .in("user_id", producerIds);
 

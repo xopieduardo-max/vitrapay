@@ -159,7 +159,7 @@ export default function Onboarding() {
 
       // If producer, add role
       if (data.account_type === "producer") {
-        await supabase.from("user_roles").insert({ user_id: user.id, role: "producer" });
+        await supabase.rpc("self_assign_producer_role");
       }
 
       // Invalidate AuthGuard cache so it knows onboarding is done
