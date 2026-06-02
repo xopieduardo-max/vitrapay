@@ -24,6 +24,7 @@ import {
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Badge } from "@/components/ui/badge";
 import { SecurityActivity } from "@/components/settings/SecurityActivity";
+import { OtpChallengeDialog } from "@/components/security/OtpChallengeDialog";
 
 const anim = (delay: number) => ({
   initial: { opacity: 0, y: 12 } as const,
