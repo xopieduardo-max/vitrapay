@@ -363,9 +363,9 @@ export default function MinhaContaDownload() {
                             <Button
                               size="sm"
                               className="h-8 text-xs gap-1.5"
-                              onClick={() => {
+                              onClick={async () => {
                                 trackDownload();
-                                downloadFile(file.file_url, file.file_name);
+                                await downloadProductFile(file.id, file.file_name);
                               }}
                             >
                               <Download className="h-3.5 w-3.5" />
@@ -375,10 +375,10 @@ export default function MinhaContaDownload() {
                         </div>
 
                         {/* Embedded PDF viewer */}
-                        {isPdf && pdfExpanded && (
+                        {isPdf && pdfExpanded && signedUrls[file.id] && (
                           <div className="border-t border-border">
                             <iframe
-                              src={`${file.file_url}#toolbar=1&navpanes=0`}
+                              src={`${signedUrls[file.id]}#toolbar=1&navpanes=0`}
                               className="w-full h-[70vh] bg-muted/10"
                               title={file.file_name}
                             />
