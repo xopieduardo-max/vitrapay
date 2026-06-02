@@ -180,8 +180,6 @@ export default function Settings() {
         address_city: addressCity,
         address_state: addressState,
         profile_verified: true,
-        pix_key: pixKey,
-        pix_key_type: pixKeyType,
       } as any)
       .eq("user_id", user.id);
 
