@@ -137,12 +137,12 @@ Deno.serve(async (req) => {
   if (!allowed) return jsonResponse({ error: "forbidden" }, 403);
 
   // 3) Sign URL
-  const path = extractObjectPath(file.file_url);
-  if (!path) return jsonResponse({ error: "invalid_file_path" }, 400);
+  const target = extractBucketAndPath(file.file_url);
+  if (!target) return jsonResponse({ error: "invalid_file_path" }, 400);
 
   const { data: signed, error: signErr } = await admin.storage
-    .from("product-files")
-    .createSignedUrl(path, SIGNED_URL_TTL_SECONDS, {
+    .from(target.bucket)
+    .createSignedUrl(target.path, SIGNED_URL_TTL_SECONDS, {
       download: file.file_name || undefined,
     });
 
