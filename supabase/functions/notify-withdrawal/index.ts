@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     try {
       const pushRes = await fetch(`${supabaseUrl}/functions/v1/send-push`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({
           producer_id: user_id,
           title: "💸 Saque enviado!",
