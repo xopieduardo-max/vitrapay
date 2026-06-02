@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       const fmtValue = `R$ ${(amount / 100).toFixed(2).replace(".", ",")}`;
       await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({
           producer_id: user.id,
           title: "Pix Avulso Gerado",

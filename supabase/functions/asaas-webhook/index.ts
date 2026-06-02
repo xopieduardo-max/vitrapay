@@ -348,7 +348,7 @@ Deno.serve(async (req) => {
         try {
           await fetch(`${supabaseUrl}/functions/v1/send-push`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
             body: JSON.stringify({
               producer_id: sale.producer_id,
               title: pushTitle,
@@ -511,7 +511,7 @@ Deno.serve(async (req) => {
         const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
         await fetch(`${supabaseUrl}/functions/v1/send-push`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
           body: JSON.stringify({
             producer_id: producerId,
             title: "Venda aprovada no Pix!",
@@ -714,7 +714,7 @@ Deno.serve(async (req) => {
       const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
       await fetch(`${supabaseUrl}/functions/v1/send-push`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({
           producer_id: product.producer_id,
           title: "Venda aprovada no Pix!",

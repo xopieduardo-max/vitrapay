@@ -45,6 +45,49 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // ── Authentication ──
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const isServiceRole = token === supabaseKey;
+    let callerId: string | null = null;
+    let callerIsAdmin = false;
+
+    if (!isServiceRole) {
+      const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
+      const sub = claimsData?.claims?.sub as string | undefined;
+      if (claimsErr || !sub) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      callerId = sub;
+      const { data: adminRow } = await supabase
+        .from("user_roles").select("role")
+        .eq("user_id", callerId).eq("role", "admin").maybeSingle();
+      callerIsAdmin = !!adminRow;
+    }
+
+    // Broadcast: only service-role or admin
+    if (broadcast && !isServiceRole && !callerIsAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Targeted: must be self, admin, or service-role
+    if (!broadcast && producer_id && !isServiceRole && !callerIsAdmin && producer_id !== callerId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
     let subscriptions: any[] = [];
 
     if (broadcast) {
