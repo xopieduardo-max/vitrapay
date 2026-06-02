@@ -24,6 +24,7 @@ import {
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Badge } from "@/components/ui/badge";
 import { SecurityActivity } from "@/components/settings/SecurityActivity";
+import { OtpChallengeDialog } from "@/components/security/OtpChallengeDialog";
 
 const anim = (delay: number) => ({
   initial: { opacity: 0, y: 12 } as const,
@@ -60,6 +61,9 @@ export default function Settings() {
   const [addressCity, setAddressCity] = useState("");
   const [addressState, setAddressState] = useState("");
   const [savingVerification, setSavingVerification] = useState(false);
+  const [initialPixKey, setInitialPixKey] = useState("");
+  const [initialPixKeyType, setInitialPixKeyType] = useState("cpf");
+  const [pixOtpOpen, setPixOtpOpen] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", user?.id],
@@ -75,6 +79,8 @@ export default function Settings() {
         setBio(data.bio || "");
         setPixKey(data.pix_key || "");
         setPixKeyType(data.pix_key_type || "cpf");
+        setInitialPixKey(data.pix_key || "");
+        setInitialPixKeyType(data.pix_key_type || "cpf");
         setCpf((data as any).cpf || "");
         setPhone((data as any).phone || "");
         setBirthDate((data as any).birth_date || "");
@@ -174,8 +180,6 @@ export default function Settings() {
         address_city: addressCity,
         address_state: addressState,
         profile_verified: true,
-        pix_key: pixKey,
-        pix_key_type: pixKeyType,
       } as any)
       .eq("user_id", user.id);
 
@@ -187,6 +191,42 @@ export default function Settings() {
     }
     setSavingVerification(false);
   };
+
+  const pixChanged = pixKey.trim() !== (initialPixKey || "").trim() || pixKeyType !== initialPixKeyType;
+
+  const handleSavePix = () => {
+    if (!pixKey.trim()) {
+      toast.error("Informe a chave PIX.");
+      return;
+    }
+    if (!pixChanged) {
+      toast.info("Nenhuma alteração na chave PIX.");
+      return;
+    }
+    setPixOtpOpen(true);
+  };
+
+  const confirmPixChange = async (actionToken: string) => {
+    setSavingPix(true);
+    try {
+      const { error } = await supabase.rpc("update_pix_key_with_token" as any, {
+        _token: actionToken,
+        _pix_key: pixKey.trim(),
+        _pix_key_type: pixKeyType,
+      });
+      if (error) throw error;
+      toast.success("Chave PIX atualizada com sucesso!");
+      setInitialPixKey(pixKey.trim());
+      setInitialPixKeyType(pixKeyType);
+      queryClient.invalidateQueries({ queryKey: ["profile", user!.id] });
+    } catch (e: any) {
+      toast.error("Erro ao atualizar PIX: " + (e?.message || ""));
+      throw e;
+    } finally {
+      setSavingPix(false);
+    }
+  };
+
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
@@ -492,6 +532,24 @@ export default function Settings() {
                 <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Sua chave Pix" className={inputCls} />
               </div>
             </div>
+            <div className="flex items-center justify-between gap-3 mt-4 rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3">
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <span>
+                  Por segurança, toda alteração da chave PIX exige confirmação por código enviado ao seu e-mail.
+                </span>
+              </div>
+              <Button
+                onClick={handleSavePix}
+                disabled={savingPix || !pixChanged}
+                size="sm"
+                variant="outline"
+                className="rounded-xl shrink-0"
+              >
+                {savingPix ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <KeyRound className="h-4 w-4 mr-2" />}
+                Salvar chave PIX
+              </Button>
+            </div>
           </div>
 
           <div className="flex justify-end pt-2">
@@ -502,6 +560,15 @@ export default function Settings() {
           </div>
         </div>
       </motion.div>
+
+      <OtpChallengeDialog
+        open={pixOtpOpen}
+        onOpenChange={setPixOtpOpen}
+        action="pix_change"
+        title="Confirmar troca de chave PIX"
+        description="Enviamos um código de 6 dígitos para o e-mail cadastrado. Digite-o para confirmar a alteração."
+        onConfirmed={confirmPixChange}
+      />
 
       <NotificationsSection />
 

@@ -20,6 +20,7 @@ import {
   AlertCircle, Lock, Info, ShieldCheck, ArrowLeft, ArrowRight, CheckCircle2,
   QrCode, Copy, Check, Receipt, RotateCcw, Percent, Star, Eye, EyeOff,
 } from "lucide-react";
+import { OtpChallengeDialog } from "@/components/security/OtpChallengeDialog";
 
 // ── Platform constants ──
 const MIN_WITHDRAWAL = 1000;
@@ -42,6 +43,7 @@ export default function Finance() {
   const [txFilter, setTxFilter] = useState<"all" | "credit" | "debit">("all");
   const [txLimit, setTxLimit] = useState(20);
   const [showValues, setShowValues] = useState(true);
+  const [otpOpen, setOtpOpen] = useState(false);
 
   // ── Gerar Pix Avulso ──
   const [pixOpen, setPixOpen] = useState(false);
@@ -161,7 +163,7 @@ export default function Finance() {
 
   // ── Withdrawal mutation ──
   const requestWithdrawal = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (actionToken: string) => {
       if (!user) throw new Error("Not authenticated");
       if (isNaN(parsedAmount) || parsedAmount <= 0) throw new Error("Valor inválido");
       if (parsedAmount < MIN_WITHDRAWAL) throw new Error(`Saque mínimo de R$ ${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
@@ -176,7 +178,7 @@ export default function Finance() {
       if (!pixKey.trim()) throw new Error("Configure sua chave Pix em Ajustes");
 
       const { data, error } = await supabase.functions.invoke("request-withdraw", {
-        body: { amount: netAfterFee, pix_key: pixKey.trim(), pix_key_type: pixKeyType },
+        body: { amount: netAfterFee, pix_key: pixKey.trim(), pix_key_type: pixKeyType, action_token: actionToken },
       });
       if (error) {
         try {
@@ -433,7 +435,7 @@ export default function Finance() {
                   </div>
                   <div className="flex items-center gap-3 pt-2">
                     <Button variant="outline" className="flex-1 gap-2" onClick={() => setWithdrawStep(1)}><ArrowLeft className="h-4 w-4" />Voltar</Button>
-                    <Button className="flex-1 gap-2" disabled={requestWithdrawal.isPending} onClick={() => requestWithdrawal.mutate()}>
+                    <Button className="flex-1 gap-2" disabled={requestWithdrawal.isPending} onClick={() => setOtpOpen(true)}>
                       {requestWithdrawal.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle2 className="h-4 w-4" />Confirmar</>}
                     </Button>
                   </div>
@@ -441,6 +443,16 @@ export default function Finance() {
               )}
             </DialogContent>
           </Dialog>
+          <OtpChallengeDialog
+            open={otpOpen}
+            onOpenChange={setOtpOpen}
+            action="withdraw"
+            title="Confirmar saque"
+            description="Para sua segurança, enviamos um código para o e-mail cadastrado. Digite-o abaixo para concluir o saque."
+            onConfirmed={async (token) => {
+              await requestWithdrawal.mutateAsync(token);
+            }}
+          />
         </div>
       </motion.div>
 

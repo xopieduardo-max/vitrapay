@@ -1766,6 +1766,54 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_action_challenges: {
+        Row: {
+          action: string
+          action_token: string | null
+          attempts: number
+          code_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          ip: string | null
+          token_expires_at: string | null
+          token_used_at: string | null
+          used_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          action_token?: string | null
+          attempts?: number
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          ip?: string | null
+          token_expires_at?: string | null
+          token_used_at?: string | null
+          used_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          action_token?: string | null
+          attempts?: number
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip?: string | null
+          token_expires_at?: string | null
+          token_used_at?: string | null
+          used_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -2132,6 +2180,24 @@ export type Database = {
           sales_gross: number
         }[]
       }
+      consume_action_token: {
+        Args: { _action: string; _token: string; _user_id: string }
+        Returns: boolean
+      }
+      consume_sensitive_challenge: {
+        Args: { _action: string; _code: string }
+        Returns: string
+      }
+      create_sensitive_challenge: {
+        Args: {
+          _action: string
+          _code: string
+          _ip?: string
+          _ua?: string
+          _user_id: string
+        }
+        Returns: string
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -2212,6 +2278,10 @@ export type Database = {
         }[]
       }
       self_assign_producer_role: { Args: never; Returns: undefined }
+      update_pix_key_with_token: {
+        Args: { _pix_key: string; _pix_key_type: string; _token: string }
+        Returns: boolean
+      }
       user_can_access_lesson: {
         Args: { _module_id: string; _user_id: string }
         Returns: boolean
