@@ -303,10 +303,10 @@ export default function MinhaContaDownload() {
                         {isImage && (
                           <div
                             className="w-full h-40 bg-muted/20 flex items-center justify-center overflow-hidden cursor-pointer"
-                            onClick={() => setPreviewUrl(previewUrl === file.file_url ? null : file.file_url)}
+                            onClick={() => setPreviewUrl(previewUrl === signedUrls[file.id] ? null : signedUrls[file.id])}
                           >
                             <img
-                              src={file.file_url}
+                              src={signedUrls[file.id]}
                               alt={file.file_name}
                               className="w-full h-full object-contain"
                             />
@@ -314,10 +314,10 @@ export default function MinhaContaDownload() {
                         )}
 
                         {/* Audio player with progress tracking */}
-                        {isAudio && user && (
+                        {isAudio && user && signedUrls[file.id] && (
                           <MediaPlayer
                             type="audio"
-                            fileUrl={file.file_url}
+                            fileUrl={signedUrls[file.id]}
                             fileId={file.id}
                             productId={productId!}
                             userId={user.id}
@@ -325,10 +325,10 @@ export default function MinhaContaDownload() {
                         )}
 
                         {/* Video player with progress tracking */}
-                        {isVideo && user && (
+                        {isVideo && user && signedUrls[file.id] && (
                           <MediaPlayer
                             type="video"
-                            fileUrl={file.file_url}
+                            fileUrl={signedUrls[file.id]}
                             fileId={file.id}
                             productId={productId!}
                             userId={user.id}
