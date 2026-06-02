@@ -268,11 +268,11 @@ export default function MinhaContaDownload() {
                     size="sm"
                     variant="outline"
                     className="gap-1.5 text-xs"
-                    onClick={() => {
+                    onClick={async () => {
                       trackDownload();
-                      data.files.forEach((f: any) => {
-                        downloadFile(f.file_url, f.file_name);
-                      });
+                      for (const f of data.files as any[]) {
+                        await downloadProductFile(f.id, f.file_name);
+                      }
                     }}
                   >
                     <Download className="h-3.5 w-3.5" />
