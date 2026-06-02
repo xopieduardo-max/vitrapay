@@ -443,6 +443,16 @@ export default function Finance() {
               )}
             </DialogContent>
           </Dialog>
+          <OtpChallengeDialog
+            open={otpOpen}
+            onOpenChange={setOtpOpen}
+            action="withdraw"
+            title="Confirmar saque"
+            description="Para sua segurança, enviamos um código para o e-mail cadastrado. Digite-o abaixo para concluir o saque."
+            onConfirmed={async (token) => {
+              await requestWithdrawal.mutateAsync(token);
+            }}
+          />
         </div>
       </motion.div>
 
