@@ -79,6 +79,8 @@ export default function Settings() {
         setBio(data.bio || "");
         setPixKey(data.pix_key || "");
         setPixKeyType(data.pix_key_type || "cpf");
+        setInitialPixKey(data.pix_key || "");
+        setInitialPixKeyType(data.pix_key_type || "cpf");
         setCpf((data as any).cpf || "");
         setPhone((data as any).phone || "");
         setBirthDate((data as any).birth_date || "");
