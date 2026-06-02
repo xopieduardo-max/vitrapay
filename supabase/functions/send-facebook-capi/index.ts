@@ -31,6 +31,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ===== Service-role only (chamada interna pelo asaas-webhook) =====
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!token || token !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const payload: CAPIPayload = await req.json();
     const { product_id, payment_id, amount, buyer_email, buyer_name, buyer_phone, buyer_cpf } = payload;
 
