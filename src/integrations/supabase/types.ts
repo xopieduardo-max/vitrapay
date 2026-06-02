@@ -1907,6 +1907,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_known_devices: {
+        Row: {
+          created_at: string
+          device_hash: string
+          device_label: string | null
+          first_seen_at: string
+          id: string
+          ip: string | null
+          last_seen_at: string
+          login_count: number
+          trusted: boolean
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_hash: string
+          device_label?: string | null
+          first_seen_at?: string
+          id?: string
+          ip?: string | null
+          last_seen_at?: string
+          login_count?: number
+          trusted?: boolean
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_hash?: string
+          device_label?: string | null
+          first_seen_at?: string
+          id?: string
+          ip?: string | null
+          last_seen_at?: string
+          login_count?: number
+          trusted?: boolean
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -2275,6 +2317,18 @@ export type Database = {
           message: Json
           msg_id: number
           read_ct: number
+        }[]
+      }
+      register_login_attempt: {
+        Args: {
+          _device_hash: string
+          _device_label?: string
+          _ip?: string
+          _user_agent?: string
+        }
+        Returns: {
+          device_id: string
+          is_new_device: boolean
         }[]
       }
       self_assign_producer_role: { Args: never; Returns: undefined }
