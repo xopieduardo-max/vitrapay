@@ -111,12 +111,12 @@ export default function MinhaContaDownload() {
         .eq("product_id", productId)
         .order("position");
 
-      // Get producer name
+      // Get producer name (via safe public view)
       const { data: profile } = await supabase
-        .from("profiles")
+        .from("public_profiles" as any)
         .select("display_name")
         .eq("user_id", product.producer_id)
-        .single();
+        .maybeSingle();
 
       return {
         product: { ...product, producerName: profile?.display_name || "Produtor" },
