@@ -93,12 +93,19 @@ Deno.serve(async (req) => {
       ninth_digit_mode,
     } = body;
 
-    if (!phone) {
+    if (!phone || typeof phone !== "string") {
       return new Response(
         JSON.stringify({ error: "phone is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Only service-role callers can send fully custom messages.
+    // Authenticated users get the templated recovery message only.
+    const safeCustom =
+      isServiceRole && typeof custom_message === "string"
+        ? custom_message.slice(0, MAX_CUSTOM_MESSAGE_LEN)
+        : null;
 
     const digitMode: NinthDigitMode =
       ninth_digit_mode === "keep" || ninth_digit_mode === "remove"
@@ -107,7 +114,7 @@ Deno.serve(async (req) => {
 
     const jid = formatPhoneJid(phone, digitMode);
     const message =
-      custom_message ||
+      safeCustom ||
       buildRecoveryMessage(
         buyer_name || "",
         product_title || "Produto",
