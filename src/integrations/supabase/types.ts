@@ -2104,6 +2104,15 @@ export type Database = {
         Returns: number
       }
       get_my_email: { Args: never; Returns: string }
+      get_public_profiles: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          avatar_url: string
+          bio: string
+          display_name: string
+          user_id: string
+        }[]
+      }
       get_user_emails: {
         Args: never
         Returns: {
