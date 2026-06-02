@@ -31,20 +31,22 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-// Extracts the storage object path from either a full public URL or a raw path
-function extractObjectPath(fileUrl: string): string | null {
+// Extracts {bucket, path} from either a full URL or a raw path.
+// Defaults to the new private deliverables bucket. Falls back to legacy product-files
+// for files uploaded before the bucket split.
+function extractBucketAndPath(fileUrl: string): { bucket: string; path: string } | null {
   if (!fileUrl) return null;
-  // Already a raw path (no scheme)
-  if (!fileUrl.startsWith("http")) return fileUrl.replace(/^\/+/, "");
-  const marker = "/object/public/product-files/";
-  const marker2 = "/object/sign/product-files/";
-  const marker3 = "/object/product-files/";
-  for (const m of [marker, marker2, marker3]) {
-    const idx = fileUrl.indexOf(m);
-    if (idx !== -1) {
-      const tail = fileUrl.slice(idx + m.length);
-      // strip any query string from existing signed urls
-      return tail.split("?")[0];
+  const buckets = ["product-deliverables", "product-files"];
+  if (!fileUrl.startsWith("http")) {
+    return { bucket: "product-deliverables", path: fileUrl.replace(/^\/+/, "") };
+  }
+  for (const b of buckets) {
+    for (const m of [`/object/public/${b}/`, `/object/sign/${b}/`, `/object/${b}/`]) {
+      const idx = fileUrl.indexOf(m);
+      if (idx !== -1) {
+        const tail = fileUrl.slice(idx + m.length).split("?")[0];
+        return { bucket: b, path: tail };
+      }
     }
   }
   return null;
