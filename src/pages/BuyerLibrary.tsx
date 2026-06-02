@@ -167,8 +167,13 @@ export default function BuyerLibrary() {
                           <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
                           {product.files.length} Arquivos
                         </Button>
+                      ) : product.files?.[0]?.id ? (
+                        <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => downloadProductFile(product.files[0].id, product.files[0].file_name || product.title || "arquivo")}>
+                            <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
+                            Baixar
+                        </Button>
                       ) : product.file_url ? (
-                        <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => downloadFile(product.files?.[0]?.file_url || product.file_url, product.title || "arquivo")}>
+                        <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => downloadFile(product.file_url, product.title || "arquivo")}>
                             <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
                             Baixar
                         </Button>
