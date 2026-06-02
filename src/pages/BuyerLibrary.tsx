@@ -205,7 +205,7 @@ export default function BuyerLibrary() {
                         {product.files.map((f: any) => (
                           <button
                             key={f.id}
-                            onClick={() => downloadFile(f.file_url, f.file_name)}
+                            onClick={() => downloadProductFile(f.id, f.file_name)}
                             className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors w-full text-left"
                           >
                             <FileText className="h-4 w-4 text-primary shrink-0" strokeWidth={1.5} />
