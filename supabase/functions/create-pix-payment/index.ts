@@ -76,6 +76,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Server-side price validation (anti-tampering) ──
+    const priceCheck = await validatePaymentAmount({
+      supabase,
+      product: { id: product.id, price: product.price, producer_id: product.producer_id },
+      amount,
+      service_fee: SERVICE_FEE,
+      coupon_code,
+      bump_ids,
+    });
+    if (!priceCheck.ok) {
+      console.warn("[create-pix-payment] price validation failed", { product_id, amount, expected: priceCheck.expected });
+      return new Response(JSON.stringify({ error: priceCheck.error || "Valor inválido" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
     const ASAAS_API_KEY = Deno.env.get("ASAAS_API_KEY");
     if (!ASAAS_API_KEY) {
       return new Response(JSON.stringify({ error: "Payment gateway not configured" }), {
