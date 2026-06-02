@@ -43,6 +43,7 @@ export default function Finance() {
   const [txFilter, setTxFilter] = useState<"all" | "credit" | "debit">("all");
   const [txLimit, setTxLimit] = useState(20);
   const [showValues, setShowValues] = useState(true);
+  const [otpOpen, setOtpOpen] = useState(false);
 
   // ── Gerar Pix Avulso ──
   const [pixOpen, setPixOpen] = useState(false);
