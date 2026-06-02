@@ -7,6 +7,7 @@ import { compressImage } from "@/lib/imageCompressor";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { downloadProductFile } from "@/lib/productFiles";
 
 /** Returns true if the color is "light" (text should be dark) */
 function isLightColor(hex: string): boolean {
