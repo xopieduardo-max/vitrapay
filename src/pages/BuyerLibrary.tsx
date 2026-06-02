@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { downloadFile } from "@/lib/downloadFile";
+import { downloadProductFile } from "@/lib/productFiles";
 
 export default function BuyerLibrary() {
   const { user } = useAuth();
