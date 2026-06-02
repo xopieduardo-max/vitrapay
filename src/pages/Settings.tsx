@@ -61,6 +61,9 @@ export default function Settings() {
   const [addressCity, setAddressCity] = useState("");
   const [addressState, setAddressState] = useState("");
   const [savingVerification, setSavingVerification] = useState(false);
+  const [initialPixKey, setInitialPixKey] = useState("");
+  const [initialPixKeyType, setInitialPixKeyType] = useState("cpf");
+  const [pixOtpOpen, setPixOtpOpen] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", user?.id],
