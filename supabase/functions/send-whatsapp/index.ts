@@ -1,8 +1,12 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const MAX_CUSTOM_MESSAGE_LEN = 2000;
 
 const WHATSAPP_ENGINE_URL =
   "https://whatsapp-saas-engine-production.up.railway.app";
