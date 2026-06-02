@@ -1,6 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { geolocateIp } from "../_shared/geolocate-ip.ts";
 import { checkCpfRateLimit, checkIpRateLimit, getClientIp } from "../_shared/rate-limit.ts";
+import { validatePaymentAmount } from "../_shared/validate-payment-amount.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,8 +13,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, amount, service_fee, description, affiliate_ref, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
+    const { product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, amount, service_fee, description, affiliate_ref, coupon_code, bump_ids, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
+
 
     if (!product_id || !amount) {
       return new Response(JSON.stringify({ error: "Missing required fields (product_id, amount)" }), {
@@ -72,6 +75,23 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // ── Server-side price validation (anti-tampering) ──
+    const priceCheck = await validatePaymentAmount({
+      supabase,
+      product: { id: product.id, price: product.price, producer_id: product.producer_id },
+      amount,
+      service_fee: SERVICE_FEE,
+      coupon_code,
+      bump_ids,
+    });
+    if (!priceCheck.ok) {
+      console.warn("[create-pix-payment] price validation failed", { product_id, amount, expected: priceCheck.expected });
+      return new Response(JSON.stringify({ error: priceCheck.error || "Valor inválido" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
 
     const ASAAS_API_KEY = Deno.env.get("ASAAS_API_KEY");
     if (!ASAAS_API_KEY) {

@@ -2,6 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { autoCreateBuyerAccount } from "../_shared/auto-create-buyer.ts";
 import { geolocateIp } from "../_shared/geolocate-ip.ts";
 import { checkCpfRateLimit, checkIpRateLimit, checkCardTestingPattern, getClientIp } from "../_shared/rate-limit.ts";
+import { validatePaymentAmount } from "../_shared/validate-payment-amount.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,11 +47,12 @@ Deno.serve(async (req) => {
     const {
       product_id, buyer_name, buyer_email, buyer_cpf, buyer_phone, buyer_postal_code,
       card_number, card_holder_name, card_expiry_month, card_expiry_year, card_cvv,
-      installments, amount, service_fee, affiliate_ref,
+      installments, amount, service_fee, affiliate_ref, coupon_code, bump_ids,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term
     } = await req.json();
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
     const productAmount = amount - SERVICE_FEE; // Amount without service fee for fee calculation
+
 
     if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
       return new Response(JSON.stringify({ error: "Campos obrigatórios: product_id, amount, buyer_cpf, buyer_name, buyer_email" }), {
@@ -130,6 +133,23 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // ── Server-side price validation (anti-tampering) ──
+    const priceCheck = await validatePaymentAmount({
+      supabase,
+      product: { id: product.id, price: product.price, producer_id: product.producer_id },
+      amount,
+      service_fee: SERVICE_FEE,
+      coupon_code,
+      bump_ids,
+    });
+    if (!priceCheck.ok) {
+      console.warn("[create-card-payment] price validation failed", { product_id, amount, expected: priceCheck.expected });
+      return new Response(JSON.stringify({ error: priceCheck.error || "Valor inválido" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
 
     const ASAAS_API_KEY = Deno.env.get("ASAAS_API_KEY");
     if (!ASAAS_API_KEY) {
