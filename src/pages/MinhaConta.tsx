@@ -114,11 +114,11 @@ export default function MinhaConta() {
 
       const producerIds = [...new Set(products.map((p) => p.producer_id))];
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles" as any)
         .select("user_id, display_name")
         .in("user_id", producerIds);
 
-      const profileMap = new Map((profiles || []).map((p) => [p.user_id, p.display_name]));
+      const profileMap = new Map(((profiles as any[]) || []).map((p: any) => [p.user_id, p.display_name]));
       const productMap = new Map(products.map((p) => [p.id, p]));
 
       return access.map((a) => {
