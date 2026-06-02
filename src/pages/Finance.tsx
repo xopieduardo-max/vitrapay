@@ -20,6 +20,7 @@ import {
   AlertCircle, Lock, Info, ShieldCheck, ArrowLeft, ArrowRight, CheckCircle2,
   QrCode, Copy, Check, Receipt, RotateCcw, Percent, Star, Eye, EyeOff,
 } from "lucide-react";
+import { OtpChallengeDialog } from "@/components/security/OtpChallengeDialog";
 
 // ── Platform constants ──
 const MIN_WITHDRAWAL = 1000;
