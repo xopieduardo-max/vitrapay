@@ -139,7 +139,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
 
   const closeAll = () => {
     if (user && activeMilestone) {
-      sessionStorage.setItem(`award_dismissed_${user.id}_${activeMilestone}`, "1");
+      localStorage.setItem(`award_seen_${user.id}_${activeMilestone}`, "1");
     }
     setActiveMilestone(null);
     setShowForm(false);
