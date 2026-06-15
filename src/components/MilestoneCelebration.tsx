@@ -79,8 +79,8 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
       return;
     }
     if (!user) return;
-    const key = `award_dismissed_${user.id}_${pendingTier.threshold}`;
-    if (sessionStorage.getItem(key)) return;
+    const key = `award_seen_${user.id}_${pendingTier.threshold}`;
+    if (localStorage.getItem(key)) return;
     setActiveMilestone(pendingTier.threshold);
   }, [pendingTier, user, activeMilestone, previewTierName]);
 
@@ -139,7 +139,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
 
   const closeAll = () => {
     if (user && activeMilestone) {
-      sessionStorage.setItem(`award_dismissed_${user.id}_${activeMilestone}`, "1");
+      localStorage.setItem(`award_seen_${user.id}_${activeMilestone}`, "1");
     }
     setActiveMilestone(null);
     setShowForm(false);
