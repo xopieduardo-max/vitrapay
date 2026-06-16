@@ -53,20 +53,32 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
+    // Safeguard: never hang forever. 20s timeout for the auth request.
+    const withTimeout = <T,>(p: Promise<T>, ms = 20000): Promise<T> =>
+      new Promise((resolve, reject) => {
+        const t = setTimeout(() => reject(new Error("__timeout__")), ms);
+        p.then((v) => { clearTimeout(t); resolve(v); })
+         .catch((e) => { clearTimeout(t); reject(e); });
+      });
+
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await withTimeout(
+          supabase.auth.signInWithPassword({ email: email.trim(), password })
+        );
         if (error) throw error;
         navigate("/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { display_name: displayName },
-            emailRedirectTo: window.location.origin,
-          },
-        });
+        const { error } = await withTimeout(
+          supabase.auth.signUp({
+            email: email.trim(),
+            password,
+            options: {
+              data: { display_name: displayName },
+              emailRedirectTo: window.location.origin,
+            },
+          })
+        );
         if (error) throw error;
         setStep("otp");
         setCountdown(60);
@@ -76,14 +88,22 @@ export default function Auth() {
         });
       }
     } catch (error: any) {
-      const msg = error.message === "Load failed" || error.message === "Failed to fetch"
-        ? "Erro de conexão. Verifique sua internet e tente novamente."
-        : error.message;
-      toast({
-        title: "Erro",
-        description: msg,
-        variant: "destructive",
-      });
+      const isPreview = typeof window !== "undefined" && /lovable\.app$/.test(window.location.hostname) && window.location.hostname.includes("id-preview");
+      let msg: string;
+      if (error?.message === "__timeout__") {
+        msg = isPreview
+          ? "O login travou no ambiente de Preview. Tente na URL publicada (vitrapay.com.br)."
+          : "A conexão demorou demais. Verifique sua internet e tente novamente.";
+      } else if (error?.message === "Load failed" || error?.message === "Failed to fetch") {
+        msg = isPreview
+          ? "Falha de rede no Preview. Tente novamente na URL publicada (vitrapay.com.br)."
+          : "Erro de conexão. Verifique sua internet e tente novamente.";
+      } else if (error?.message === "Invalid login credentials") {
+        msg = "E-mail ou senha incorretos.";
+      } else {
+        msg = error?.message || "Erro ao processar a solicitação.";
+      }
+      toast({ title: "Erro", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
