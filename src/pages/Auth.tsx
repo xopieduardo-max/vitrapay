@@ -88,22 +88,23 @@ export default function Auth() {
         });
       }
     } catch (error: any) {
-      const isPreview = typeof window !== "undefined" && /lovable\.app$/.test(window.location.hostname) && window.location.hostname.includes("id-preview");
+      const host = typeof window !== "undefined" ? window.location.hostname : "";
+      // Qualquer subdomínio *.lovable.app que não seja o publicado oficial é Preview/Sandbox
+      const isPreview =
+        /lovable\.app$/.test(host) &&
+        host !== "vitrapay.lovable.app";
       let msg: string;
-      if (error?.message === "__timeout__") {
+      if (error?.message === "__timeout__" || error?.message === "Load failed" || error?.message === "Failed to fetch") {
         msg = isPreview
-          ? "O login travou no ambiente de Preview. Tente na URL publicada (vitrapay.com.br)."
-          : "A conexão demorou demais. Verifique sua internet e tente novamente.";
-      } else if (error?.message === "Load failed" || error?.message === "Failed to fetch") {
-        msg = isPreview
-          ? "Falha de rede no Preview. Tente novamente na URL publicada (vitrapay.com.br)."
+          ? "O login não funciona no ambiente de Preview do Lovable (limitação técnica do proxy). Acesse https://vitrapay.com.br para entrar normalmente."
           : "Erro de conexão. Verifique sua internet e tente novamente.";
       } else if (error?.message === "Invalid login credentials") {
         msg = "E-mail ou senha incorretos.";
       } else {
         msg = error?.message || "Erro ao processar a solicitação.";
       }
-      toast({ title: "Erro", description: msg, variant: "destructive" });
+      toast({ title: isPreview ? "Use a URL publicada" : "Erro", description: msg, variant: "destructive" });
+
     } finally {
       setLoading(false);
     }
