@@ -274,14 +274,14 @@ export default function Auth() {
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-center space-y-2">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-center space-y-2">
                     <p className="text-xs text-white/50">Não recebeu o e-mail? Verifique sua caixa de spam ou clique abaixo para reenviar.</p>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={countdown > 0 || loading}
                       onClick={handleResendOtp}
-                      className="bg-transparent border-white/10 text-white hover:bg-white/5"
+                      className="bg-white/[0.05] border-white/15 text-white hover:bg-white/10 hover:border-white/25"
                     >
                       {countdown > 0 ? `Reenviar em ${countdown}s` : "Reenviar e-mail"}
                     </Button>
