@@ -173,7 +173,7 @@ export default function Auth() {
       <div className="relative z-10 min-h-screen flex items-center px-6 lg:px-16">
         {/* Left – Card */}
         <div className="w-full lg:w-[520px] shrink-0">
-          <div className="relative rounded-3xl bg-[#0f0f0f]/90 backdrop-blur-xl border border-white/5 p-8 lg:p-10 shadow-2xl">
+          <div className="relative rounded-3xl bg-[#0f0f0f]/30 backdrop-blur-3xl border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] p-8 lg:p-10 overflow-hidden">
             <Link to="/" className="inline-flex items-center mb-10">
               <ThemeLogo variant="horizontal" className="h-10 object-contain" />
             </Link>
