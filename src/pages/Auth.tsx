@@ -22,7 +22,7 @@ function PasswordInput({ value, onChange }: { value: string; onChange: (v: strin
         onChange={(e) => onChange(e.target.value)}
         required
         minLength={6}
-        className="h-14 bg-transparent border-white/10 rounded-xl px-4 pr-12 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-0"
+        className="h-14 bg-white/[0.04] border-white/10 rounded-xl px-4 pr-12 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:bg-white/[0.07] focus-visible:ring-0"
       />
       <button
         type="button"
@@ -173,7 +173,7 @@ export default function Auth() {
       <div className="relative z-10 min-h-screen flex items-center px-6 lg:px-16">
         {/* Left – Card */}
         <div className="w-full lg:w-[520px] shrink-0">
-          <div className="relative rounded-3xl bg-[#0f0f0f]/90 backdrop-blur-xl border border-white/5 p-8 lg:p-10 shadow-2xl">
+          <div className="relative rounded-3xl bg-[#0f0f0f]/30 backdrop-blur-3xl border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] p-8 lg:p-10 overflow-hidden">
             <Link to="/" className="inline-flex items-center mb-10">
               <ThemeLogo variant="horizontal" className="h-10 object-contain" />
             </Link>
@@ -203,7 +203,7 @@ export default function Auth() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         required={!isLogin}
-                        className="h-14 bg-transparent border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-0"
+                        className="h-14 bg-white/[0.04] border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:bg-white/[0.07] focus-visible:ring-0"
                       />
                     )}
 
@@ -213,7 +213,7 @@ export default function Auth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="h-14 bg-transparent border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-0"
+                      className="h-14 bg-white/[0.04] border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:bg-white/[0.07] focus-visible:ring-0"
                     />
 
                     <PasswordInput value={password} onChange={setPassword} />
@@ -274,14 +274,14 @@ export default function Auth() {
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-center space-y-2">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-center space-y-2">
                     <p className="text-xs text-white/50">Não recebeu o e-mail? Verifique sua caixa de spam ou clique abaixo para reenviar.</p>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={countdown > 0 || loading}
                       onClick={handleResendOtp}
-                      className="bg-transparent border-white/10 text-white hover:bg-white/5"
+                      className="bg-white/[0.05] border-white/15 text-white hover:bg-white/10 hover:border-white/25"
                     >
                       {countdown > 0 ? `Reenviar em ${countdown}s` : "Reenviar e-mail"}
                     </Button>
