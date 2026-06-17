@@ -11,6 +11,30 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 
 type Step = "credentials" | "otp";
 
+function PasswordInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        type={show ? "text" : "password"}
+        placeholder="Sua senha"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required
+        minLength={6}
+        className="h-14 bg-transparent border-white/10 rounded-xl px-4 pr-12 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-0"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
