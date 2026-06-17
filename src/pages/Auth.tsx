@@ -22,7 +22,7 @@ function PasswordInput({ value, onChange }: { value: string; onChange: (v: strin
         onChange={(e) => onChange(e.target.value)}
         required
         minLength={6}
-        className="h-14 bg-transparent border-white/10 rounded-xl px-4 pr-12 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-0"
+        className="h-14 bg-white/[0.04] border-white/10 rounded-xl px-4 pr-12 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:bg-white/[0.07] focus-visible:ring-0"
       />
       <button
         type="button"
