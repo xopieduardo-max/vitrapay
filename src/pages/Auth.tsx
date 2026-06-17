@@ -153,14 +153,8 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
-      {/* Left – Form */}
-      <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-16 xl:px-24">
-        <div className="mx-auto w-full max-w-md space-y-8">
-          {/* Logo - only icon, no text */}
-  return (
     <div className="min-h-screen relative overflow-hidden bg-[#080808] text-white">
-      {/* Animated yellow gradient blobs (right side) */}
+      {/* Animated yellow gradient blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
           className="absolute -right-32 top-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full opacity-80 blur-[120px]"
