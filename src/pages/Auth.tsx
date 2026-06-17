@@ -203,7 +203,7 @@ export default function Auth() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         required={!isLogin}
-                        className="h-14 bg-transparent border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-0"
+                        className="h-14 bg-white/[0.04] border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:bg-white/[0.07] focus-visible:ring-0"
                       />
                     )}
 
@@ -213,7 +213,7 @@ export default function Auth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="h-14 bg-transparent border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:ring-0"
+                      className="h-14 bg-white/[0.04] border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:bg-white/[0.07] focus-visible:ring-0"
                     />
 
                     <PasswordInput value={password} onChange={setPassword} />
