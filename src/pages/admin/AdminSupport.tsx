@@ -251,6 +251,37 @@ export default function AdminSupport() {
     toast.success("Status atualizado");
   };
 
+  const saveEdit = async () => {
+    if (!editing) return;
+    const body = editing.body.trim();
+    if (!body) { toast.error("Mensagem não pode ficar vazia."); return; }
+    setEditSaving(true);
+    const { error } = await supabase
+      .from("support_messages")
+      .update({ body, edited_at: new Date().toISOString() } as any)
+      .eq("id", editing.id);
+    setEditSaving(false);
+    if (error) { toast.error("Erro ao editar mensagem."); return; }
+    setEditing(null);
+    qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
+    toast.success("Mensagem editada");
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    const id = deleting;
+    setDeleting(null);
+    // Remove o anexo do storage também, se existir
+    const msg: any = messages.find((m: any) => m.id === id);
+    if (msg?.attachment_url) {
+      supabase.storage.from("support-attachments").remove([msg.attachment_url]).catch(() => {});
+    }
+    const { error } = await supabase.from("support_messages").delete().eq("id", id);
+    if (error) { toast.error("Erro ao apagar mensagem."); return; }
+    qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
+    toast.success("Mensagem apagada");
+  };
+
   const ticket = tickets.find((t) => t.id === selected);
   const ticketUser = ticket ? (profiles as any)[ticket.user_id] : null;
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_admin || 0), 0);
