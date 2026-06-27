@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Loader2, Image, GripVertical, Upload, Link2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Image, GripVertical, Upload, Link2, Smartphone, Monitor } from "lucide-react";
 import { compressImage } from "@/lib/imageCompressor";
 
 const LOCATION_LABELS: Record<string, string> = {
@@ -40,6 +40,7 @@ export default function AdminBanners() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [intervalSeconds, setIntervalSeconds] = useState(5);
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
 
   const { data: banners = [], isLoading } = useQuery({
     queryKey: ["admin-banners"],
@@ -294,86 +295,131 @@ export default function AdminBanners() {
             </div>
           );
 
+          const isMobile = previewDevice === "mobile";
+          const frameWidth = isMobile ? 320 : 880;
+          // Mobile: stack/condense; Desktop: full chrome
+          const MarketplaceCols = isMobile ? 2 : 4;
+          const BuyerCols = isMobile ? 2 : 3;
+          const DashCols = isMobile ? 2 : 3;
+
           return (
             <div className="space-y-3 pt-1">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Pré-visualização por área</Label>
-                {previewUrl && (
-                  <button type="button" className="text-[11px] text-destructive hover:underline"
-                    onClick={() => { setSelectedFile(null); setPreviewUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
-                    Remover imagem
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex rounded-lg border border-border p-0.5 bg-muted/30">
+                    <button type="button" onClick={() => setPreviewDevice("mobile")}
+                      className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded-md transition ${isMobile ? "bg-background shadow-sm" : "text-muted-foreground"}`}>
+                      <Smartphone className="h-3 w-3" /> Mobile
+                    </button>
+                    <button type="button" onClick={() => setPreviewDevice("desktop")}
+                      className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded-md transition ${!isMobile ? "bg-background shadow-sm" : "text-muted-foreground"}`}>
+                      <Monitor className="h-3 w-3" /> Desktop
+                    </button>
+                  </div>
+                  {previewUrl && (
+                    <button type="button" className="text-[11px] text-destructive hover:underline"
+                      onClick={() => { setSelectedFile(null); setPreviewUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
+                      Remover imagem
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <div className={`grid gap-4 ${isMobile ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
                 {areas.map((a) => (
-                  <div key={a.key} className="rounded-xl border border-border overflow-hidden bg-background">
-                    <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+                  <div key={a.key} className="space-y-2">
+                    <div className="flex items-center justify-between">
                       <span className="text-[11px] font-semibold">{a.label}</span>
-                      <Badge variant="secondary" className={`text-[9px] px-1.5 py-0 ${LOCATION_COLORS[a.key] || ""}`}>preview</Badge>
+                      <Badge variant="secondary" className={`text-[9px] px-1.5 py-0 ${LOCATION_COLORS[a.key] || ""}`}>
+                        {isMobile ? "Mobile" : "Desktop"}
+                      </Badge>
                     </div>
 
-                    {a.mock === "dashboard" && (
-                      <div className="flex bg-[#080808] text-white">
-                        <div className="w-12 bg-black/60 border-r border-white/5 py-3 flex flex-col items-center gap-2">
-                          {[0,1,2,3].map((i) => <div key={i} className="h-4 w-4 rounded bg-white/10" />)}
-                        </div>
-                        <div className="flex-1 p-3 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="h-3 w-20 rounded bg-white/10" />
-                            <div className="h-6 w-6 rounded-full bg-primary/40" />
+                    {/* Device frame */}
+                    <div className="mx-auto" style={{ width: "100%", maxWidth: frameWidth }}>
+                      <div
+                        className={`mx-auto bg-[#080808] text-white border border-border overflow-hidden ${
+                          isMobile ? "rounded-[28px] border-[6px] border-zinc-800 shadow-xl" : "rounded-xl shadow-md"
+                        }`}
+                      >
+                        {/* Browser/phone chrome */}
+                        {isMobile ? (
+                          <div className="h-5 bg-black flex items-center justify-center">
+                            <div className="h-1 w-12 rounded-full bg-zinc-700" />
                           </div>
-                          <BannerImg />
-                          <div className="grid grid-cols-3 gap-2">
-                            {[0,1,2].map((i) => <div key={i} className="h-10 rounded-lg bg-white/5" />)}
+                        ) : (
+                          <div className="h-5 px-2 flex items-center gap-1 bg-zinc-900/80 border-b border-white/5">
+                            <div className="h-2 w-2 rounded-full bg-red-500/70" />
+                            <div className="h-2 w-2 rounded-full bg-yellow-500/70" />
+                            <div className="h-2 w-2 rounded-full bg-green-500/70" />
                           </div>
-                        </div>
-                      </div>
-                    )}
+                        )}
 
-                    {a.mock === "marketplace" && (
-                      <div className="bg-[#080808] text-white p-3 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="h-5 w-24 rounded bg-white/10" />
-                          <div className="flex-1" />
-                          <div className="h-5 w-16 rounded bg-primary/40" />
-                        </div>
-                        <BannerImg />
-                        <div className="grid grid-cols-4 gap-2">
-                          {[0,1,2,3].map((i) => (
-                            <div key={i} className="space-y-1">
-                              <div className="aspect-[4/3] rounded bg-white/5" />
-                              <div className="h-2 w-3/4 rounded bg-white/10" />
+                        {a.mock === "dashboard" && (
+                          <div className="flex">
+                            {!isMobile && (
+                              <div className="w-12 bg-black/60 border-r border-white/5 py-3 flex flex-col items-center gap-2">
+                                {[0,1,2,3].map((i) => <div key={i} className="h-4 w-4 rounded bg-white/10" />)}
+                              </div>
+                            )}
+                            <div className="flex-1 p-3 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <div className="h-3 w-20 rounded bg-white/10" />
+                                <div className="h-6 w-6 rounded-full bg-primary/40" />
+                              </div>
+                              <BannerImg />
+                              <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${DashCols}, minmax(0,1fr))` }}>
+                                {Array.from({ length: DashCols }).map((_, i) => <div key={i} className="h-10 rounded-lg bg-white/5" />)}
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {a.mock === "buyer" && (
-                      <div className="bg-[#080808] text-white">
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
-                          <div className="h-4 w-16 rounded bg-primary/40" />
-                          <div className="h-6 w-6 rounded-full bg-white/10" />
-                        </div>
-                        <div className="p-3 space-y-2">
-                          <BannerImg />
-                          <div className="h-3 w-28 rounded bg-white/10" />
-                          <div className="grid grid-cols-3 gap-2">
-                            {[0,1,2].map((i) => (
-                              <div key={i} className="aspect-[3/4] rounded bg-white/5" />
-                            ))}
                           </div>
-                        </div>
+                        )}
+
+                        {a.mock === "marketplace" && (
+                          <div className="p-3 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-5 w-20 rounded bg-white/10" />
+                              <div className="flex-1" />
+                              <div className="h-5 w-12 rounded bg-primary/40" />
+                            </div>
+                            <BannerImg />
+                            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${MarketplaceCols}, minmax(0,1fr))` }}>
+                              {Array.from({ length: MarketplaceCols * 2 }).map((_, i) => (
+                                <div key={i} className="space-y-1">
+                                  <div className="aspect-[4/3] rounded bg-white/5" />
+                                  <div className="h-2 w-3/4 rounded bg-white/10" />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {a.mock === "buyer" && (
+                          <div>
+                            <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
+                              <div className="h-4 w-14 rounded bg-primary/40" />
+                              <div className="h-6 w-6 rounded-full bg-white/10" />
+                            </div>
+                            <div className="p-3 space-y-2">
+                              <BannerImg />
+                              <div className="h-3 w-24 rounded bg-white/10" />
+                              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${BuyerCols}, minmax(0,1fr))` }}>
+                                {Array.from({ length: BuyerCols }).map((_, i) => (
+                                  <div key={i} className="aspect-[3/4] rounded bg-white/5" />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
 
               <p className="text-[11px] text-muted-foreground">
-                Proporção 6:1 · Tamanho ideal: 1920 × 320 px · As proporções dos mockups são ilustrativas.
+                Proporção 6:1 · Tamanho ideal: 1920 × 320 px · Alterne entre Mobile e Desktop para validar o enquadramento antes de publicar.
               </p>
             </div>
           );
