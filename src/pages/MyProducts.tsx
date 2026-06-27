@@ -98,7 +98,7 @@ export default function MyProducts() {
         .from("sales")
         .select("product_id, status")
         .in("product_id", productIds)
-        .eq("status", "paid");
+        .eq("status", "completed");
       if (error) throw error;
       const counts: Record<string, number> = {};
       for (const row of data || []) {
