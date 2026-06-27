@@ -514,6 +514,34 @@ export default function AdminSupport() {
                 </div>
               ) : (
                 <div className="border-t border-border p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Avatar className="h-7 w-7 shrink-0">
+                        {activeAssistant?.avatar_url && (
+                          <AvatarImage src={assistantAvatars[activeAssistant.avatar_url] || ""} alt={activeAssistant.name} />
+                        )}
+                        <AvatarFallback className="text-[0.6rem] bg-primary/15 text-primary">
+                          {activeAssistant ? initials(activeAssistant.name) : <UserCog className="h-3.5 w-3.5" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Select value={assistantId || "none"} onValueChange={(v) => setAssistantId(v === "none" ? "" : v)}>
+                        <SelectTrigger className="h-8 text-xs flex-1">
+                          <SelectValue placeholder="Responder como..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Suporte VitraPay (padrão)</SelectItem>
+                          {assistants.map((a: any) => (
+                            <SelectItem key={a.id} value={a.id}>{a.name}{a.role_label ? ` · ${a.role_label}` : ""}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {assistants.length === 0 && (
+                      <Link to="/admin/assistants" className="text-[0.65rem] text-primary hover:underline whitespace-nowrap">
+                        + Criar atendente
+                      </Link>
+                    )}
+                  </div>
                   {attachment && (
                     <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs">
                       <Paperclip className="h-3.5 w-3.5 shrink-0" />
