@@ -10,10 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { MessageSquare, Plus, Send, Loader2, Mail, ArrowLeft } from "lucide-react";
+import { MessageSquare, Plus, Send, Loader2, Mail, ArrowLeft, CheckCheck } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import vitrapayLogo from "@/assets/logo-vitrapay-icon-square.png";
 
 interface Ticket {
   id: string;
