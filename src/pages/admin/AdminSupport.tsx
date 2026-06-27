@@ -28,6 +28,17 @@ import { toast } from "sonner";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+
+function TypingDots() {
+  return (
+    <span className="inline-flex gap-0.5 ml-0.5 align-middle">
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+    </span>
+  );
+}
 import { Link } from "react-router-dom";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
@@ -258,6 +269,7 @@ export default function AdminSupport() {
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply("");
     setAttachment(null);
+    notifyStop();
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
 
     if (t) {
@@ -321,6 +333,13 @@ export default function AdminSupport() {
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_admin || 0), 0);
   const activeAssistant = assistants.find((a: any) => a.id === assistantId);
   const assistantAvatars = useAssistantAvatars(assistants.map((a: any) => a.avatar_url));
+
+  const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
+  const { isOtherTyping, notifyTyping, notifyStop } = useTypingIndicator({
+    ticketId: selected,
+    isAdmin: true,
+    enabled: !!selected && !ticketLocked,
+  });
 
   useEffect(() => {
     if (assistantId) localStorage.setItem("admin_active_assistant", assistantId);
@@ -440,8 +459,14 @@ export default function AdminSupport() {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{ticket?.subject}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {ticketUser?.name} · {ticketUser?.email}
+                  <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                    {isOtherTyping ? (
+                      <span className="text-primary font-medium flex items-center">
+                        {ticketUser?.name || "Cliente"} está digitando<TypingDots />
+                      </span>
+                    ) : (
+                      <>{ticketUser?.name} · {ticketUser?.email}</>
+                    )}
                   </p>
                 </div>
                 <Select value={ticket?.status} onValueChange={setStatus}>
@@ -588,7 +613,7 @@ export default function AdminSupport() {
                     </label>
                     <Textarea
                       value={reply}
-                      onChange={(e) => setReply(e.target.value)}
+                      onChange={(e) => { setReply(e.target.value); notifyTyping(); }}
                       placeholder="Resposta do suporte..."
                       rows={2}
                       className="resize-none"

@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -71,6 +72,16 @@ const TOPICS: Record<Role, string[]> = {
     "Outros assuntos",
   ],
 };
+
+function TypingDots() {
+  return (
+    <span className="inline-flex gap-0.5 ml-0.5">
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+    </span>
+  );
+}
 
 export default function Support() {
   const { user } = useAuth();
@@ -171,6 +182,12 @@ export default function Support() {
   const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_user || 0), 0);
 
+  const { isOtherTyping, notifyTyping, notifyStop } = useTypingIndicator({
+    ticketId: selected,
+    isAdmin: false,
+    enabled: !!selected && !ticketLocked,
+  });
+
   // The active assistant for this ticket = the most recent admin message's assistant.
   const currentAssistant = useMemo(() => {
     const lastAdminMsg = [...messages].reverse().find((m) => m.is_admin && m.assistant_id);
@@ -239,6 +256,7 @@ export default function Support() {
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply(""); setAttachment(null);
+    notifyStop();
     qc.invalidateQueries({ queryKey: ["support-messages", selected] });
   };
 
@@ -266,8 +284,14 @@ export default function Support() {
                 <p className="text-sm font-bold text-black truncate">
                   {currentAssistant?.name || "Suporte VitraPay"}
                 </p>
-                <p className="text-[0.7rem] text-black/70 truncate">
-                  {currentAssistant?.role_label || "Em breve um atendente responderá"}
+                <p className="text-[0.7rem] text-black/70 truncate flex items-center gap-1">
+                  {isOtherTyping ? (
+                    <span className="flex items-center gap-1 font-medium">
+                      digitando<TypingDots />
+                    </span>
+                  ) : (
+                    currentAssistant?.role_label || "Em breve um atendente responderá"
+                  )}
                 </p>
               </div>
               <Badge variant="outline" className={`text-[0.6rem] bg-white/90 ${statusMap[ticket.status]?.cls}`}>
@@ -345,7 +369,7 @@ export default function Support() {
                 </label>
                 <Textarea
                   value={reply}
-                  onChange={(e) => setReply(e.target.value)}
+                  onChange={(e) => { setReply(e.target.value); notifyTyping(); }}
                   placeholder="Digite sua mensagem..."
                   rows={2} className="resize-none" lang="pt-BR" spellCheck
                   onPaste={handlePaste}
