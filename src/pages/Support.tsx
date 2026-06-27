@@ -111,7 +111,7 @@ export default function Support() {
     },
   });
   const assistantAvatars = useAssistantAvatars(assistants.map((a: any) => a.avatar_url));
-  const heroAssistant = assistants[0] as any | undefined;
+  
 
   const { data: tickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ["support-tickets-mine", user?.id],
