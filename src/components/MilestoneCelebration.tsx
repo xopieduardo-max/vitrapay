@@ -160,9 +160,17 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
   const closeAll = () => {
     if (user && activeMilestone) {
       localStorage.setItem(`award_seen_${user.id}_${activeMilestone}`, "1");
+      // Persiste no servidor para nunca mais aparecer (qualquer dispositivo)
+      supabase
+        .from("milestone_seen" as any)
+        .upsert({ user_id: user.id, milestone: activeMilestone } as any, {
+          onConflict: "user_id,milestone",
+        })
+        .then(() => qc.invalidateQueries({ queryKey: ["milestone-seen", user.id] }));
     }
     setActiveMilestone(null);
     setShowForm(false);
+
   };
 
   const handleSubmit = async () => {
