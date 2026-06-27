@@ -74,6 +74,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_whatsapp_recipients: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          label: string | null
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliates: {
         Row: {
           affiliate_link: string
