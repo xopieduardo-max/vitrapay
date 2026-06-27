@@ -145,6 +145,18 @@ export default function AdminWhatsappRecipients() {
               {r.active ? "Ativo" : "Inativo"}
               <Switch checked={r.active} onCheckedChange={() => toggle(r)} />
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => sendTest(r)}
+              disabled={testingId === r.id}
+            >
+              {testingId === r.id ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <><Send className="size-4 mr-1" /> Testar</>
+              )}
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => remove(r)}>
               <Trash2 className="size-4 text-destructive" />
             </Button>
