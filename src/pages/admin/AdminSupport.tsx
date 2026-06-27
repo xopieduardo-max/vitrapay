@@ -228,26 +228,32 @@ export default function AdminSupport() {
                   <button
                     key={t.id}
                     onClick={() => setSelected(t.id)}
-                    className={`w-full text-left px-3 py-3 hover:bg-muted/30 transition ${selected === t.id ? "bg-muted/40" : ""}`}
+                    className={`w-full text-left px-3 py-3 hover:bg-muted/30 transition flex gap-3 ${selected === t.id ? "bg-muted/40" : ""}`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-sm font-medium truncate flex-1">{t.subject}</p>
-                      {t.unread_for_admin > 0 && (
-                        <span className="text-[0.6rem] bg-primary text-primary-foreground rounded-full px-1.5 min-w-[18px] text-center">
-                          {t.unread_for_admin}
+                    <Avatar className="h-9 w-9 shrink-0">
+                      {p?.avatar && <AvatarImage src={p.avatar} alt={p?.name} />}
+                      <AvatarFallback className="text-xs">{initials(p?.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="text-sm font-medium truncate flex-1">{t.subject}</p>
+                        {t.unread_for_admin > 0 && (
+                          <span className="text-[0.6rem] bg-primary text-primary-foreground rounded-full px-1.5 min-w-[18px] text-center">
+                            {t.unread_for_admin}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {p?.name || "—"} · {p?.email || ""}
+                      </p>
+                      <div className="flex items-center justify-between text-xs mt-1">
+                        <Badge variant="outline" className={`text-[0.6rem] ${statusMap[t.status]?.cls}`}>
+                          {statusMap[t.status]?.label}
+                        </Badge>
+                        <span className="text-muted-foreground">
+                          {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
                         </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {p?.name || "—"} · {p?.email || ""}
-                    </p>
-                    <div className="flex items-center justify-between text-xs mt-1">
-                      <Badge variant="outline" className={`text-[0.6rem] ${statusMap[t.status]?.cls}`}>
-                        {statusMap[t.status]?.label}
-                      </Badge>
-                      <span className="text-muted-foreground">
-                        {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
-                      </span>
+                      </div>
                     </div>
                   </button>
                 );
