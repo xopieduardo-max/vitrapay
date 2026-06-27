@@ -1,10 +1,13 @@
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ShoppingBag, ChevronRight, Package, DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, ShoppingBag, ChevronRight, Package, DollarSign, Star, AlertTriangle, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { ReviewDialog } from "@/components/purchases/ReviewDialog";
+import { ReportProblemDialog } from "@/components/purchases/ReportProblemDialog";
 
 const anim = (delay: number) => ({
   initial: { opacity: 0, y: 12 } as const,
