@@ -255,22 +255,24 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
               Você atingiu <span className="text-primary font-bold">{fmt(activeTier.threshold)}</span> em faturamento
             </p>
 
-            <div className="title-rise-cta mt-6 w-full flex flex-col sm:flex-row gap-2 sm:justify-center">
+            <div className="title-rise-cta mt-6 w-full flex flex-wrap gap-2 justify-center items-center">
               <Button variant="ghost" size="icon" onClick={() => { const v = !soundOn; setSoundOn(v); toggleSound(v); }} title={soundOn ? "Som ligado" : "Som desligado"}>
                 {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </Button>
-              <Button variant="outline" onClick={handleShare} disabled={sharing} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={handleShare} disabled={sharing} className="gap-1.5">
                 {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
                 Compartilhar
               </Button>
-              <Button variant="outline" onClick={closeAll}>Mais tarde</Button>
+              <Button variant="outline" size="sm" onClick={closeAll}>Mais tarde</Button>
               <Button
+                size="sm"
                 onClick={() => setShowForm(true)}
                 className="shadow-[0_0_24px_hsl(var(--primary)/0.45)]"
               >
-                Solicitar minha placa
+                Solicitar placa
               </Button>
             </div>
+
 
           </div>
         </DialogContent>
