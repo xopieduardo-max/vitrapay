@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SITE_NAME = "VitraPay";
 const SENDER_DOMAIN = "notify.vitrapay.com.br";
 const FROM_DOMAIN = "vitrapay.com.br";
-const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.webp";
+const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png";
 
 function buildRecoveryEmailHtml(buyerName: string, productTitle: string, checkoutLink: string, isSecond: boolean): string {
   const name = buyerName || "Cliente";

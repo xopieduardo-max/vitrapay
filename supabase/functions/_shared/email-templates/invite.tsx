@@ -21,7 +21,7 @@ interface InviteEmailProps {
   confirmationUrl: string
 }
 
-const logoUrl = 'https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.webp'
+const logoUrl = 'https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png'
 
 export const InviteEmail = ({
   siteName,

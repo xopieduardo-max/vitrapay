@@ -8,7 +8,7 @@ const corsHeaders = {
 const SITE_NAME = "VitraPay";
 const SENDER_DOMAIN = "notify.vitrapay.com.br";
 const FROM_DOMAIN = "vitrapay.com.br";
-const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.webp";
+const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png";
 
 interface WithdrawalNotifyParams {
   user_id: string;
