@@ -22,6 +22,7 @@ const navItems = [
   { title: "Banners", url: "/admin/banners", icon: Image },
   { title: "Pop-ups", url: "/admin/popups", icon: MessageSquareMore },
   { title: "Notificações Push", url: "/admin/push", icon: Bell },
+  { title: "Alertas WhatsApp", url: "/admin/whatsapp-recipients", icon: MessageCircle },
   { title: "GV +", url: "/admin/fake-sales", icon: ShoppingBag },
   { title: "Simulador de Taxas", url: "/admin/fee-simulator", icon: Calculator },
   { title: "Transações", url: "/admin/transactions", icon: Receipt },
