@@ -224,9 +224,9 @@ export default function AdminSupport() {
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="open">Abertos</SelectItem>
-                <SelectItem value="pending">Respondidos</SelectItem>
+                <SelectItem value="pending">Pendentes</SelectItem>
                 <SelectItem value="resolved">Resolvidos</SelectItem>
-                <SelectItem value="closed">Fechados</SelectItem>
+                <SelectItem value="closed">Finalizados</SelectItem>
               </SelectContent>
             </Select>
           </div>
