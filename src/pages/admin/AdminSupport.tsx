@@ -350,20 +350,38 @@ export default function AdminSupport() {
     else localStorage.removeItem("admin_active_assistant");
   }, [assistantId]);
 
+  const csat = useMemo(() => {
+    const rated = tickets.filter((t) => t.rating);
+    if (rated.length === 0) return null;
+    const avg = rated.reduce((a, t) => a + (t.rating || 0), 0) / rated.length;
+    return { avg, count: rated.length };
+  }, [tickets]);
+
   return (
     <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-7rem)]">
-      <div className="shrink-0 mb-4">
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          Mensagens
-          {totalUnread > 0 && (
-            <span className="text-sm bg-primary text-primary-foreground rounded-full px-2 py-0.5">
-              {totalUnread}
-            </span>
-          )}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1 hidden md:block">
-          Atenda chamados de produtores e compradores em tempo real.
-        </p>
+      <div className="shrink-0 mb-4 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            Mensagens
+            {totalUnread > 0 && (
+              <span className="text-sm bg-primary text-primary-foreground rounded-full px-2 py-0.5">
+                {totalUnread}
+              </span>
+            )}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1 hidden md:block">
+            Atenda chamados de produtores e compradores em tempo real.
+          </p>
+        </div>
+        {csat && (
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            <div className="leading-tight">
+              <p className="text-sm font-semibold">{csat.avg.toFixed(2)} <span className="text-xs text-muted-foreground font-normal">/ 5</span></p>
+              <p className="text-[0.65rem] text-muted-foreground">CSAT · {csat.count} avaliação{csat.count > 1 ? "ões" : ""}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-4 flex-1 min-h-0">
