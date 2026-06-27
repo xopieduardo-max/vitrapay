@@ -125,11 +125,18 @@ export default function AdminSupport() {
       const { data, error } = await supabase
         .from("support_tickets")
         .select("*")
-        .order("last_message_at", { ascending: false });
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data || []) as Ticket[];
     },
   });
+
+  const statusCounts = useMemo(() => {
+    const c: Record<string, number> = { all: tickets.length, open: 0, pending: 0, resolved: 0, closed: 0 };
+    tickets.forEach((t) => { c[t.status] = (c[t.status] || 0) + 1; });
+    return c;
+  }, [tickets]);
 
   const { data: profiles = {} } = useQuery({
     queryKey: ["admin-support-profiles", tickets.map((t) => t.user_id).join(",")],
