@@ -1940,8 +1940,45 @@ export type Database = {
         }
         Relationships: []
       }
+      support_assistants: {
+        Row: {
+          active: boolean
+          avatar_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          role_label: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          role_label?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          role_label?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
+          assistant_id: string | null
           attachment_name: string | null
           attachment_type: string | null
           attachment_url: string | null
@@ -1954,6 +1991,7 @@ export type Database = {
           ticket_id: string
         }
         Insert: {
+          assistant_id?: string | null
           attachment_name?: string | null
           attachment_type?: string | null
           attachment_url?: string | null
@@ -1966,6 +2004,7 @@ export type Database = {
           ticket_id: string
         }
         Update: {
+          assistant_id?: string | null
           attachment_name?: string | null
           attachment_type?: string | null
           attachment_url?: string | null
@@ -1978,6 +2017,13 @@ export type Database = {
           ticket_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "support_messages_assistant_id_fkey"
+            columns: ["assistant_id"]
+            isOneToOne: false
+            referencedRelation: "support_assistants"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "support_messages_ticket_id_fkey"
             columns: ["ticket_id"]

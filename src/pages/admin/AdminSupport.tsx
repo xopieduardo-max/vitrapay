@@ -20,13 +20,15 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X, MoreVertical, Pencil, Trash2, UserCog } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
+import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
+import { Link } from "react-router-dom";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -55,6 +57,7 @@ function initials(name?: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
 }
 
+
 export default function AdminSupport() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -67,7 +70,20 @@ export default function AdminSupport() {
   const [editing, setEditing] = useState<{ id: string; body: string } | null>(null);
   const [editSaving, setEditSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [assistantId, setAssistantId] = useState<string>(() => localStorage.getItem("admin_active_assistant") || "");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { data: assistants = [] } = useQuery({
+    queryKey: ["active-assistants"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("support_assistants")
+        .select("id, name, role_label, avatar_url")
+        .eq("active", true)
+        .order("sort_order");
+      return data || [];
+    },
+  });
 
   const pickAttachment = async (file: File | null) => {
     if (!file) return setAttachment(null);
@@ -221,6 +237,7 @@ export default function AdminSupport() {
       attachment_url: uploaded?.path ?? null,
       attachment_name: uploaded?.name ?? null,
       attachment_type: uploaded?.type ?? null,
+      assistant_id: assistantId || null,
     } as any);
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
@@ -233,10 +250,12 @@ export default function AdminSupport() {
         supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
       }
       const pushBody = body || (uploaded ? `📎 ${uploaded.name}` : "Nova mensagem");
+      const activeAssistant = assistants.find((a: any) => a.id === assistantId);
+      const pushTitle = activeAssistant ? `${activeAssistant.name} respondeu` : "Suporte VitraPay respondeu";
       supabase.functions.invoke("send-push", {
         body: {
           producer_id: t.user_id,
-          title: "Suporte VitraPay respondeu",
+          title: pushTitle,
           body: pushBody.length > 80 ? pushBody.slice(0, 80) + "…" : pushBody,
           url: "/support",
         },
@@ -285,6 +304,13 @@ export default function AdminSupport() {
   const ticket = tickets.find((t) => t.id === selected);
   const ticketUser = ticket ? (profiles as any)[ticket.user_id] : null;
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_admin || 0), 0);
+  const activeAssistant = assistants.find((a: any) => a.id === assistantId);
+  const assistantAvatars = useAssistantAvatars(assistants.map((a: any) => a.avatar_url));
+
+  useEffect(() => {
+    if (assistantId) localStorage.setItem("admin_active_assistant", assistantId);
+    else localStorage.removeItem("admin_active_assistant");
+  }, [assistantId]);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-7rem)]">
@@ -406,14 +432,17 @@ export default function AdminSupport() {
                 </Select>
               </div>
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
-                {messages.map((m: any) => (
-                  <div key={m.id} className={`group flex items-start gap-1 ${m.is_admin ? "justify-end" : "justify-start"}`}>
+                {messages.map((m: any) => {
+                  const asst = m.is_admin && m.assistant_id ? assistants.find((a: any) => a.id === m.assistant_id) : null;
+                  const asstAvatar = asst?.avatar_url ? assistantAvatars[asst.avatar_url] : "";
+                  return (
+                  <div key={m.id} className={`group flex items-end gap-1.5 ${m.is_admin ? "justify-end" : "justify-start"}`}>
                     {m.is_admin && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            className="opacity-0 group-hover:opacity-100 transition mb-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
                             aria-label="Ações da mensagem"
                           >
                             <MoreVertical className="h-3.5 w-3.5" />
@@ -432,6 +461,11 @@ export default function AdminSupport() {
                       </DropdownMenu>
                     )}
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.is_admin ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+                      {asst && (
+                        <p className="text-[0.65rem] font-semibold opacity-90 mb-0.5">
+                          {asst.name}{asst.role_label ? ` · ${asst.role_label}` : ""}
+                        </p>
+                      )}
                       {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                       {m.attachment_url && (
                         <SupportAttachment
@@ -447,12 +481,18 @@ export default function AdminSupport() {
                         {m.is_admin && <CheckCheck className="h-3 w-3" />}
                       </p>
                     </div>
+                    {m.is_admin && asst && (
+                      <Avatar className="h-7 w-7 shrink-0">
+                        {asstAvatar && <AvatarImage src={asstAvatar} alt={asst.name} />}
+                        <AvatarFallback className="text-[0.6rem] bg-primary/15 text-primary">{initials(asst.name)}</AvatarFallback>
+                      </Avatar>
+                    )}
                     {!m.is_admin && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            className="opacity-0 group-hover:opacity-100 transition mb-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
                             aria-label="Ações da mensagem"
                           >
                             <MoreVertical className="h-3.5 w-3.5" />
@@ -466,7 +506,8 @@ export default function AdminSupport() {
                       </DropdownMenu>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               {ticket && LOCKED_STATUSES.has(ticket.status) ? (
                 <div className="border-t border-border p-4 text-center text-xs text-muted-foreground bg-muted/20">
@@ -474,6 +515,34 @@ export default function AdminSupport() {
                 </div>
               ) : (
                 <div className="border-t border-border p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Avatar className="h-7 w-7 shrink-0">
+                        {activeAssistant?.avatar_url && (
+                          <AvatarImage src={assistantAvatars[activeAssistant.avatar_url] || ""} alt={activeAssistant.name} />
+                        )}
+                        <AvatarFallback className="text-[0.6rem] bg-primary/15 text-primary">
+                          {activeAssistant ? initials(activeAssistant.name) : <UserCog className="h-3.5 w-3.5" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Select value={assistantId || "none"} onValueChange={(v) => setAssistantId(v === "none" ? "" : v)}>
+                        <SelectTrigger className="h-8 text-xs flex-1">
+                          <SelectValue placeholder="Responder como..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Suporte VitraPay (padrão)</SelectItem>
+                          {assistants.map((a: any) => (
+                            <SelectItem key={a.id} value={a.id}>{a.name}{a.role_label ? ` · ${a.role_label}` : ""}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {assistants.length === 0 && (
+                      <Link to="/admin/assistants" className="text-[0.65rem] text-primary hover:underline whitespace-nowrap">
+                        + Criar atendente
+                      </Link>
+                    )}
+                  </div>
                   {attachment && (
                     <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs">
                       <Paperclip className="h-3.5 w-3.5 shrink-0" />
