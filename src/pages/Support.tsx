@@ -1,17 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import { MessageSquare, Plus, Send, Loader2, ArrowLeft, CheckCheck, Paperclip, X, MessageCircle, Lightbulb, Bug, Search, ArrowUp } from "lucide-react";
+  Send, Loader2, ArrowLeft, CheckCheck, Paperclip, X, Plus, History,
+} from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -57,19 +55,38 @@ const LOCKED_STATUSES = new Set(["resolved", "closed"]);
 const initials = (s?: string) =>
   (s || "?").trim().split(/\s+/).slice(0, 2).map((x) => x[0]?.toUpperCase()).join("");
 
+type Role = "Comprador" | "Produtor";
+
+const TOPICS: Record<Role, string[]> = {
+  Comprador: [
+    "Acesso à área de membros",
+    "Solicitar reembolso",
+    "Dúvida sobre uma cobrança",
+    "Outros assuntos",
+  ],
+  Produtor: [
+    "Dúvida sobre saque",
+    "Configuração de produto",
+    "Integrações e pixels",
+    "Outros assuntos",
+  ],
+};
+
 export default function Support() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+
   const [selected, setSelected] = useState<string | null>(null);
-  const [newOpen, setNewOpen] = useState(false);
-  const [newPrefix, setNewPrefix] = useState<string>("");
-  const [subject, setSubject] = useState("");
-  const [firstMsg, setFirstMsg] = useState("");
   const [reply, setReply] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
-  const [quickQuery, setQuickQuery] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Bot wizard state
+  const [botRole, setBotRole] = useState<Role | null>(null);
+  const [creating, setCreating] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: profile } = useQuery({
@@ -77,14 +94,10 @@ export default function Support() {
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("user_id", user!.id)
-        .maybeSingle();
+        .from("profiles").select("display_name").eq("user_id", user!.id).maybeSingle();
       return data;
     },
   });
-
   const firstName = (profile?.display_name || user?.email?.split("@")[0] || "Olá").split(" ")[0];
 
   const { data: assistants = [] } = useQuery({
@@ -93,45 +106,18 @@ export default function Support() {
       const { data } = await supabase
         .from("support_assistants")
         .select("id, name, role_label, avatar_url")
-        .eq("active", true)
-        .order("sort_order")
-        .limit(5);
+        .eq("active", true).order("sort_order").limit(5);
       return data || [];
     },
   });
   const assistantAvatars = useAssistantAvatars(assistants.map((a: any) => a.avatar_url));
+  const heroAssistant = assistants[0] as any | undefined;
 
-  const pickAttachment = async (file: File | null) => {
-    if (!file) return setAttachment(null);
-    let f = file;
-    if (f.type.startsWith("image/")) f = await convertImageToWebp(f);
-    if (!ACCEPTED_MIME.includes(f.type)) { toast.error("Tipo de arquivo não suportado."); return; }
-    if (f.size > MAX_BYTES) { toast.error("Arquivo muito grande (máx. 10 MB)."); return; }
-    setAttachment(f);
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    const img = getImageFromClipboard(e);
-    if (img) { e.preventDefault(); pickAttachment(img); toast.success("Imagem colada do clipboard"); }
-  };
-
-  const uploadAttachment = async (ticketId: string) => {
-    if (!attachment) return null;
-    const ext = attachment.name.split(".").pop() || "bin";
-    const path = `${ticketId}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("support-attachments")
-      .upload(path, attachment, { contentType: attachment.type, upsert: false });
-    if (error) { toast.error("Falha ao enviar anexo."); return null; }
-    return { path, name: attachment.name, type: attachment.type };
-  };
-
-  const { data: tickets = [], isLoading } = useQuery({
+  const { data: tickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ["support-tickets-mine", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("support_tickets")
-        .select("*")
-        .eq("user_id", user!.id)
+        .from("support_tickets").select("*").eq("user_id", user!.id)
         .order("last_message_at", { ascending: false });
       if (error) throw error;
       return (data || []) as Ticket[];
@@ -139,14 +125,20 @@ export default function Support() {
     enabled: !!user,
   });
 
+  // Auto-select the active (non-locked) ticket so the chat is always front-and-center.
+  const activeTicket = useMemo(
+    () => tickets.find((t) => !LOCKED_STATUSES.has(t.status)) || null,
+    [tickets]
+  );
+  useEffect(() => {
+    if (!selected && activeTicket) setSelected(activeTicket.id);
+  }, [activeTicket, selected]);
+
   const { data: messages = [] } = useQuery({
     queryKey: ["support-messages", selected],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("support_messages")
-        .select("*")
-        .eq("ticket_id", selected!)
-        .order("created_at");
+        .from("support_messages").select("*").eq("ticket_id", selected!).order("created_at");
       if (error) throw error;
       return (data || []) as Message[];
     },
@@ -182,48 +174,63 @@ export default function Support() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages, selected]);
 
-  const openNewWithPrefix = (prefix: string, initial: string) => {
-    setNewPrefix(prefix);
-    setSubject(initial);
-    setFirstMsg("");
-    setNewOpen(true);
-  };
-
-  const createTicket = async () => {
-    const finalSubject = newPrefix ? `[${newPrefix}] ${subject.trim()}` : subject.trim();
-    if (!subject.trim() || !firstMsg.trim()) { toast.error("Preencha assunto e mensagem."); return; }
-    setSending(true);
-    const { data: t, error } = await supabase
-      .from("support_tickets")
-      .insert({ user_id: user!.id, subject: finalSubject })
-      .select().single();
-    if (error || !t) { setSending(false); toast.error("Erro ao abrir ticket."); return; }
-    await supabase.from("support_messages").insert({
-      ticket_id: t.id, sender_id: user!.id, is_admin: false, body: firstMsg.trim(),
-    });
-    setSending(false);
-    setNewOpen(false);
-    setSubject(""); setFirstMsg(""); setNewPrefix("");
-    setSelected(t.id);
-    qc.invalidateQueries({ queryKey: ["support-tickets-mine"] });
-    toast.success("Chamado aberto! Em breve respondemos.");
-  };
-
   const ticket = tickets.find((t) => t.id === selected);
+  const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
+  const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_user || 0), 0);
+
+  // ---------- Bot quick-start: create a ticket from chip click ----------
+  const startConversation = async (role: Role, topic: string) => {
+    if (!user || creating) return;
+    setCreating(true);
+    const subject = `[${role}] ${topic}`;
+    const { data: t, error } = await supabase
+      .from("support_tickets").insert({ user_id: user!.id, subject }).select().single();
+    if (error || !t) { setCreating(false); toast.error("Erro ao iniciar conversa."); return; }
+    // Seed with the user's own first message describing the topic — keeps the admin context.
+    await supabase.from("support_messages").insert({
+      ticket_id: t.id, sender_id: user!.id, is_admin: false,
+      body: `Assunto: ${topic}`,
+    });
+    setCreating(false);
+    setSelected(t.id);
+    setBotRole(null);
+    qc.invalidateQueries({ queryKey: ["support-tickets-mine"] });
+  };
+
+  // ---------- Attachments ----------
+  const pickAttachment = async (file: File | null) => {
+    if (!file) return setAttachment(null);
+    let f = file;
+    if (f.type.startsWith("image/")) f = await convertImageToWebp(f);
+    if (!ACCEPTED_MIME.includes(f.type)) { toast.error("Tipo de arquivo não suportado."); return; }
+    if (f.size > MAX_BYTES) { toast.error("Arquivo muito grande (máx. 10 MB)."); return; }
+    setAttachment(f);
+  };
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const img = getImageFromClipboard(e);
+    if (img) { e.preventDefault(); pickAttachment(img); toast.success("Imagem colada do clipboard"); }
+  };
+  const uploadAttachment = async (ticketId: string) => {
+    if (!attachment) return null;
+    const ext = attachment.name.split(".").pop() || "bin";
+    const path = `${ticketId}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("support-attachments")
+      .upload(path, attachment, { contentType: attachment.type, upsert: false });
+    if (error) { toast.error("Falha ao enviar anexo."); return null; }
+    return { path, name: attachment.name, type: attachment.type };
+  };
 
   const sendReply = async () => {
     if ((!reply.trim() && !attachment) || !selected) return;
     if (ticket && LOCKED_STATUSES.has(ticket.status)) {
-      toast.error("Este chamado foi encerrado. Abra um novo chamado para continuar.");
+      toast.error("Esta conversa foi finalizada. Inicie uma nova abaixo.");
       return;
     }
     setSending(true);
     const uploaded = await uploadAttachment(selected);
     if (attachment && !uploaded) { setSending(false); return; }
     const { error } = await supabase.from("support_messages").insert({
-      ticket_id: selected,
-      sender_id: user!.id,
-      is_admin: false,
+      ticket_id: selected, sender_id: user!.id, is_admin: false,
       body: reply.trim() || null,
       attachment_url: uploaded?.path ?? null,
       attachment_name: uploaded?.name ?? null,
@@ -231,46 +238,40 @@ export default function Support() {
     } as any);
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
-    setReply("");
-    setAttachment(null);
+    setReply(""); setAttachment(null);
     qc.invalidateQueries({ queryKey: ["support-messages", selected] });
   };
 
-  const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
-  const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_user || 0), 0);
-
-  // ---------- IF a chat is open, render the chat fullscreen-ish ----------
-  if (selected) {
+  // ============== RENDER: active chat ==============
+  if (selected && ticket) {
     return (
       <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)]">
-        <Card className="border-border flex flex-col p-0 overflow-hidden flex-1 min-h-0">
+        <Card className="border-border flex flex-col p-0 overflow-hidden flex-1 min-h-0 rounded-3xl">
+          {/* Header */}
           <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelected(null)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelected(null); setBotRole(null); }}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            {assistants.length > 0 ? (
-              <div className="flex -space-x-2 shrink-0">
-                {assistants.slice(0, 3).map((a: any) => (
-                  <Avatar key={a.id} className="h-9 w-9 ring-2 ring-card">
-                    {a.avatar_url && <AvatarImage src={assistantAvatars[a.avatar_url] || ""} alt={a.name} />}
-                    <AvatarFallback className="text-[0.6rem] bg-primary/15 text-primary">{initials(a.name)}</AvatarFallback>
-                  </Avatar>
-                ))}
-              </div>
-            ) : (
-              <Avatar className="h-9 w-9 bg-primary/10">
-                <AvatarFallback className="text-xs bg-primary text-primary-foreground">VP</AvatarFallback>
-              </Avatar>
-            )}
+            <Avatar className="h-9 w-9 ring-2 ring-primary/30">
+              {heroAssistant?.avatar_url && <AvatarImage src={assistantAvatars[heroAssistant.avatar_url] || ""} alt={heroAssistant.name} />}
+              <AvatarFallback className="text-[0.65rem] bg-primary text-primary-foreground font-bold">
+                {heroAssistant ? initials(heroAssistant.name) : "VP"}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">Suporte VitraPay</p>
-              <p className="text-[0.7rem] text-muted-foreground truncate">{ticket?.subject}</p>
+              <p className="text-sm font-semibold truncate">
+                {heroAssistant?.name || "Suporte VitraPay"}
+              </p>
+              <p className="text-[0.7rem] text-muted-foreground truncate">
+                {heroAssistant?.role_label || "Responderemos em instantes"}
+              </p>
             </div>
-            <Badge variant="outline" className={`text-[0.6rem] ${statusMap[ticket?.status || "open"]?.cls}`}>
-              {statusMap[ticket?.status || "open"]?.label}
+            <Badge variant="outline" className={`text-[0.6rem] ${statusMap[ticket.status]?.cls}`}>
+              {statusMap[ticket.status]?.label}
             </Badge>
           </div>
 
+          {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
             {messages.map((m) => {
               const asst = m.is_admin && m.assistant_id ? assistants.find((a: any) => a.id === m.assistant_id) : null;
@@ -294,9 +295,7 @@ export default function Support() {
                     {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                     {m.attachment_url && (
                       <SupportAttachment
-                        path={m.attachment_url}
-                        name={m.attachment_name}
-                        type={m.attachment_type}
+                        path={m.attachment_url} name={m.attachment_name} type={m.attachment_type}
                         ownBubble={!m.is_admin}
                       />
                     )}
@@ -311,13 +310,14 @@ export default function Support() {
             })}
           </div>
 
+          {/* Composer / locked footer */}
           {ticketLocked ? (
             <div className="border-t border-border p-4 bg-muted/20 text-center space-y-2">
               <p className="text-xs text-muted-foreground">
-                Este chamado foi <span className="font-semibold">{statusMap[ticket!.status]?.label.toLowerCase()}</span> pelo suporte.
+                Esta conversa foi <span className="font-semibold">{statusMap[ticket.status]?.label.toLowerCase()}</span>.
               </p>
-              <Button size="sm" onClick={() => { setSelected(null); setNewOpen(true); }} className="gap-2">
-                <Plus className="h-4 w-4" /> Abrir novo chamado
+              <Button size="sm" onClick={() => { setSelected(null); setBotRole(null); }} className="gap-2">
+                <Plus className="h-4 w-4" /> Iniciar nova conversa
               </Button>
             </div>
           ) : (
@@ -342,10 +342,7 @@ export default function Support() {
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   placeholder="Digite sua mensagem..."
-                  rows={2}
-                  className="resize-none"
-                  lang="pt-BR"
-                  spellCheck
+                  rows={2} className="resize-none" lang="pt-BR" spellCheck
                   onPaste={handlePaste}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
@@ -358,215 +355,165 @@ export default function Support() {
             </div>
           )}
         </Card>
-        {/* New ticket dialog reused below */}
-        <NewTicketDialog
-          open={newOpen} onOpenChange={setNewOpen} prefix={newPrefix}
-          subject={subject} setSubject={setSubject} firstMsg={firstMsg} setFirstMsg={setFirstMsg}
-          sending={sending} createTicket={createTicket}
-        />
       </div>
     );
   }
 
-  // ---------- LANDING (no chat selected) ----------
+  // ============== RENDER: bot wizard (no active conversation) ==============
   return (
-    <div className="space-y-6 pb-8">
-      {/* Hero gradient card */}
-      <div className="relative overflow-hidden rounded-3xl border border-border">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(135deg, hsl(48 96% 53%) 0%, hsl(48 96% 40%) 35%, hsl(40 80% 18%) 75%, hsl(0 0% 4%) 100%)",
-          }}
-        />
-        <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-yellow-300/30 blur-3xl" />
-        <div className="absolute -bottom-32 -left-10 h-72 w-72 rounded-full bg-black/40 blur-3xl" />
-
-        <div className="relative px-5 md:px-8 py-7 md:py-10">
-          <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost" size="icon"
-              onClick={() => navigate("/dashboard")}
-              className="h-9 w-9 text-black/80 hover:text-black hover:bg-black/10"
-              aria-label="Voltar"
-            >
-              <ArrowLeft className="h-5 w-5" />
+    <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)]">
+      <Card className="border-border flex flex-col p-0 overflow-hidden flex-1 min-h-0 rounded-3xl">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Avatar className="h-9 w-9 ring-2 ring-primary/30">
+            {heroAssistant?.avatar_url && <AvatarImage src={assistantAvatars[heroAssistant.avatar_url] || ""} alt={heroAssistant.name} />}
+            <AvatarFallback className="text-[0.65rem] bg-primary text-primary-foreground font-bold">
+              {heroAssistant ? initials(heroAssistant.name) : "VP"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">{heroAssistant?.name || "Assistente VitraPay"}</p>
+            <p className="text-[0.7rem] text-muted-foreground truncate">Nosso bot responderá instantaneamente</p>
+          </div>
+          {tickets.length > 0 && (
+            <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => setShowHistory((v) => !v)}>
+              <History className="h-3.5 w-3.5" />
+              Histórico
+              {totalUnread > 0 && (
+                <span className="ml-1 text-[0.55rem] bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+                  {totalUnread}
+                </span>
+              )}
             </Button>
-            {totalUnread > 0 && (
-              <Badge className="bg-black text-yellow-400 border-0">
-                {totalUnread} nova{totalUnread > 1 ? "s" : ""}
-              </Badge>
-            )}
+          )}
+        </div>
+
+        {/* Conversation surface */}
+        <div className="flex-1 overflow-y-auto px-4 py-5 bg-background/30 space-y-4">
+          {/* Bot greeting */}
+          <div className="flex items-end gap-2">
+            <Avatar className="h-7 w-7 shrink-0">
+              {heroAssistant?.avatar_url && <AvatarImage src={assistantAvatars[heroAssistant.avatar_url] || ""} alt={heroAssistant.name} />}
+              <AvatarFallback className="text-[0.6rem] bg-primary/15 text-primary">
+                {heroAssistant ? initials(heroAssistant.name) : "VP"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="max-w-[75%] rounded-2xl px-3.5 py-2 text-sm bg-muted text-foreground">
+              <p className="text-[0.65rem] font-semibold text-primary mb-0.5">
+                {heroAssistant?.name || "VitraPay"}
+              </p>
+              <p>
+                Olá <span className="font-semibold">{firstName}</span>! 👋 Bem-vindo(a) ao suporte da VitraPay.
+                <br />Sobre o que você gostaria de falar hoje?
+              </p>
+              <p className="text-[0.6rem] opacity-70 mt-1 text-right">agora</p>
+            </div>
           </div>
 
-          {assistants.length > 0 ? (
-            <div className="flex -space-x-3 mb-4">
-              {assistants.slice(0, 3).map((a: any) => (
-                <Avatar key={a.id} className="h-12 w-12 ring-2 ring-yellow-300/50 shadow-lg">
-                  {a.avatar_url && <AvatarImage src={assistantAvatars[a.avatar_url] || ""} alt={a.name} />}
-                  <AvatarFallback className="text-xs bg-black text-yellow-400 font-semibold">{initials(a.name)}</AvatarFallback>
-                </Avatar>
+          {/* Step 1: role chips */}
+          {!botRole && (
+            <div className="flex flex-col items-end gap-2 pr-1">
+              {(["Comprador", "Produtor"] as Role[]).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setBotRole(r)}
+                  className="rounded-full border-2 border-primary text-primary px-5 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground transition shadow-sm"
+                >
+                  Sou {r}
+                </button>
               ))}
             </div>
-          ) : (
-            <div className="h-12 w-12 mb-4 rounded-full bg-black/30 flex items-center justify-center text-yellow-400 font-bold">VP</div>
           )}
 
-          <h1 className="text-2xl md:text-3xl font-bold text-black/70 tracking-tight">
-            Olá {firstName} <span className="inline-block">👋</span>
-          </h1>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mt-1 leading-tight drop-shadow">
-            Como podemos te ajudar hoje?
-          </h2>
+          {/* Step 2: confirmation bubble + topic chips */}
+          {botRole && (
+            <>
+              <div className="flex justify-end">
+                <div className="max-w-[75%] rounded-2xl px-3.5 py-2 text-sm bg-primary text-primary-foreground">
+                  Sou {botRole}
+                  <p className="text-[0.6rem] opacity-70 mt-1 text-right">agora</p>
+                </div>
+              </div>
 
-          {/* Quick input → opens new ticket */}
-          <button
-            onClick={() => openNewWithPrefix("", quickQuery)}
-            className="mt-5 w-full md:max-w-xl flex items-center gap-2 rounded-full bg-white pl-5 pr-2 py-2 shadow-xl hover:shadow-2xl transition group"
-          >
-            <span className="flex-1 text-left text-sm text-gray-500 truncate">
-              Como posso ajudar?
-            </span>
-            <span className="h-9 w-9 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-black shadow group-hover:scale-105 transition">
-              <ArrowUp className="h-4 w-4" />
-            </span>
-          </button>
+              <div className="flex flex-col items-end gap-2 pr-1">
+                {TOPICS[botRole].map((topic) => (
+                  <button
+                    key={topic}
+                    disabled={creating}
+                    onClick={() => startConversation(botRole, topic)}
+                    className="rounded-full border-2 border-primary text-primary px-5 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground transition shadow-sm disabled:opacity-60"
+                  >
+                    {topic}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setBotRole(null)}
+                  className="text-[0.7rem] text-muted-foreground hover:text-foreground mt-1"
+                >
+                  ← voltar
+                </button>
+              </div>
+            </>
+          )}
 
-          {/* Quick chips */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button
-              onClick={() => openNewWithPrefix("Suporte", "")}
-              className="flex items-center gap-2 rounded-full bg-white/95 hover:bg-white px-3.5 py-1.5 text-xs font-medium text-gray-800 shadow"
-            >
-              <MessageCircle className="h-3.5 w-3.5 text-blue-600" /> Suporte
-            </button>
-            <button
-              onClick={() => openNewWithPrefix("Sugestão", "")}
-              className="flex items-center gap-2 rounded-full bg-white/95 hover:bg-white px-3.5 py-1.5 text-xs font-medium text-gray-800 shadow"
-            >
-              <Lightbulb className="h-3.5 w-3.5 text-amber-500" /> Sugerir melhoria
-            </button>
-            <button
-              onClick={() => openNewWithPrefix("BUG", "")}
-              className="flex items-center gap-2 rounded-full bg-white/95 hover:bg-white px-3.5 py-1.5 text-xs font-medium text-gray-800 shadow"
-            >
-              <Bug className="h-3.5 w-3.5 text-rose-600" /> Reportar BUG
-            </button>
-          </div>
+          {creating && (
+            <div className="flex justify-center pt-2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+
+          {/* Optional history */}
+          {showHistory && (
+            <div className="pt-4 border-t border-border space-y-2">
+              <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">
+                Conversas anteriores
+              </p>
+              {ticketsLoading ? (
+                <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
+              ) : tickets.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-3 text-center">Sem conversas anteriores.</p>
+              ) : (
+                <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+                  {tickets.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setSelected(t.id)}
+                      className="w-full text-left px-3 py-2.5 hover:bg-muted/40 transition"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="text-xs font-medium truncate flex-1">{t.subject}</p>
+                        {t.unread_for_user > 0 && (
+                          <span className="text-[0.55rem] bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+                            {t.unread_for_user}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between text-[0.65rem]">
+                        <Badge variant="outline" className={`text-[0.55rem] ${statusMap[t.status]?.cls}`}>
+                          {statusMap[t.status]?.label || t.status}
+                        </Badge>
+                        <span className="text-muted-foreground">
+                          {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Central de Ajuda search */}
-      <Card className="border-border p-4">
-        <div className="flex items-center gap-3">
-          <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-          <Input
-            value={quickQuery}
-            onChange={(e) => setQuickQuery(e.target.value)}
-            placeholder="Central de Ajuda — busque artigos…"
-            className="border-0 px-0 focus-visible:ring-0 shadow-none"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && quickQuery.trim()) navigate(`/help?q=${encodeURIComponent(quickQuery)}`);
-            }}
-          />
-          <Button size="sm" variant="ghost" onClick={() => navigate("/help")}>Abrir</Button>
-        </div>
-      </Card>
-
-      {/* Existing tickets */}
-      <Card className="border-border p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Seus chamados ({tickets.length})
+        {/* Footer hint */}
+        <div className="border-t border-border px-4 py-3 bg-card/60 text-center">
+          <p className="text-[0.7rem] text-muted-foreground">
+            Escolha uma opção acima para iniciar uma nova conversa com o suporte.
           </p>
-          <Button size="sm" variant="outline" onClick={() => setNewOpen(true)} className="gap-2 h-8">
-            <Plus className="h-3.5 w-3.5" /> Novo
-          </Button>
         </div>
-        {isLoading ? (
-          <div className="p-8 flex justify-center"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
-        ) : tickets.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-40" />
-            Nenhum chamado ainda. Use os botões acima para abrir um.
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {tickets.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setSelected(t.id)}
-                className="w-full text-left px-4 py-3 hover:bg-muted/30 transition"
-              >
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-sm font-medium truncate flex-1">{t.subject}</p>
-                  {t.unread_for_user > 0 && (
-                    <span className="text-[0.6rem] bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-                      {t.unread_for_user}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <Badge variant="outline" className={`text-[0.6rem] ${statusMap[t.status]?.cls}`}>
-                    {statusMap[t.status]?.label || t.status}
-                  </Badge>
-                  <span className="text-muted-foreground">
-                    {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
       </Card>
-
-      <NewTicketDialog
-        open={newOpen} onOpenChange={setNewOpen} prefix={newPrefix}
-        subject={subject} setSubject={setSubject} firstMsg={firstMsg} setFirstMsg={setFirstMsg}
-        sending={sending} createTicket={createTicket}
-      />
     </div>
-  );
-}
-
-function NewTicketDialog({
-  open, onOpenChange, prefix, subject, setSubject, firstMsg, setFirstMsg, sending, createTicket,
-}: {
-  open: boolean; onOpenChange: (o: boolean) => void; prefix: string;
-  subject: string; setSubject: (s: string) => void;
-  firstMsg: string; setFirstMsg: (s: string) => void;
-  sending: boolean; createTicket: () => void;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{prefix ? `Novo: ${prefix}` : "Abrir novo chamado"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3 py-2">
-          <Input
-            placeholder="Assunto (ex: Dúvida sobre saque)"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            maxLength={120}
-          />
-          <Textarea
-            placeholder="Descreva sua dúvida ou problema..."
-            value={firstMsg}
-            onChange={(e) => setFirstMsg(e.target.value)}
-            rows={5}
-            maxLength={2000}
-          />
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={createTicket} disabled={sending}>
-            {sending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Abrir chamado
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
