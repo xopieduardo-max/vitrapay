@@ -2074,6 +2074,9 @@ export type Database = {
           created_at: string
           id: string
           last_message_at: string
+          rated_at: string | null
+          rating: number | null
+          rating_comment: string | null
           status: string
           subject: string
           unread_for_admin: number
@@ -2085,6 +2088,9 @@ export type Database = {
           created_at?: string
           id?: string
           last_message_at?: string
+          rated_at?: string | null
+          rating?: number | null
+          rating_comment?: string | null
           status?: string
           subject: string
           unread_for_admin?: number
@@ -2096,6 +2102,9 @@ export type Database = {
           created_at?: string
           id?: string
           last_message_at?: string
+          rated_at?: string | null
+          rating?: number | null
+          rating_comment?: string | null
           status?: string
           subject?: string
           unread_for_admin?: number

@@ -20,7 +20,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X, MoreVertical, Pencil, Trash2, UserCog } from "lucide-react";
+import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X, MoreVertical, Pencil, Trash2, UserCog, Star } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -53,6 +53,9 @@ interface Ticket {
   last_message_at: string;
   unread_for_admin: number;
   created_at: string;
+  rating?: number | null;
+  rating_comment?: string | null;
+  rated_at?: string | null;
 }
 
 const statusMap: Record<string, { label: string; cls: string }> = {
@@ -347,20 +350,38 @@ export default function AdminSupport() {
     else localStorage.removeItem("admin_active_assistant");
   }, [assistantId]);
 
+  const csat = useMemo(() => {
+    const rated = tickets.filter((t) => t.rating);
+    if (rated.length === 0) return null;
+    const avg = rated.reduce((a, t) => a + (t.rating || 0), 0) / rated.length;
+    return { avg, count: rated.length };
+  }, [tickets]);
+
   return (
     <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-7rem)]">
-      <div className="shrink-0 mb-4">
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          Mensagens
-          {totalUnread > 0 && (
-            <span className="text-sm bg-primary text-primary-foreground rounded-full px-2 py-0.5">
-              {totalUnread}
-            </span>
-          )}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1 hidden md:block">
-          Atenda chamados de produtores e compradores em tempo real.
-        </p>
+      <div className="shrink-0 mb-4 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            Mensagens
+            {totalUnread > 0 && (
+              <span className="text-sm bg-primary text-primary-foreground rounded-full px-2 py-0.5">
+                {totalUnread}
+              </span>
+            )}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1 hidden md:block">
+            Atenda chamados de produtores e compradores em tempo real.
+          </p>
+        </div>
+        {csat && (
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            <div className="leading-tight">
+              <p className="text-sm font-semibold">{csat.avg.toFixed(2)} <span className="text-xs text-muted-foreground font-normal">/ 5</span></p>
+              <p className="text-[0.65rem] text-muted-foreground">CSAT · {csat.count} avaliação{csat.count > 1 ? "ões" : ""}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-4 flex-1 min-h-0">
@@ -435,6 +456,16 @@ export default function AdminSupport() {
                           {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
                         </span>
                       </div>
+                      {t.rating && (
+                        <div className="flex items-center gap-0.5 mt-1">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <Star
+                              key={n}
+                              className={`h-3 w-3 ${n <= (t.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </button>
                 );
@@ -480,6 +511,22 @@ export default function AdminSupport() {
                   </SelectContent>
                 </Select>
               </div>
+              {ticket?.rating && (
+                <div className="px-4 py-2 border-b border-border bg-yellow-500/5 flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        className={`h-3.5 w-3.5 ${n <= (ticket.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">{ticket.rating}/5</span>
+                  {ticket.rating_comment && (
+                    <span className="text-muted-foreground italic truncate">· "{ticket.rating_comment}"</span>
+                  )}
+                </div>
+              )}
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
                 {messages.map((m: any) => {
                   const asst = m.is_admin && m.assistant_id ? assistants.find((a: any) => a.id === m.assistant_id) : null;

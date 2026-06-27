@@ -18,6 +18,7 @@ import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { TicketRatingCard } from "@/components/support/TicketRatingCard";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -29,6 +30,8 @@ interface Ticket {
   last_message_at: string;
   unread_for_user: number;
   created_at: string;
+  rating?: number | null;
+  rating_comment?: string | null;
 }
 interface Message {
   id: string;
@@ -341,13 +344,21 @@ export default function Support() {
 
           {/* Composer / locked footer */}
           {ticketLocked ? (
-            <div className="border-t border-border p-4 bg-muted/20 text-center space-y-2">
-              <p className="text-xs text-muted-foreground">
+            <div className="border-t border-border p-4 bg-muted/20 space-y-3">
+              <p className="text-xs text-muted-foreground text-center">
                 Esta conversa foi <span className="font-semibold">{statusMap[ticket.status]?.label.toLowerCase()}</span>.
               </p>
-              <Button size="sm" onClick={() => { setSelected(null); setBotRole(null); }} className="gap-2">
-                <Plus className="h-4 w-4" /> Iniciar nova conversa
-              </Button>
+              <TicketRatingCard
+                ticketId={ticket.id}
+                currentRating={ticket.rating}
+                currentComment={ticket.rating_comment}
+                compact
+              />
+              <div className="text-center">
+                <Button size="sm" onClick={() => { setSelected(null); setBotRole(null); }} className="gap-2">
+                  <Plus className="h-4 w-4" /> Iniciar nova conversa
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="border-t border-border p-3 space-y-2">
