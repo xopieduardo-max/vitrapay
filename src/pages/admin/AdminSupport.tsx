@@ -269,6 +269,7 @@ export default function AdminSupport() {
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply("");
     setAttachment(null);
+    notifyStop();
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
 
     if (t) {
