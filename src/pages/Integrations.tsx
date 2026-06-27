@@ -12,8 +12,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { motion } from "framer-motion";
 
 import utmifyLogo from "@/assets/integrations/utmify-logo.png";
-import facebookLogo from "@/assets/integrations/facebook-logo.png";
-import googleAdsLogo from "@/assets/integrations/google-ads-logo.png";
+import facebookLogo from "@/assets/integrations/facebook-logo.webp";
+import googleAdsLogo from "@/assets/integrations/google-ads-logo.webp";
 import tiktokLogo from "@/assets/integrations/tiktok-logo.png";
 
 const anim = (delay: number) => ({

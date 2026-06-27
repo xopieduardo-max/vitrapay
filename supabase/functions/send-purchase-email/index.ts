@@ -9,7 +9,7 @@ const SITE_NAME = "VitraPay";
 const SENDER_DOMAIN = "notify.vitrapay.com.br";
 const FROM_DOMAIN = "vitrapay.com.br";
 const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png";
-const CELEBRATION_IMG = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/email-celebration-woman.png";
+const CELEBRATION_IMG = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/email-celebration-woman.webp";
 
 interface PurchaseEmailParams {
   buyer_name: string;

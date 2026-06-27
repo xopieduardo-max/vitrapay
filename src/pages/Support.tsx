@@ -16,7 +16,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
-import vitrapayLogo from "@/assets/logo-vitrapay-icon-square.png";
+import vitrapayLogo from "@/assets/logo-vitrapay-icon-square.webp";
 
 interface Ticket {
   id: string;
