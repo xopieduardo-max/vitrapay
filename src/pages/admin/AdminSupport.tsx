@@ -137,13 +137,30 @@ export default function AdminSupport() {
   const send = async () => {
     if (!reply.trim() || !selected) return;
     setSending(true);
+    const body = reply.trim();
     const { error } = await supabase.from("support_messages").insert({
-      ticket_id: selected, sender_id: user!.id, is_admin: true, body: reply.trim(),
+      ticket_id: selected, sender_id: user!.id, is_admin: true, body,
     });
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply("");
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
+
+    // Auto status -> pending (respondido) e push notification para o usuário
+    const t = tickets.find((x) => x.id === selected);
+    if (t) {
+      if (t.status === "open") {
+        supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
+      }
+      supabase.functions.invoke("send-push", {
+        body: {
+          producer_id: t.user_id,
+          title: "Suporte VitraPay respondeu",
+          body: body.length > 80 ? body.slice(0, 80) + "…" : body,
+          url: "/support",
+        },
+      }).catch(() => {});
+    }
   };
 
   const setStatus = async (status: string) => {
