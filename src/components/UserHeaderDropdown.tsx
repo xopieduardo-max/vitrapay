@@ -31,8 +31,8 @@ export function UserHeaderDropdown() {
   });
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window === "undefined") return "producer";
-    return (localStorage.getItem("viewMode") as ViewMode) || "producer";
+    if (typeof window === "undefined") return "buyer";
+    return (localStorage.getItem("viewMode") as ViewMode) || "buyer";
   });
 
   useEffect(() => {
@@ -98,10 +98,13 @@ export function UserHeaderDropdown() {
     localStorage.setItem("viewMode", mode);
     toast({
       title: mode === "producer" ? "Modo Produtor ativado" : "Modo Comprador ativado",
-      description: mode === "producer" ? "Painel de vendas e produtos." : "Suas compras e biblioteca.",
+      description: mode === "producer" ? "Painel de vendas e produtos." : "Seus cursos e produtos comprados.",
     });
-    navigate(mode === "producer" ? "/dashboard" : "/purchases");
+    navigate(mode === "producer" ? "/dashboard" : "/home");
   };
+
+  // In buyer mode (or for buyer-only users), show the simplified Kiwify-style menu.
+  const buyerMode = !isProducer || viewMode === "buyer";
 
   return (
     <DropdownMenu>
@@ -123,54 +126,84 @@ export function UserHeaderDropdown() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
-        {isProducer && (
+        {buyerMode ? (
+          <>
+            <DropdownMenuItem onClick={() => navigate("/home")} className="gap-3 cursor-pointer">
+              <Home className="h-4 w-4" />
+              Página Inicial
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-3 cursor-pointer">
+              <UserCircle className="h-4 w-4" />
+              Meu Perfil
+            </DropdownMenuItem>
+            {isProducer && (
+              <DropdownMenuItem onClick={() => switchMode("producer")} className="gap-3 cursor-pointer">
+                <Rocket className="h-4 w-4 text-primary" />
+                Mudar para produtor
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => navigate("/support")} className="gap-3 cursor-pointer">
+              <LifeBuoy className="h-4 w-4" />
+              Ajuda & Suporte
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <div
+              className="flex items-center justify-between px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              <span className="flex items-center gap-3">
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                Modo noturno
+              </span>
+              <Switch checked={theme === "dark"} onCheckedChange={(v) => setTheme(v ? "dark" : "light")} />
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="gap-3 cursor-pointer text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
+          </>
+        ) : (
           <>
             <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
               Trocar de modo
             </DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => switchMode("producer")}
-              className="gap-3 cursor-pointer"
-            >
+            <DropdownMenuItem onClick={() => switchMode("producer")} className="gap-3 cursor-pointer">
               <Rocket className="h-4 w-4 text-primary" />
               <span className="flex-1">Modo Produtor</span>
-              {viewMode === "producer" && <Check className="h-3.5 w-3.5 text-primary" />}
+              <Check className="h-3.5 w-3.5 text-primary" />
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => switchMode("buyer")}
-              className="gap-3 cursor-pointer"
-            >
+            <DropdownMenuItem onClick={() => switchMode("buyer")} className="gap-3 cursor-pointer">
               <ShoppingBag className="h-4 w-4" />
               <span className="flex-1">Modo Comprador</span>
-              {viewMode === "buyer" && <Check className="h-3.5 w-3.5 text-primary" />}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/settings")} className="gap-3 cursor-pointer">
+              <User className="h-4 w-4" />
+              Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/support")} className="gap-3 cursor-pointer">
+              <LifeBuoy className="h-4 w-4" />
+              Ajuda & Suporte
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <div
+              className="flex items-center justify-between px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              <span className="flex items-center gap-3">
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                Modo noturno
+              </span>
+              <Switch checked={theme === "dark"} onCheckedChange={(v) => setTheme(v ? "dark" : "light")} />
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="gap-3 cursor-pointer text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4" />
+              Sair
+            </DropdownMenuItem>
           </>
         )}
-        <DropdownMenuItem onClick={() => navigate("/settings")} className="gap-3 cursor-pointer">
-          <User className="h-4 w-4" />
-          Perfil
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/support")} className="gap-3 cursor-pointer">
-          <LifeBuoy className="h-4 w-4" />
-          Ajuda & Suporte
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <div
-          className="flex items-center justify-between px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          <span className="flex items-center gap-3">
-            {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            Modo noturno
-          </span>
-          <Switch checked={theme === "dark"} onCheckedChange={(v) => setTheme(v ? "dark" : "light")} />
-        </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="gap-3 cursor-pointer text-destructive focus:text-destructive">
-          <LogOut className="h-4 w-4" />
-          Sair
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
