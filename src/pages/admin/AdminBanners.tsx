@@ -40,6 +40,7 @@ export default function AdminBanners() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [intervalSeconds, setIntervalSeconds] = useState(5);
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
 
   const { data: banners = [], isLoading } = useQuery({
     queryKey: ["admin-banners"],
