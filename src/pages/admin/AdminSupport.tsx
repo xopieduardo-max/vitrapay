@@ -167,7 +167,7 @@ export default function AdminSupport() {
   }, [tickets, filter, search, profiles]);
 
   const send = async () => {
-    if (!reply.trim() || !selected) return;
+    if ((!reply.trim() && !attachment) || !selected) return;
     const t = tickets.find((x) => x.id === selected);
     if (t && LOCKED_STATUSES.has(t.status)) {
       toast.error("Este chamado está encerrado. Reabra mudando o status para Pendente.");
@@ -175,23 +175,41 @@ export default function AdminSupport() {
     }
     setSending(true);
     const body = reply.trim();
+    let uploaded: { path: string; name: string; type: string } | null = null;
+    if (attachment) {
+      const ext = attachment.name.split(".").pop() || "bin";
+      const path = `${selected}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("support-attachments")
+        .upload(path, attachment, { contentType: attachment.type, upsert: false });
+      if (upErr) { setSending(false); toast.error("Falha ao enviar anexo."); return; }
+      uploaded = { path, name: attachment.name, type: attachment.type };
+    }
     const { error } = await supabase.from("support_messages").insert({
-      ticket_id: selected, sender_id: user!.id, is_admin: true, body,
-    });
+      ticket_id: selected,
+      sender_id: user!.id,
+      is_admin: true,
+      body: body || null,
+      attachment_url: uploaded?.path ?? null,
+      attachment_name: uploaded?.name ?? null,
+      attachment_type: uploaded?.type ?? null,
+    } as any);
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply("");
+    setAttachment(null);
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
 
     if (t) {
       if (t.status === "open") {
         supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
       }
+      const pushBody = body || (uploaded ? `📎 ${uploaded.name}` : "Nova mensagem");
       supabase.functions.invoke("send-push", {
         body: {
           producer_id: t.user_id,
           title: "Suporte VitraPay respondeu",
-          body: body.length > 80 ? body.slice(0, 80) + "…" : body,
+          body: pushBody.length > 80 ? pushBody.slice(0, 80) + "…" : pushBody,
           url: "/support",
         },
       }).catch(() => {});
