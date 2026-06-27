@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
 import BannerCarousel from "@/components/BannerCarousel";
 import { MilestoneCelebration } from "@/components/MilestoneCelebration";
+import { ProducerAIInsights } from "@/components/dashboard/ProducerAIInsights";
 import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -600,6 +601,11 @@ export default function Dashboard() {
   return (
     <div className="space-y-5 pb-20 md:pb-6">
       <MilestoneCelebration revenue={grossRevenueAll} />
+
+      {/* AI Insights + Week-over-week comparison */}
+      <ProducerAIInsights />
+
+
 
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">

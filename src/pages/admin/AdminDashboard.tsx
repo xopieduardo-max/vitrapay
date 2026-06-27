@@ -11,6 +11,7 @@ import {
   PendingCheckoutsDetailDialog,
 } from "@/components/admin/AdminCardDetailDialogs";
 import { AdminTodayPulse } from "@/components/admin/AdminTodayPulse";
+import { AdminSmartAlerts } from "@/components/admin/AdminSmartAlerts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -706,6 +707,10 @@ export default function AdminDashboard() {
 
       {/* Pulse "Hoje na plataforma" */}
       <AdminTodayPulse />
+
+      {/* Alertas inteligentes */}
+      <AdminSmartAlerts />
+
 
 
 
