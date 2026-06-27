@@ -18,6 +18,7 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import vitrapayLogo from "@/assets/logo-vitrapay-icon-square.webp";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
+import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
 const MAX_BYTES = 10 * 1024 * 1024;
