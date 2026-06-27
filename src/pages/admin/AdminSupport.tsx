@@ -45,10 +45,18 @@ interface Ticket {
 
 const statusMap: Record<string, { label: string; cls: string }> = {
   open: { label: "Aberto", cls: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" },
-  pending: { label: "Pendente", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
+  pending: { label: "Em atendimento", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
   resolved: { label: "Resolvido", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
   closed: { label: "Finalizado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
 };
+
+const QUICK_TABS: { key: "all" | "open" | "pending" | "resolved" | "closed"; label: string }[] = [
+  { key: "all", label: "Todos" },
+  { key: "open", label: "Aberto" },
+  { key: "pending", label: "Em atendimento" },
+  { key: "resolved", label: "Resolvido" },
+  { key: "closed", label: "Finalizado" },
+];
 
 const LOCKED_STATUSES = new Set(["resolved", "closed"]);
 
@@ -117,11 +125,18 @@ export default function AdminSupport() {
       const { data, error } = await supabase
         .from("support_tickets")
         .select("*")
-        .order("last_message_at", { ascending: false });
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data || []) as Ticket[];
     },
   });
+
+  const statusCounts = useMemo(() => {
+    const c: Record<string, number> = { all: tickets.length, open: 0, pending: 0, resolved: 0, closed: 0 };
+    tickets.forEach((t) => { c[t.status] = (c[t.status] || 0) + 1; });
+    return c;
+  }, [tickets]);
 
   const { data: profiles = {} } = useQuery({
     queryKey: ["admin-support-profiles", tickets.map((t) => t.user_id).join(",")],
@@ -340,16 +355,24 @@ export default function AdminSupport() {
                 className="pl-8 h-8 text-sm"
               />
             </div>
-            <Select value={filter} onValueChange={(v) => setFilter(v as any)}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="open">Abertos</SelectItem>
-                <SelectItem value="pending">Pendentes</SelectItem>
-                <SelectItem value="resolved">Resolvidos</SelectItem>
-                <SelectItem value="closed">Finalizados</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-wrap gap-1">
+              {QUICK_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setFilter(tab.key)}
+                  className={`text-[0.7rem] px-2 py-1 rounded-full border transition ${
+                    filter === tab.key
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border hover:bg-muted/50"
+                  }`}
+                >
+                  {tab.label}
+                  <span className={`ml-1 ${filter === tab.key ? "opacity-90" : "opacity-60"}`}>
+                    {statusCounts[tab.key] ?? 0}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
           {isLoading ? (
             <div className="p-6 flex justify-center"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
