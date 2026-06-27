@@ -171,6 +171,13 @@ export default function Support() {
   const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_user || 0), 0);
 
+  // The active assistant for this ticket = the most recent admin message's assistant.
+  const currentAssistant = useMemo(() => {
+    const lastAdminMsg = [...messages].reverse().find((m) => m.is_admin && m.assistant_id);
+    if (lastAdminMsg) return assistants.find((a: any) => a.id === lastAdminMsg.assistant_id) || null;
+    return null;
+  }, [messages, assistants]);
+
   // ---------- Bot quick-start: create a ticket from chip click ----------
   const startConversation = async (role: Role, topic: string) => {
     if (!user || creating) return;
