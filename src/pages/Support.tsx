@@ -81,7 +81,7 @@ export default function Support() {
   const [reply, setReply] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  
 
   // Bot wizard state
   const [botRole, setBotRole] = useState<Role | null>(null);
