@@ -613,7 +613,7 @@ export default function AdminSupport() {
                     </label>
                     <Textarea
                       value={reply}
-                      onChange={(e) => setReply(e.target.value)}
+                      onChange={(e) => { setReply(e.target.value); notifyTyping(); }}
                       placeholder="Resposta do suporte..."
                       rows={2}
                       className="resize-none"
