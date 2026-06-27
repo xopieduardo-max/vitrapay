@@ -74,6 +74,7 @@ const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
 const AdminWhatsappRecipients = lazy(() => import("./pages/admin/AdminWhatsappRecipients"));
 const AdminAssistants = lazy(() => import("./pages/admin/AdminAssistants"));
+const AdminQuickReplies = lazy(() => import("./pages/admin/AdminQuickReplies"));
 const Support = lazy(() => import("./pages/Support"));
 
 const queryClient = new QueryClient();
@@ -175,6 +176,7 @@ const App = () => {
                 <Route path="/admin/support" element={<AdminSupport />} />
                 <Route path="/admin/whatsapp-recipients" element={<AdminWhatsappRecipients />} />
                 <Route path="/admin/assistants" element={<AdminAssistants />} />
+                <Route path="/admin/quick-replies" element={<AdminQuickReplies />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
