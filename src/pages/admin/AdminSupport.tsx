@@ -28,10 +28,12 @@ interface Ticket {
 
 const statusMap: Record<string, { label: string; cls: string }> = {
   open: { label: "Aberto", cls: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" },
-  pending: { label: "Respondido", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
+  pending: { label: "Pendente", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
   resolved: { label: "Resolvido", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
-  closed: { label: "Fechado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
+  closed: { label: "Finalizado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
 };
+
+const LOCKED_STATUSES = new Set(["resolved", "closed"]);
 
 function initials(name?: string) {
   if (!name) return "U";
@@ -117,8 +119,15 @@ export default function AdminSupport() {
         qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
         qc.invalidateQueries({ queryKey: ["admin-sidebar-counters"] });
       });
+      // Auto: ao abrir um chamado "Aberto", muda para "Pendente" (em atendimento)
+      const t = tickets.find((x) => x.id === selected);
+      if (t?.status === "open") {
+        supabase.from("support_tickets").update({ status: "pending" }).eq("id", selected).then(() => {
+          qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+        });
+      }
     }
-  }, [selected, messages.length, qc]);
+  }, [selected, messages.length, tickets, qc]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -141,6 +150,11 @@ export default function AdminSupport() {
 
   const send = async () => {
     if (!reply.trim() || !selected) return;
+    const t = tickets.find((x) => x.id === selected);
+    if (t && LOCKED_STATUSES.has(t.status)) {
+      toast.error("Este chamado está encerrado. Reabra mudando o status para Pendente.");
+      return;
+    }
     setSending(true);
     const body = reply.trim();
     const { error } = await supabase.from("support_messages").insert({
@@ -151,8 +165,6 @@ export default function AdminSupport() {
     setReply("");
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
 
-    // Auto status -> pending (respondido) e push notification para o usuário
-    const t = tickets.find((x) => x.id === selected);
     if (t) {
       if (t.status === "open") {
         supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
@@ -212,9 +224,9 @@ export default function AdminSupport() {
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="open">Abertos</SelectItem>
-                <SelectItem value="pending">Respondidos</SelectItem>
+                <SelectItem value="pending">Pendentes</SelectItem>
                 <SelectItem value="resolved">Resolvidos</SelectItem>
-                <SelectItem value="closed">Fechados</SelectItem>
+                <SelectItem value="closed">Finalizados</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -289,12 +301,12 @@ export default function AdminSupport() {
                   </p>
                 </div>
                 <Select value={ticket?.status} onValueChange={setStatus}>
-                  <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="open">Aberto</SelectItem>
-                    <SelectItem value="pending">Respondido</SelectItem>
+                    <SelectItem value="pending">Pendente</SelectItem>
                     <SelectItem value="resolved">Resolvido</SelectItem>
-                    <SelectItem value="closed">Fechado</SelectItem>
+                    <SelectItem value="closed">Finalizado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -311,25 +323,31 @@ export default function AdminSupport() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-border p-3 flex gap-2">
-                <Textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Resposta do suporte..."
-                  rows={2}
-                  className="resize-none"
-                  lang="pt-BR"
-                  spellCheck
-                  autoCorrect="on"
-                  autoCapitalize="sentences"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-                  }}
-                />
-                <Button onClick={send} disabled={sending || !reply.trim()}>
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
+              {ticket && LOCKED_STATUSES.has(ticket.status) ? (
+                <div className="border-t border-border p-4 text-center text-xs text-muted-foreground bg-muted/20">
+                  Chamado <span className="font-semibold">{statusMap[ticket.status]?.label.toLowerCase()}</span>. Para responder novamente, mude o status para <span className="font-semibold">Pendente</span>.
+                </div>
+              ) : (
+                <div className="border-t border-border p-3 flex gap-2">
+                  <Textarea
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    placeholder="Resposta do suporte..."
+                    rows={2}
+                    className="resize-none"
+                    lang="pt-BR"
+                    spellCheck
+                    autoCorrect="on"
+                    autoCapitalize="sentences"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+                    }}
+                  />
+                  <Button onClick={send} disabled={sending || !reply.trim()}>
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </Card>

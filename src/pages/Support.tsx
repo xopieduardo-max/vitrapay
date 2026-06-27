@@ -37,10 +37,12 @@ interface Message {
 
 const statusMap: Record<string, { label: string; cls: string }> = {
   open: { label: "Aberto", cls: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" },
-  pending: { label: "Respondido", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
+  pending: { label: "Pendente", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
   resolved: { label: "Resolvido", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
-  closed: { label: "Fechado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
+  closed: { label: "Finalizado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
 };
+
+const LOCKED_STATUSES = new Set(["resolved", "closed"]);
 
 export default function Support() {
   const { user } = useAuth();
@@ -138,8 +140,14 @@ export default function Support() {
     toast.success("Ticket aberto! Em breve um agente responderá.");
   };
 
+  const ticket = tickets.find((t) => t.id === selected);
+
   const sendReply = async () => {
     if (!reply.trim() || !selected) return;
+    if (ticket && LOCKED_STATUSES.has(ticket.status)) {
+      toast.error("Este chamado foi encerrado. Abra um novo chamado para continuar.");
+      return;
+    }
     setSending(true);
     const { error } = await supabase.from("support_messages").insert({
       ticket_id: selected, sender_id: user!.id, is_admin: false, body: reply.trim(),
@@ -150,7 +158,7 @@ export default function Support() {
     qc.invalidateQueries({ queryKey: ["support-messages", selected] });
   };
 
-  const ticket = tickets.find((t) => t.id === selected);
+  const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
 
   return (
     <div className="space-y-6">
@@ -274,25 +282,36 @@ export default function Support() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-border p-3 flex gap-2">
-                <Textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Digite sua mensagem..."
-                  rows={2}
-                  className="resize-none"
-                  lang="pt-BR"
-                  spellCheck
-                  autoCorrect="on"
-                  autoCapitalize="sentences"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
-                  }}
-                />
-                <Button onClick={sendReply} disabled={sending || !reply.trim()} className="h-auto">
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
+              {ticketLocked ? (
+                <div className="border-t border-border p-4 bg-muted/20 text-center space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Este chamado foi <span className="font-semibold">{statusMap[ticket!.status]?.label.toLowerCase()}</span> pelo suporte. Para continuar, abra um novo chamado.
+                  </p>
+                  <Button size="sm" onClick={() => setNewOpen(true)} className="gap-2">
+                    <Plus className="h-4 w-4" /> Abrir novo chamado
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-t border-border p-3 flex gap-2">
+                  <Textarea
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    placeholder="Digite sua mensagem..."
+                    rows={2}
+                    className="resize-none"
+                    lang="pt-BR"
+                    spellCheck
+                    autoCorrect="on"
+                    autoCapitalize="sentences"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
+                    }}
+                  />
+                  <Button onClick={sendReply} disabled={sending || !reply.trim()} className="h-auto">
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </Card>
