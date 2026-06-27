@@ -178,18 +178,27 @@ export default function Support() {
   const ticket = tickets.find((t) => t.id === selected);
 
   const sendReply = async () => {
-    if (!reply.trim() || !selected) return;
+    if ((!reply.trim() && !attachment) || !selected) return;
     if (ticket && LOCKED_STATUSES.has(ticket.status)) {
       toast.error("Este chamado foi encerrado. Abra um novo chamado para continuar.");
       return;
     }
     setSending(true);
+    const uploaded = await uploadAttachment(selected);
+    if (attachment && !uploaded) { setSending(false); return; }
     const { error } = await supabase.from("support_messages").insert({
-      ticket_id: selected, sender_id: user!.id, is_admin: false, body: reply.trim(),
-    });
+      ticket_id: selected,
+      sender_id: user!.id,
+      is_admin: false,
+      body: reply.trim() || null,
+      attachment_url: uploaded?.path ?? null,
+      attachment_name: uploaded?.name ?? null,
+      attachment_type: uploaded?.type ?? null,
+    } as any);
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply("");
+    setAttachment(null);
     qc.invalidateQueries({ queryKey: ["support-messages", selected] });
   };
 
