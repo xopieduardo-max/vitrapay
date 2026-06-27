@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { User, LogOut, Moon, Sun, ChevronDown, LifeBuoy, ShoppingBag, Rocket, Check } from "lucide-react";
+import { User, LogOut, Moon, Sun, ChevronDown, LifeBuoy, ShoppingBag, Rocket, Check, Home, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type ViewMode = "buyer" | "producer";
