@@ -10,7 +10,17 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -54,6 +64,9 @@ export default function AdminSupport() {
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "open" | "pending" | "resolved" | "closed">("all");
+  const [editing, setEditing] = useState<{ id: string; body: string } | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const pickAttachment = async (file: File | null) => {
@@ -134,9 +147,10 @@ export default function AdminSupport() {
       .channel("support-admin")
       .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets" },
         () => qc.invalidateQueries({ queryKey: ["admin-support-tickets"] }))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages" },
+      .on("postgres_changes", { event: "*", schema: "public", table: "support_messages" },
         (payload: any) => {
-          if (payload.new?.ticket_id === selected) {
+          const tid = (payload.new as any)?.ticket_id || (payload.old as any)?.ticket_id;
+          if (tid === selected) {
             qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
           }
           qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
@@ -235,6 +249,37 @@ export default function AdminSupport() {
     await supabase.from("support_tickets").update({ status }).eq("id", selected);
     qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
     toast.success("Status atualizado");
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const body = editing.body.trim();
+    if (!body) { toast.error("Mensagem não pode ficar vazia."); return; }
+    setEditSaving(true);
+    const { error } = await supabase
+      .from("support_messages")
+      .update({ body, edited_at: new Date().toISOString() } as any)
+      .eq("id", editing.id);
+    setEditSaving(false);
+    if (error) { toast.error("Erro ao editar mensagem."); return; }
+    setEditing(null);
+    qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
+    toast.success("Mensagem editada");
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    const id = deleting;
+    setDeleting(null);
+    // Remove o anexo do storage também, se existir
+    const msg: any = messages.find((m: any) => m.id === id);
+    if (msg?.attachment_url) {
+      supabase.storage.from("support-attachments").remove([msg.attachment_url]).catch(() => {});
+    }
+    const { error } = await supabase.from("support_messages").delete().eq("id", id);
+    if (error) { toast.error("Erro ao apagar mensagem."); return; }
+    qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
+    toast.success("Mensagem apagada");
   };
 
   const ticket = tickets.find((t) => t.id === selected);
@@ -362,7 +407,30 @@ export default function AdminSupport() {
               </div>
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
                 {messages.map((m: any) => (
-                  <div key={m.id} className={`flex ${m.is_admin ? "justify-end" : "justify-start"}`}>
+                  <div key={m.id} className={`group flex items-start gap-1 ${m.is_admin ? "justify-end" : "justify-start"}`}>
+                    {m.is_admin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            aria-label="Ações da mensagem"
+                          >
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-36">
+                          {m.body && (
+                            <DropdownMenuItem onClick={() => setEditing({ id: m.id, body: m.body || "" })}>
+                              <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => setDeleting(m.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Apagar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.is_admin ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
                       {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                       {m.attachment_url && (
@@ -375,9 +443,28 @@ export default function AdminSupport() {
                       )}
                       <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                        {m.edited_at && <span className="italic">· editada</span>}
                         {m.is_admin && <CheckCheck className="h-3 w-3" />}
                       </p>
                     </div>
+                    {!m.is_admin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            aria-label="Ações da mensagem"
+                          >
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-36">
+                          <DropdownMenuItem onClick={() => setDeleting(m.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Apagar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 ))}
               </div>
@@ -432,6 +519,46 @@ export default function AdminSupport() {
           )}
         </Card>
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar mensagem</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={editing?.body || ""}
+            onChange={(e) => setEditing(editing ? { ...editing, body: e.target.value } : null)}
+            rows={5}
+            className="resize-none"
+            lang="pt-BR"
+            spellCheck
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditing(null)}>Cancelar</Button>
+            <Button onClick={saveEdit} disabled={editSaving}>
+              {editSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apagar mensagem?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A mensagem será removida do chat para você e para o cliente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

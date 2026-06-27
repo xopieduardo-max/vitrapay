@@ -38,6 +38,7 @@ interface Message {
   is_admin: boolean;
   body: string | null;
   created_at: string;
+  edited_at?: string | null;
   attachment_url?: string | null;
   attachment_name?: string | null;
   attachment_type?: string | null;
@@ -140,9 +141,10 @@ export default function Support() {
       .channel("support-user")
       .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets", filter: `user_id=eq.${user.id}` },
         () => qc.invalidateQueries({ queryKey: ["support-tickets-mine"] }))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages" },
+      .on("postgres_changes", { event: "*", schema: "public", table: "support_messages" },
         (payload: any) => {
-          if (payload.new?.ticket_id === selected) {
+          const tid = (payload.new as any)?.ticket_id || (payload.old as any)?.ticket_id;
+          if (tid === selected) {
             qc.invalidateQueries({ queryKey: ["support-messages", selected] });
           }
           qc.invalidateQueries({ queryKey: ["support-tickets-mine"] });
@@ -342,6 +344,7 @@ export default function Support() {
                       )}
                       <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1 justify-end">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                        {m.edited_at && <span className="italic">· editada</span>}
                         {!m.is_admin && <CheckCheck className="h-3 w-3" />}
                       </p>
                     </div>
