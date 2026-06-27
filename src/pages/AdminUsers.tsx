@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,9 +35,12 @@ import { useAdminAudit } from "@/hooks/useAdminAudit";
 
 const roleConfig = {
   admin: { label: "Admin", icon: Shield, className: "bg-accent/10 text-accent border-accent/20" },
-  producer: { label: "Produtor", icon: Package, className: "bg-primary/10 text-primary border-primary/20" },
-  buyer: { label: "Comprador", icon: ShoppingCart, className: "bg-warning/10 text-warning border-warning/20" },
+  producer: { label: "Produtor", icon: Package, className: "bg-green-500/10 text-green-500 border-green-500/30" },
+  buyer: { label: "Comprador", icon: ShoppingCart, className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30" },
 };
+
+const NEW_USER_WINDOW_DAYS = 7;
+const LAST_SEEN_KEY = "admin_users_last_seen_at";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -46,6 +49,7 @@ interface UserData {
   name: string;
   email: string;
   joined: string;
+  joinedRaw: string;
   role: string;
   card_plan: string;
   custom_fee_percentage: number | null;
@@ -71,6 +75,22 @@ export default function AdminUsers() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { logAction } = useAdminAudit();
+
+  // Mark "Usuários" as seen — clears the sidebar badge
+  useEffect(() => {
+    const now = new Date().toISOString();
+    // Wait until users are loaded so we don't clear before render
+    const t = setTimeout(() => {
+      localStorage.setItem(LAST_SEEN_KEY, now);
+      window.dispatchEvent(new Event("admin-users-seen"));
+    }, 800);
+    return () => clearTimeout(t);
+  }, []);
+
+  const newUserThreshold = useMemo(
+    () => Date.now() - NEW_USER_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+    [],
+  );
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users-list"],
@@ -118,6 +138,7 @@ export default function AdminUsers() {
           name: p.display_name || "Sem nome",
           email: emailsMap[p.user_id] || "",
           joined: format(new Date(p.created_at), "dd/MM/yyyy"),
+          joinedRaw: p.created_at,
           role,
           card_plan: p.card_plan || "d30",
           custom_fee_percentage: p.custom_fee_percentage,
