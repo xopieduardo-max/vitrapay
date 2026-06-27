@@ -78,6 +78,19 @@ export default function AdminWhatsappRecipients() {
     refresh();
   };
 
+  const sendTest = async (r: Recipient) => {
+    setTestingId(r.id);
+    const { data, error } = await supabase.functions.invoke("admin-test-whatsapp", {
+      body: { phone: r.phone },
+    });
+    setTestingId(null);
+    if (error || !data?.success) {
+      toast.error("Falha ao enviar teste: " + (error?.message || JSON.stringify(data?.data || {})));
+      return;
+    }
+    toast.success(`Teste enviado para ${fmt(r.phone)}`);
+  };
+
   const fmt = (p: string) => {
     const d = p.replace(/\D/g, "");
     if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
