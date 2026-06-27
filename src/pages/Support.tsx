@@ -101,9 +101,12 @@ export default function Support() {
   // Mark read on open
   useEffect(() => {
     if (selected) {
-      supabase.rpc("mark_support_ticket_read", { _ticket_id: selected });
+      supabase.rpc("mark_support_ticket_read", { _ticket_id: selected }).then(() => {
+        qc.invalidateQueries({ queryKey: ["support-tickets-mine"] });
+        qc.invalidateQueries({ queryKey: ["unread-support"] });
+      });
     }
-  }, [selected, messages.length]);
+  }, [selected, messages.length, qc]);
 
   // Scroll bottom
   useEffect(() => {
