@@ -273,6 +273,10 @@ export default function AdminSupport() {
                 <Button variant="ghost" size="icon" className="md:hidden h-7 w-7" onClick={() => setSelected(null)}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
+                <Avatar className="h-9 w-9 shrink-0">
+                  {ticketUser?.avatar && <AvatarImage src={ticketUser.avatar} alt={ticketUser?.name} />}
+                  <AvatarFallback className="text-xs">{initials(ticketUser?.name)}</AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{ticket?.subject}</p>
                   <p className="text-xs text-muted-foreground truncate">
