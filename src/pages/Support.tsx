@@ -359,7 +359,7 @@ export default function Support() {
                 </label>
                 <Textarea
                   value={reply}
-                  onChange={(e) => setReply(e.target.value)}
+                  onChange={(e) => { setReply(e.target.value); notifyTyping(); }}
                   placeholder="Digite sua mensagem..."
                   rows={2} className="resize-none" lang="pt-BR" spellCheck
                   onPaste={handlePaste}
