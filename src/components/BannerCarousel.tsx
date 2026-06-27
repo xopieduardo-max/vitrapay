@@ -19,7 +19,8 @@ export default function BannerCarousel({
   className = "",
 }: BannerCarouselProps) {
   const [current, setCurrent] = useState(0);
-  
+  const [aspectRatio, setAspectRatio] = useState<string>("6 / 1");
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: banners = [] } = useQuery({
