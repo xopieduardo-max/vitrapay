@@ -361,8 +361,14 @@ export default function AdminUsers() {
                 onClick={() => navigate(`/admin/users/${user.id}`)}
               >
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-sm font-medium truncate">{user.name}</span>
+                    {new Date(user.joinedRaw).getTime() > newUserThreshold && (
+                      <Badge variant="outline" className="text-[0.6rem] px-1.5 py-0 border-primary/50 text-primary bg-primary/10 shrink-0 gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        Novo
+                      </Badge>
+                    )}
                     {user.is_suspended && (
                       <Badge variant="outline" className="text-[0.6rem] px-1 py-0 border-red-500/50 text-red-500 bg-red-500/10 shrink-0">
                         Suspenso
