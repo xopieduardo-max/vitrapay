@@ -397,6 +397,7 @@ export default function Support() {
                       spellCheck
                       autoCorrect="on"
                       autoCapitalize="sentences"
+                      onPaste={handlePaste}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
                       }}
