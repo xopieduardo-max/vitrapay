@@ -301,12 +301,12 @@ export default function AdminSupport() {
                   </p>
                 </div>
                 <Select value={ticket?.status} onValueChange={setStatus}>
-                  <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="open">Aberto</SelectItem>
-                    <SelectItem value="pending">Respondido</SelectItem>
+                    <SelectItem value="pending">Pendente</SelectItem>
                     <SelectItem value="resolved">Resolvido</SelectItem>
-                    <SelectItem value="closed">Fechado</SelectItem>
+                    <SelectItem value="closed">Finalizado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -323,25 +323,31 @@ export default function AdminSupport() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-border p-3 flex gap-2">
-                <Textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Resposta do suporte..."
-                  rows={2}
-                  className="resize-none"
-                  lang="pt-BR"
-                  spellCheck
-                  autoCorrect="on"
-                  autoCapitalize="sentences"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-                  }}
-                />
-                <Button onClick={send} disabled={sending || !reply.trim()}>
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
+              {ticket && LOCKED_STATUSES.has(ticket.status) ? (
+                <div className="border-t border-border p-4 text-center text-xs text-muted-foreground bg-muted/20">
+                  Chamado <span className="font-semibold">{statusMap[ticket.status]?.label.toLowerCase()}</span>. Para responder novamente, mude o status para <span className="font-semibold">Pendente</span>.
+                </div>
+              ) : (
+                <div className="border-t border-border p-3 flex gap-2">
+                  <Textarea
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    placeholder="Resposta do suporte..."
+                    rows={2}
+                    className="resize-none"
+                    lang="pt-BR"
+                    spellCheck
+                    autoCorrect="on"
+                    autoCapitalize="sentences"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+                    }}
+                  />
+                  <Button onClick={send} disabled={sending || !reply.trim()}>
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </Card>
