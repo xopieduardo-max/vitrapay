@@ -41,6 +41,19 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     },
   });
 
+  const { data: seenMilestones = [] } = useQuery({
+    queryKey: ["milestone-seen", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("milestone_seen" as any)
+        .select("milestone")
+        .eq("user_id", user!.id);
+      return (data || []).map((r: any) => Number(r.milestone));
+    },
+  });
+
+
   const { data: profile } = useQuery({
     queryKey: ["profile-for-award", user?.id],
     enabled: !!user && !!activeMilestone,
@@ -63,13 +76,19 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
   const previewTierName = previewTierProp ?? urlPreviewTier;
 
   // Maior tier atingido ainda não solicitado
+
   const pendingTier = useMemo(() => {
     if (previewTierName) {
       return TIERS.find((t) => t.name.toLowerCase() === previewTierName.toLowerCase()) ?? null;
     }
     const sorted = [...TIERS].sort((a, b) => b.threshold - a.threshold);
-    return sorted.find((t) => revenue >= t.threshold && !requested.includes(t.threshold)) ?? null;
-  }, [revenue, requested, previewTierName]);
+    return sorted.find(
+      (t) =>
+        revenue >= t.threshold &&
+        !requested.includes(t.threshold) &&
+        !seenMilestones.includes(t.threshold),
+    ) ?? null;
+  }, [revenue, requested, seenMilestones, previewTierName]);
 
   useEffect(() => {
     if (activeMilestone !== null) return;
@@ -83,6 +102,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     if (localStorage.getItem(key)) return;
     setActiveMilestone(pendingTier.threshold);
   }, [pendingTier, user, activeMilestone, previewTierName]);
+
 
   // Toca o som quando o modal abre
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
@@ -140,9 +160,17 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
   const closeAll = () => {
     if (user && activeMilestone) {
       localStorage.setItem(`award_seen_${user.id}_${activeMilestone}`, "1");
+      // Persiste no servidor para nunca mais aparecer (qualquer dispositivo)
+      supabase
+        .from("milestone_seen" as any)
+        .upsert({ user_id: user.id, milestone: activeMilestone } as any, {
+          onConflict: "user_id,milestone",
+        })
+        .then(() => qc.invalidateQueries({ queryKey: ["milestone-seen", user.id] }));
     }
     setActiveMilestone(null);
     setShowForm(false);
+
   };
 
   const handleSubmit = async () => {
@@ -227,22 +255,24 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
               Você atingiu <span className="text-primary font-bold">{fmt(activeTier.threshold)}</span> em faturamento
             </p>
 
-            <div className="title-rise-cta mt-6 w-full flex flex-col sm:flex-row gap-2 sm:justify-center">
+            <div className="title-rise-cta mt-6 w-full flex flex-wrap gap-2 justify-center items-center">
               <Button variant="ghost" size="icon" onClick={() => { const v = !soundOn; setSoundOn(v); toggleSound(v); }} title={soundOn ? "Som ligado" : "Som desligado"}>
                 {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </Button>
-              <Button variant="outline" onClick={handleShare} disabled={sharing} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={handleShare} disabled={sharing} className="gap-1.5">
                 {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
                 Compartilhar
               </Button>
-              <Button variant="outline" onClick={closeAll}>Mais tarde</Button>
+              <Button variant="outline" size="sm" onClick={closeAll}>Mais tarde</Button>
               <Button
+                size="sm"
                 onClick={() => setShowForm(true)}
                 className="shadow-[0_0_24px_hsl(var(--primary)/0.45)]"
               >
-                Solicitar minha placa
+                Solicitar placa
               </Button>
             </div>
+
 
           </div>
         </DialogContent>
