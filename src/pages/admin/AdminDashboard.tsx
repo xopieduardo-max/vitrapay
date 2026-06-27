@@ -703,6 +703,11 @@ export default function AdminDashboard() {
         <p className="text-sm text-muted-foreground mt-1">Visão geral da plataforma em tempo real</p>
       </div>
 
+      {/* Pulse "Hoje na plataforma" */}
+      <AdminTodayPulse />
+
+
+
       {/* ── Date/Time Filter ── */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div className="flex items-center gap-2 mb-2">
