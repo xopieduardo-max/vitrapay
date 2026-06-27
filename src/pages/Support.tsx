@@ -282,25 +282,36 @@ export default function Support() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-border p-3 flex gap-2">
-                <Textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Digite sua mensagem..."
-                  rows={2}
-                  className="resize-none"
-                  lang="pt-BR"
-                  spellCheck
-                  autoCorrect="on"
-                  autoCapitalize="sentences"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
-                  }}
-                />
-                <Button onClick={sendReply} disabled={sending || !reply.trim()} className="h-auto">
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
+              {ticketLocked ? (
+                <div className="border-t border-border p-4 bg-muted/20 text-center space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Este chamado foi <span className="font-semibold">{statusMap[ticket!.status]?.label.toLowerCase()}</span> pelo suporte. Para continuar, abra um novo chamado.
+                  </p>
+                  <Button size="sm" onClick={() => setNewOpen(true)} className="gap-2">
+                    <Plus className="h-4 w-4" /> Abrir novo chamado
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-t border-border p-3 flex gap-2">
+                  <Textarea
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    placeholder="Digite sua mensagem..."
+                    rows={2}
+                    className="resize-none"
+                    lang="pt-BR"
+                    spellCheck
+                    autoCorrect="on"
+                    autoCapitalize="sentences"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
+                    }}
+                  />
+                  <Button onClick={sendReply} disabled={sending || !reply.trim()} className="h-auto">
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </Card>
