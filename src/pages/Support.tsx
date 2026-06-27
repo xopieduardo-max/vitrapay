@@ -274,8 +274,14 @@ export default function Support() {
                 <p className="text-sm font-bold text-black truncate">
                   {currentAssistant?.name || "Suporte VitraPay"}
                 </p>
-                <p className="text-[0.7rem] text-black/70 truncate">
-                  {currentAssistant?.role_label || "Em breve um atendente responderá"}
+                <p className="text-[0.7rem] text-black/70 truncate flex items-center gap-1">
+                  {isOtherTyping ? (
+                    <span className="flex items-center gap-1 font-medium">
+                      digitando<TypingDots />
+                    </span>
+                  ) : (
+                    currentAssistant?.role_label || "Em breve um atendente responderá"
+                  )}
                 </p>
               </div>
               <Badge variant="outline" className={`text-[0.6rem] bg-white/90 ${statusMap[ticket.status]?.cls}`}>
