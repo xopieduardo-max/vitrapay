@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BannerCarouselProps {
-  location: "dashboard" | "marketplace";
+  location: "dashboard" | "marketplace" | "buyer";
   fallbackSrc?: string;
   fallbackAlt?: string;
   maxHeight?: number;
@@ -25,11 +25,14 @@ export default function BannerCarousel({
   const { data: banners = [] } = useQuery({
     queryKey: ["platform-banners", location],
     queryFn: async () => {
+      const filter = location === "buyer"
+        ? "location.eq.buyer"
+        : `location.eq.${location},location.eq.both`;
       const { data } = await supabase
         .from("platform_banners")
         .select("*")
         .eq("is_active", true)
-        .or(`location.eq.${location},location.eq.both`)
+        .or(filter)
         .order("position", { ascending: true });
       return data || [];
     },

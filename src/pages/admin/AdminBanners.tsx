@@ -15,12 +15,14 @@ import { compressImage } from "@/lib/imageCompressor";
 const LOCATION_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   marketplace: "Marketplace",
-  both: "Ambos",
+  buyer: "Área do Comprador",
+  both: "Dashboard + Marketplace",
 };
 
 const LOCATION_COLORS: Record<string, string> = {
   dashboard: "bg-primary/10 text-primary",
   marketplace: "bg-emerald-500/10 text-emerald-600",
+  buyer: "bg-sky-500/10 text-sky-600",
   both: "bg-amber-500/10 text-amber-600",
 };
 
@@ -219,9 +221,10 @@ export default function AdminBanners() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="dashboard">Dashboard</SelectItem>
+                <SelectItem value="dashboard">Dashboard (Produtor)</SelectItem>
                 <SelectItem value="marketplace">Marketplace</SelectItem>
-                <SelectItem value="both">Ambos (Dashboard + Marketplace)</SelectItem>
+                <SelectItem value="buyer">Área do Comprador</SelectItem>
+                <SelectItem value="both">Dashboard + Marketplace</SelectItem>
               </SelectContent>
             </Select>
           </div>
