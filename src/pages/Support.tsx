@@ -35,8 +35,11 @@ interface Message {
   ticket_id: string;
   sender_id: string;
   is_admin: boolean;
-  body: string;
+  body: string | null;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_type?: string | null;
 }
 
 const statusMap: Record<string, { label: string; cls: string }> = {
