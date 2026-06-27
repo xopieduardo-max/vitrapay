@@ -9,7 +9,7 @@ export function RecentSalesTable() {
   const { user } = useAuth();
 
   const statusMap: Record<string, { label: string; className: string }> = {
-    completed: { label: "Pago", className: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+    completed: { label: "Pago", className: "bg-success/10 text-success border-success/20 hover:bg-success/20" },
     pending: { label: "Pendente", className: "" },
     refunded: { label: "Estornada", className: "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20" },
   };
