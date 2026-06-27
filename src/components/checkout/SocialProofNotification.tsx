@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
+import logoIcon from "@/assets/logo-vitrapay-icon-square.webp";
 
 const MESSAGES = [
   "{count} pessoas estão comprando o {product} agora.",

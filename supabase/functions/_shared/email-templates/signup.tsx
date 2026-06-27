@@ -22,7 +22,7 @@ interface SignupEmailProps {
   confirmationUrl: string
 }
 
-const logoUrl = 'https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png'
+const logoUrl = 'https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.webp'
 
 export const SignupEmail = ({
   siteName,

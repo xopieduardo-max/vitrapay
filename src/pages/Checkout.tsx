@@ -1388,7 +1388,7 @@ export default function Checkout() {
                 {/* Logo + processing info */}
                 <div className="text-center space-y-1.5">
                   <img
-                    src="/logo-vitrapay-horizontal.png"
+                    src="/logo-vitrapay-horizontal.webp"
                     alt="VitraPay"
                     width={120}
                     height={30}

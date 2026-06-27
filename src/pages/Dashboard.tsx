@@ -31,7 +31,7 @@ import { MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import dashboardBanner from "@/assets/dashboard-banner.png";
+import dashboardBanner from "@/assets/dashboard-banner.webp";
 import BannerCarousel from "@/components/BannerCarousel";
 import { MilestoneCelebration } from "@/components/MilestoneCelebration";
 

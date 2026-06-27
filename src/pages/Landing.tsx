@@ -10,21 +10,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import dashboardPreview from "@/assets/dashboard-preview.png";
-import integrationsOrbit from "@/assets/integrations-orbit.png";
-import appMockup from "@/assets/app-mockup.png";
-import iphoneMockup3d from "@/assets/iphone-mockup-3d.png";
-import iphone3dMockup from "@/assets/iphone-3d-mockup.png";
-import membroBlack1 from "@/assets/membro-black-1.png";
-import membroBlack2 from "@/assets/membro-black-2.png";
-import placasVitraPay from "@/assets/placas-vitrapay.png";
+import dashboardPreview from "@/assets/dashboard-preview.webp";
+import integrationsOrbit from "@/assets/integrations-orbit.webp";
+import appMockup from "@/assets/app-mockup.webp";
+import iphoneMockup3d from "@/assets/iphone-mockup-3d.webp";
+import iphone3dMockup from "@/assets/iphone-3d-mockup.webp";
+import membroBlack1 from "@/assets/membro-black-1.webp";
+import membroBlack2 from "@/assets/membro-black-2.webp";
+import placasVitraPay from "@/assets/placas-vitrapay.webp";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { Interactive3DLogo } from "@/components/Interactive3DLogo";
-import logoIcon from "@/assets/logo-vitrapay-icon-square.png";
-import logoCard from "@/assets/logo-vitrapay-card.png";
-import celularVitra from "@/assets/celular_vitra.png";
-import ctaWomanYellow from "@/assets/cta-woman-yellow.jpg";
-import iphoneVitrapay from "@/assets/iphone-vitrapay.png";
+import logoIcon from "@/assets/logo-vitrapay-icon-square.webp";
+import logoCard from "@/assets/logo-vitrapay-card.webp";
+import celularVitra from "@/assets/celular_vitra.webp";
+import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
+import iphoneVitrapay from "@/assets/iphone-vitrapay.webp";
 import {
   Accordion,
   AccordionContent,

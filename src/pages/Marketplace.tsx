@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import marketplaceBanner from "@/assets/marketplace-banner.png";
+import marketplaceBanner from "@/assets/marketplace-banner.webp";
 import BannerCarousel from "@/components/BannerCarousel";
 import { useNavigate } from "react-router-dom";
 

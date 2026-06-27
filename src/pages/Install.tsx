@@ -3,8 +3,8 @@ import { Smartphone, Apple, MonitorSmartphone, Share, PlusSquare, MoreVertical, 
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import iphoneMockup from "@/assets/iphone-3d-mockup.png";
-import logo from "@/assets/logo-vitrapay-icon.png";
+import iphoneMockup from "@/assets/iphone-3d-mockup.webp";
+import logo from "@/assets/logo-vitrapay-icon.webp";
 
 type Platform = "ios" | "android" | null;
 

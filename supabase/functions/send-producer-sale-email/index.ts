@@ -8,7 +8,7 @@ const corsHeaders = {
 const SITE_NAME = "VitraPay";
 const SENDER_DOMAIN = "notify.vitrapay.com.br";
 const FROM_DOMAIN = "vitrapay.com.br";
-const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.png";
+const LOGO_URL = "https://taqseqektbipquvgfylc.supabase.co/storage/v1/object/public/email-assets/logo-vitrapay.webp";
 
 interface ProducerSaleEmailParams {
   producer_id: string;
