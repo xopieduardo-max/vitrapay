@@ -134,16 +134,26 @@ export default function Purchases() {
           <div className="divide-y divide-border">
             {purchases.map((p: any, i: number) => {
               const st = statusMap[p.status] || statusMap.pending;
+              const userRating = reviewedMap.get(p.id);
+              const updated = p.products?.updated_at && new Date(p.products.updated_at) > new Date(new Date(p.created_at).getTime() + 60_000);
+              const isCompleted = p.status === "completed";
               return (
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
-                  className="flex flex-col sm:grid sm:grid-cols-[1fr_120px_120px_100px] gap-1 sm:gap-4 items-start sm:items-center px-5 py-3.5 hover:bg-muted/20 transition-colors"
+                  className="flex flex-col sm:grid sm:grid-cols-[1fr_110px_100px_90px_auto] gap-2 sm:gap-4 items-start sm:items-center px-5 py-3.5 hover:bg-muted/20 transition-colors"
                 >
-                  <div>
-                    <p className="text-sm font-medium">{p.products?.title || "Produto removido"}</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium truncate">{p.products?.title || "Produto removido"}</p>
+                      {updated && (
+                        <Badge variant="secondary" className="text-[0.6rem] bg-primary/10 text-primary border-primary/20 gap-1">
+                          <Sparkles className="h-2.5 w-2.5" /> Atualizado
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-[0.65rem] text-muted-foreground font-mono">{p.id.slice(0, 8).toUpperCase()}</p>
                   </div>
                   <span className="text-sm font-bold text-primary">R$ {(p.amount / 100).toFixed(2)}</span>
@@ -153,12 +163,53 @@ export default function Purchases() {
                   <Badge variant="secondary" className={`text-[0.65rem] w-fit ${st.className}`}>
                     {st.label}
                   </Badge>
+                  {isCompleted && (
+                    <div className="flex gap-1.5 sm:justify-end">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 gap-1.5 text-xs"
+                        onClick={() => setReviewSale(p)}
+                      >
+                        <Star className={`h-3.5 w-3.5 ${userRating ? "fill-primary text-primary" : ""}`} />
+                        {userRating ? `${userRating}/5` : "Avaliar"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-destructive"
+                        onClick={() => setReportSale(p)}
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Problema</span>
+                      </Button>
+                    </div>
+                  )}
                 </motion.div>
               );
             })}
           </div>
         )}
       </motion.div>
+
+      {reviewSale && (
+        <ReviewDialog
+          open={!!reviewSale}
+          onOpenChange={(v) => !v && setReviewSale(null)}
+          saleId={reviewSale.id}
+          productId={reviewSale.product_id}
+          productTitle={reviewSale.products?.title || ""}
+          onSaved={() => refetch()}
+        />
+      )}
+      {reportSale && (
+        <ReportProblemDialog
+          open={!!reportSale}
+          onOpenChange={(v) => !v && setReportSale(null)}
+          saleId={reportSale.id}
+          productTitle={reportSale.products?.title || ""}
+        />
+      )}
     </div>
   );
 }
