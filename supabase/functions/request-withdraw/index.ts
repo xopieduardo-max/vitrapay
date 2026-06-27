@@ -351,6 +351,26 @@ serve(async (req) => {
           }),
         }).catch((e) => console.error("admin push fail:", e));
       }
+
+      // WhatsApp para administradores cadastrados
+      const { data: waRecipients } = await supabase
+        .from("admin_whatsapp_recipients")
+        .select("phone")
+        .eq("active", true);
+      const waMsg = `🔔 *VitraPay — Novo saque pendente*\n\n👤 ${producerName}\n💸 Valor: *${valueFmt}*\n\nAcesse o painel para aprovar:\nhttps://www.vitrapay.com.br/admin/withdrawals`;
+      for (const r of waRecipients || []) {
+        fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            phone: r.phone,
+            custom_message: waMsg,
+          }),
+        }).catch((e) => console.error("admin whatsapp fail:", e));
+      }
     } catch (notifyErr) {
       console.error("Admin notify error:", notifyErr);
     }
