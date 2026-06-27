@@ -1947,6 +1947,7 @@ export type Database = {
           attachment_url: string | null
           body: string | null
           created_at: string
+          edited_at: string | null
           id: string
           is_admin: boolean
           sender_id: string
@@ -1958,6 +1959,7 @@ export type Database = {
           attachment_url?: string | null
           body?: string | null
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_admin?: boolean
           sender_id: string
@@ -1969,6 +1971,7 @@ export type Database = {
           attachment_url?: string | null
           body?: string | null
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_admin?: boolean
           sender_id?: string
