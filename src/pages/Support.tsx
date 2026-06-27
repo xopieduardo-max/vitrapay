@@ -247,28 +247,40 @@ export default function Support() {
     return (
       <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)]">
         <Card className="border-border flex flex-col p-0 overflow-hidden flex-1 min-h-0 rounded-3xl">
-          {/* Header */}
-          <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelected(null); setBotRole(null); }}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <Avatar className="h-9 w-9 ring-2 ring-primary/30">
-              {heroAssistant?.avatar_url && <AvatarImage src={assistantAvatars[heroAssistant.avatar_url] || ""} alt={heroAssistant.name} />}
-              <AvatarFallback className="text-[0.65rem] bg-primary text-primary-foreground font-bold">
-                {heroAssistant ? initials(heroAssistant.name) : "VP"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">
-                {heroAssistant?.name || "Suporte VitraPay"}
-              </p>
-              <p className="text-[0.7rem] text-muted-foreground truncate">
-                {heroAssistant?.role_label || "Responderemos em instantes"}
-              </p>
+          {/* Header com hero degradê + pilha de avatares */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary via-amber-500 to-yellow-600 px-4 py-4 border-b border-border">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_60%)] pointer-events-none" />
+            <div className="relative flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-black hover:bg-black/10" onClick={() => navigate("/dashboard")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex -space-x-2">
+                {(assistants.slice(0, 4) as any[]).map((a) => (
+                  <Avatar key={a.id} className="h-9 w-9 ring-2 ring-white/80">
+                    {a.avatar_url && <AvatarImage src={assistantAvatars[a.avatar_url] || ""} alt={a.name} />}
+                    <AvatarFallback className="text-[0.6rem] bg-black text-primary font-bold">
+                      {initials(a.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {assistants.length === 0 && (
+                  <Avatar className="h-9 w-9 ring-2 ring-white/80">
+                    <AvatarFallback className="text-[0.65rem] bg-black text-primary font-bold">VP</AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-black truncate">
+                  {heroAssistant?.name || "Suporte VitraPay"}
+                </p>
+                <p className="text-[0.7rem] text-black/70 truncate">
+                  {heroAssistant?.role_label || "Responderemos em instantes"}
+                </p>
+              </div>
+              <Badge variant="outline" className={`text-[0.6rem] bg-white/90 ${statusMap[ticket.status]?.cls}`}>
+                {statusMap[ticket.status]?.label}
+              </Badge>
             </div>
-            <Badge variant="outline" className={`text-[0.6rem] ${statusMap[ticket.status]?.cls}`}>
-              {statusMap[ticket.status]?.label}
-            </Badge>
           </div>
 
           {/* Messages */}
@@ -363,32 +375,44 @@ export default function Support() {
   return (
     <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)]">
       <Card className="border-border flex flex-col p-0 overflow-hidden flex-1 min-h-0 rounded-3xl">
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Avatar className="h-9 w-9 ring-2 ring-primary/30">
-            {heroAssistant?.avatar_url && <AvatarImage src={assistantAvatars[heroAssistant.avatar_url] || ""} alt={heroAssistant.name} />}
-            <AvatarFallback className="text-[0.65rem] bg-primary text-primary-foreground font-bold">
-              {heroAssistant ? initials(heroAssistant.name) : "VP"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate">{heroAssistant?.name || "Assistente VitraPay"}</p>
-            <p className="text-[0.7rem] text-muted-foreground truncate">Nosso bot responderá instantaneamente</p>
-          </div>
-          {tickets.length > 0 && (
-            <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => setShowHistory((v) => !v)}>
-              <History className="h-3.5 w-3.5" />
-              Histórico
-              {totalUnread > 0 && (
-                <span className="ml-1 text-[0.55rem] bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
-                  {totalUnread}
-                </span>
-              )}
+        {/* Header com hero degradê + pilha de avatares */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary via-amber-500 to-yellow-600 px-4 py-5 border-b border-border">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_60%)] pointer-events-none" />
+          <div className="relative flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-black hover:bg-black/10" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-          )}
+            <div className="flex -space-x-2">
+              {(assistants.slice(0, 4) as any[]).map((a) => (
+                <Avatar key={a.id} className="h-10 w-10 ring-2 ring-white/80">
+                  {a.avatar_url && <AvatarImage src={assistantAvatars[a.avatar_url] || ""} alt={a.name} />}
+                  <AvatarFallback className="text-[0.65rem] bg-black text-primary font-bold">
+                    {initials(a.name)}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {assistants.length === 0 && (
+                <Avatar className="h-10 w-10 ring-2 ring-white/80">
+                  <AvatarFallback className="text-[0.7rem] bg-black text-primary font-bold">VP</AvatarFallback>
+                </Avatar>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-black truncate">{heroAssistant?.name || "Assistente VitraPay"}</p>
+              <p className="text-[0.7rem] text-black/70 truncate">Nosso time responderá em instantes</p>
+            </div>
+            {tickets.length > 0 && (
+              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-black hover:bg-black/10" onClick={() => setShowHistory((v) => !v)}>
+                <History className="h-3.5 w-3.5" />
+                Histórico
+                {totalUnread > 0 && (
+                  <span className="ml-1 text-[0.55rem] bg-black text-primary rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+                    {totalUnread}
+                  </span>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Conversation surface */}
