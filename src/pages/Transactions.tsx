@@ -363,69 +363,64 @@ export default function Transactions() {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {filtered.map((t, i) => (
-              <motion.div
-                key={t.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: Math.min(i * 0.01, 0.5) }}
-                className="flex items-center justify-between px-4 md:px-5 py-3 hover:bg-muted/10 transition-colors"
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                      t.type === "credit"
-                        ? "bg-primary/10"
-                        : "bg-destructive/10"
-                    }`}
-                  >
-                    {t.type === "credit" ? (
-                      <ArrowDownLeft className="h-4 w-4 text-primary" />
-                    ) : (
-                      <ArrowUpRight className="h-4 w-4 text-destructive" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">
-                        {categoryIcons[t.category]} {categoryLabels[t.category] || t.category}
-                      </span>
-                      <span
-                        className={`text-[0.6rem] px-1.5 py-0.5 rounded-md font-medium shrink-0 ${
-                          t.type === "credit"
-                            ? "bg-primary/10 text-primary"
-                            : "bg-destructive/10 text-destructive"
-                        }`}
-                      >
-                        {t.type === "credit" ? "Entrada" : "Saída"}
-                      </span>
-                    </div>
-                    <p className="text-[0.65rem] text-muted-foreground truncate mt-0.5">
-                      {new Date(t.created_at).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                      {t.reference_id && (
-                        <span className="ml-2 opacity-60">
-                          ref: {t.reference_id.substring(0, 8)}…
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </div>
+            {filtered.map((t, i) => {
+              const tone = categoryTone[t.category] || (t.type === "credit" ? "success" : "destructive");
+              const style = toneClasses[tone];
 
-                <p
-                  className={`text-sm font-bold whitespace-nowrap ml-3 ${
-                    t.type === "credit" ? "text-primary" : "text-destructive"
-                  }`}
+              return (
+                <motion.div
+                  key={t.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: Math.min(i * 0.01, 0.5) }}
+                  className="flex items-center justify-between px-4 md:px-5 py-3 hover:bg-muted/10 transition-colors"
                 >
-                  {t.type === "credit" ? "+" : "−"} {fmt(t.amount)}
-                </p>
-              </motion.div>
-            ))}
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${style.soft}`}
+                    >
+                      {t.type === "credit" ? (
+                        <ArrowDownLeft className={`h-4 w-4 ${style.text}`} />
+                      ) : (
+                        <ArrowUpRight className={`h-4 w-4 ${style.text}`} />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate">
+                          {categoryIcons[t.category]} {categoryLabels[t.category] || t.category}
+                        </span>
+                        <span
+                          className={`text-[0.6rem] px-1.5 py-0.5 rounded-md font-medium shrink-0 ${style.soft} ${style.text}`}
+                        >
+                          {t.type === "credit" ? "Entrada" : "Saída"}
+                        </span>
+                      </div>
+                      <p className="text-[0.65rem] text-muted-foreground truncate mt-0.5">
+                        {new Date(t.created_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                        {t.reference_id && (
+                          <span className="ml-2 opacity-60">
+                            ref: {t.reference_id.substring(0, 8)}…
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p
+                    className={`text-sm font-bold whitespace-nowrap ml-3 ${style.text}`}
+                  >
+                    {t.type === "credit" ? "+" : "−"} {fmt(t.amount)}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </motion.div>
