@@ -194,11 +194,12 @@ export default function AdminDashboard() {
   const fakeSaleIdSet = useMemo(() => new Set(fakeSaleIds), [fakeSaleIds]);
 
   const { data: allTransactionsRaw = [] } = useQuery({
-    queryKey: ["admin-all-transactions"],
+    queryKey: ["admin-all-transactions", BASELINE_ISO],
     queryFn: async () => {
       const { data } = await supabase
         .from("transactions")
         .select("*")
+        .gte("created_at", BASELINE_ISO)
         .order("created_at", { ascending: false })
         .limit(1000);
       return data || [];
