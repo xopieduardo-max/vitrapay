@@ -287,8 +287,8 @@ export default function AdminSupport() {
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_admin || 0), 0);
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-7rem)]">
+      <div className="shrink-0 mb-4">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           Mensagens
           {totalUnread > 0 && (
@@ -297,13 +297,13 @@ export default function AdminSupport() {
             </span>
           )}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-1 hidden md:block">
           Atenda chamados de produtores e compradores em tempo real.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-4 min-h-[70vh]">
-        <Card className={`border-border p-0 overflow-hidden flex flex-col ${selected ? "hidden md:flex" : "flex"}`}>
+      <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-4 flex-1 min-h-0">
+        <Card className={`border-border p-0 overflow-hidden flex-col min-h-0 ${selected ? "hidden md:flex" : "flex"}`}>
           <div className="p-3 border-b border-border space-y-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -374,7 +374,7 @@ export default function AdminSupport() {
           )}
         </Card>
 
-        <Card className={`border-border flex flex-col p-0 overflow-hidden ${!selected ? "hidden md:flex" : "flex"}`}>
+        <Card className={`border-border flex-col p-0 overflow-hidden min-h-0 ${!selected ? "hidden md:flex" : "flex"}`}>
           {!selected ? (
             <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
               Selecione um chamado.
