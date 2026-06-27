@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { User, LogOut, Moon, Sun, ChevronDown } from "lucide-react";
+import { User, LogOut, Moon, Sun, ChevronDown, LifeBuoy } from "lucide-react";
 import { useEffect } from "react";
 
 export function UserHeaderDropdown() {
@@ -84,6 +84,10 @@ export function UserHeaderDropdown() {
         <DropdownMenuItem onClick={() => navigate("/settings")} className="gap-3 cursor-pointer">
           <User className="h-4 w-4" />
           Perfil
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/support")} className="gap-3 cursor-pointer">
+          <LifeBuoy className="h-4 w-4" />
+          Ajuda & Suporte
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div

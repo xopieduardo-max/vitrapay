@@ -69,6 +69,8 @@ const AdminCartRecovery = lazy(() => import("./pages/admin/AdminCartRecovery"));
 const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
 const AdminAwards = lazy(() => import("./pages/admin/AdminAwards"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
+const Support = lazy(() => import("./pages/Support"));
 
 const queryClient = new QueryClient();
 
@@ -134,6 +136,7 @@ const App = () => {
                   <Route path="/help" element={<HelpCenter />} />
                   <Route path="/taxas" element={<Taxas />} />
                   <Route path="/workspace" element={<WorkspaceSettings />} />
+                  <Route path="/support" element={<Support />} />
                 </Route>
               </Route>
 
@@ -157,6 +160,7 @@ const App = () => {
                 <Route path="/admin/audit" element={<AdminAuditLog />} />
                 <Route path="/admin/awards" element={<AdminAwards />} />
                 <Route path="/admin/products" element={<AdminProducts />} />
+                <Route path="/admin/support" element={<AdminSupport />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
