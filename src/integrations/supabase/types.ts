@@ -954,6 +954,7 @@ export type Database = {
           buyer_country: string | null
           buyer_cpf: string | null
           buyer_email: string | null
+          buyer_ip: string | null
           buyer_name: string | null
           buyer_phone: string | null
           buyer_state: string | null
@@ -980,6 +981,7 @@ export type Database = {
           buyer_country?: string | null
           buyer_cpf?: string | null
           buyer_email?: string | null
+          buyer_ip?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
           buyer_state?: string | null
@@ -1006,6 +1008,7 @@ export type Database = {
           buyer_country?: string | null
           buyer_cpf?: string | null
           buyer_email?: string | null
+          buyer_ip?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
           buyer_state?: string | null
