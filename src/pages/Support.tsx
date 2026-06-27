@@ -142,6 +142,10 @@ export default function Support() {
 
   const sendReply = async () => {
     if (!reply.trim() || !selected) return;
+    if (ticket && LOCKED_STATUSES.has(ticket.status)) {
+      toast.error("Este chamado foi encerrado. Abra um novo chamado para continuar.");
+      return;
+    }
     setSending(true);
     const { error } = await supabase.from("support_messages").insert({
       ticket_id: selected, sender_id: user!.id, is_admin: false, body: reply.trim(),
@@ -152,7 +156,7 @@ export default function Support() {
     qc.invalidateQueries({ queryKey: ["support-messages", selected] });
   };
 
-  const ticket = tickets.find((t) => t.id === selected);
+  const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
 
   return (
     <div className="space-y-6">
