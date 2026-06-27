@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Loader2, Image, GripVertical, Upload, Link2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Image, GripVertical, Upload, Link2, Smartphone, Monitor } from "lucide-react";
 import { compressImage } from "@/lib/imageCompressor";
 
 const LOCATION_LABELS: Record<string, string> = {
