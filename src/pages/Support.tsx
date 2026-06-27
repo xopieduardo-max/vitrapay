@@ -38,6 +38,7 @@ interface Message {
   is_admin: boolean;
   body: string | null;
   created_at: string;
+  edited_at?: string | null;
   attachment_url?: string | null;
   attachment_name?: string | null;
   attachment_type?: string | null;
