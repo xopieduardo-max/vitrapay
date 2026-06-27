@@ -15,6 +15,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { User, LogOut, Moon, Sun, ChevronDown, LifeBuoy, ShoppingBag, Rocket, Check, Home, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUnreadSupport } from "@/hooks/useUnreadSupport";
+import { Badge } from "@/components/ui/badge";
 
 type ViewMode = "buyer" | "producer";
 
@@ -22,6 +24,7 @@ export function UserHeaderDropdown() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { unread: unreadSupport, pulse: supportPulse, hasUnread: hasUnreadSupport } = useUnreadSupport();
 
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     if (typeof window !== "undefined") {
@@ -109,11 +112,19 @@ export function UserHeaderDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors outline-none">
-          <Avatar className="h-8 w-8 border border-border">
-            <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
-          </Avatar>
+        <button className="relative flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors outline-none">
+          <div className="relative">
+            <Avatar className="h-8 w-8 border border-border">
+              <AvatarImage src={profile?.avatar_url || undefined} />
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+            </Avatar>
+            {hasUnreadSupport && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                <span className={`absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 ${supportPulse ? "animate-ping" : ""}`}></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary border border-background"></span>
+              </span>
+            )}
+          </div>
           <div className="hidden sm:flex flex-col items-start leading-tight">
             <span className="text-sm font-medium truncate max-w-[120px]">{displayName}</span>
             {isProducer && (
@@ -126,6 +137,7 @@ export function UserHeaderDropdown() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
+
         {buyerMode ? (
           <>
             <DropdownMenuItem onClick={() => navigate("/home")} className="gap-3 cursor-pointer">
@@ -142,9 +154,14 @@ export function UserHeaderDropdown() {
                 Mudar para produtor
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => navigate("/support")} className="gap-3 cursor-pointer">
-              <LifeBuoy className="h-4 w-4" />
-              Ajuda & Suporte
+            <DropdownMenuItem onClick={() => navigate("/support")} className={`gap-3 cursor-pointer ${hasUnreadSupport ? "bg-primary/5" : ""}`}>
+              <LifeBuoy className={`h-4 w-4 ${hasUnreadSupport ? "text-primary" : ""}`} />
+              <span className="flex-1">Ajuda & Suporte</span>
+              {hasUnreadSupport && (
+                <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] bg-primary text-primary-foreground">
+                  {unreadSupport > 9 ? "9+" : unreadSupport}
+                </Badge>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <div
@@ -182,9 +199,14 @@ export function UserHeaderDropdown() {
               <User className="h-4 w-4" />
               Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/support")} className="gap-3 cursor-pointer">
-              <LifeBuoy className="h-4 w-4" />
-              Ajuda & Suporte
+            <DropdownMenuItem onClick={() => navigate("/support")} className={`gap-3 cursor-pointer ${hasUnreadSupport ? "bg-primary/5" : ""}`}>
+              <LifeBuoy className={`h-4 w-4 ${hasUnreadSupport ? "text-primary" : ""}`} />
+              <span className="flex-1">Ajuda & Suporte</span>
+              {hasUnreadSupport && (
+                <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] bg-primary text-primary-foreground">
+                  {unreadSupport > 9 ? "9+" : unreadSupport}
+                </Badge>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <div
