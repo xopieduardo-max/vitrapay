@@ -355,16 +355,24 @@ export default function AdminSupport() {
                 className="pl-8 h-8 text-sm"
               />
             </div>
-            <Select value={filter} onValueChange={(v) => setFilter(v as any)}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="open">Abertos</SelectItem>
-                <SelectItem value="pending">Pendentes</SelectItem>
-                <SelectItem value="resolved">Resolvidos</SelectItem>
-                <SelectItem value="closed">Finalizados</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-wrap gap-1">
+              {QUICK_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setFilter(tab.key)}
+                  className={`text-[0.7rem] px-2 py-1 rounded-full border transition ${
+                    filter === tab.key
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border hover:bg-muted/50"
+                  }`}
+                >
+                  {tab.label}
+                  <span className={`ml-1 ${filter === tab.key ? "opacity-90" : "opacity-60"}`}>
+                    {statusCounts[tab.key] ?? 0}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
           {isLoading ? (
             <div className="p-6 flex justify-center"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
