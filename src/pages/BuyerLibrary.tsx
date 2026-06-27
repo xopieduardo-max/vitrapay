@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { downloadFile } from "@/lib/downloadFile";
 import { downloadProductFile } from "@/lib/productFiles";
+import BannerCarousel from "@/components/BannerCarousel";
 
 export default function BuyerLibrary() {
   const { user } = useAuth();
@@ -108,8 +109,10 @@ export default function BuyerLibrary() {
 
   return (
     <div className="space-y-6">
+      <BannerCarousel location="buyer" maxHeight={220} />
+
       <div>
-        <h1 className="text-2xl font-bold tracking-title">Minha Biblioteca</h1>
+        <h1 className="text-2xl font-bold tracking-title">Meus Cursos</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Acesse seus produtos comprados
         </p>
