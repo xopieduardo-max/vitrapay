@@ -21,6 +21,7 @@ export default function AdminWhatsappRecipients() {
   const [phone, setPhone] = useState("");
   const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
+  const [testingId, setTestingId] = useState<string | null>(null);
 
   const { data: list = [], isLoading } = useQuery({
     queryKey: ["admin_whatsapp_recipients"],
