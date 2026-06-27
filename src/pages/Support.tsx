@@ -253,8 +253,8 @@ export default function Support() {
 
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 flex-1 min-h-0">
         {/* List */}
-        <Card className={`border-border p-0 overflow-hidden ${selected ? "hidden md:block" : ""}`}>
-          <div className="px-4 py-3 border-b border-border">
+        <Card className={`border-border p-0 overflow-hidden flex flex-col min-h-0 ${selected ? "hidden md:flex" : "flex"}`}>
+          <div className="px-4 py-3 border-b border-border shrink-0">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">
               Seus chamados ({tickets.length})
             </p>
@@ -267,7 +267,7 @@ export default function Support() {
               Nenhum chamado ainda.
             </div>
           ) : (
-            <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
+            <div className="divide-y divide-border overflow-y-auto flex-1 min-h-0">
               {tickets.map((t) => (
                 <button
                   key={t.id}
