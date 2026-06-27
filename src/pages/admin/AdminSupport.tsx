@@ -28,6 +28,17 @@ import { toast } from "sonner";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+
+function TypingDots() {
+  return (
+    <span className="inline-flex gap-0.5 ml-0.5 align-middle">
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+      <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+    </span>
+  );
+}
 import { Link } from "react-router-dom";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
