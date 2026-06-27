@@ -10,11 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck } from "lucide-react";
+import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { SupportAttachment } from "@/components/support/SupportAttachment";
+
+const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
+const MAX_BYTES = 10 * 1024 * 1024;
 
 interface Ticket {
   id: string;
