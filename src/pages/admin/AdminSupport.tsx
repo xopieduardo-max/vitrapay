@@ -20,13 +20,15 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X, MoreVertical, Pencil, Trash2, UserCog } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
+import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
+import { Link } from "react-router-dom";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -67,7 +69,20 @@ export default function AdminSupport() {
   const [editing, setEditing] = useState<{ id: string; body: string } | null>(null);
   const [editSaving, setEditSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [assistantId, setAssistantId] = useState<string>(() => localStorage.getItem("admin_active_assistant") || "");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { data: assistants = [] } = useQuery({
+    queryKey: ["active-assistants"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("support_assistants")
+        .select("id, name, role_label, avatar_url")
+        .eq("active", true)
+        .order("sort_order");
+      return data || [];
+    },
+  });
 
   const pickAttachment = async (file: File | null) => {
     if (!file) return setAttachment(null);
