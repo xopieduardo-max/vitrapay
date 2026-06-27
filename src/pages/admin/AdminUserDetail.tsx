@@ -73,6 +73,17 @@ export default function AdminUserDetail() {
     enabled: !!userId,
   });
 
+  // Email (from auth.users via secure RPC)
+  const { data: userEmail } = useQuery({
+    queryKey: ["admin-user-email", userId],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("get_user_emails");
+      const row = (data || []).find((e: any) => e.user_id === userId);
+      return row?.email as string | undefined;
+    },
+    enabled: !!userId,
+  });
+
   // Products
   const { data: products = [] } = useQuery({
     queryKey: ["admin-user-products", userId],
