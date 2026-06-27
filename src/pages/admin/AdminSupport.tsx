@@ -303,7 +303,7 @@ export default function AdminSupport() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-4 flex-1 min-h-0">
-        <Card className={`border-border p-0 overflow-hidden flex flex-col ${selected ? "hidden md:flex" : "flex"}`}>
+        <Card className={`border-border p-0 overflow-hidden flex-col min-h-0 ${selected ? "hidden md:flex" : "flex"}`}>
           <div className="p-3 border-b border-border space-y-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
