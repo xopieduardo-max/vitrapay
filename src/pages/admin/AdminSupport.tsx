@@ -27,11 +27,16 @@ interface Ticket {
 }
 
 const statusMap: Record<string, { label: string; cls: string }> = {
-  open: { label: "Aberto", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
-  pending: { label: "Respondido", cls: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30" },
-  resolved: { label: "Resolvido", cls: "bg-green-500/10 text-green-500 border-green-500/30" },
-  closed: { label: "Fechado", cls: "bg-muted text-muted-foreground border-border" },
+  open: { label: "Aberto", cls: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" },
+  pending: { label: "Respondido", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
+  resolved: { label: "Resolvido", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
+  closed: { label: "Fechado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
 };
+
+function initials(name?: string) {
+  if (!name) return "U";
+  return name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
+}
 
 export default function AdminSupport() {
   const { user } = useAuth();
