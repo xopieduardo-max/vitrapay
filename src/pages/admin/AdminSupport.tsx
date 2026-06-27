@@ -459,8 +459,14 @@ export default function AdminSupport() {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{ticket?.subject}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {ticketUser?.name} · {ticketUser?.email}
+                  <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                    {isOtherTyping ? (
+                      <span className="text-primary font-medium flex items-center">
+                        {ticketUser?.name || "Cliente"} está digitando<TypingDots />
+                      </span>
+                    ) : (
+                      <>{ticketUser?.name} · {ticketUser?.email}</>
+                    )}
                   </p>
                 </div>
                 <Select value={ticket?.status} onValueChange={setStatus}>
