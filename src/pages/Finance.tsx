@@ -448,7 +448,7 @@ export default function Finance() {
             onOpenChange={setOtpOpen}
             action="withdraw"
             title="Confirmar saque"
-            description="Para sua segurança, enviamos um código para o e-mail cadastrado. Digite-o abaixo para concluir o saque."
+            description="Use sua senha ou o código enviado ao e-mail cadastrado para concluir o saque."
             onConfirmed={async (token) => {
               await requestWithdrawal.mutateAsync(token);
             }}

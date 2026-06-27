@@ -537,7 +537,7 @@ export default function Settings() {
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <span>
-                  Por segurança, toda alteração da chave PIX exige confirmação por código enviado ao seu e-mail.
+                  Por segurança, toda alteração da chave PIX exige confirmação com senha ou código enviado ao seu e-mail.
                 </span>
               </div>
               <Button
@@ -567,7 +567,7 @@ export default function Settings() {
         onOpenChange={setPixOtpOpen}
         action="pix_change"
         title="Confirmar troca de chave PIX"
-        description="Enviamos um código de 6 dígitos para o e-mail cadastrado. Digite-o para confirmar a alteração."
+        description="Use sua senha ou o código de 6 dígitos enviado ao e-mail cadastrado para confirmar a alteração."
         onConfirmed={confirmPixChange}
       />
 
