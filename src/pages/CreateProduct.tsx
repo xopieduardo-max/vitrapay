@@ -176,6 +176,14 @@ export default function CreateProduct() {
 
       if (error) throw error;
 
+      // Garante que o usuário tenha a role de produtor após criar o primeiro produto
+      try {
+        await supabase.rpc("self_assign_producer_role");
+        localStorage.setItem("viewMode", "producer");
+      } catch (e) {
+        console.warn("self_assign_producer_role:", e);
+      }
+
       // Upload all files to product_files table
       if (newProduct && productFiles.length > 0) {
         const fileUploads = await Promise.all(
