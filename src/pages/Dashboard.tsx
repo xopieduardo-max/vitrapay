@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import dashboardBanner from "@/assets/dashboard-banner.png";
 import BannerCarousel from "@/components/BannerCarousel";
 import { MilestoneCelebration } from "@/components/MilestoneCelebration";
+import { ProducerAIInsights } from "@/components/dashboard/ProducerAIInsights";
 import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
