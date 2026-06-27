@@ -350,7 +350,15 @@ export default function AdminSupport() {
                 {messages.map((m: any) => (
                   <div key={m.id} className={`flex ${m.is_admin ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.is_admin ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
-                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                      {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+                      {m.attachment_url && (
+                        <SupportAttachment
+                          path={m.attachment_url}
+                          name={m.attachment_name}
+                          type={m.attachment_type}
+                          ownBubble={m.is_admin}
+                        />
+                      )}
                       <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
                         {m.is_admin && <CheckCheck className="h-3 w-3" />}
@@ -364,24 +372,45 @@ export default function AdminSupport() {
                   Chamado <span className="font-semibold">{statusMap[ticket.status]?.label.toLowerCase()}</span>. Para responder novamente, mude o status para <span className="font-semibold">Pendente</span>.
                 </div>
               ) : (
-                <div className="border-t border-border p-3 flex gap-2">
-                  <Textarea
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder="Resposta do suporte..."
-                    rows={2}
-                    className="resize-none"
-                    lang="pt-BR"
-                    spellCheck
-                    autoCorrect="on"
-                    autoCapitalize="sentences"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-                    }}
-                  />
-                  <Button onClick={send} disabled={sending || !reply.trim()}>
-                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </Button>
+                <div className="border-t border-border p-3 space-y-2">
+                  {attachment && (
+                    <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs">
+                      <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate flex-1">{attachment.name}</span>
+                      <span className="text-muted-foreground">{(attachment.size / 1024).toFixed(0)} KB</span>
+                      <button type="button" onClick={() => setAttachment(null)} className="text-muted-foreground hover:text-foreground" aria-label="Remover anexo">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <label className="flex items-center justify-center h-auto px-3 rounded-md border border-input bg-background hover:bg-accent cursor-pointer shrink-0" title="Anexar imagem ou PDF">
+                      <Paperclip className="h-4 w-4" />
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={(e) => pickAttachment(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <Textarea
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      placeholder="Resposta do suporte..."
+                      rows={2}
+                      className="resize-none"
+                      lang="pt-BR"
+                      spellCheck
+                      autoCorrect="on"
+                      autoCapitalize="sentences"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+                      }}
+                    />
+                    <Button onClick={send} disabled={sending || (!reply.trim() && !attachment)}>
+                      {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
               )}
             </>
