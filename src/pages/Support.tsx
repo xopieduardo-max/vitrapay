@@ -65,17 +65,30 @@ export default function Support() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const pickAttachment = (file: File | null) => {
+  const pickAttachment = async (file: File | null) => {
     if (!file) return setAttachment(null);
-    if (!ACCEPTED_MIME.includes(file.type)) {
+    let f = file;
+    if (f.type.startsWith("image/")) {
+      f = await convertImageToWebp(f);
+    }
+    if (!ACCEPTED_MIME.includes(f.type)) {
       toast.error("Tipo de arquivo não suportado. Envie imagem ou PDF.");
       return;
     }
-    if (file.size > MAX_BYTES) {
+    if (f.size > MAX_BYTES) {
       toast.error("Arquivo muito grande (máx. 10 MB).");
       return;
     }
-    setAttachment(file);
+    setAttachment(f);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const img = getImageFromClipboard(e);
+    if (img) {
+      e.preventDefault();
+      pickAttachment(img);
+      toast.success("Imagem colada do clipboard");
+    }
   };
 
   const uploadAttachment = async (ticketId: string): Promise<{ path: string; name: string; type: string } | null> => {
