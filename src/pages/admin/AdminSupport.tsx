@@ -119,8 +119,15 @@ export default function AdminSupport() {
         qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
         qc.invalidateQueries({ queryKey: ["admin-sidebar-counters"] });
       });
+      // Auto: ao abrir um chamado "Aberto", muda para "Pendente" (em atendimento)
+      const t = tickets.find((x) => x.id === selected);
+      if (t?.status === "open") {
+        supabase.from("support_tickets").update({ status: "pending" }).eq("id", selected).then(() => {
+          qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+        });
+      }
     }
-  }, [selected, messages.length, qc]);
+  }, [selected, messages.length, tickets, qc]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
