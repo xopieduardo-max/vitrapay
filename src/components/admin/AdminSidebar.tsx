@@ -39,6 +39,7 @@ export function AdminSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  const qc = useQueryClient();
 
   const [lastSeen, setLastSeen] = useState<string | null>(
     () => localStorage.getItem(LAST_SEEN_KEY),
