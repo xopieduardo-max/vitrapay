@@ -15,6 +15,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { User, LogOut, Moon, Sun, ChevronDown, LifeBuoy, ShoppingBag, Rocket, Check, Home, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUnreadSupport } from "@/hooks/useUnreadSupport";
+import { Badge } from "@/components/ui/badge";
 
 type ViewMode = "buyer" | "producer";
 
