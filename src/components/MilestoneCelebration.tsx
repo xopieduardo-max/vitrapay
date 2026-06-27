@@ -76,17 +76,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
   const previewTierName = previewTierProp ?? urlPreviewTier;
 
   // Maior tier atingido ainda não solicitado
-  const pendingTier = useMemo(() => {
-    if (previewTierName) {
-      return TIERS.find((t) => t.name.toLowerCase() === previewTierName.toLowerCase()) ?? null;
-    }
-    const sorted = [...TIERS].sort((a, b) => b.threshold - a.threshold);
-    return sorted.find((t) => revenue >= t.threshold && !requested.includes(t.threshold)) ?? null;
-  }, [revenue, requested, previewTierName]);
 
-  useEffect(() => {
-    if (activeMilestone !== null) return;
-    if (!pendingTier) return;
   const pendingTier = useMemo(() => {
     if (previewTierName) {
       return TIERS.find((t) => t.name.toLowerCase() === previewTierName.toLowerCase()) ?? null;
