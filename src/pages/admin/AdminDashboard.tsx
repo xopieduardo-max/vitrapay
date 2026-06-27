@@ -98,6 +98,10 @@ const withdrawalStatusLabels: Record<string, string> = {
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
+// Baseline para zerar acumulados: contabilizar apenas a partir de Junho/2026
+const BASELINE_DATE = new Date(2026, 5, 1, 0, 0, 0); // 1º de Junho de 2026
+const BASELINE_ISO = BASELINE_DATE.toISOString();
+
 function getDateRange(period: Period, customFrom: string, customTo: string, customTimeFrom: string, customTimeTo: string) {
   const now = new Date();
   let from: Date;
