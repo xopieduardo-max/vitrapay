@@ -16,6 +16,8 @@ const Landing = lazy(() => import("./pages/Landing"));
 
 // Lazy: everything else
 const DashboardLayout = lazy(() => import("@/components/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
+const BuyerLayout = lazy(() => import("@/components/BuyerLayout"));
+const ProducerModeGate = lazy(() => import("@/components/ProducerModeGate").then(m => ({ default: m.ProducerModeGate })));
 const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
@@ -115,28 +117,36 @@ const App = () => {
                 {/* Standalone protected pages (no sidebar) */}
                 <Route path="/learn/:productId" element={<MemberArea />} />
 
-                {/* Producer panel with sidebar */}
-                <Route element={<DashboardLayout />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/products" element={<MyProducts />} />
-                  <Route path="/products/new" element={<CreateProduct />} />
-                  <Route path="/products/:id/edit" element={<EditProduct />} />
-                  <Route path="/products/:id/checkout-builder" element={<CheckoutBuilder />} />
-                  <Route path="/sales" element={<Sales />} />
-                  <Route path="/affiliates" element={<Affiliates />} />
-                  <Route path="/library" element={<BuyerLibrary />} />
+                {/* Buyer-only minimal layout: courses + profile */}
+                <Route element={<BuyerLayout />}>
+                  <Route path="/home" element={<BuyerLibrary />} />
+                  <Route path="/profile" element={<Settings />} />
                   <Route path="/purchases" element={<Purchases />} />
-                  <Route path="/finance" element={<Finance />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/community" element={<Community />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/integrations" element={<Integrations />} />
-                  <Route path="/help" element={<HelpCenter />} />
-                  <Route path="/taxas" element={<Taxas />} />
-                  <Route path="/workspace" element={<WorkspaceSettings />} />
+                  <Route path="/library" element={<BuyerLibrary />} />
                   <Route path="/support" element={<Support />} />
+                  <Route path="/help" element={<HelpCenter />} />
+                </Route>
+
+                {/* Producer panel with sidebar — only for producers in "producer" mode */}
+                <Route element={<ProducerModeGate />}>
+                  <Route element={<DashboardLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/marketplace" element={<Marketplace />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route path="/products" element={<MyProducts />} />
+                    <Route path="/products/new" element={<CreateProduct />} />
+                    <Route path="/products/:id/edit" element={<EditProduct />} />
+                    <Route path="/products/:id/checkout-builder" element={<CheckoutBuilder />} />
+                    <Route path="/sales" element={<Sales />} />
+                    <Route path="/affiliates" element={<Affiliates />} />
+                    <Route path="/finance" element={<Finance />} />
+                    <Route path="/transactions" element={<Transactions />} />
+                    <Route path="/community" element={<Community />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/integrations" element={<Integrations />} />
+                    <Route path="/taxas" element={<Taxas />} />
+                    <Route path="/workspace" element={<WorkspaceSettings />} />
+                  </Route>
                 </Route>
               </Route>
 
