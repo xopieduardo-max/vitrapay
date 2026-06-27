@@ -41,6 +41,19 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     },
   });
 
+  const { data: seenMilestones = [] } = useQuery({
+    queryKey: ["milestone-seen", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("milestone_seen" as any)
+        .select("milestone")
+        .eq("user_id", user!.id);
+      return (data || []).map((r: any) => Number(r.milestone));
+    },
+  });
+
+
   const { data: profile } = useQuery({
     queryKey: ["profile-for-award", user?.id],
     enabled: !!user && !!activeMilestone,
