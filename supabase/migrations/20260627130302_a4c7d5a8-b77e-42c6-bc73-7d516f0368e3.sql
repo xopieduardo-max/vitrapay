@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can view all pending_payments" ON public.pending_payments FOR SELECT USING (has_role(auth.uid(), 'admin'::app_role));
