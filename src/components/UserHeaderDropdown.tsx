@@ -154,9 +154,14 @@ export function UserHeaderDropdown() {
                 Mudar para produtor
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => navigate("/support")} className="gap-3 cursor-pointer">
-              <LifeBuoy className="h-4 w-4" />
-              Ajuda & Suporte
+            <DropdownMenuItem onClick={() => navigate("/support")} className={`gap-3 cursor-pointer ${hasUnreadSupport ? "bg-primary/5" : ""}`}>
+              <LifeBuoy className={`h-4 w-4 ${hasUnreadSupport ? "text-primary" : ""}`} />
+              <span className="flex-1">Ajuda & Suporte</span>
+              {hasUnreadSupport && (
+                <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] bg-primary text-primary-foreground">
+                  {unreadSupport > 9 ? "9+" : unreadSupport}
+                </Badge>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <div
