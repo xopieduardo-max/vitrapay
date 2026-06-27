@@ -140,9 +140,10 @@ export default function Support() {
       .channel("support-user")
       .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets", filter: `user_id=eq.${user.id}` },
         () => qc.invalidateQueries({ queryKey: ["support-tickets-mine"] }))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages" },
+      .on("postgres_changes", { event: "*", schema: "public", table: "support_messages" },
         (payload: any) => {
-          if (payload.new?.ticket_id === selected) {
+          const tid = (payload.new as any)?.ticket_id || (payload.old as any)?.ticket_id;
+          if (tid === selected) {
             qc.invalidateQueries({ queryKey: ["support-messages", selected] });
           }
           qc.invalidateQueries({ queryKey: ["support-tickets-mine"] });
