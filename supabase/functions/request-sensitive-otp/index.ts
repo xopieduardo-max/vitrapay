@@ -129,6 +129,26 @@ Deno.serve(async (req) => {
     const messageId = crypto.randomUUID();
     const html = buildOtpHtml(code, action);
 
+    // Garante um unsubscribe_token para o destinatário (exigido pelo Lovable Emails)
+    let unsubscribeToken: string | null = null;
+    const { data: existingTok } = await supabase
+      .from("email_unsubscribe_tokens")
+      .select("token")
+      .eq("email", user.email)
+      .maybeSingle();
+    if (existingTok?.token) {
+      unsubscribeToken = existingTok.token;
+    } else {
+      const newToken = crypto.randomUUID().replace(/-/g, "");
+      const { data: ins, error: insErr } = await supabase
+        .from("email_unsubscribe_tokens")
+        .insert({ email: user.email, token: newToken })
+        .select("token")
+        .single();
+      if (insErr) console.error("unsubscribe_token insert failed:", insErr);
+      unsubscribeToken = ins?.token || newToken;
+    }
+
     await supabase.from("email_send_log").insert({
       message_id: messageId,
       template_name: "sensitive_otp",
@@ -150,6 +170,7 @@ Deno.serve(async (req) => {
         text: `Seu código VitraPay: ${code} (válido por 10 minutos)`,
         purpose: "transactional",
         label: "sensitive_otp",
+        unsubscribe_token: unsubscribeToken,
         queued_at: new Date().toISOString(),
       },
     });
