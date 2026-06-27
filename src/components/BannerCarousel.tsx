@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BannerCarouselProps {
-  location: "dashboard" | "marketplace";
+  location: "dashboard" | "marketplace" | "buyer";
   fallbackSrc?: string;
   fallbackAlt?: string;
   maxHeight?: number;
