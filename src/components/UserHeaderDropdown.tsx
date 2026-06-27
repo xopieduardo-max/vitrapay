@@ -112,11 +112,19 @@ export function UserHeaderDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors outline-none">
-          <Avatar className="h-8 w-8 border border-border">
-            <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
-          </Avatar>
+        <button className="relative flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors outline-none">
+          <div className="relative">
+            <Avatar className="h-8 w-8 border border-border">
+              <AvatarImage src={profile?.avatar_url || undefined} />
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+            </Avatar>
+            {hasUnreadSupport && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                <span className={`absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 ${supportPulse ? "animate-ping" : ""}`}></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary border border-background"></span>
+              </span>
+            )}
+          </div>
           <div className="hidden sm:flex flex-col items-start leading-tight">
             <span className="text-sm font-medium truncate max-w-[120px]">{displayName}</span>
             {isProducer && (
@@ -129,6 +137,7 @@ export function UserHeaderDropdown() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
+
         {buyerMode ? (
           <>
             <DropdownMenuItem onClick={() => navigate("/home")} className="gap-3 cursor-pointer">
