@@ -439,6 +439,14 @@ export default function AdminUserDetail() {
         );
       })()}
 
+      {/* Quick actions + internal notes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <AdminQuickActions userId={userId!} userEmail={userEmail} userPhone={profile.phone} />
+        <AdminInternalNotes userId={userId!} />
+      </div>
+
+
+
 
 
       {/* Onboarding survey info */}
