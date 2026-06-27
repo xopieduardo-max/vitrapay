@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
 const MAX_BYTES = 10 * 1024 * 1024;
