@@ -2069,6 +2069,41 @@ export type Database = {
         }
         Relationships: []
       }
+      support_ticket_notes: {
+        Row: {
+          admin_id: string
+          content: string
+          created_at: string
+          id: string
+          ticket_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          content: string
+          created_at?: string
+          id?: string
+          ticket_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          ticket_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_notes_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           created_at: string

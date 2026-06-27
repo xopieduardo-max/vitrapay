@@ -30,6 +30,7 @@ import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { QuickRepliesPopover } from "@/components/admin/QuickRepliesPopover";
+import { InternalNotesSheet } from "@/components/admin/InternalNotesSheet";
 
 function TypingDots() {
   return (
@@ -501,6 +502,7 @@ export default function AdminSupport() {
                     )}
                   </p>
                 </div>
+                <InternalNotesSheet ticketId={selected} />
                 <Select value={ticket?.status} onValueChange={setStatus}>
                   <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
