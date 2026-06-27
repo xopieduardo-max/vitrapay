@@ -19,7 +19,8 @@ export default function BannerCarousel({
   className = "",
 }: BannerCarouselProps) {
   const [current, setCurrent] = useState(0);
-  
+  const [aspectRatio, setAspectRatio] = useState<string>("6 / 1");
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: banners = [] } = useQuery({
@@ -95,8 +96,8 @@ export default function BannerCarousel({
 
   return (
     <div
-      className={`relative w-full rounded-xl overflow-hidden group ${className}`}
-      style={{ aspectRatio: "6 / 1" }}
+      className={`relative w-full rounded-xl overflow-hidden group bg-muted/30 ${className}`}
+      style={{ aspectRatio }}
     >
       {/* All slides stacked, only current one visible via opacity */}
       {slides.map((slide, i) => {
@@ -118,9 +119,17 @@ export default function BannerCarousel({
               <img
                 src={slide.image_url || ""}
                 alt={slide.title || "Banner"}
-                className="w-full h-full object-cover rounded-xl"
+                className="w-full h-full object-contain rounded-xl"
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
+                onLoad={(e) => {
+                  if (i === 0) {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth && img.naturalHeight) {
+                      setAspectRatio(`${img.naturalWidth} / ${img.naturalHeight}`);
+                    }
+                  }
+                }}
               />
             </Wrapper>
           </div>
