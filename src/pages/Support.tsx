@@ -317,7 +317,15 @@ export default function Support() {
                       {m.is_admin && (
                         <p className="text-[0.65rem] font-semibold text-primary mb-0.5">VitraPay</p>
                       )}
-                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                      {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+                      {m.attachment_url && (
+                        <SupportAttachment
+                          path={m.attachment_url}
+                          name={m.attachment_name}
+                          type={m.attachment_type}
+                          ownBubble={!m.is_admin}
+                        />
+                      )}
                       <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1 justify-end">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
                         {!m.is_admin && <CheckCheck className="h-3 w-3" />}
@@ -336,24 +344,53 @@ export default function Support() {
                   </Button>
                 </div>
               ) : (
-                <div className="border-t border-border p-3 flex gap-2">
-                  <Textarea
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder="Digite sua mensagem..."
-                    rows={2}
-                    className="resize-none"
-                    lang="pt-BR"
-                    spellCheck
-                    autoCorrect="on"
-                    autoCapitalize="sentences"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
-                    }}
-                  />
-                  <Button onClick={sendReply} disabled={sending || !reply.trim()} className="h-auto">
-                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </Button>
+                <div className="border-t border-border p-3 space-y-2">
+                  {attachment && (
+                    <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs">
+                      <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate flex-1">{attachment.name}</span>
+                      <span className="text-muted-foreground">{(attachment.size / 1024).toFixed(0)} KB</span>
+                      <button
+                        type="button"
+                        onClick={() => setAttachment(null)}
+                        className="text-muted-foreground hover:text-foreground"
+                        aria-label="Remover anexo"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <label
+                      className="flex items-center justify-center h-auto px-3 rounded-md border border-input bg-background hover:bg-accent cursor-pointer shrink-0"
+                      title="Anexar imagem ou PDF"
+                    >
+                      <Paperclip className="h-4 w-4" />
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={(e) => pickAttachment(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <Textarea
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      placeholder="Digite sua mensagem..."
+                      rows={2}
+                      className="resize-none"
+                      lang="pt-BR"
+                      spellCheck
+                      autoCorrect="on"
+                      autoCapitalize="sentences"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
+                      }}
+                    />
+                    <Button onClick={sendReply} disabled={sending || (!reply.trim() && !attachment)} className="h-auto">
+                      {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
               )}
             </>
