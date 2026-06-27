@@ -275,41 +275,109 @@ export default function AdminBanners() {
           <Input value={newLink} onChange={(e) => setNewLink(e.target.value)} placeholder="https://..." />
         </div>
 
-        {/* Live preview */}
-        {(previewUrl || newImageUrl) && (
-          <div className="space-y-2 pt-1">
-            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Pré-visualização</Label>
-            <div className="relative w-full overflow-hidden rounded-xl border border-border bg-muted" style={{ aspectRatio: "6 / 1", minHeight: 64 }}>
-              <img
-                src={previewUrl || newImageUrl}
-                alt="Banner preview"
-                className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
+        {/* Live preview por área */}
+        {(previewUrl || newImageUrl) && (() => {
+          const src = previewUrl || newImageUrl;
+          const areas: { key: string; label: string; mock: "dashboard" | "marketplace" | "buyer" }[] = [];
+          if (newLocation === "dashboard" || newLocation === "both") areas.push({ key: "dashboard", label: "Dashboard (Produtor)", mock: "dashboard" });
+          if (newLocation === "marketplace" || newLocation === "both") areas.push({ key: "marketplace", label: "Marketplace", mock: "marketplace" });
+          if (newLocation === "buyer") areas.push({ key: "buyer", label: "Área do Comprador", mock: "buyer" });
+
+          const BannerImg = () => (
+            <div className="relative w-full overflow-hidden rounded-lg bg-muted" style={{ aspectRatio: "6 / 1" }}>
+              <img src={src} alt="Banner" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               {newTitle && (
-                <div className="absolute inset-0 flex items-end p-3 pointer-events-none">
-                  <span className="text-sm font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] truncate">
-                    {newTitle}
-                  </span>
+                <div className="absolute inset-0 flex items-end p-2 pointer-events-none">
+                  <span className="text-[11px] font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] truncate">{newTitle}</span>
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between">
+          );
+
+          return (
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Pré-visualização por área</Label>
+                {previewUrl && (
+                  <button type="button" className="text-[11px] text-destructive hover:underline"
+                    onClick={() => { setSelectedFile(null); setPreviewUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
+                    Remover imagem
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                {areas.map((a) => (
+                  <div key={a.key} className="rounded-xl border border-border overflow-hidden bg-background">
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+                      <span className="text-[11px] font-semibold">{a.label}</span>
+                      <Badge variant="secondary" className={`text-[9px] px-1.5 py-0 ${LOCATION_COLORS[a.key] || ""}`}>preview</Badge>
+                    </div>
+
+                    {a.mock === "dashboard" && (
+                      <div className="flex bg-[#080808] text-white">
+                        <div className="w-12 bg-black/60 border-r border-white/5 py-3 flex flex-col items-center gap-2">
+                          {[0,1,2,3].map((i) => <div key={i} className="h-4 w-4 rounded bg-white/10" />)}
+                        </div>
+                        <div className="flex-1 p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="h-3 w-20 rounded bg-white/10" />
+                            <div className="h-6 w-6 rounded-full bg-primary/40" />
+                          </div>
+                          <BannerImg />
+                          <div className="grid grid-cols-3 gap-2">
+                            {[0,1,2].map((i) => <div key={i} className="h-10 rounded-lg bg-white/5" />)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {a.mock === "marketplace" && (
+                      <div className="bg-[#080808] text-white p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-5 w-24 rounded bg-white/10" />
+                          <div className="flex-1" />
+                          <div className="h-5 w-16 rounded bg-primary/40" />
+                        </div>
+                        <BannerImg />
+                        <div className="grid grid-cols-4 gap-2">
+                          {[0,1,2,3].map((i) => (
+                            <div key={i} className="space-y-1">
+                              <div className="aspect-[4/3] rounded bg-white/5" />
+                              <div className="h-2 w-3/4 rounded bg-white/10" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {a.mock === "buyer" && (
+                      <div className="bg-[#080808] text-white">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
+                          <div className="h-4 w-16 rounded bg-primary/40" />
+                          <div className="h-6 w-6 rounded-full bg-white/10" />
+                        </div>
+                        <div className="p-3 space-y-2">
+                          <BannerImg />
+                          <div className="h-3 w-28 rounded bg-white/10" />
+                          <div className="grid grid-cols-3 gap-2">
+                            {[0,1,2].map((i) => (
+                              <div key={i} className="aspect-[3/4] rounded bg-white/5" />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
               <p className="text-[11px] text-muted-foreground">
-                Proporção 6:1 · Tamanho ideal: 1920 × 320 px
+                Proporção 6:1 · Tamanho ideal: 1920 × 320 px · As proporções dos mockups são ilustrativas.
               </p>
-              {previewUrl && (
-                <button
-                  type="button"
-                  className="text-[11px] text-destructive hover:underline"
-                  onClick={() => { setSelectedFile(null); setPreviewUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                >
-                  Remover imagem
-                </button>
-              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         <Button size="sm" className="gap-1.5" onClick={() => addBanner.mutate()} disabled={isPending}>
           {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
