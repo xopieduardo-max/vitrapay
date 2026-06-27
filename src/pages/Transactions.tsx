@@ -38,6 +38,46 @@ const categoryIcons: Record<string, string> = {
   service_fee: "🏷️",
 };
 
+type CategoryTone = "success" | "info" | "warning" | "destructive";
+
+const categoryTone: Record<string, CategoryTone> = {
+  sale: "success",
+  commission: "success",
+  fee: "warning",
+  withdrawal: "info",
+  refund: "destructive",
+  chargeback: "destructive",
+  med: "warning",
+  service_fee: "warning",
+};
+
+const toneClasses: Record<CategoryTone, { bg: string; text: string; border: string; soft: string }> = {
+  success: {
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success/30",
+    soft: "bg-success/10",
+  },
+  info: {
+    bg: "bg-info",
+    text: "text-info",
+    border: "border-info/30",
+    soft: "bg-info/10",
+  },
+  warning: {
+    bg: "bg-warning",
+    text: "text-warning",
+    border: "border-warning/30",
+    soft: "bg-warning/10",
+  },
+  destructive: {
+    bg: "bg-destructive",
+    text: "text-destructive",
+    border: "border-destructive/30",
+    soft: "bg-destructive/10",
+  },
+};
+
 const anim = (delay: number) => ({
   initial: { opacity: 0, y: 12 } as const,
   animate: { opacity: 1, y: 0 } as const,
@@ -174,20 +214,20 @@ export default function Transactions() {
         {/* Entradas */}
         <motion.div
           {...anim(0.05)}
-          className="rounded-2xl border border-primary/30 bg-primary/5 p-4 md:p-5 relative overflow-hidden"
+          className="rounded-2xl border border-success/30 bg-card p-4 md:p-5 relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-primary rounded-t-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-success/60 rounded-t-2xl" />
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <TrendingUp className="h-4 w-4 text-primary" strokeWidth={1.5} />
+                <TrendingUp className="h-4 w-4 text-success" strokeWidth={1.5} />
                 <span className="text-xs text-muted-foreground font-medium">Entradas</span>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-primary">{fmt(totals.credits)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-success">{fmt(totals.credits)}</p>
               <p className="text-[0.65rem] text-muted-foreground mt-1">{creditCount} transações</p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <ArrowDownLeft className="h-5 w-5 text-primary" />
+            <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+              <ArrowDownLeft className="h-5 w-5 text-success" />
             </div>
           </div>
         </motion.div>
@@ -195,20 +235,20 @@ export default function Transactions() {
         {/* Saídas */}
         <motion.div
           {...anim(0.1)}
-          className="rounded-2xl border border-border bg-card p-4 md:p-5 relative overflow-hidden"
+          className="rounded-2xl border border-info/30 bg-card p-4 md:p-5 relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-destructive/60 rounded-t-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-info/60 rounded-t-2xl" />
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <TrendingDown className="h-4 w-4 text-destructive" strokeWidth={1.5} />
+                <TrendingDown className="h-4 w-4 text-info" strokeWidth={1.5} />
                 <span className="text-xs text-muted-foreground font-medium">Saídas</span>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-destructive">{fmt(totals.debits)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-info">{fmt(totals.debits)}</p>
               <p className="text-[0.65rem] text-muted-foreground mt-1">{debitCount} transações</p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-              <ArrowUpRight className="h-5 w-5 text-destructive" />
+            <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center">
+              <ArrowUpRight className="h-5 w-5 text-info" />
             </div>
           </div>
         </motion.div>
@@ -323,69 +363,64 @@ export default function Transactions() {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {filtered.map((t, i) => (
-              <motion.div
-                key={t.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: Math.min(i * 0.01, 0.5) }}
-                className="flex items-center justify-between px-4 md:px-5 py-3 hover:bg-muted/10 transition-colors"
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                      t.type === "credit"
-                        ? "bg-primary/10"
-                        : "bg-destructive/10"
-                    }`}
-                  >
-                    {t.type === "credit" ? (
-                      <ArrowDownLeft className="h-4 w-4 text-primary" />
-                    ) : (
-                      <ArrowUpRight className="h-4 w-4 text-destructive" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">
-                        {categoryIcons[t.category]} {categoryLabels[t.category] || t.category}
-                      </span>
-                      <span
-                        className={`text-[0.6rem] px-1.5 py-0.5 rounded-md font-medium shrink-0 ${
-                          t.type === "credit"
-                            ? "bg-primary/10 text-primary"
-                            : "bg-destructive/10 text-destructive"
-                        }`}
-                      >
-                        {t.type === "credit" ? "Entrada" : "Saída"}
-                      </span>
-                    </div>
-                    <p className="text-[0.65rem] text-muted-foreground truncate mt-0.5">
-                      {new Date(t.created_at).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                      {t.reference_id && (
-                        <span className="ml-2 opacity-60">
-                          ref: {t.reference_id.substring(0, 8)}…
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </div>
+            {filtered.map((t, i) => {
+              const tone = categoryTone[t.category] || (t.type === "credit" ? "success" : "destructive");
+              const style = toneClasses[tone];
 
-                <p
-                  className={`text-sm font-bold whitespace-nowrap ml-3 ${
-                    t.type === "credit" ? "text-primary" : "text-destructive"
-                  }`}
+              return (
+                <motion.div
+                  key={t.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: Math.min(i * 0.01, 0.5) }}
+                  className="flex items-center justify-between px-4 md:px-5 py-3 hover:bg-muted/10 transition-colors"
                 >
-                  {t.type === "credit" ? "+" : "−"} {fmt(t.amount)}
-                </p>
-              </motion.div>
-            ))}
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${style.soft}`}
+                    >
+                      {t.type === "credit" ? (
+                        <ArrowDownLeft className={`h-4 w-4 ${style.text}`} />
+                      ) : (
+                        <ArrowUpRight className={`h-4 w-4 ${style.text}`} />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate">
+                          {categoryIcons[t.category]} {categoryLabels[t.category] || t.category}
+                        </span>
+                        <span
+                          className={`text-[0.6rem] px-1.5 py-0.5 rounded-md font-medium shrink-0 ${style.soft} ${style.text}`}
+                        >
+                          {t.type === "credit" ? "Entrada" : "Saída"}
+                        </span>
+                      </div>
+                      <p className="text-[0.65rem] text-muted-foreground truncate mt-0.5">
+                        {new Date(t.created_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                        {t.reference_id && (
+                          <span className="ml-2 opacity-60">
+                            ref: {t.reference_id.substring(0, 8)}…
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p
+                    className={`text-sm font-bold whitespace-nowrap ml-3 ${style.text}`}
+                  >
+                    {t.type === "credit" ? "+" : "−"} {fmt(t.amount)}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </motion.div>
