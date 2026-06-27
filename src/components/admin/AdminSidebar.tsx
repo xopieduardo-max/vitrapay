@@ -5,7 +5,7 @@ import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu,
@@ -39,6 +39,7 @@ export function AdminSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  const qc = useQueryClient();
 
   const [lastSeen, setLastSeen] = useState<string | null>(
     () => localStorage.getItem(LAST_SEEN_KEY),
@@ -69,6 +70,18 @@ export function AdminSidebar() {
       };
     },
   });
+
+  // Realtime: instant badge updates when withdrawals/support change
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-sidebar-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets" },
+        () => qc.invalidateQueries({ queryKey: ["admin-sidebar-counters"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals" },
+        () => qc.invalidateQueries({ queryKey: ["admin-sidebar-counters"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">

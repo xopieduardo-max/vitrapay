@@ -112,8 +112,13 @@ export default function AdminSupport() {
   }, [selected, qc]);
 
   useEffect(() => {
-    if (selected) supabase.rpc("mark_support_ticket_read", { _ticket_id: selected });
-  }, [selected, messages.length]);
+    if (selected) {
+      supabase.rpc("mark_support_ticket_read", { _ticket_id: selected }).then(() => {
+        qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+        qc.invalidateQueries({ queryKey: ["admin-sidebar-counters"] });
+      });
+    }
+  }, [selected, messages.length, qc]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
