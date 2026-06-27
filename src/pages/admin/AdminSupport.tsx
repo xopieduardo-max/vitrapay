@@ -64,6 +64,9 @@ export default function AdminSupport() {
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "open" | "pending" | "resolved" | "closed">("all");
+  const [editing, setEditing] = useState<{ id: string; body: string } | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const pickAttachment = async (file: File | null) => {
