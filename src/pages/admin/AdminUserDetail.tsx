@@ -7,7 +7,9 @@ import { ptBR } from "date-fns/locale";
 import {
   ArrowLeft, Package, ShoppingBag, Landmark, Percent, Loader2,
   Calendar, Eye, TrendingUp, DollarSign, Pencil, RotateCcw, Users,
+  Mail, Phone, MapPin, CreditCard, IdCard, CheckCircle2, XCircle, Cake,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
