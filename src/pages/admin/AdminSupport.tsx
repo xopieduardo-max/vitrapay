@@ -511,6 +511,22 @@ export default function AdminSupport() {
                   </SelectContent>
                 </Select>
               </div>
+              {ticket?.rating && (
+                <div className="px-4 py-2 border-b border-border bg-yellow-500/5 flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        className={`h-3.5 w-3.5 ${n <= (ticket.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">{ticket.rating}/5</span>
+                  {ticket.rating_comment && (
+                    <span className="text-muted-foreground italic truncate">· "{ticket.rating_comment}"</span>
+                  )}
+                </div>
+              )}
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
                 {messages.map((m: any) => {
                   const asst = m.is_admin && m.assistant_id ? assistants.find((a: any) => a.id === m.assistant_id) : null;
