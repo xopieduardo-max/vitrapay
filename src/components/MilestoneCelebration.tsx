@@ -87,6 +87,22 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
   useEffect(() => {
     if (activeMilestone !== null) return;
     if (!pendingTier) return;
+  const pendingTier = useMemo(() => {
+    if (previewTierName) {
+      return TIERS.find((t) => t.name.toLowerCase() === previewTierName.toLowerCase()) ?? null;
+    }
+    const sorted = [...TIERS].sort((a, b) => b.threshold - a.threshold);
+    return sorted.find(
+      (t) =>
+        revenue >= t.threshold &&
+        !requested.includes(t.threshold) &&
+        !seenMilestones.includes(t.threshold),
+    ) ?? null;
+  }, [revenue, requested, seenMilestones, previewTierName]);
+
+  useEffect(() => {
+    if (activeMilestone !== null) return;
+    if (!pendingTier) return;
     if (previewTierName) {
       setActiveMilestone(pendingTier.threshold);
       return;
@@ -96,6 +112,7 @@ export function MilestoneCelebration({ revenue, previewTier: previewTierProp }: 
     if (localStorage.getItem(key)) return;
     setActiveMilestone(pendingTier.threshold);
   }, [pendingTier, user, activeMilestone, previewTierName]);
+
 
   // Toca o som quando o modal abre
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
