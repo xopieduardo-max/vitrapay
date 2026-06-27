@@ -44,6 +44,7 @@ const statusMap: Record<string, { label: string; cls: string }> = {
 
 export default function Support() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
