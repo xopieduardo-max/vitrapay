@@ -150,6 +150,11 @@ export default function AdminSupport() {
 
   const send = async () => {
     if (!reply.trim() || !selected) return;
+    const t = tickets.find((x) => x.id === selected);
+    if (t && LOCKED_STATUSES.has(t.status)) {
+      toast.error("Este chamado está encerrado. Reabra mudando o status para Pendente.");
+      return;
+    }
     setSending(true);
     const body = reply.trim();
     const { error } = await supabase.from("support_messages").insert({
@@ -160,8 +165,6 @@ export default function AdminSupport() {
     setReply("");
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
 
-    // Auto status -> pending (respondido) e push notification para o usuário
-    const t = tickets.find((x) => x.id === selected);
     if (t) {
       if (t.status === "open") {
         supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
