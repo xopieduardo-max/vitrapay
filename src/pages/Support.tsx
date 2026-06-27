@@ -250,6 +250,10 @@ export default function Support() {
                   placeholder="Digite sua mensagem..."
                   rows={2}
                   className="resize-none"
+                  lang="pt-BR"
+                  spellCheck
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
                   }}
