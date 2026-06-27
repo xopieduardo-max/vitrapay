@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { SupportAttachment } from "@/components/support/SupportAttachment";
+import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 
 const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
 const MAX_BYTES = 10 * 1024 * 1024;
