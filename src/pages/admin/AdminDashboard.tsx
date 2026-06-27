@@ -240,14 +240,14 @@ export default function AdminDashboard() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ["admin-stats-v2"],
+    queryKey: ["admin-stats-v2", BASELINE_ISO],
     queryFn: async () => {
       const [profilesRes, productsRes, salesRes, withdrawalsRes] =
         await Promise.all([
           supabase.from("profiles").select("id", { count: "exact", head: true }),
           supabase.from("products").select("id", { count: "exact", head: true }),
-          supabase.from("sales").select("amount, platform_fee, status, payment_id").eq("status", "completed"),
-          supabase.from("withdrawals").select("amount, status"),
+          supabase.from("sales").select("amount, platform_fee, status, payment_id").eq("status", "completed").gte("created_at", BASELINE_ISO),
+          supabase.from("withdrawals").select("amount, status").gte("created_at", BASELINE_ISO),
         ]);
 
       // Exclude fake sales from admin stats
