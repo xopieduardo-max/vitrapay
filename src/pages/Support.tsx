@@ -60,8 +60,36 @@ export default function Support() {
   const [subject, setSubject] = useState("");
   const [firstMsg, setFirstMsg] = useState("");
   const [reply, setReply] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const pickAttachment = (file: File | null) => {
+    if (!file) return setAttachment(null);
+    if (!ACCEPTED_MIME.includes(file.type)) {
+      toast.error("Tipo de arquivo não suportado. Envie imagem ou PDF.");
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      toast.error("Arquivo muito grande (máx. 10 MB).");
+      return;
+    }
+    setAttachment(file);
+  };
+
+  const uploadAttachment = async (ticketId: string): Promise<{ path: string; name: string; type: string } | null> => {
+    if (!attachment) return null;
+    const ext = attachment.name.split(".").pop() || "bin";
+    const path = `${ticketId}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("support-attachments")
+      .upload(path, attachment, { contentType: attachment.type, upsert: false });
+    if (error) {
+      toast.error("Falha ao enviar anexo.");
+      return null;
+    }
+    return { path, name: attachment.name, type: attachment.type };
+  };
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["support-tickets-mine", user?.id],
