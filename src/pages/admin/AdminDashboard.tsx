@@ -215,13 +215,14 @@ export default function AdminDashboard() {
   }, [allTransactionsRaw, fakeSaleIdSet]);
 
   const { data: allSales = [] } = useQuery({
-    queryKey: ["admin-all-sales"],
+    queryKey: ["admin-all-sales", BASELINE_ISO],
     queryFn: async () => {
       const { data } = await supabase
         .from("sales")
         .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider, payment_id")
         .eq("status", "completed")
         .not("payment_id", "like", "fake_%")
+        .gte("created_at", BASELINE_ISO)
         .order("created_at", { ascending: false })
         .limit(1000);
       return data || [];
