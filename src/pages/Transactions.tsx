@@ -214,20 +214,20 @@ export default function Transactions() {
         {/* Entradas */}
         <motion.div
           {...anim(0.05)}
-          className="rounded-2xl border border-primary/30 bg-primary/5 p-4 md:p-5 relative overflow-hidden"
+          className="rounded-2xl border border-success/30 bg-card p-4 md:p-5 relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-primary rounded-t-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-success/60 rounded-t-2xl" />
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <TrendingUp className="h-4 w-4 text-primary" strokeWidth={1.5} />
+                <TrendingUp className="h-4 w-4 text-success" strokeWidth={1.5} />
                 <span className="text-xs text-muted-foreground font-medium">Entradas</span>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-primary">{fmt(totals.credits)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-success">{fmt(totals.credits)}</p>
               <p className="text-[0.65rem] text-muted-foreground mt-1">{creditCount} transações</p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <ArrowDownLeft className="h-5 w-5 text-primary" />
+            <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+              <ArrowDownLeft className="h-5 w-5 text-success" />
             </div>
           </div>
         </motion.div>
