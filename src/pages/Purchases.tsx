@@ -17,20 +17,33 @@ const anim = (delay: number) => ({
 
 export default function Purchases() {
   const { user } = useAuth();
+  const [reviewSale, setReviewSale] = useState<any>(null);
+  const [reportSale, setReportSale] = useState<any>(null);
 
-  const { data: purchases = [], isLoading } = useQuery({
+  const { data: purchases = [], isLoading, refetch } = useQuery({
     queryKey: ["my-purchases", user?.id],
     queryFn: async () => {
       if (!user) return [];
       const { data } = await supabase
         .from("sales")
-        .select("id, amount, status, created_at, products(title)")
+        .select("id, amount, status, created_at, product_id, products(title, updated_at)")
         .eq("buyer_id", user.id)
         .order("created_at", { ascending: false });
       return data || [];
     },
     enabled: !!user,
   });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["my-reviews", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase.from("product_reviews").select("sale_id, rating").eq("user_id", user.id);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+  const reviewedMap = useMemo(() => new Map(reviews.map((r: any) => [r.sale_id, r.rating])), [reviews]);
 
   const statusMap: Record<string, { label: string; className: string }> = {
     completed: { label: "Pago", className: "bg-primary/10 text-primary border-primary/20" },
