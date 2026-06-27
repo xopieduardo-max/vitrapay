@@ -47,6 +47,13 @@ export function OtpChallengeDialog({
   }, [open]);
 
   useEffect(() => {
+    if (open && method === "email" && !emailMasked && cooldown === 0) {
+      void requestCode();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, method]);
+
+  useEffect(() => {
     if (cooldown <= 0) return;
     const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(t);
@@ -145,9 +152,7 @@ export function OtpChallengeDialog({
         <Tabs value={method} onValueChange={(value) => setMethod(value as "password" | "email")}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="password">Senha</TabsTrigger>
-            <TabsTrigger value="email" onClick={() => !emailMasked && cooldown === 0 && void requestCode()}>
-              E-mail
-            </TabsTrigger>
+            <TabsTrigger value="email">E-mail</TabsTrigger>
           </TabsList>
 
           <TabsContent value="password" className="space-y-4 pt-3">
