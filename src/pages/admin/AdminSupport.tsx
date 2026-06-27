@@ -333,6 +333,13 @@ export default function AdminSupport() {
   const activeAssistant = assistants.find((a: any) => a.id === assistantId);
   const assistantAvatars = useAssistantAvatars(assistants.map((a: any) => a.avatar_url));
 
+  const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
+  const { isOtherTyping, notifyTyping, notifyStop } = useTypingIndicator({
+    ticketId: selected,
+    isAdmin: true,
+    enabled: !!selected && !ticketLocked,
+  });
+
   useEffect(() => {
     if (assistantId) localStorage.setItem("admin_active_assistant", assistantId);
     else localStorage.removeItem("admin_active_assistant");
