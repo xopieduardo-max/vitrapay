@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Trash2, Plus, MessageCircle } from "lucide-react";
+import { Trash2, Plus, MessageCircle, Send, Loader2 } from "lucide-react";
 
 type Recipient = {
   id: string;
