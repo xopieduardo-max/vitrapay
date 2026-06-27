@@ -602,6 +602,11 @@ export default function Dashboard() {
     <div className="space-y-5 pb-20 md:pb-6">
       <MilestoneCelebration revenue={grossRevenueAll} />
 
+      {/* AI Insights + Week-over-week comparison */}
+      <ProducerAIInsights />
+
+
+
       {/* ═══════ MOBILE LAYOUT ═══════ */}
       <div className="md:hidden space-y-4">
         {/* Banner Carousel */}
