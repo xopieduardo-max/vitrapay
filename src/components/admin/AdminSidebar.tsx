@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, ArrowLeft, ShoppingBag, Lightbulb, Bell, Calculator, ShieldAlert, Receipt, ShoppingCart, ClipboardList, Trophy, Package, MessagesSquare, MessageCircle,
+  LayoutDashboard, Users, ArrowDownToLine, Settings, Image, MessageSquareMore, ArrowLeft, ShoppingBag, Lightbulb, Bell, Calculator, ShieldAlert, Receipt, ShoppingCart, ClipboardList, Trophy, Package, MessagesSquare, MessageCircle, UserCog,
 } from "lucide-react";
 import { ThemeLogo } from "@/components/ThemeLogo";
 import { NavLink } from "@/components/NavLink";
@@ -18,6 +18,7 @@ const navItems = [
   { title: "Produtos", url: "/admin/products", icon: Package },
   { title: "Saques", url: "/admin/withdrawals", icon: ArrowDownToLine, badgeKey: "pendingWithdrawals" as const },
   { title: "Mensagens", url: "/admin/support", icon: MessagesSquare, badgeKey: "unreadSupport" as const },
+  { title: "Atendentes", url: "/admin/assistants", icon: UserCog },
   { title: "Comunidade", url: "/admin/community", icon: Lightbulb },
   { title: "Banners", url: "/admin/banners", icon: Image },
   { title: "Pop-ups", url: "/admin/popups", icon: MessageSquareMore },
