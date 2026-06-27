@@ -49,10 +49,24 @@ export default function AdminSupport() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
   const [reply, setReply] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "open" | "pending" | "resolved" | "closed">("all");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const pickAttachment = (file: File | null) => {
+    if (!file) return setAttachment(null);
+    if (!ACCEPTED_MIME.includes(file.type)) {
+      toast.error("Tipo de arquivo não suportado. Envie imagem ou PDF.");
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      toast.error("Arquivo muito grande (máx. 10 MB).");
+      return;
+    }
+    setAttachment(file);
+  };
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["admin-support-tickets"],
