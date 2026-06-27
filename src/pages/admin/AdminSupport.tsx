@@ -11,6 +11,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -26,11 +27,16 @@ interface Ticket {
 }
 
 const statusMap: Record<string, { label: string; cls: string }> = {
-  open: { label: "Aberto", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
-  pending: { label: "Respondido", cls: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30" },
-  resolved: { label: "Resolvido", cls: "bg-green-500/10 text-green-500 border-green-500/30" },
-  closed: { label: "Fechado", cls: "bg-muted text-muted-foreground border-border" },
+  open: { label: "Aberto", cls: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" },
+  pending: { label: "Respondido", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
+  resolved: { label: "Resolvido", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
+  closed: { label: "Fechado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
 };
+
+function initials(name?: string) {
+  if (!name) return "U";
+  return name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
+}
 
 export default function AdminSupport() {
   const { user } = useAuth();
@@ -131,13 +137,30 @@ export default function AdminSupport() {
   const send = async () => {
     if (!reply.trim() || !selected) return;
     setSending(true);
+    const body = reply.trim();
     const { error } = await supabase.from("support_messages").insert({
-      ticket_id: selected, sender_id: user!.id, is_admin: true, body: reply.trim(),
+      ticket_id: selected, sender_id: user!.id, is_admin: true, body,
     });
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply("");
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
+
+    // Auto status -> pending (respondido) e push notification para o usuário
+    const t = tickets.find((x) => x.id === selected);
+    if (t) {
+      if (t.status === "open") {
+        supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
+      }
+      supabase.functions.invoke("send-push", {
+        body: {
+          producer_id: t.user_id,
+          title: "Suporte VitraPay respondeu",
+          body: body.length > 80 ? body.slice(0, 80) + "…" : body,
+          url: "/support",
+        },
+      }).catch(() => {});
+    }
   };
 
   const setStatus = async (status: string) => {
@@ -205,26 +228,32 @@ export default function AdminSupport() {
                   <button
                     key={t.id}
                     onClick={() => setSelected(t.id)}
-                    className={`w-full text-left px-3 py-3 hover:bg-muted/30 transition ${selected === t.id ? "bg-muted/40" : ""}`}
+                    className={`w-full text-left px-3 py-3 hover:bg-muted/30 transition flex gap-3 ${selected === t.id ? "bg-muted/40" : ""}`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-sm font-medium truncate flex-1">{t.subject}</p>
-                      {t.unread_for_admin > 0 && (
-                        <span className="text-[0.6rem] bg-primary text-primary-foreground rounded-full px-1.5 min-w-[18px] text-center">
-                          {t.unread_for_admin}
+                    <Avatar className="h-9 w-9 shrink-0">
+                      {p?.avatar && <AvatarImage src={p.avatar} alt={p?.name} />}
+                      <AvatarFallback className="text-xs">{initials(p?.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="text-sm font-medium truncate flex-1">{t.subject}</p>
+                        {t.unread_for_admin > 0 && (
+                          <span className="text-[0.6rem] bg-primary text-primary-foreground rounded-full px-1.5 min-w-[18px] text-center">
+                            {t.unread_for_admin}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {p?.name || "—"} · {p?.email || ""}
+                      </p>
+                      <div className="flex items-center justify-between text-xs mt-1">
+                        <Badge variant="outline" className={`text-[0.6rem] ${statusMap[t.status]?.cls}`}>
+                          {statusMap[t.status]?.label}
+                        </Badge>
+                        <span className="text-muted-foreground">
+                          {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
                         </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {p?.name || "—"} · {p?.email || ""}
-                    </p>
-                    <div className="flex items-center justify-between text-xs mt-1">
-                      <Badge variant="outline" className={`text-[0.6rem] ${statusMap[t.status]?.cls}`}>
-                        {statusMap[t.status]?.label}
-                      </Badge>
-                      <span className="text-muted-foreground">
-                        {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
-                      </span>
+                      </div>
                     </div>
                   </button>
                 );
@@ -244,6 +273,10 @@ export default function AdminSupport() {
                 <Button variant="ghost" size="icon" className="md:hidden h-7 w-7" onClick={() => setSelected(null)}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
+                <Avatar className="h-9 w-9 shrink-0">
+                  {ticketUser?.avatar && <AvatarImage src={ticketUser.avatar} alt={ticketUser?.name} />}
+                  <AvatarFallback className="text-xs">{initials(ticketUser?.name)}</AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{ticket?.subject}</p>
                   <p className="text-xs text-muted-foreground truncate">
@@ -280,6 +313,10 @@ export default function AdminSupport() {
                   placeholder="Resposta do suporte..."
                   rows={2}
                   className="resize-none"
+                  lang="pt-BR"
+                  spellCheck
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
                   }}

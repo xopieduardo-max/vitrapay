@@ -33,10 +33,10 @@ interface Message {
 }
 
 const statusMap: Record<string, { label: string; cls: string }> = {
-  open: { label: "Aberto", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
-  pending: { label: "Resposta", cls: "bg-primary/10 text-primary border-primary/30" },
-  resolved: { label: "Resolvido", cls: "bg-green-500/10 text-green-500 border-green-500/30" },
-  closed: { label: "Fechado", cls: "bg-muted text-muted-foreground border-border" },
+  open: { label: "Aberto", cls: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" },
+  pending: { label: "Respondido", cls: "bg-green-500/10 text-green-600 border-green-500/30" },
+  resolved: { label: "Resolvido", cls: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
+  closed: { label: "Fechado", cls: "bg-red-500/10 text-red-500 border-red-500/30" },
 };
 
 export default function Support() {
@@ -250,6 +250,10 @@ export default function Support() {
                   placeholder="Digite sua mensagem..."
                   rows={2}
                   className="resize-none"
+                  lang="pt-BR"
+                  spellCheck
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
                   }}
