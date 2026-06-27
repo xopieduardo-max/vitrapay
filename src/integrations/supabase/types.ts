@@ -859,6 +859,24 @@ export type Database = {
           },
         ]
       }
+      milestone_seen: {
+        Row: {
+          milestone: number
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          milestone: number
+          seen_at?: string
+          user_id: string
+        }
+        Update: {
+          milestone?: number
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       modules: {
         Row: {
           cover_url: string | null
