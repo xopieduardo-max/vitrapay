@@ -8,12 +8,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { User, LogOut, Moon, Sun, ChevronDown, LifeBuoy, ShoppingBag, Rocket, Check, Home, UserCircle } from "lucide-react";
+import { User, LogOut, Moon, Sun, ChevronDown, LifeBuoy, ShoppingBag, Rocket, Home, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUnreadSupport } from "@/hooks/useUnreadSupport";
 import { Badge } from "@/components/ui/badge";
@@ -182,22 +182,13 @@ export function UserHeaderDropdown() {
           </>
         ) : (
           <>
-            <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
-              Trocar de modo
-            </DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => switchMode("producer")} className="gap-3 cursor-pointer">
-              <Rocket className="h-4 w-4 text-primary" />
-              <span className="flex-1">Modo Produtor</span>
-              <Check className="h-3.5 w-3.5 text-primary" />
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => switchMode("buyer")} className="gap-3 cursor-pointer">
-              <ShoppingBag className="h-4 w-4" />
-              <span className="flex-1">Modo Comprador</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/settings")} className="gap-3 cursor-pointer">
               <User className="h-4 w-4" />
-              Perfil
+              Meu Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => switchMode("buyer")} className="gap-3 cursor-pointer">
+              <ShoppingBag className="h-4 w-4 text-primary" />
+              Mudar para o painel do aluno
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/support")} className={`gap-3 cursor-pointer ${hasUnreadSupport ? "bg-primary/5" : ""}`}>
               <LifeBuoy className={`h-4 w-4 ${hasUnreadSupport ? "text-primary" : ""}`} />

@@ -1942,7 +1942,10 @@ export type Database = {
       }
       support_messages: {
         Row: {
-          body: string
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
+          body: string | null
           created_at: string
           id: string
           is_admin: boolean
@@ -1950,7 +1953,10 @@ export type Database = {
           ticket_id: string
         }
         Insert: {
-          body: string
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          body?: string | null
           created_at?: string
           id?: string
           is_admin?: boolean
@@ -1958,7 +1964,10 @@ export type Database = {
           ticket_id: string
         }
         Update: {
-          body?: string
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          body?: string | null
           created_at?: string
           id?: string
           is_admin?: boolean

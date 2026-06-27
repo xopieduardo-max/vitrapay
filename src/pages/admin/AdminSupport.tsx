@@ -10,11 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck } from "lucide-react";
+import { MessageSquare, Send, Loader2, Search, ArrowLeft, CheckCheck, Paperclip, X } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { SupportAttachment } from "@/components/support/SupportAttachment";
+
+const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "application/pdf"];
+const MAX_BYTES = 10 * 1024 * 1024;
 
 interface Ticket {
   id: string;
@@ -45,10 +49,24 @@ export default function AdminSupport() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
   const [reply, setReply] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "open" | "pending" | "resolved" | "closed">("all");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const pickAttachment = (file: File | null) => {
+    if (!file) return setAttachment(null);
+    if (!ACCEPTED_MIME.includes(file.type)) {
+      toast.error("Tipo de arquivo não suportado. Envie imagem ou PDF.");
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      toast.error("Arquivo muito grande (máx. 10 MB).");
+      return;
+    }
+    setAttachment(file);
+  };
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["admin-support-tickets"],
@@ -149,7 +167,7 @@ export default function AdminSupport() {
   }, [tickets, filter, search, profiles]);
 
   const send = async () => {
-    if (!reply.trim() || !selected) return;
+    if ((!reply.trim() && !attachment) || !selected) return;
     const t = tickets.find((x) => x.id === selected);
     if (t && LOCKED_STATUSES.has(t.status)) {
       toast.error("Este chamado está encerrado. Reabra mudando o status para Pendente.");
@@ -157,23 +175,41 @@ export default function AdminSupport() {
     }
     setSending(true);
     const body = reply.trim();
+    let uploaded: { path: string; name: string; type: string } | null = null;
+    if (attachment) {
+      const ext = attachment.name.split(".").pop() || "bin";
+      const path = `${selected}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("support-attachments")
+        .upload(path, attachment, { contentType: attachment.type, upsert: false });
+      if (upErr) { setSending(false); toast.error("Falha ao enviar anexo."); return; }
+      uploaded = { path, name: attachment.name, type: attachment.type };
+    }
     const { error } = await supabase.from("support_messages").insert({
-      ticket_id: selected, sender_id: user!.id, is_admin: true, body,
-    });
+      ticket_id: selected,
+      sender_id: user!.id,
+      is_admin: true,
+      body: body || null,
+      attachment_url: uploaded?.path ?? null,
+      attachment_name: uploaded?.name ?? null,
+      attachment_type: uploaded?.type ?? null,
+    } as any);
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply("");
+    setAttachment(null);
     qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
 
     if (t) {
       if (t.status === "open") {
         supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
       }
+      const pushBody = body || (uploaded ? `📎 ${uploaded.name}` : "Nova mensagem");
       supabase.functions.invoke("send-push", {
         body: {
           producer_id: t.user_id,
           title: "Suporte VitraPay respondeu",
-          body: body.length > 80 ? body.slice(0, 80) + "…" : body,
+          body: pushBody.length > 80 ? pushBody.slice(0, 80) + "…" : pushBody,
           url: "/support",
         },
       }).catch(() => {});
@@ -314,7 +350,15 @@ export default function AdminSupport() {
                 {messages.map((m: any) => (
                   <div key={m.id} className={`flex ${m.is_admin ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.is_admin ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
-                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                      {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+                      {m.attachment_url && (
+                        <SupportAttachment
+                          path={m.attachment_url}
+                          name={m.attachment_name}
+                          type={m.attachment_type}
+                          ownBubble={m.is_admin}
+                        />
+                      )}
                       <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
                         {m.is_admin && <CheckCheck className="h-3 w-3" />}
@@ -328,24 +372,45 @@ export default function AdminSupport() {
                   Chamado <span className="font-semibold">{statusMap[ticket.status]?.label.toLowerCase()}</span>. Para responder novamente, mude o status para <span className="font-semibold">Pendente</span>.
                 </div>
               ) : (
-                <div className="border-t border-border p-3 flex gap-2">
-                  <Textarea
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder="Resposta do suporte..."
-                    rows={2}
-                    className="resize-none"
-                    lang="pt-BR"
-                    spellCheck
-                    autoCorrect="on"
-                    autoCapitalize="sentences"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-                    }}
-                  />
-                  <Button onClick={send} disabled={sending || !reply.trim()}>
-                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </Button>
+                <div className="border-t border-border p-3 space-y-2">
+                  {attachment && (
+                    <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs">
+                      <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate flex-1">{attachment.name}</span>
+                      <span className="text-muted-foreground">{(attachment.size / 1024).toFixed(0)} KB</span>
+                      <button type="button" onClick={() => setAttachment(null)} className="text-muted-foreground hover:text-foreground" aria-label="Remover anexo">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <label className="flex items-center justify-center h-auto px-3 rounded-md border border-input bg-background hover:bg-accent cursor-pointer shrink-0" title="Anexar imagem ou PDF">
+                      <Paperclip className="h-4 w-4" />
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={(e) => pickAttachment(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <Textarea
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      placeholder="Resposta do suporte..."
+                      rows={2}
+                      className="resize-none"
+                      lang="pt-BR"
+                      spellCheck
+                      autoCorrect="on"
+                      autoCapitalize="sentences"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+                      }}
+                    />
+                    <Button onClick={send} disabled={sending || (!reply.trim() && !attachment)}>
+                      {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
               )}
             </>
