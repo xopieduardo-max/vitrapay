@@ -147,9 +147,10 @@ export default function AdminSupport() {
       .channel("support-admin")
       .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets" },
         () => qc.invalidateQueries({ queryKey: ["admin-support-tickets"] }))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages" },
+      .on("postgres_changes", { event: "*", schema: "public", table: "support_messages" },
         (payload: any) => {
-          if (payload.new?.ticket_id === selected) {
+          const tid = (payload.new as any)?.ticket_id || (payload.old as any)?.ticket_id;
+          if (tid === selected) {
             qc.invalidateQueries({ queryKey: ["admin-support-messages", selected] });
           }
           qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
