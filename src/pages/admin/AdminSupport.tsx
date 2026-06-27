@@ -29,6 +29,7 @@ import { SupportAttachment } from "@/components/support/SupportAttachment";
 import { convertImageToWebp, getImageFromClipboard } from "@/lib/toWebp";
 import { useAssistantAvatars } from "@/hooks/useAssistantAvatars";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { QuickRepliesPopover } from "@/components/admin/QuickRepliesPopover";
 
 function TypingDots() {
   return (
@@ -601,7 +602,7 @@ export default function AdminSupport() {
                       </button>
                     </div>
                   )}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 relative">
                     <label className="flex items-center justify-center h-auto px-3 rounded-md border border-input bg-background hover:bg-accent cursor-pointer shrink-0" title="Anexar imagem ou PDF">
                       <Paperclip className="h-4 w-4" />
                       <input
@@ -611,21 +612,40 @@ export default function AdminSupport() {
                         onChange={(e) => pickAttachment(e.target.files?.[0] || null)}
                       />
                     </label>
-                    <Textarea
-                      value={reply}
-                      onChange={(e) => { setReply(e.target.value); notifyTyping(); }}
-                      placeholder="Resposta do suporte..."
-                      rows={2}
-                      className="resize-none"
-                      lang="pt-BR"
-                      spellCheck
-                      autoCorrect="on"
-                      autoCapitalize="sentences"
-                      onPaste={handlePaste}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-                      }}
-                    />
+                    {(() => {
+                      const trimmed = reply.trimStart();
+                      const m = /^\/([^\s\n]*)$/.exec(trimmed);
+                      const quickOpen = !!m;
+                      const quickQuery = m?.[1] ?? "";
+                      return (
+                        <div className="flex-1 relative">
+                          <QuickRepliesPopover
+                            open={quickOpen}
+                            query={quickQuery}
+                            onSelect={(body) => setReply(body)}
+                            onClose={() => setReply("")}
+                          />
+                          <Textarea
+                            value={reply}
+                            onChange={(e) => { setReply(e.target.value); notifyTyping(); }}
+                            placeholder='Resposta do suporte... (digite "/" para respostas rápidas)'
+                            rows={2}
+                            className="resize-none w-full"
+                            lang="pt-BR"
+                            spellCheck
+                            autoCorrect="on"
+                            autoCapitalize="sentences"
+                            onPaste={handlePaste}
+                            onKeyDown={(e) => {
+                              if (quickOpen && ["Enter", "ArrowUp", "ArrowDown", "Tab", "Escape"].includes(e.key)) {
+                                return;
+                              }
+                              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+                            }}
+                          />
+                        </div>
+                      );
+                    })()}
                     <Button onClick={send} disabled={sending || (!reply.trim() && !attachment)}>
                       {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     </Button>
