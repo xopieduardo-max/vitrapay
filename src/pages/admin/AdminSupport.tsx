@@ -236,6 +236,7 @@ export default function AdminSupport() {
       attachment_url: uploaded?.path ?? null,
       attachment_name: uploaded?.name ?? null,
       attachment_type: uploaded?.type ?? null,
+      assistant_id: assistantId || null,
     } as any);
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
@@ -248,10 +249,12 @@ export default function AdminSupport() {
         supabase.from("support_tickets").update({ status: "pending" }).eq("id", t.id);
       }
       const pushBody = body || (uploaded ? `📎 ${uploaded.name}` : "Nova mensagem");
+      const activeAssistant = assistants.find((a: any) => a.id === assistantId);
+      const pushTitle = activeAssistant ? `${activeAssistant.name} respondeu` : "Suporte VitraPay respondeu";
       supabase.functions.invoke("send-push", {
         body: {
           producer_id: t.user_id,
-          title: "Suporte VitraPay respondeu",
+          title: pushTitle,
           body: pushBody.length > 80 ? pushBody.slice(0, 80) + "…" : pushBody,
           url: "/support",
         },
