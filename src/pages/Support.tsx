@@ -140,6 +140,8 @@ export default function Support() {
     toast.success("Ticket aberto! Em breve um agente responderá.");
   };
 
+  const ticket = tickets.find((t) => t.id === selected);
+
   const sendReply = async () => {
     if (!reply.trim() || !selected) return;
     if (ticket && LOCKED_STATUSES.has(ticket.status)) {
