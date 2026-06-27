@@ -17,6 +17,17 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Bypass explícito: NUNCA interceptar requisições cross-origin (Supabase, APIs externas).
+// Garante que chamadas de Auth/REST nunca sejam afetadas por qualquer cache antigo.
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    return; // deixa o browser tratar normalmente, sem passar pelo SW
+  }
+});
+
+
+
 self.addEventListener("push", (event) => {
   if (!event.data) return;
 
