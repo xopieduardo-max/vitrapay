@@ -24,6 +24,7 @@ export function UserHeaderDropdown() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { unread: unreadSupport, pulse: supportPulse, hasUnread: hasUnreadSupport } = useUnreadSupport();
 
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     if (typeof window !== "undefined") {
