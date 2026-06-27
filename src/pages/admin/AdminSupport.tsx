@@ -456,6 +456,16 @@ export default function AdminSupport() {
                           {format(new Date(t.last_message_at), "dd/MM HH:mm", { locale: ptBR })}
                         </span>
                       </div>
+                      {t.rating && (
+                        <div className="flex items-center gap-0.5 mt-1">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <Star
+                              key={n}
+                              className={`h-3 w-3 ${n <= (t.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </button>
                 );
