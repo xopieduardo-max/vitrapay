@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,6 +44,7 @@ const statusMap: Record<string, { label: string; cls: string }> = {
 
 export default function Support() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
@@ -152,14 +154,23 @@ export default function Support() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/dashboard")}
+          className="h-8 w-8 shrink-0"
+          aria-label="Voltar"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Central de Ajuda</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Converse com nosso suporte em tempo real ou envie um e-mail.
           </p>
         </div>
-        <Button onClick={() => setNewOpen(true)} className="gap-2">
+        <Button onClick={() => setNewOpen(true)} className="gap-2 ml-auto">
           <Plus className="h-4 w-4" /> Novo chamado
         </Button>
       </div>
@@ -226,7 +237,7 @@ export default function Support() {
           ) : (
             <>
               <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-                <Button variant="ghost" size="icon" className="md:hidden h-7 w-7" onClick={() => setSelected(null)}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(null)}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <Avatar className="h-9 w-9 shrink-0 bg-primary/10">
