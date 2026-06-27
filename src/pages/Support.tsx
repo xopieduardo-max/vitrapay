@@ -237,7 +237,7 @@ export default function Support() {
           ) : (
             <>
               <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-                <Button variant="ghost" size="icon" className="md:hidden h-7 w-7" onClick={() => setSelected(null)}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelected(null)}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <Avatar className="h-9 w-9 shrink-0 bg-primary/10">
