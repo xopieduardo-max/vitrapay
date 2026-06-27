@@ -333,27 +333,26 @@ export default function Checkout() {
 
   const applyCoupon = async () => {
     if (!couponCode.trim() || !product) return;
-    const { data } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("code", couponCode.trim().toUpperCase())
-      .eq("producer_id", product.producer_id)
-      .eq("is_active", true)
-      .single();
-    if (data) {
-      if (data.max_uses && (data.uses ?? 0) >= data.max_uses) {
-        toast({ title: "Cupom esgotado", variant: "destructive" });
-        return;
-      }
-      if (data.expires_at && new Date(data.expires_at) < new Date()) {
-        toast({ title: "Cupom expirado", variant: "destructive" });
-        return;
-      }
-      setAppliedCoupon(data);
-      toast({ title: "Cupom aplicado!" });
-    } else {
-      toast({ title: "Cupom inválido", variant: "destructive" });
+    const { data, error } = await supabase.rpc("validate_coupon" as any, {
+      _code: couponCode.trim().toUpperCase(),
+      _product_id: product.id,
+    });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (error || !row || !row.valid) {
+      const reason = row?.reason;
+      const msg =
+        reason === "expired" ? "Cupom expirado"
+        : reason === "exhausted" ? "Cupom esgotado"
+        : "Cupom inválido";
+      toast({ title: msg, variant: "destructive" });
+      return;
     }
+    setAppliedCoupon({
+      code: couponCode.trim().toUpperCase(),
+      discount_type: row.discount_type,
+      discount_value: row.discount_value,
+    });
+    toast({ title: "Cupom aplicado!" });
   };
 
   const toggleBump = (bumpId: string) => {
