@@ -297,7 +297,7 @@ export default function Support() {
         </Card>
 
         {/* Chat */}
-        <Card className={`border-border flex flex-col p-0 overflow-hidden ${!selected ? "hidden md:flex" : "flex"}`}>
+        <Card className={`border-border flex-col p-0 overflow-hidden min-h-0 ${!selected ? "hidden md:flex" : "flex"}`}>
           {!selected ? (
             <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
               Selecione um chamado para conversar.
