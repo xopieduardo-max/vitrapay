@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Send, Loader2, ArrowLeft, CheckCheck, Paperclip, X, Plus, History,
+  Send, Loader2, ArrowLeft, CheckCheck, Paperclip, X, Plus,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
