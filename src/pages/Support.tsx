@@ -221,8 +221,8 @@ export default function Support() {
   const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)]">
+      <div className="shrink-0 flex items-center gap-3 mb-3 md:mb-4">
         <Button
           variant="ghost"
           size="icon"
@@ -232,18 +232,18 @@ export default function Support() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Central de Ajuda</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Central de Ajuda</h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-0.5 hidden md:block">
             Converse com nosso suporte em tempo real ou envie um e-mail.
           </p>
         </div>
-        <Button onClick={() => setNewOpen(true)} className="gap-2 ml-auto">
+        <Button onClick={() => setNewOpen(true)} className="gap-2 ml-auto" size="sm">
           <Plus className="h-4 w-4" /> Novo chamado
         </Button>
       </div>
 
-      <div className="rounded-lg border border-border bg-card px-4 py-3 flex items-center gap-3 text-sm">
+      <div className="shrink-0 rounded-lg border border-border bg-card px-4 py-2 flex items-center gap-3 text-sm mb-3 md:mb-4 hidden md:flex">
         <Mail className="h-4 w-4 text-primary" />
         <span className="text-muted-foreground">Prefere e-mail?</span>
         <a href="mailto:suporte@vitrapay.com.br" className="text-primary hover:underline font-medium">
@@ -251,7 +251,7 @@ export default function Support() {
         </a>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 min-h-[60vh]">
+      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 flex-1 min-h-0">
         {/* List */}
         <Card className={`border-border p-0 overflow-hidden ${selected ? "hidden md:block" : ""}`}>
           <div className="px-4 py-3 border-b border-border">
