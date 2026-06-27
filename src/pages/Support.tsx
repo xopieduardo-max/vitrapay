@@ -125,14 +125,7 @@ export default function Support() {
     enabled: !!user,
   });
 
-  // Auto-select the active (non-locked) ticket so the chat is always front-and-center.
-  const activeTicket = useMemo(
-    () => tickets.find((t) => !LOCKED_STATUSES.has(t.status)) || null,
-    [tickets]
-  );
-  useEffect(() => {
-    if (!selected && activeTicket) setSelected(activeTicket.id);
-  }, [activeTicket, selected]);
+  // No auto-select: the user lands on the home (hero + ticket list) and chooses.
 
   const { data: messages = [] } = useQuery({
     queryKey: ["support-messages", selected],
