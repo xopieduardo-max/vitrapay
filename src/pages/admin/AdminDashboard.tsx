@@ -10,6 +10,7 @@ import {
   TotalPaidOutDetailDialog,
   PendingCheckoutsDetailDialog,
 } from "@/components/admin/AdminCardDetailDialogs";
+import { AdminTodayPulse } from "@/components/admin/AdminTodayPulse";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -702,6 +703,11 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard Financeiro</h1>
         <p className="text-sm text-muted-foreground mt-1">Visão geral da plataforma em tempo real</p>
       </div>
+
+      {/* Pulse "Hoje na plataforma" */}
+      <AdminTodayPulse />
+
+
 
       {/* ── Date/Time Filter ── */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">

@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { AdminQuickActions } from "@/components/admin/AdminQuickActions";
+import { AdminInternalNotes } from "@/components/admin/AdminInternalNotes";
 
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -438,6 +440,14 @@ export default function AdminUserDetail() {
           </Card>
         );
       })()}
+
+      {/* Quick actions + internal notes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <AdminQuickActions userId={userId!} userEmail={userEmail} userPhone={profile.phone} />
+        <AdminInternalNotes userId={userId!} />
+      </div>
+
+
 
 
 
