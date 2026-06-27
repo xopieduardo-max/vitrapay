@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Trash2, Plus, MessageCircle } from "lucide-react";
+import { Trash2, Plus, MessageCircle, Send, Loader2 } from "lucide-react";
 
 type Recipient = {
   id: string;
@@ -21,6 +21,7 @@ export default function AdminWhatsappRecipients() {
   const [phone, setPhone] = useState("");
   const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
+  const [testingId, setTestingId] = useState<string | null>(null);
 
   const { data: list = [], isLoading } = useQuery({
     queryKey: ["admin_whatsapp_recipients"],
@@ -77,6 +78,19 @@ export default function AdminWhatsappRecipients() {
     refresh();
   };
 
+  const sendTest = async (r: Recipient) => {
+    setTestingId(r.id);
+    const { data, error } = await supabase.functions.invoke("admin-test-whatsapp", {
+      body: { phone: r.phone },
+    });
+    setTestingId(null);
+    if (error || !data?.success) {
+      toast.error("Falha ao enviar teste: " + (error?.message || JSON.stringify(data?.data || {})));
+      return;
+    }
+    toast.success(`Teste enviado para ${fmt(r.phone)}`);
+  };
+
   const fmt = (p: string) => {
     const d = p.replace(/\D/g, "");
     if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
@@ -131,6 +145,18 @@ export default function AdminWhatsappRecipients() {
               {r.active ? "Ativo" : "Inativo"}
               <Switch checked={r.active} onCheckedChange={() => toggle(r)} />
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => sendTest(r)}
+              disabled={testingId === r.id}
+            >
+              {testingId === r.id ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <><Send className="size-4 mr-1" /> Testar</>
+              )}
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => remove(r)}>
               <Trash2 className="size-4 text-destructive" />
             </Button>
