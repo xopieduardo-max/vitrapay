@@ -246,6 +246,7 @@ export default function Support() {
     setSending(false);
     if (error) { toast.error("Erro ao enviar."); return; }
     setReply(""); setAttachment(null);
+    notifyStop();
     qc.invalidateQueries({ queryKey: ["support-messages", selected] });
   };
 
