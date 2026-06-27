@@ -344,6 +344,7 @@ export default function Support() {
                       )}
                       <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1 justify-end">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                        {m.edited_at && <span className="italic">· editada</span>}
                         {!m.is_admin && <CheckCheck className="h-3 w-3" />}
                       </p>
                     </div>
