@@ -7,7 +7,9 @@ import { ptBR } from "date-fns/locale";
 import {
   ArrowLeft, Package, ShoppingBag, Landmark, Percent, Loader2,
   Calendar, Eye, TrendingUp, DollarSign, Pencil, RotateCcw, Users,
+  Mail, Phone, MapPin, CreditCard, IdCard, CheckCircle2, XCircle, Cake,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,6 +69,17 @@ export default function AdminUserDetail() {
         .select("role")
         .eq("user_id", userId!);
       return (data || []).map((r: any) => r.role as string);
+    },
+    enabled: !!userId,
+  });
+
+  // Email (from auth.users via secure RPC)
+  const { data: userEmail } = useQuery({
+    queryKey: ["admin-user-email", userId],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("get_user_emails");
+      const row = (data || []).find((e: any) => e.user_id === userId);
+      return row?.email as string | undefined;
     },
     enabled: !!userId,
   });
@@ -241,16 +254,32 @@ export default function AdminUserDetail() {
         <Button variant="ghost" size="icon" onClick={() => navigate("/admin/users")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">
+        <Avatar className="h-12 w-12 border border-border">
+          <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || ""} />
+          <AvatarFallback className="text-sm">
+            {(profile.display_name || "?").slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight truncate">
             {profile.display_name || "Sem nome"}
           </h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             {roles.map((r) => (
               <Badge key={r} variant="outline" className="text-xs">
                 {roleLabels[r] || r}
               </Badge>
             ))}
+            {profile.is_suspended && (
+              <Badge variant="outline" className="text-xs border-red-500/50 text-red-500 bg-red-500/10">
+                Suspenso
+              </Badge>
+            )}
+            {profile.profile_verified && (
+              <Badge variant="outline" className="text-xs border-green-500/50 text-green-500 bg-green-500/10 gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Verificado
+              </Badge>
+            )}
             <span className="text-xs text-muted-foreground">
               Cadastrado em {format(new Date(profile.created_at), "dd/MM/yyyy")}
             </span>
@@ -270,6 +299,119 @@ export default function AdminUserDetail() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Personal info / cadastro completo */}
+      {(() => {
+        const addrParts = [
+          profile.address_street,
+          profile.address_number,
+          profile.address_neighborhood,
+          profile.address_city && profile.address_state
+            ? `${profile.address_city}/${profile.address_state}`
+            : profile.address_city || profile.address_state,
+          profile.address_cep,
+        ].filter(Boolean);
+        const fullAddress = addrParts.length ? addrParts.join(", ") : null;
+
+        // Critérios pra saque: precisa CPF, telefone, PIX e endereço básico preenchidos
+        const checks = [
+          { label: "Nome", ok: !!profile.display_name?.trim() },
+          { label: "E-mail", ok: !!userEmail },
+          { label: "CPF/CNPJ", ok: !!profile.cpf?.trim() },
+          { label: "Telefone", ok: !!profile.phone?.trim() },
+          { label: "Chave PIX", ok: !!profile.pix_key?.trim() },
+          { label: "Endereço", ok: !!(profile.address_cep && profile.address_city && profile.address_state) },
+        ];
+        const completeForWithdraw = checks.every((c) => c.ok);
+
+        const Item = ({
+          icon: Icon,
+          label,
+          value,
+        }: {
+          icon: any;
+          label: string;
+          value: React.ReactNode;
+        }) => (
+          <div className="flex items-start gap-2">
+            <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" strokeWidth={1.5} />
+            <div className="min-w-0">
+              <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">{label}</p>
+              <p className="text-sm font-medium break-words">{value || <span className="text-muted-foreground italic">não informado</span>}</p>
+            </div>
+          </div>
+        );
+
+        return (
+          <Card className="border-border">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <IdCard className="h-4 w-4" strokeWidth={1.5} />
+                Cadastro do usuário
+              </CardTitle>
+              <Badge
+                variant="outline"
+                className={`text-xs gap-1 ${
+                  completeForWithdraw
+                    ? "border-green-500/50 text-green-500 bg-green-500/10"
+                    : "border-yellow-500/50 text-yellow-500 bg-yellow-500/10"
+                }`}
+              >
+                {completeForWithdraw ? (
+                  <>
+                    <CheckCircle2 className="h-3 w-3" /> Cadastro completo — pode sacar
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-3 w-3" /> Cadastro incompleto — saque bloqueado
+                  </>
+                )}
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Item icon={Mail} label="E-mail" value={userEmail} />
+                <Item icon={Phone} label="Telefone" value={profile.phone} />
+                <Item icon={IdCard} label="CPF / CNPJ" value={profile.cpf} />
+                <Item
+                  icon={Cake}
+                  label="Nascimento"
+                  value={profile.birth_date ? format(new Date(profile.birth_date), "dd/MM/yyyy") : null}
+                />
+                <Item
+                  icon={CreditCard}
+                  label={`Chave PIX${profile.pix_key_type ? ` (${profile.pix_key_type})` : ""}`}
+                  value={profile.pix_key}
+                />
+                <Item icon={MapPin} label="Endereço" value={fullAddress} />
+              </div>
+
+              {!completeForWithdraw && (
+                <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 px-3 py-2 text-xs">
+                  <p className="font-medium text-yellow-600 mb-1">Itens pendentes no cadastro:</p>
+                  <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                    {checks.filter((c) => !c.ok).map((c) => (
+                      <li key={c.label}>{c.label}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-muted-foreground">
+                    O usuário consegue vender normalmente, mas só poderá <strong>solicitar saque</strong> após completar todos os campos.
+                  </p>
+                </div>
+              )}
+
+              {profile.bio && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-1">Bio</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+
 
       {/* Onboarding survey info */}
       {profile.onboarding_completed && (
