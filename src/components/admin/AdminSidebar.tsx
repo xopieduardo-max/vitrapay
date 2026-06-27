@@ -71,6 +71,18 @@ export function AdminSidebar() {
     },
   });
 
+  // Realtime: instant badge updates when withdrawals/support change
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-sidebar-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets" },
+        () => qc.invalidateQueries({ queryKey: ["admin-sidebar-counters"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals" },
+        () => qc.invalidateQueries({ queryKey: ["admin-sidebar-counters"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="p-4">
