@@ -98,6 +98,10 @@ const withdrawalStatusLabels: Record<string, string> = {
 const fmt = (v: number) =>
   `R$ ${(v / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
+// Baseline para zerar acumulados: contabilizar apenas a partir de Junho/2026
+const BASELINE_DATE = new Date(2026, 5, 1, 0, 0, 0); // 1º de Junho de 2026
+const BASELINE_ISO = BASELINE_DATE.toISOString();
+
 function getDateRange(period: Period, customFrom: string, customTo: string, customTimeFrom: string, customTimeTo: string) {
   const now = new Date();
   let from: Date;
@@ -190,11 +194,12 @@ export default function AdminDashboard() {
   const fakeSaleIdSet = useMemo(() => new Set(fakeSaleIds), [fakeSaleIds]);
 
   const { data: allTransactionsRaw = [] } = useQuery({
-    queryKey: ["admin-all-transactions"],
+    queryKey: ["admin-all-transactions", BASELINE_ISO],
     queryFn: async () => {
       const { data } = await supabase
         .from("transactions")
         .select("*")
+        .gte("created_at", BASELINE_ISO)
         .order("created_at", { ascending: false })
         .limit(1000);
       return data || [];
@@ -210,13 +215,14 @@ export default function AdminDashboard() {
   }, [allTransactionsRaw, fakeSaleIdSet]);
 
   const { data: allSales = [] } = useQuery({
-    queryKey: ["admin-all-sales"],
+    queryKey: ["admin-all-sales", BASELINE_ISO],
     queryFn: async () => {
       const { data } = await supabase
         .from("sales")
         .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider, payment_id")
         .eq("status", "completed")
         .not("payment_id", "like", "fake_%")
+        .gte("created_at", BASELINE_ISO)
         .order("created_at", { ascending: false })
         .limit(1000);
       return data || [];
@@ -234,14 +240,14 @@ export default function AdminDashboard() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ["admin-stats-v2"],
+    queryKey: ["admin-stats-v2", BASELINE_ISO],
     queryFn: async () => {
       const [profilesRes, productsRes, salesRes, withdrawalsRes] =
         await Promise.all([
           supabase.from("profiles").select("id", { count: "exact", head: true }),
           supabase.from("products").select("id", { count: "exact", head: true }),
-          supabase.from("sales").select("amount, platform_fee, status, payment_id").eq("status", "completed"),
-          supabase.from("withdrawals").select("amount, status"),
+          supabase.from("sales").select("amount, platform_fee, status, payment_id").eq("status", "completed").gte("created_at", BASELINE_ISO),
+          supabase.from("withdrawals").select("amount, status").gte("created_at", BASELINE_ISO),
         ]);
 
       // Exclude fake sales from admin stats
