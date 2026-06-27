@@ -303,6 +303,13 @@ export default function AdminSupport() {
   const ticket = tickets.find((t) => t.id === selected);
   const ticketUser = ticket ? (profiles as any)[ticket.user_id] : null;
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_admin || 0), 0);
+  const activeAssistant = assistants.find((a: any) => a.id === assistantId);
+  const assistantAvatars = useAssistantAvatars(assistants.map((a: any) => a.avatar_url));
+
+  useEffect(() => {
+    if (assistantId) localStorage.setItem("admin_active_assistant", assistantId);
+    else localStorage.removeItem("admin_active_assistant");
+  }, [assistantId]);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-7rem)]">
@@ -424,14 +431,17 @@ export default function AdminSupport() {
                 </Select>
               </div>
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
-                {messages.map((m: any) => (
-                  <div key={m.id} className={`group flex items-start gap-1 ${m.is_admin ? "justify-end" : "justify-start"}`}>
+                {messages.map((m: any) => {
+                  const asst = m.is_admin && m.assistant_id ? assistants.find((a: any) => a.id === m.assistant_id) : null;
+                  const asstAvatar = asst?.avatar_url ? assistantAvatars[asst.avatar_url] : "";
+                  return (
+                  <div key={m.id} className={`group flex items-end gap-1.5 ${m.is_admin ? "justify-end" : "justify-start"}`}>
                     {m.is_admin && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            className="opacity-0 group-hover:opacity-100 transition mb-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
                             aria-label="Ações da mensagem"
                           >
                             <MoreVertical className="h-3.5 w-3.5" />
@@ -450,6 +460,11 @@ export default function AdminSupport() {
                       </DropdownMenu>
                     )}
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.is_admin ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+                      {asst && (
+                        <p className="text-[0.65rem] font-semibold opacity-90 mb-0.5">
+                          {asst.name}{asst.role_label ? ` · ${asst.role_label}` : ""}
+                        </p>
+                      )}
                       {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                       {m.attachment_url && (
                         <SupportAttachment
@@ -465,12 +480,18 @@ export default function AdminSupport() {
                         {m.is_admin && <CheckCheck className="h-3 w-3" />}
                       </p>
                     </div>
+                    {m.is_admin && asst && (
+                      <Avatar className="h-7 w-7 shrink-0">
+                        {asstAvatar && <AvatarImage src={asstAvatar} alt={asst.name} />}
+                        <AvatarFallback className="text-[0.6rem] bg-primary/15 text-primary">{initials(asst.name)}</AvatarFallback>
+                      </Avatar>
+                    )}
                     {!m.is_admin && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            className="opacity-0 group-hover:opacity-100 transition mb-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
                             aria-label="Ações da mensagem"
                           >
                             <MoreVertical className="h-3.5 w-3.5" />
@@ -484,7 +505,8 @@ export default function AdminSupport() {
                       </DropdownMenu>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               {ticket && LOCKED_STATUSES.has(ticket.status) ? (
                 <div className="border-t border-border p-4 text-center text-xs text-muted-foreground bg-muted/20">
