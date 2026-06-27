@@ -38,6 +38,46 @@ const categoryIcons: Record<string, string> = {
   service_fee: "🏷️",
 };
 
+type CategoryTone = "success" | "info" | "warning" | "destructive";
+
+const categoryTone: Record<string, CategoryTone> = {
+  sale: "success",
+  commission: "success",
+  fee: "warning",
+  withdrawal: "info",
+  refund: "destructive",
+  chargeback: "destructive",
+  med: "warning",
+  service_fee: "warning",
+};
+
+const toneClasses: Record<CategoryTone, { bg: string; text: string; border: string; soft: string }> = {
+  success: {
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success/30",
+    soft: "bg-success/10",
+  },
+  info: {
+    bg: "bg-info",
+    text: "text-info",
+    border: "border-info/30",
+    soft: "bg-info/10",
+  },
+  warning: {
+    bg: "bg-warning",
+    text: "text-warning",
+    border: "border-warning/30",
+    soft: "bg-warning/10",
+  },
+  destructive: {
+    bg: "bg-destructive",
+    text: "text-destructive",
+    border: "border-destructive/30",
+    soft: "bg-destructive/10",
+  },
+};
+
 const anim = (delay: number) => ({
   initial: { opacity: 0, y: 12 } as const,
   animate: { opacity: 1, y: 0 } as const,
