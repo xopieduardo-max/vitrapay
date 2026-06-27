@@ -172,6 +172,12 @@ export default function Support() {
   const ticketLocked = ticket && LOCKED_STATUSES.has(ticket.status);
   const totalUnread = tickets.reduce((a, t) => a + (t.unread_for_user || 0), 0);
 
+  const { isOtherTyping, notifyTyping, notifyStop } = useTypingIndicator({
+    ticketId: selected,
+    isAdmin: false,
+    enabled: !!selected && !ticketLocked,
+  });
+
   // The active assistant for this ticket = the most recent admin message's assistant.
   const currentAssistant = useMemo(() => {
     const lastAdminMsg = [...messages].reverse().find((m) => m.is_admin && m.assistant_id);
