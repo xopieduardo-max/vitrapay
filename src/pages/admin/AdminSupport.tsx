@@ -407,7 +407,30 @@ export default function AdminSupport() {
               </div>
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
                 {messages.map((m: any) => (
-                  <div key={m.id} className={`flex ${m.is_admin ? "justify-end" : "justify-start"}`}>
+                  <div key={m.id} className={`group flex items-start gap-1 ${m.is_admin ? "justify-end" : "justify-start"}`}>
+                    {m.is_admin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            aria-label="Ações da mensagem"
+                          >
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-36">
+                          {m.body && (
+                            <DropdownMenuItem onClick={() => setEditing({ id: m.id, body: m.body || "" })}>
+                              <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => setDeleting(m.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Apagar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.is_admin ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
                       {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                       {m.attachment_url && (
@@ -420,9 +443,28 @@ export default function AdminSupport() {
                       )}
                       <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                        {m.edited_at && <span className="italic">· editada</span>}
                         {m.is_admin && <CheckCheck className="h-3 w-3" />}
                       </p>
                     </div>
+                    {!m.is_admin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="opacity-0 group-hover:opacity-100 transition mt-1 h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
+                            aria-label="Ações da mensagem"
+                          >
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-36">
+                          <DropdownMenuItem onClick={() => setDeleting(m.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Apagar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 ))}
               </div>
