@@ -6,51 +6,6 @@ const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
-const FALLBACK_RECIPIENT_EMAIL = 'unknown@queue.invalid'
-
-type QueueName = 'auth_emails' | 'transactional_emails'
-
-type EmailQueuePayload = Record<string, unknown> & {
-  from?: string
-  html?: string
-  idempotency_key?: string
-  label?: string
-  message_id?: string
-  purpose?: string
-  queued_at?: string
-  run_id?: string
-  sender_domain?: string
-  subject?: string
-  text?: string
-  to?: string
-  unsubscribe_token?: string
-}
-
-type EmailQueueMessage = {
-  message: EmailQueuePayload
-  msg_id: number
-  read_ct: number
-}
-
-function getString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
-}
-
-async function logEmailSendStatus(
-  supabase: any,
-  queue: string,
-  payload: EmailQueuePayload,
-  status: string,
-  errorMessage?: string
-): Promise<void> {
-  await supabase.from('email_send_log').insert({
-    message_id: getString(payload.message_id) ?? null,
-    template_name: getString(payload.label) ?? queue,
-    recipient_email: getString(payload.to) ?? FALLBACK_RECIPIENT_EMAIL,
-    status,
-    ...(errorMessage ? { error_message: errorMessage } : {}),
-  })
-}
 
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
@@ -62,8 +17,8 @@ function isRateLimited(error: unknown): boolean {
   return error instanceof Error && error.message.includes('429')
 }
 
-// Check if an error is a forbidden (403) response, which means emails are
-// disabled for this project. Retrying won't help — move straight to DLQ.
+// Check if an error is a forbidden (403) response. Retrying won't help.
+// Move straight to DLQ.
 function isForbidden(error: unknown): boolean {
   if (error && typeof error === 'object' && 'status' in error) {
     return (error as { status: number }).status === 403
@@ -99,13 +54,19 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   queue: string,
-  msg: EmailQueueMessage,
+  msg: { msg_id: number; message: Record<string, unknown> },
   reason: string
 ): Promise<void> {
   const payload = msg.message
-  await logEmailSendStatus(supabase, queue, payload, 'dlq', reason)
+  await supabase.from('email_send_log').insert({
+    message_id: payload.message_id,
+    template_name: (payload.label || queue) as string,
+    recipient_email: payload.to,
+    status: 'dlq',
+    error_message: reason,
+  })
   const { error } = await supabase.rpc('move_to_dlq', {
     source_queue: queue,
     dlq_name: `${queue}_dlq`,
@@ -150,7 +111,7 @@ Deno.serve(async (req) => {
     )
   }
 
-  const supabase: any = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   // 1. Check rate-limit cooldown and read queue config
   const { data: state } = await supabase
@@ -167,17 +128,16 @@ Deno.serve(async (req) => {
 
   const batchSize = state?.batch_size ?? DEFAULT_BATCH_SIZE
   const sendDelayMs = state?.send_delay_ms ?? DEFAULT_SEND_DELAY_MS
-  const ttlMinutes: Record<QueueName, number> = {
+  const ttlMinutes: Record<string, number> = {
     auth_emails: state?.auth_email_ttl_minutes ?? DEFAULT_AUTH_TTL_MINUTES,
     transactional_emails: state?.transactional_email_ttl_minutes ?? DEFAULT_TRANSACTIONAL_TTL_MINUTES,
   }
 
   let totalProcessed = 0
-  const queues: QueueName[] = ['auth_emails', 'transactional_emails']
 
   // 2. Process auth_emails first (priority), then transactional_emails
-  for (const queue of queues) {
-    const { data: rawMessages, error: readError } = await supabase.rpc('read_email_batch', {
+  for (const queue of ['auth_emails', 'transactional_emails']) {
+    const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
       queue_name: queue,
       batch_size: batchSize,
       vt: 30,
@@ -188,18 +148,20 @@ Deno.serve(async (req) => {
       continue
     }
 
-    const messages = (rawMessages ?? []) as EmailQueueMessage[]
-
-    if (!messages.length) continue
+    if (!messages?.length) continue
 
     // Retry budget is based on real send failures, not pgmq read_ct.
     // read_ct increments for every message in a claimed batch, including
     // messages not attempted when a 429 stops processing early.
     const messageIds = Array.from(
       new Set(
-          messages
-            .map((msg: EmailQueueMessage) => getString(msg?.message?.message_id) ?? null)
-            .filter((id: string | null): id is string => Boolean(id))
+        messages
+          .map((msg) =>
+            msg?.message?.message_id && typeof msg.message.message_id === 'string'
+              ? msg.message.message_id
+              : null
+          )
+          .filter((id): id is string => Boolean(id))
       )
     )
     const failedAttemptsByMessageId = new Map<string, number>()
@@ -233,17 +195,20 @@ Deno.serve(async (req) => {
       const failedAttempts =
         payload?.message_id && typeof payload.message_id === 'string'
           ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
-          : 0
+          : msg.read_ct ?? 0
 
-      // Drop expired messages (TTL exceeded)
-      if (payload.queued_at) {
-        const ageMs = Date.now() - new Date(payload.queued_at).getTime()
+      // Drop expired messages (TTL exceeded).
+      // Prefer payload.queued_at when present; fall back to PGMQ's enqueued_at
+      // which is always set by the queue.
+      const queuedAt = payload.queued_at ?? msg.enqueued_at
+      if (queuedAt) {
+        const ageMs = Date.now() - new Date(queuedAt).getTime()
         const maxAgeMs = ttlMinutes[queue] * 60 * 1000
         if (ageMs > maxAgeMs) {
           console.warn('Email expired (TTL exceeded)', {
             queue,
             msg_id: msg.msg_id,
-            queued_at: payload.queued_at,
+            queued_at: queuedAt,
             ttl_minutes: ttlMinutes[queue],
           })
           await moveToDlq(supabase, queue, msg, `TTL exceeded (${ttlMinutes[queue]} minutes)`)
@@ -306,7 +271,12 @@ Deno.serve(async (req) => {
         )
 
         // Log success
-        await logEmailSendStatus(supabase, queue, payload, 'sent')
+        await supabase.from('email_send_log').insert({
+          message_id: payload.message_id,
+          template_name: payload.label || queue,
+          recipient_email: payload.to,
+          status: 'sent',
+        })
 
         // Delete from queue
         const { error: delError } = await supabase.rpc('delete_email', {
@@ -328,7 +298,13 @@ Deno.serve(async (req) => {
         })
 
         if (isRateLimited(error)) {
-          await logEmailSendStatus(supabase, queue, payload, 'rate_limited', errorMsg.slice(0, 1000))
+          await supabase.from('email_send_log').insert({
+            message_id: payload.message_id,
+            template_name: payload.label || queue,
+            recipient_email: payload.to,
+            status: 'rate_limited',
+            error_message: errorMsg.slice(0, 1000),
+          })
 
           const retryAfterSecs = getRetryAfterSeconds(error)
           await supabase
@@ -348,18 +324,24 @@ Deno.serve(async (req) => {
           )
         }
 
-        // 403 means emails are disabled for this project — retrying won't help.
-        // Move straight to DLQ and stop processing the rest of the batch.
+        // 403s are permanent configuration or authorization failures for this
+        // message, so move straight to DLQ and stop processing the rest of the batch.
         if (isForbidden(error)) {
-          await moveToDlq(supabase, queue, msg, 'Emails disabled for this project')
+          await moveToDlq(supabase, queue, msg, errorMsg.slice(0, 1000))
           return new Response(
-            JSON.stringify({ processed: totalProcessed, stopped: 'emails_disabled' }),
+            JSON.stringify({ processed: totalProcessed, stopped: 'forbidden' }),
             { headers: { 'Content-Type': 'application/json' } }
           )
         }
 
         // Log non-429 failures to track real retry attempts.
-        await logEmailSendStatus(supabase, queue, payload, 'failed', errorMsg.slice(0, 1000))
+        await supabase.from('email_send_log').insert({
+          message_id: payload.message_id,
+          template_name: payload.label || queue,
+          recipient_email: payload.to,
+          status: 'failed',
+          error_message: errorMsg.slice(0, 1000),
+        })
         if (payload?.message_id && typeof payload.message_id === 'string') {
           failedAttemptsByMessageId.set(payload.message_id, failedAttempts + 1)
         }
