@@ -235,20 +235,20 @@ export default function Transactions() {
         {/* Saídas */}
         <motion.div
           {...anim(0.1)}
-          className="rounded-2xl border border-border bg-card p-4 md:p-5 relative overflow-hidden"
+          className="rounded-2xl border border-info/30 bg-card p-4 md:p-5 relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-destructive/60 rounded-t-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-info/60 rounded-t-2xl" />
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <TrendingDown className="h-4 w-4 text-destructive" strokeWidth={1.5} />
+                <TrendingDown className="h-4 w-4 text-info" strokeWidth={1.5} />
                 <span className="text-xs text-muted-foreground font-medium">Saídas</span>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-destructive">{fmt(totals.debits)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-info">{fmt(totals.debits)}</p>
               <p className="text-[0.65rem] text-muted-foreground mt-1">{debitCount} transações</p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-              <ArrowUpRight className="h-5 w-5 text-destructive" />
+            <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center">
+              <ArrowUpRight className="h-5 w-5 text-info" />
             </div>
           </div>
         </motion.div>
