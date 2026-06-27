@@ -94,7 +94,10 @@ export default function BannerCarousel({
   if (slides.length === 0) return null;
 
   return (
-    <div className={`relative rounded-xl overflow-hidden group ${className}`} style={{ maxHeight }}>
+    <div
+      className={`relative w-full rounded-xl overflow-hidden group ${className}`}
+      style={{ aspectRatio: "6 / 1" }}
+    >
       {/* All slides stacked, only current one visible via opacity */}
       {slides.map((slide, i) => {
         const Wrapper = slide.link_url ? "a" : "div";
@@ -123,16 +126,6 @@ export default function BannerCarousel({
           </div>
         );
       })}
-
-      {/* Spacer to maintain height */}
-      <div style={{ maxHeight }} className="w-full">
-        <img
-          src={slides[0]?.image_url || ""}
-          alt=""
-          className="w-full h-auto object-cover rounded-xl invisible"
-          style={{ maxHeight }}
-        />
-      </div>
 
       {/* Navigation arrows */}
       {count > 1 && (
