@@ -225,24 +225,39 @@ export default function Support() {
             </div>
           ) : (
             <>
-              <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+              <div className="px-4 py-3 border-b border-border flex items-center gap-3">
                 <Button variant="ghost" size="icon" className="md:hidden h-7 w-7" onClick={() => setSelected(null)}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
+                <Avatar className="h-9 w-9 shrink-0 bg-primary/10">
+                  <AvatarImage src={vitrapayLogo} alt="VitraPay" className="object-contain p-1" />
+                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">VP</AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{ticket?.subject}</p>
-                  <Badge variant="outline" className={`text-[0.6rem] mt-0.5 ${statusMap[ticket?.status || "open"]?.cls}`}>
-                    {statusMap[ticket?.status || "open"]?.label}
-                  </Badge>
+                  <p className="text-sm font-semibold truncate">VitraPay · Suporte</p>
+                  <p className="text-[0.7rem] text-muted-foreground truncate">{ticket?.subject}</p>
                 </div>
+                <Badge variant="outline" className={`text-[0.6rem] ${statusMap[ticket?.status || "open"]?.cls}`}>
+                  {statusMap[ticket?.status || "open"]?.label}
+                </Badge>
               </div>
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-background/30">
                 {messages.map((m) => (
-                  <div key={m.id} className={`flex ${m.is_admin ? "justify-start" : "justify-end"}`}>
+                  <div key={m.id} className={`flex items-end gap-2 ${m.is_admin ? "justify-start" : "justify-end"}`}>
+                    {m.is_admin && (
+                      <Avatar className="h-7 w-7 shrink-0 bg-primary/10">
+                        <AvatarImage src={vitrapayLogo} alt="VitraPay" className="object-contain p-0.5" />
+                        <AvatarFallback className="text-[0.6rem] bg-primary text-primary-foreground">VP</AvatarFallback>
+                      </Avatar>
+                    )}
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.is_admin ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}`}>
+                      {m.is_admin && (
+                        <p className="text-[0.65rem] font-semibold text-primary mb-0.5">VitraPay</p>
+                      )}
                       <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      <p className="text-[0.6rem] opacity-70 mt-1">
+                      <p className="text-[0.6rem] opacity-70 mt-1 flex items-center gap-1 justify-end">
                         {format(new Date(m.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                        {!m.is_admin && <CheckCheck className="h-3 w-3" />}
                       </p>
                     </div>
                   </div>
