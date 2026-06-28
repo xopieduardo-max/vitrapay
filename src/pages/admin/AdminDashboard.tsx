@@ -42,6 +42,7 @@ import {
   Trophy,
   Package,
   Receipt,
+  Percent,
 } from "lucide-react";
 import {
   LineChart,
@@ -220,7 +221,7 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("sales")
-        .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider, payment_id")
+        .select("id, amount, platform_fee, status, created_at, producer_id, product_id, payment_provider, payment_id, buyer_interest, installment_count")
         .eq("status", "completed")
         .not("payment_id", "like", "fake_%")
         .gte("created_at", BASELINE_ISO)
@@ -512,6 +513,19 @@ export default function AdminDashboard() {
   const totalServiceFeesNet = useMemo(() => {
     return profitPerSale.reduce((a, s) => a + s.serviceFeeNet, 0);
   }, [profitPerSale]);
+
+  // Juros de parcelamento (cobrados do comprador, retidos pela plataforma)
+  const totalBuyerInterestPeriod = useMemo(() => {
+    return filteredSales.reduce((a, s: any) => a + (s.buyer_interest || 0), 0);
+  }, [filteredSales]);
+
+  const totalBuyerInterestAllTime = useMemo(() => {
+    return allSales.reduce((a, s: any) => a + (s.buyer_interest || 0), 0);
+  }, [allSales]);
+
+  const installmentSalesCount = useMemo(() => {
+    return filteredSales.filter((s: any) => (s.installment_count || 1) > 1).length;
+  }, [filteredSales]);
 
   // ── ALL-TIME ledger (desde o BASELINE) — usado para "disponível p/ saque"
   // Saque não pode usar valores filtrados por período; precisa ser o saldo total.
@@ -971,6 +985,41 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Juros de Parcelamento — receita 100% da plataforma */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.22 }}
+        className="rounded-xl border-2 border-pink-500/30 bg-gradient-to-br from-pink-500/10 via-card to-pink-500/5 p-1"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+          <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+            <div className="flex items-center gap-2">
+              <Percent className="h-4 w-4 text-pink-500" strokeWidth={1.5} />
+              <span className="text-xs font-medium text-pink-500">Juros de parcelamento (período)</span>
+            </div>
+            <p className="text-2xl font-bold text-pink-500">{fmt(totalBuyerInterestPeriod)}</p>
+            <p className="text-[0.6rem] text-muted-foreground/70 leading-tight">
+              Juros cobrados do comprador no parcelamento — 100% retidos pela plataforma.
+            </p>
+            <p className="text-[0.6rem] text-pink-500/70 mt-1">
+              {installmentSalesCount} venda(s) parcelada(s) no período
+            </p>
+          </div>
+          <div className="rounded-lg bg-card/80 backdrop-blur p-4 space-y-1">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-pink-600" strokeWidth={1.5} />
+              <span className="text-xs font-medium text-pink-600">Juros acumulado (total)</span>
+            </div>
+            <p className="text-2xl font-bold text-pink-600">{fmt(totalBuyerInterestAllTime)}</p>
+            <p className="text-[0.6rem] text-muted-foreground/70 leading-tight">
+              Desde o início da plataforma (28/Jun/2026). Já incluso no lucro disponível p/ saque.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
 
       {/* KPI Cards - Row 3: Operations */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
