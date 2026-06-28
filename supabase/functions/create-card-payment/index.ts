@@ -321,6 +321,10 @@ Deno.serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      const { data: producerProfile } = await supabase
+        .from("profiles").select("custom_fee_percentage, custom_fee_fixed, card_plan")
+        .eq("user_id", product.producer_id).single();
+
       // ── Fee calculation: Card (D+2 or D+30 based on producer setting) ──
       // ── Real product revenue (excludes service fee AND installment interest) ──
       // Anything the buyer pays ABOVE (productAmount + SERVICE_FEE) is buyer-side
