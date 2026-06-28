@@ -661,7 +661,9 @@ export default function AdminDashboard() {
       .reduce((a, t) => a + t.amount, 0);
   }, [allTransactions]);
 
-  const netProfit = (stats?.totalPlatformFees ?? 0) - adminWithdrawals;
+  // "Disponível p/ saque" = lucro real da plataforma (taxa cobrada − custo Asaas)
+  // acumulado desde o BASELINE, menos o que o admin já sacou.
+  const netProfit = Math.max(0, allTimeLedger.platformNet - adminWithdrawals);
 
   // ── KPI Cards ──
   const cards = [
