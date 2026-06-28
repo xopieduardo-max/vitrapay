@@ -379,6 +379,7 @@ Deno.serve(async (req) => {
           affiliate_id: affiliateId, amount: productAmount, platform_fee: platformFee,
           payment_provider: "card", payment_id: paymentData.id, status: "completed",
           buyer_city: geo.city, buyer_state: geo.state, buyer_country: geo.country,
+          buyer_interest: buyerInterest, installment_count: installmentCount,
         })
         .select().single();
 
