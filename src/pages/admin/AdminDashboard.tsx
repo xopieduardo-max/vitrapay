@@ -513,6 +513,19 @@ export default function AdminDashboard() {
     return profitPerSale.reduce((a, s) => a + s.serviceFeeNet, 0);
   }, [profitPerSale]);
 
+  // Juros de parcelamento (cobrados do comprador, retidos pela plataforma)
+  const totalBuyerInterestPeriod = useMemo(() => {
+    return filteredSales.reduce((a, s: any) => a + (s.buyer_interest || 0), 0);
+  }, [filteredSales]);
+
+  const totalBuyerInterestAllTime = useMemo(() => {
+    return allSales.reduce((a, s: any) => a + (s.buyer_interest || 0), 0);
+  }, [allSales]);
+
+  const installmentSalesCount = useMemo(() => {
+    return filteredSales.filter((s: any) => (s.installment_count || 1) > 1).length;
+  }, [filteredSales]);
+
   // ── ALL-TIME ledger (desde o BASELINE) — usado para "disponível p/ saque"
   // Saque não pode usar valores filtrados por período; precisa ser o saldo total.
   const allTimeLedger = useMemo(() => {
