@@ -42,6 +42,7 @@ import {
   Trophy,
   Package,
   Receipt,
+  Percent,
 } from "lucide-react";
 import {
   LineChart,
