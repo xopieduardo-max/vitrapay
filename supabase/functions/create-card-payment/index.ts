@@ -51,7 +51,10 @@ Deno.serve(async (req) => {
       utm_source, utm_medium, utm_campaign, utm_content, utm_term
     } = await req.json();
     const SERVICE_FEE = service_fee || 99; // R$ 0.99 default
-    const productAmount = amount - SERVICE_FEE; // Amount without service fee for fee calculation
+    // NOTE: `productAmount` is recomputed below from the validated product price
+    // (NOT from `amount - SERVICE_FEE`), because `amount` may already include
+    // installment interest charged to the buyer. That interest belongs to the
+    // platform, not to the producer.
 
 
     if (!product_id || !amount || !buyer_cpf || !buyer_name || !buyer_email) {
