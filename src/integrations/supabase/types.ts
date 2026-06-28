@@ -1681,12 +1681,14 @@ export type Database = {
           buyer_city: string | null
           buyer_country: string | null
           buyer_id: string | null
+          buyer_interest: number
           buyer_state: string | null
           created_at: string
           dispute_note: string | null
           dispute_resolved: boolean
           dispute_resolved_at: string | null
           id: string
+          installment_count: number
           payment_id: string | null
           payment_provider: string | null
           platform_fee: number | null
@@ -1700,12 +1702,14 @@ export type Database = {
           buyer_city?: string | null
           buyer_country?: string | null
           buyer_id?: string | null
+          buyer_interest?: number
           buyer_state?: string | null
           created_at?: string
           dispute_note?: string | null
           dispute_resolved?: boolean
           dispute_resolved_at?: string | null
           id?: string
+          installment_count?: number
           payment_id?: string | null
           payment_provider?: string | null
           platform_fee?: number | null
@@ -1719,12 +1723,14 @@ export type Database = {
           buyer_city?: string | null
           buyer_country?: string | null
           buyer_id?: string | null
+          buyer_interest?: number
           buyer_state?: string | null
           created_at?: string
           dispute_note?: string | null
           dispute_resolved?: boolean
           dispute_resolved_at?: string | null
           id?: string
+          installment_count?: number
           payment_id?: string | null
           payment_provider?: string | null
           platform_fee?: number | null
