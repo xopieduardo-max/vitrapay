@@ -513,6 +513,35 @@ export default function AdminDashboard() {
     return profitPerSale.reduce((a, s) => a + s.serviceFeeNet, 0);
   }, [profitPerSale]);
 
+  // ── ALL-TIME ledger (desde o BASELINE) — usado para "disponível p/ saque"
+  // Saque não pode usar valores filtrados por período; precisa ser o saldo total.
+  const allTimeLedger = useMemo(() => {
+    let platformFee = 0;
+    let asaasCost = 0;
+    let serviceFeeNet = 0;
+    allSales.forEach((s: any) => {
+      const method = s.payment_provider || "pix";
+      const amount = s.amount;
+      const fee = s.platform_fee || 0;
+      platformFee += fee;
+      if (method === "pix") {
+        asaasCost += 199;
+        serviceFeeNet += SERVICE_FEE_PER_SALE;
+      } else {
+        const fullAmount = amount + SERVICE_FEE_PER_SALE;
+        asaasCost += Math.round(fullAmount * 0.0414 + 49);
+        serviceFeeNet += SERVICE_FEE_PER_SALE - Math.round(SERVICE_FEE_PER_SALE * 0.0414);
+      }
+    });
+    return {
+      platformFee,
+      asaasCost,
+      // Lucro REAL da plataforma (taxa cobrada − custo Asaas), sem service fee
+      platformNet: platformFee - asaasCost,
+      serviceFeeNet,
+    };
+  }, [allSales]);
+
   // Admin service fee withdrawals
   const adminServiceFeeWithdrawals = useMemo(() => {
     return allTransactions
@@ -520,16 +549,26 @@ export default function AdminDashboard() {
       .reduce((a, t) => a + t.amount, 0);
   }, [allTransactions]);
 
-  const serviceFeeAvailable = totalServiceFeesNet - adminServiceFeeWithdrawals;
+  const serviceFeeAvailable = allTimeLedger.serviceFeeNet - adminServiceFeeWithdrawals;
 
-  // Admin withdrawal fee tracking (R$5.00 per producer withdrawal)
+  // Admin withdrawal fee tracking (R$5.00 cobrado a cada saque APROVADO/PAGO de produtor)
   const WITHDRAWAL_FEE = 500; // R$ 5.00
 
-  const totalWithdrawalFeesCollected = useMemo(() => {
-    return allTransactions
-      .filter((t) => t.category === "fee" && t.type === "debit")
-      .reduce((a, t) => a + t.amount, 0);
-  }, [allTransactions]);
+  // Total real de fees de saque: conta saques de produtores efetivamente cobrados
+  // (processing/completed). Pending ainda não cobrou o R$5.
+  const { data: chargedWithdrawalsCount = 0 } = useQuery({
+    queryKey: ["admin-charged-withdrawals-count", BASELINE_ISO],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("withdrawals")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["processing", "completed"])
+        .gte("created_at", BASELINE_ISO);
+      return count || 0;
+    },
+  });
+
+  const totalWithdrawalFeesCollected = chargedWithdrawalsCount * WITHDRAWAL_FEE;
 
   const adminWithdrawalFeeWithdrawals = useMemo(() => {
     return allTransactions
@@ -622,7 +661,9 @@ export default function AdminDashboard() {
       .reduce((a, t) => a + t.amount, 0);
   }, [allTransactions]);
 
-  const netProfit = (stats?.totalPlatformFees ?? 0) - adminWithdrawals;
+  // "Disponível p/ saque" = lucro real da plataforma (taxa cobrada − custo Asaas)
+  // acumulado desde o BASELINE, menos o que o admin já sacou.
+  const netProfit = Math.max(0, allTimeLedger.platformNet - adminWithdrawals);
 
   // ── KPI Cards ──
   const cards = [
