@@ -317,25 +317,57 @@ export default function Taxas() {
           </div>
         </div>
 
-        {valueCents > 0 && (
+        {simMethod === "card" && (
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+              Parcelamento
+            </Label>
+            <div className="grid grid-cols-6 sm:grid-cols-12 gap-1.5">
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setSimInstallments(opt)}
+                  className={`rounded-lg border py-1.5 text-[0.7rem] font-semibold transition-all ${
+                    simInstallments === opt
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-muted-foreground/30"
+                  }`}
+                >
+                  {opt}x
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {productAmount > 0 && (
           <div className="rounded-xl bg-muted/20 border border-border/50 p-5 space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Valor do produto</span>
-              <span className="font-medium">{fmt(valueCents)}</span>
+              <span className="font-medium">{fmt(productAmount)}</span>
             </div>
 
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
-                Taxa da plataforma {simMethod === "pix" ? "(fixa)" : `(${selectedPlan.pct}% + R$ 2,49)`}
+                Taxa da plataforma{" "}
+                {simMethod === "pix"
+                  ? "(fixa)"
+                  : `(${selectedPlan.pct}% + R$ 2,49 sobre o produto)`}
               </span>
-              <span className="font-medium text-destructive">- {fmt(platformFee)}</span>
+              <span className="font-medium text-destructive">
+                - {fmt(simMethod === "pix" ? PIX_PLATFORM_FEE : platformFee)}
+              </span>
             </div>
 
             <div className="h-px bg-border" />
 
             <div className="flex justify-between text-base">
-              <span className="font-semibold">Você recebe</span>
-              <span className={`font-bold ${producerReceives >= 0 ? "text-emerald-500" : "text-destructive"}`}>
+              <span className="font-semibold">Você recebe (produtor)</span>
+              <span
+                className={`font-bold ${
+                  producerReceives >= 0 ? "text-emerald-500" : "text-destructive"
+                }`}
+              >
                 {fmt(producerReceives)}
               </span>
             </div>
@@ -343,15 +375,92 @@ export default function Taxas() {
             <div className="h-px bg-border" />
 
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Comprador paga (produto + taxa de serviço)</span>
+              <span className="text-muted-foreground">
+                Comprador paga{" "}
+                {simMethod === "card" && n > 1
+                  ? `(${n}x de ${fmt(Math.round(installmentValue))})`
+                  : "(produto + taxa de serviço)"}
+              </span>
               <span className="font-medium">{fmt(buyerPays)}</span>
+            </div>
+
+            {simMethod === "card" && n > 1 && (
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">
+                  └ Juros de parcelamento ({(MONTHLY_INTEREST * 100).toFixed(1)}% a.m. × {n - 1})
+                </span>
+                <span className="font-medium text-pink-500">+ {fmt(buyerInterest)}</span>
+              </div>
+            )}
+
+            {/* ── Bloco da plataforma: o que vira "Disponível p/ saque" ── */}
+            <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-primary">
+                Receita da plataforma nesta venda
+              </p>
+
+              {simMethod === "pix" ? (
+                <>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Taxa PIX</span>
+                    <span className="font-medium">+ {fmt(PIX_PLATFORM_FEE)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Taxa de serviço (comprador)</span>
+                    <span className="font-medium">+ {fmt(SERVICE_FEE)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Custo do gateway (Asaas)</span>
+                    <span className="font-medium text-destructive">- {fmt(PIX_GATEWAY_COST)}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      Taxa da plataforma ({selectedPlan.pct}% + R$ 2,49)
+                    </span>
+                    <span className="font-medium">+ {fmt(platformFee)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Taxa de serviço (comprador)</span>
+                    <span className="font-medium">+ {fmt(SERVICE_FEE)}</span>
+                  </div>
+                  {buyerInterest > 0 && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Juros de parcelamento</span>
+                      <span className="font-medium text-pink-500">+ {fmt(buyerInterest)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      Custo Asaas ({(ASAAS_PCT * 100).toFixed(2)}% + R$ 0,49 × {n})
+                    </span>
+                    <span className="font-medium text-destructive">- {fmt(asaasCost)}</span>
+                  </div>
+                </>
+              )}
+
+              <div className="h-px bg-primary/20" />
+
+              <div className="flex justify-between text-sm">
+                <span className="font-semibold">Disponível p/ saque (plataforma)</span>
+                <span
+                  className={`font-bold ${
+                    platformNet >= 0 ? "text-emerald-500" : "text-destructive"
+                  }`}
+                >
+                  {fmt(platformNet)}
+                </span>
+              </div>
             </div>
 
             {simMethod === "card" && (
               <div className="rounded-xl bg-muted/30 p-3.5 text-xs text-muted-foreground">
                 <p>
                   <strong>Plano selecionado:</strong> {selectedPlan.label} — liberação em{" "}
-                  {selectedPlan.id === "d2" ? "2 dias úteis" : "30 dias corridos"}.
+                  {isD2 ? "2 dias úteis" : "30 dias corridos"}. O produtor recebe sempre
+                  sobre o valor do produto — os juros do parcelamento são receita da plataforma.
                 </p>
               </div>
             )}
@@ -365,6 +474,7 @@ export default function Taxas() {
             )}
           </div>
         )}
+
       </motion.div>
     </div>
   );
