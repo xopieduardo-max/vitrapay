@@ -383,52 +383,8 @@ serve(async (req) => {
       });
     }
 
-    // Above limit OR Asaas unavailable: pending for admin — notify all admins
-    try {
-      const { data: admins } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-      const valueFmt = `R$ ${(amount / 100).toFixed(2).replace(".", ",")}`;
-      const producerName = profileData?.display_name || "Produtor";
-      for (const a of admins || []) {
-        fetch(`${supabaseUrl}/functions/v1/send-push`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            producer_id: a.user_id,
-            title: "Novo saque para aprovar",
-            body: `${producerName} solicitou ${valueFmt}`,
-            url: "/admin/withdrawals",
-          }),
-        }).catch((e) => console.error("admin push fail:", e));
-      }
+    // Acima do limite: nada extra a fazer aqui, notificação já foi enviada acima.
 
-      // WhatsApp para administradores cadastrados
-      const { data: waRecipients } = await supabase
-        .from("admin_whatsapp_recipients")
-        .select("phone")
-        .eq("active", true);
-      const waMsg = `🔔 *VitraPay — Novo saque pendente*\n\n👤 ${producerName}\n💸 Valor: *${valueFmt}*\n\nAcesse o painel para aprovar:\nhttps://www.vitrapay.com.br/admin/withdrawals`;
-      for (const r of waRecipients || []) {
-        fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            phone: r.phone,
-            custom_message: waMsg,
-          }),
-        }).catch((e) => console.error("admin whatsapp fail:", e));
-      }
-    } catch (notifyErr) {
-      console.error("Admin notify error:", notifyErr);
-    }
 
     return new Response(JSON.stringify({
       success: true,
