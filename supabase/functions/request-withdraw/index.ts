@@ -194,6 +194,61 @@ serve(async (req) => {
       throw new Error("Erro ao criar solicitação de saque");
     }
 
+    // Helper: notify admins + extra recipients about a new withdrawal request
+    const notifyAdminsOfWithdrawal = async (statusLabel: "pendente" | "processado") => {
+      try {
+        const valueFmt = `R$ ${(amount / 100).toFixed(2).replace(".", ",")}`;
+        const producerName = profileData?.display_name || "Produtor";
+        const title = statusLabel === "pendente" ? "Novo saque para aprovar" : "Novo saque solicitado";
+        const bodyText = `${producerName} solicitou ${valueFmt}`;
+
+        // 1) Todos os admins (role = admin)
+        const { data: admins } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        const recipientIds = new Set<string>((admins || []).map((a: any) => a.user_id));
+
+        // 2) Garantir xopieduardo@gmail.com sempre na lista
+        const { data: extraUser } = await supabase
+          .rpc("get_user_emails")
+          .then((r: any) => ({ data: (r.data || []).filter((u: any) => u.email === "xopieduardo@gmail.com") }));
+        for (const u of extraUser || []) recipientIds.add(u.user_id);
+
+        for (const uid of recipientIds) {
+          fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+            body: JSON.stringify({
+              producer_id: uid,
+              title,
+              body: bodyText,
+              url: "/admin/withdrawals",
+            }),
+          }).catch((e) => console.error("admin push fail:", e));
+        }
+
+        // 3) WhatsApp para destinatários cadastrados
+        const { data: waRecipients } = await supabase
+          .from("admin_whatsapp_recipients")
+          .select("phone")
+          .eq("active", true);
+        const waMsg = `🔔 *VitraPay — Novo saque ${statusLabel}*\n\n👤 ${producerName}\n💸 Valor: *${valueFmt}*\n\nPainel: https://www.vitrapay.com.br/admin/withdrawals`;
+        for (const r of waRecipients || []) {
+          fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+            body: JSON.stringify({ phone: r.phone, custom_message: waMsg }),
+          }).catch((e) => console.error("admin whatsapp fail:", e));
+        }
+      } catch (notifyErr) {
+        console.error("Admin notify error:", notifyErr);
+      }
+    };
+
+    // Notifica admins SEMPRE que houver solicitação (auto ou pendente)
+    await notifyAdminsOfWithdrawal(amount <= AUTO_APPROVE_LIMIT ? "processado" : "pendente");
+
     // Auto-process if within limit
     if (amount <= AUTO_APPROVE_LIMIT) {
       console.log(`Auto-processing withdrawal ${withdrawal.id}: R$ ${(amount / 100).toFixed(2)}`);
@@ -328,52 +383,8 @@ serve(async (req) => {
       });
     }
 
-    // Above limit OR Asaas unavailable: pending for admin — notify all admins
-    try {
-      const { data: admins } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-      const valueFmt = `R$ ${(amount / 100).toFixed(2).replace(".", ",")}`;
-      const producerName = profileData?.display_name || "Produtor";
-      for (const a of admins || []) {
-        fetch(`${supabaseUrl}/functions/v1/send-push`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            producer_id: a.user_id,
-            title: "Novo saque para aprovar",
-            body: `${producerName} solicitou ${valueFmt}`,
-            url: "/admin/withdrawals",
-          }),
-        }).catch((e) => console.error("admin push fail:", e));
-      }
+    // Acima do limite: nada extra a fazer aqui, notificação já foi enviada acima.
 
-      // WhatsApp para administradores cadastrados
-      const { data: waRecipients } = await supabase
-        .from("admin_whatsapp_recipients")
-        .select("phone")
-        .eq("active", true);
-      const waMsg = `🔔 *VitraPay — Novo saque pendente*\n\n👤 ${producerName}\n💸 Valor: *${valueFmt}*\n\nAcesse o painel para aprovar:\nhttps://www.vitrapay.com.br/admin/withdrawals`;
-      for (const r of waRecipients || []) {
-        fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            phone: r.phone,
-            custom_message: waMsg,
-          }),
-        }).catch((e) => console.error("admin whatsapp fail:", e));
-      }
-    } catch (notifyErr) {
-      console.error("Admin notify error:", notifyErr);
-    }
 
     return new Response(JSON.stringify({
       success: true,
