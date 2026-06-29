@@ -50,6 +50,7 @@ export default function Taxas() {
   // Simulator
   const [simValue, setSimValue] = useState("100");
   const [simMethod, setSimMethod] = useState<"pix" | "card">("pix");
+  const [simInstallments, setSimInstallments] = useState<number>(1);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile-taxas", user?.id],
@@ -83,32 +84,57 @@ export default function Taxas() {
     setSavingPlan(false);
   };
 
-  // Simulator math
-  const valueCents = Math.round(parseFloat(simValue || "0") * 100);
-  const SERVICE_FEE = 99; // R$ 0,99
+  // ── Simulator math (mirrors create-card-payment + Checkout) ──
+  const productAmount = Math.round(parseFloat(simValue || "0") * 100);
+  const SERVICE_FEE = 99;            // R$ 0,99 cobrado do comprador em toda venda
+  const MONTHLY_INTEREST = 0.016;    // mesmo do Checkout
+  const PIX_PLATFORM_FEE = 249;      // R$ 2,49
+  const PIX_GATEWAY_COST = 199;      // R$ 1,99
 
   const selectedPlan = PLANS.find((p) => p.id === cardPlan) || PLANS[0];
+  const isD2 = selectedPlan.id === "d2";
 
-  const pixPlatformFee = 249; // R$ 2,49
-  const pixGatewayCost = 199; // R$ 1,99
-  const pixPlatformProfit = pixPlatformFee - pixGatewayCost; // R$ 0,50
+  // Cartão (alinhado a create-card-payment)
+  const n = Math.max(1, Math.min(12, simInstallments));
+  const tier = n === 1 ? "x1" : n <= 6 ? "x6" : "x12";
+  const ASAAS_PCT = isD2
+    ? (tier === "x1" ? 0.0414 : tier === "x6" ? 0.0464 : 0.0514)
+    : (tier === "x1" ? 0.0299 : tier === "x6" ? 0.0349 : 0.0399);
+  const ASAAS_FIXED_PER_INSTALLMENT = 49;
 
-  const cardPctFee = Math.round(valueCents * (selectedPlan.pct / 100));
-  const cardFixedFee = selectedPlan.fixed;
-  const cardTotalFee = cardPctFee + cardFixedFee;
+  // Juros do parcelamento embutidos no valor cobrado do comprador (apenas n > 1)
+  const buyerInterest =
+    n > 1 ? Math.round(productAmount * MONTHLY_INTEREST * (n - 1)) : 0;
 
-  let platformFee = 0;
+  // Total efetivamente cobrado pelo Asaas (produto + serviço + juros)
+  const cardChargedAmount = productAmount + SERVICE_FEE + buyerInterest;
+  const installmentValue = n > 0 ? cardChargedAmount / n : 0;
+
+  // Taxa da plataforma incide SOMENTE sobre o valor do produto
+  const platformPctFee = Math.round(productAmount * (selectedPlan.pct / 100));
+  const platformFixedFee = selectedPlan.fixed;
+  const platformFee = platformPctFee + platformFixedFee;
+
+  // Custo do Asaas (sobre o valor cobrado total, fixo por parcela)
+  const asaasCost =
+    Math.round(cardChargedAmount * ASAAS_PCT) + ASAAS_FIXED_PER_INSTALLMENT * n;
+
+  // Quem recebe o quê
   let producerReceives = 0;
   let buyerPays = 0;
+  let platformGross = 0; // receita bruta da plataforma (antes do custo do gateway)
+  let platformNet = 0;   // o que vai para "Disponível p/ saque" da plataforma
 
   if (simMethod === "pix") {
-    platformFee = pixPlatformFee;
-    producerReceives = valueCents - pixPlatformFee;
-    buyerPays = valueCents + SERVICE_FEE;
+    producerReceives = productAmount - PIX_PLATFORM_FEE;
+    buyerPays = productAmount + SERVICE_FEE;
+    platformGross = PIX_PLATFORM_FEE + SERVICE_FEE;
+    platformNet = platformGross - PIX_GATEWAY_COST;
   } else {
-    platformFee = cardTotalFee;
-    producerReceives = valueCents - cardTotalFee;
-    buyerPays = valueCents + SERVICE_FEE;
+    producerReceives = productAmount - platformFee;
+    buyerPays = cardChargedAmount;
+    platformGross = platformFee + SERVICE_FEE + buyerInterest;
+    platformNet = platformGross - asaasCost;
   }
 
   const fmt = (v: number) =>
@@ -121,6 +147,7 @@ export default function Taxas() {
       </div>
     );
   }
+
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
