@@ -99,6 +99,9 @@ export default function EditProductContent({ productId }: Props) {
     title: string;
   } | null>(null);
 
+  // Controlled accordion: which modules are expanded
+  const [openModuleIds, setOpenModuleIds] = useState<string[]>([]);
+
   // Fetch modules
   const { data: modules = [], isLoading: loadingModules } = useQuery({
     queryKey: ["product-modules", productId],
@@ -191,18 +194,21 @@ export default function EditProductContent({ productId }: Props) {
         if (error) throw error;
         toast.success("Módulo atualizado!");
       } else {
-        const { error } = await supabase.from("modules").insert({
+        const { data: newMod, error } = await supabase.from("modules").insert({
           product_id: productId,
           title: moduleForm.title,
           description: moduleForm.description || null,
           cover_url: moduleForm.cover_url || null,
           position: modules.length,
-        } as any);
+        } as any).select("id").single();
         if (error) throw error;
-        toast.success("Módulo criado!");
+        toast.success("Módulo criado! Clique em 'Adicionar Aula' para incluir vídeos.");
+        if (newMod?.id) {
+          setOpenModuleIds((prev) => Array.from(new Set([...prev, newMod.id])));
+        }
       }
       setModuleDialog({ open: false });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: ["product-modules", productId],
       });
     } catch (e: any) {
@@ -490,7 +496,7 @@ export default function EditProductContent({ productId }: Props) {
           </CardContent>
         </Card>
       ) : (
-        <Accordion type="multiple" className="space-y-2">
+        <Accordion type="multiple" value={openModuleIds} onValueChange={setOpenModuleIds} className="space-y-2">
           {modules.map((mod: any, idx: number) => {
             const lessons = getLessonsForModule(mod.id);
             return (
