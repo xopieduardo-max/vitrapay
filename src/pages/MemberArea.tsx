@@ -363,18 +363,28 @@ export default function MemberArea() {
                         className="relative flex-shrink-0 w-48 sm:w-56 rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-colors snap-start group text-left"
                       >
                         <div className="aspect-video w-full bg-muted/30 flex items-center justify-center relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5" />
+                          {(mod as any).cover_url ? (
+                            <img
+                              src={(mod as any).cover_url}
+                              alt={mod.title}
+                              loading="lazy"
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5" />
+                          )}
+                          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
                           <div className="relative z-10 flex flex-col items-center gap-1">
                             {isCompleted ? (
                               <CheckCircle2 className="h-8 w-8 text-primary" />
                             ) : (
-                              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                              <div className="h-10 w-10 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-primary/30 transition-colors">
                                 <Play className="h-5 w-5 text-primary ml-0.5" />
                               </div>
                             )}
                           </div>
                           {/* Lesson number badge */}
-                          <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-[0.55rem] font-bold px-1.5 py-0.5 rounded">
+                          <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-[0.55rem] font-bold px-1.5 py-0.5 rounded z-10">
                             Aula {li + 1}
                           </div>
                         </div>
