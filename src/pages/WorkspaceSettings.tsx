@@ -151,7 +151,7 @@ export default function WorkspaceSettings() {
     if (!user) return;
     setSaving(true);
     try {
-      const slug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
+      let slug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
       if (!slug) {
         toast.error("Slug é obrigatório");
         setSaving(false);
@@ -165,23 +165,32 @@ export default function WorkspaceSettings() {
           .eq("id", selectedWorkspace.id);
         if (error) throw error;
       } else {
-        const { data: newWs, error } = await supabase
-          .from("workspaces")
-          .insert({ ...form, slug, producer_id: user.id })
-          .select()
-          .single();
-        if (error) throw error;
-        if (newWs) setSelectedId(newWs.id);
+        // Try insert; if slug collides, retry up to 3 times with a random suffix
+        let lastError: any = null;
+        let inserted: any = null;
+        for (let attempt = 0; attempt < 4; attempt++) {
+          const trySlug = attempt === 0 ? slug : `${slug}-${Math.random().toString(36).slice(2, 6)}`;
+          const { data: newWs, error } = await supabase
+            .from("workspaces")
+            .insert({ ...form, slug: trySlug, producer_id: user.id })
+            .select()
+            .single();
+          if (!error) { inserted = newWs; slug = trySlug; break; }
+          lastError = error;
+          const isDup = (error.code === "23505") || /duplicate|unique/i.test(error.message || "");
+          if (!isDup) break;
+        }
+        if (!inserted) throw lastError || new Error("Não foi possível criar o workspace");
+        setSelectedId(inserted.id);
+        setForm((f) => ({ ...f, slug }));
       }
 
       queryClient.invalidateQueries({ queryKey: ["my-workspaces"] });
       toast.success("Workspace salvo!");
     } catch (err: any) {
-      if (err?.message?.includes("duplicate")) {
-        toast.error("Esse slug já está em uso. Escolha outro.");
-      } else {
-        toast.error("Erro ao salvar workspace");
-      }
+      console.error("workspace save error", err);
+      const msg = err?.message || "Erro ao salvar workspace";
+      toast.error(msg.includes("row-level") ? "Sem permissão para criar workspace" : msg);
     } finally {
       setSaving(false);
     }
@@ -189,9 +198,10 @@ export default function WorkspaceSettings() {
 
   const handleCreateNew = () => {
     setSelectedId(null);
+    const rand = Math.random().toString(36).slice(2, 6);
     setForm({
       name: "Novo Workspace",
-      slug: user?.id?.slice(0, 8) + "-" + (workspaces.length + 1) || "",
+      slug: `${(user?.id || "ws").slice(0, 8)}-${workspaces.length + 1}-${rand}`,
       description: "",
       logo_url: "",
       banner_url: "",
