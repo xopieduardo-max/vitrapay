@@ -279,28 +279,42 @@ export default function EditProductContent({ productId }: Props) {
       const ext = file.name.split(".").pop();
       const path = `lessons/${productId}/${crypto.randomUUID()}.${ext}`;
 
-      // Use XMLHttpRequest for progress tracking
+      // Use TUS resumable upload (handles large files & flaky connections)
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token || supabaseKey;
 
+      const { Upload } = await import("tus-js-client");
+
       await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
-            setUploadProgress(Math.round((e.loaded / e.total) * 100));
-          }
+        const upload = new Upload(file, {
+          endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
+          retryDelays: [0, 1000, 3000, 5000, 10000],
+          headers: {
+            authorization: `Bearer ${token}`,
+            "x-upsert": "true",
+            apikey: supabaseKey,
+          },
+          uploadDataDuringCreation: true,
+          removeFingerprintOnSuccess: true,
+          metadata: {
+            bucketName: "product-files",
+            objectName: path,
+            contentType: file.type || "video/mp4",
+            cacheControl: "3600",
+          },
+          chunkSize: 6 * 1024 * 1024,
+          onError: (err) => reject(err),
+          onProgress: (sent, total) => {
+            setUploadProgress(Math.round((sent / total) * 100));
+          },
+          onSuccess: () => resolve(),
         });
-        xhr.addEventListener("load", () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve();
-          else reject(new Error(`Upload falhou: ${xhr.statusText}`));
+        upload.findPreviousUploads().then((prev) => {
+          if (prev.length) upload.resumeFromPreviousUpload(prev[0]);
+          upload.start();
         });
-        xhr.addEventListener("error", () => reject(new Error("Erro de rede")));
-        xhr.open("POST", `${supabaseUrl}/storage/v1/object/product-files/${path}`);
-        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-        xhr.setRequestHeader("x-upsert", "true");
-        xhr.send(file);
       });
 
       const { data } = supabase.storage
@@ -309,7 +323,7 @@ export default function EditProductContent({ productId }: Props) {
       setLessonForm((f) => ({ ...f, video_url: data.publicUrl }));
       toast.success("Vídeo enviado!");
     } catch (e: any) {
-      toast.error(e.message || "Erro no upload do vídeo");
+      toast.error(e?.message || "Erro no upload do vídeo");
     } finally {
       setUploadingVideo(false);
       setUploadProgress(0);
