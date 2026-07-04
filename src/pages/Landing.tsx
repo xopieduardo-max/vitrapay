@@ -666,15 +666,19 @@ export default function Landing() {
             </motion.div>
           </div>
           </div>
+        </div>
+      </section>
 
-
-          {/* Dashboard Preview below hero */}
+      {/* ─── Dashboard Preview Section ─── */}
+      <section className="relative overflow-hidden bg-background">
+        <div className="container py-16 md:py-24">
           <motion.div
             style={{ y: dashboardY, scale: dashboardScale, willChange: "transform" }}
             initial={{ opacity: 0, y: 80 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 1, ease: [0.2, 0, 0, 1] }}
-            className="mt-20 md:mt-28 max-w-6xl mx-auto relative">
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1, ease: [0.2, 0, 0, 1] }}
+            className="max-w-6xl mx-auto relative">
 
             <div style={{ perspective: "1200px" }}>
               <motion.div
@@ -684,7 +688,7 @@ export default function Landing() {
                   src={dashboardPreview}
                   alt="Dashboard VitraPay com métricas de vendas em tempo real"
                   className="w-full"
-                  loading="eager"
+                  loading="lazy"
                   decoding="async" />
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
               </motion.div>
