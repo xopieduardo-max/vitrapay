@@ -1,44 +1,81 @@
-## Objetivo
-Deixar a geração da senha inicial do comprador flexível conforme os campos que o produtor mantiver ativos no checkout, e sempre comunicar a senha por e-mail.
+## Correção de taxas Asaas + limite automático de parcelas
 
-## Regra de senha (prioridade)
-1. **CPF ligado** → 6 primeiros dígitos do CPF (comportamento atual)
-2. **CPF desligado + Telefone ligado** → 6 primeiros dígitos do telefone (só números, ignora DDI/máscara)
-3. **CPF e Telefone desligados** → senha aleatória numérica de 6 dígitos gerada pela plataforma
+### 1. Backend — custos reais do Asaas
 
-Em todos os casos:
-- Conta continua sendo criada automaticamente após a compra
-- `must_change_password = true` para forçar troca no primeiro login
-- E-mail de acesso sempre mostra a senha inicial e explica de onde ela veio
+**`supabase/functions/create-card-payment/index.ts` e `supabase/functions/asaas-webhook/index.ts`**
 
-## O que muda no código
+Substituir a tabela atual de custos por:
 
-### 1. `supabase/functions/_shared/auto-create-buyer.ts`
-- Adicionar parâmetro `buyerPhone` e `checkoutSettings` (quais campos estão ativos no produto)
-- Refatorar `buildCpfPassword()` para nova função `buildInitialPassword({ cpf, phone, cpfEnabled, phoneEnabled })` seguindo a prioridade acima
-- Retornar `passwordSource: 'cpf' | 'phone' | 'random'` e a senha real (quando aleatória) para o chamador enviar no e-mail
+```ts
+// D+30 (padrão)
+const ASAAS_D30 = {
+  x1:  { pct: 0.0299, fixed: 49 }, // à vista
+  x6:  { pct: 0.0349, fixed: 49 }, // 2 a 6 parcelas
+  x12: { pct: 0.0399, fixed: 49 }, // 7 a 12 parcelas
+};
 
-### 2. `supabase/functions/process-purchase/index.ts` (e demais chamadores)
-- Passar `buyer_phone` e ler as flags do produto (`ask_cpf`, `ask_phone` — ou nomes equivalentes no schema atual) ao chamar `autoCreateBuyerAccount`
-- Repassar `passwordSource` + senha para o envio do e-mail de acesso
+// D+2 = D+30 + antecipação 1,15% a.m. (proporcional aos dias)
+// Simplificação prática: soma 1,15% ao percentual da faixa
+const ASAAS_D2 = {
+  x1:  { pct: 0.0299 + 0.0115, fixed: 49 },
+  x6:  { pct: 0.0349 + 0.0115, fixed: 49 },
+  x12: { pct: 0.0399 + 0.0115, fixed: 49 },
+};
+```
 
-### 3. E-mail de acesso ao produto (`send-purchase-email` / template correspondente)
-- Sempre incluir bloco "Sua senha de acesso"
-- Texto condicional:
-  - CPF: "Use os **6 primeiros dígitos do seu CPF** como senha."
-  - Telefone: "Use os **6 primeiros dígitos do seu telefone** como senha."
-  - Aleatória: "Sua senha temporária é **XXXXXX**. Você poderá alterá-la após o primeiro acesso."
-- Manter aviso de troca obrigatória no primeiro login
+Correções obrigatórias:
+- **Custo fixo por parcela**: `asaasCost = pct × valorCobrado + fixed × n` (hoje soma o fixed uma vez só).
+- **`netProfit`**: usar `serviceFeeNet` (R$ 0,99 já descontado do % Asaas), não `SERVICE_FEE` bruto.
+- **Piso de `custom_fee_fixed`**: se admin definir taxa personalizada abaixo do custo real do gateway daquela faixa, rejeitar/logar e usar o piso.
 
-### 4. Login (`MinhaContaLogin.tsx`)
-- Atualizar texto de dica abaixo do formulário para refletir as 3 possibilidades ("CPF, telefone ou senha enviada por e-mail")
+### 2. Limite automático de parcelas por faixa de preço
 
-## Pontos técnicos
-- Ler `products.ask_cpf` / `ask_phone` (confirmar nomes exatos no schema durante a implementação) para decidir a fonte
-- Sanitizar telefone: `phone.replace(/\D/g, '')` e pegar os últimos 6 se começar com DDI — decisão: **primeiros 6 dígitos após remover DDI 55** para evitar colidir com prefixo de país
-- Senha aleatória: 6 dígitos numéricos via `crypto.getRandomValues` (fácil digitar no mobile)
-- Sem migração de banco necessária; `must_change_password` já existe em `profiles`
+Nova constante compartilhada (backend + frontend):
 
-## Fora do escopo
-- Mudar UI do produtor (toggles já existem)
-- Alterar fluxo de compradores antigos (só afeta contas criadas a partir de agora)
+```ts
+// Máximo de parcelas permitido conforme o preço do produto
+function maxInstallmentsForPrice(amountCents: number): number {
+  if (amountCents < 2000)  return 3;   // < R$ 20 → até 3x
+  if (amountCents < 5000)  return 6;   // R$ 20 a R$ 49,99 → até 6x
+  if (amountCents < 10000) return 10;  // R$ 50 a R$ 99,99 → até 10x
+  return 12;                            // ≥ R$ 100 → até 12x
+}
+```
+
+- **`create-card-payment/index.ts`**: validar `installments <= maxInstallmentsForPrice(productAmount)`. Se ultrapassar, retornar 400 com mensagem clara.
+- **`src/pages/Checkout.tsx`**: gerar os botões de parcela usando esse mesmo helper (ao invés de sempre 12x).
+- Mostrar aviso discreto: "Este produto pode ser parcelado em até Nx".
+
+### 3. Frontend — simulador e páginas públicas
+
+**`src/pages/Taxas.tsx`** (simulador do produtor):
+- Trocar tabela `ASAAS_PCT` para as 3 faixas reais (2,99 / 3,49 / 3,99), somando 1,15% no D+2.
+- Multiplicar `ASAAS_FIXED_PER_INSTALLMENT × n` (já faz certo — confirmar).
+- Aplicar o mesmo `maxInstallmentsForPrice` para desabilitar botões acima do permitido.
+
+**`src/pages/admin/AdminFeeSimulator.tsx`**:
+- Mesma atualização da tabela de custos e do limite.
+
+**`src/pages/AdminUsers.tsx` linha 489**: corrigir typo "3,89%" → "3,99%".
+
+**`src/pages/FAQ.tsx` e `src/pages/Landing.tsx`**: adicionar linha de transparência — "Parcelamento disponível conforme valor do produto (até 12x)".
+
+### 4. Validação pós-mudança
+
+Cenários de teste que precisam bater no simulador e no backend:
+
+| Produto | Método | Parcelas | Lucro plataforma esperado |
+|---|---|---|---|
+| R$ 100 | PIX D+0 | — | R$ 1,49 |
+| R$ 100 | Cartão D+30 | 1x | ~R$ 4,95 |
+| R$ 100 | Cartão D+30 | 12x | ~R$ 4,95 (juros pagam antecipação) |
+| R$ 100 | Cartão D+2 | 12x | ~R$ 3,80 |
+| R$ 20 | Cartão D+30 | 3x (limite) | > 0 |
+| R$ 10 | Cartão D+30 | 3x (limite) | > 0 |
+
+Se qualquer linha der negativo, ajustar as faixas do `maxInstallmentsForPrice` antes de encerrar.
+
+### Fora do escopo
+- Não muda a taxa nominal da VitraPay (3,99% + R$ 2,49 / R$ 2,49 PIX / R$ 0,99 serviço).
+- Não muda a regra de juros do comprador (1,6% a.m. em parcelado, à vista sem juros).
+- Não mexe em vendas antigas — só afeta cobranças novas.
