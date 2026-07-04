@@ -411,67 +411,6 @@ export default function Taxas() {
               </div>
             )}
 
-            {/* ── Bloco da plataforma: o que vira "Disponível p/ saque" ── */}
-            <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-primary">
-                Receita da plataforma nesta venda
-              </p>
-
-              {simMethod === "pix" ? (
-                <>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Taxa PIX</span>
-                    <span className="font-medium">+ {fmt(PIX_PLATFORM_FEE)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Taxa de serviço (comprador)</span>
-                    <span className="font-medium">+ {fmt(SERVICE_FEE)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Custo do gateway (Asaas)</span>
-                    <span className="font-medium text-destructive">- {fmt(PIX_GATEWAY_COST)}</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      Taxa da plataforma ({selectedPlan.pct}% + R$ 2,49)
-                    </span>
-                    <span className="font-medium">+ {fmt(platformFee)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Taxa de serviço (comprador)</span>
-                    <span className="font-medium">+ {fmt(SERVICE_FEE)}</span>
-                  </div>
-                  {buyerInterest > 0 && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Juros de parcelamento</span>
-                      <span className="font-medium text-pink-500">+ {fmt(buyerInterest)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      Custo Asaas ({(ASAAS_PCT * 100).toFixed(2)}% + R$ 0,49 × {n})
-                    </span>
-                    <span className="font-medium text-destructive">- {fmt(asaasCost)}</span>
-                  </div>
-                </>
-              )}
-
-              <div className="h-px bg-primary/20" />
-
-              <div className="flex justify-between text-sm">
-                <span className="font-semibold">Disponível p/ saque (plataforma)</span>
-                <span
-                  className={`font-bold ${
-                    platformNet >= 0 ? "text-emerald-500" : "text-destructive"
-                  }`}
-                >
-                  {fmt(platformNet)}
-                </span>
-              </div>
-            </div>
 
             {simMethod === "card" && (
               <div className="rounded-xl bg-muted/30 p-3.5 text-xs text-muted-foreground">
