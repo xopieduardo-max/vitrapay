@@ -102,11 +102,6 @@ export default function Taxas() {
     return 12;
   })();
   const n = Math.max(1, Math.min(maxInstallmentsAllowed, simInstallments));
-  const tier = n === 1 ? "x1" : n <= 6 ? "x6" : "x12";
-  const ASAAS_BASE_PCT = tier === "x1" ? 0.0299 : tier === "x6" ? 0.0349 : 0.0399;
-  // D+2 soma +1,15% a.m. de antecipação em cima da faixa base
-  const ASAAS_PCT = isD2 ? ASAAS_BASE_PCT + 0.0115 : ASAAS_BASE_PCT;
-  const ASAAS_FIXED_PER_INSTALLMENT = 49;
 
   // Juros do parcelamento embutidos no valor cobrado do comprador (apenas n > 1)
   const buyerInterest =
