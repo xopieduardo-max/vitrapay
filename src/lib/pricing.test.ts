@@ -208,10 +208,10 @@ describe("computeScenario — lucro/prejuízo", () => {
       vpPct: CARD_VP.pct, vpFixedCents: CARD_VP.fixed,
     });
     expect(r.isLoss).toBe(true);
-    // Para virar lucro, precisaria de taxa maior (ex: 6,99% + R$ 2,49)
+    // Para virar lucro em 12x, precisaria taxa significativamente maior (ex: 9% + R$ 2,49)
     const rHigher = computeScenario({
       amountCents: 10000, method: "card", installments: 12, antecipacao: "D30",
-      vpPct: 6.99, vpFixedCents: 249,
+      vpPct: 9, vpFixedCents: 249,
     });
     expect(rHigher.isProfit).toBe(true);
   });
