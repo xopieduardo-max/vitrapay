@@ -636,19 +636,19 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[320px] sm:min-h-[420px] lg:min-h-[560px] order-1 lg:order-2 mx-auto w-full max-w-[520px]">
+              className="relative flex items-center justify-center min-h-[360px] sm:min-h-[420px] lg:min-h-[560px] order-1 lg:order-2 mx-auto w-full max-w-[520px]">
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[240px] h-[240px] sm:w-[360px] sm:h-[360px] md:w-[420px] md:h-[420px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                className="relative z-10 w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] md:w-[420px] md:h-[420px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
               />
 
-              {/* Floating notifications overlapping the logo */}
-              <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-end pr-0 sm:pr-2">
-                <div className="w-[220px] sm:w-[260px] lg:w-[280px] translate-x-2 sm:translate-x-4 lg:translate-x-8">
+              {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
+              <div className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:-right-4 xl:-right-8">
+                <div className="w-[200px] sm:w-[240px] lg:w-[280px] scale-90 sm:scale-100 origin-bottom-right lg:origin-right">
                   <FloatingNotifications />
                 </div>
               </div>
