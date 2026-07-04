@@ -29,6 +29,7 @@ import bentoPix from "@/assets/bento-pix.png.asset.json";
 import bentoSistema from "@/assets/bento-sistema.png.asset.json";
 import bentoLiberacao from "@/assets/bento-liberacao.png.asset.json";
 import neonKHero from "@/assets/neon-k-hero.png.asset.json";
+import heroBgYellow from "@/assets/hero-bg-yellow.png.asset.json";
 
 import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
 import iphoneVitrapay from "@/assets/iphone-vitrapay.webp";
