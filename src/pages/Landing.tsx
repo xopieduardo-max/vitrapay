@@ -584,8 +584,8 @@ export default function Landing() {
       {/* ─── Hero Section ─── */}
       <section
         ref={heroRef}
-        className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden pt-20 md:pt-16"
-        style={{ paddingTop: "var(--hero-pt, undefined)" as any }}
+        className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden"
+        style={{ paddingTop: "var(--hero-pt, 0px)" }}
       >
         <GridBackground />
         <FloatingParticles />
@@ -616,8 +616,8 @@ export default function Landing() {
             </div>
 
             <div
-              className="relative z-10 grid md:grid-cols-2 gap-6 md:gap-6 lg:gap-6 items-center"
-              style={{ gap: "var(--hero-gap, undefined)" as any }}
+              className="relative z-10 grid md:grid-cols-2 items-center gap-0"
+              style={{ gap: "var(--hero-gap, 0px)" }}
             >
             {/* LEFT — Copy + CTA */}
             <motion.div
@@ -629,8 +629,8 @@ export default function Landing() {
             >
 
               <h1
-                className="text-[1.9rem] sm:text-[2.4rem] md:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.5rem] font-bold tracking-tight leading-[1.05]"
-                style={{ fontSize: "var(--hero-title, undefined)" as any }}
+                className="font-bold tracking-tight leading-[1.05] text-[1.9rem] sm:text-[2.4rem] md:text-[3.35rem]"
+                style={{ fontSize: "var(--hero-title, 3.35rem)" }}
               >
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
@@ -670,14 +670,14 @@ export default function Landing() {
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] lg:w-[500px] lg:h-[500px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
-                style={{ width: "var(--hero-logo, undefined)" as any, height: "var(--hero-logo, undefined)" as any }}
+                className="relative z-10 w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[484px] md:h-[484px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                style={{ width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
               />
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
               <div
                 className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:-right-4 xl:-right-8"
-                style={{ transform: "translate(var(--hero-notif-x, 0px), calc(var(--hero-notif-y, 0px)))" }}
+                style={{ transform: "translate(var(--hero-notif-x, -1px), var(--hero-notif-y, 104px))" }}
               >
                 <div className="w-[220px] sm:w-[240px] lg:w-[280px] scale-95 sm:scale-100 origin-bottom-right lg:origin-right">
                   <FloatingNotifications />
