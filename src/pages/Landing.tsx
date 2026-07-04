@@ -617,7 +617,7 @@ export default function Landing() {
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
               className="space-y-6 md:space-y-8 text-center lg:text-left order-2 lg:order-1">
 
-              <h1 className="text-[2.4rem] sm:text-[3.6rem] md:text-[4.5rem] lg:text-[4.5rem] xl:text-[5.1rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[1.8rem] sm:text-[2.7rem] md:text-[3.375rem] lg:text-[3.375rem] xl:text-[3.825rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
