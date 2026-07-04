@@ -489,7 +489,8 @@ export default function Checkout() {
         const expiryYear = expiryParts[1] ? `20${expiryParts[1]}` : "";
 
         // Para parcelado: cobra do comprador produto + serviço + juros (1,6% a.m.)
-        const nInstallments = parseInt(form.installments || "1", 10) || 1;
+        const rawInstallments = parseInt(form.installments || "1", 10) || 1;
+        const nInstallments = Math.min(rawInstallments, maxInstallmentsAllowed);
         const monthlyInterest = 0.016;
         const buyerInterest = nInstallments > 1
           ? Math.round(total * monthlyInterest * (nInstallments - 1))
