@@ -647,14 +647,14 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[320px] sm:min-h-[380px] lg:min-h-[480px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
+              className="relative flex items-center justify-center min-h-[260px] sm:min-h-[300px] md:min-h-[340px] lg:min-h-[480px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[260px] h-[260px] sm:w-[360px] sm:h-[360px] md:w-[440px] md:h-[440px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                className="relative z-10 w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] md:w-[360px] md:h-[360px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
               />
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
