@@ -372,7 +372,27 @@ export default function WorkspaceStorefront() {
           </div>
         </div>
 
+        {/* Login CTA (non-fixed) */}
+        {!user && (
+          <div
+            className="max-w-md mx-auto mb-6 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left"
+            style={{ border: `1px solid ${cardBorder}`, backgroundColor: "rgba(255,255,255,0.03)" }}
+          >
+            <p className="text-sm" style={{ color: textSecondary }}>
+              Faça login para acessar seus produtos
+            </p>
+            <Button
+              onClick={() => navigate("/minha-conta")}
+              style={{ backgroundColor: accentColor, color: accentTextColor }}
+              className="shrink-0"
+            >
+              Entrar na minha conta
+            </Button>
+          </div>
+        )}
+
         {/* Products grid */}
+
         {items.length === 0 ? (
           <div className="text-center py-20">
             <p style={{ color: textMuted }}>Nenhum conteúdo disponível</p>
