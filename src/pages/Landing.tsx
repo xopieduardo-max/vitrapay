@@ -616,8 +616,8 @@ export default function Landing() {
             </div>
 
             <div
-              className="relative z-10 grid md:grid-cols-2 gap-6 md:gap-6 lg:gap-6 items-center"
-              style={{ gap: "var(--hero-gap, undefined)" as any }}
+              className="relative z-10 grid md:grid-cols-2 items-center gap-0"
+              style={{ gap: "var(--hero-gap, 0px)" }}
             >
             {/* LEFT — Copy + CTA */}
             <motion.div
