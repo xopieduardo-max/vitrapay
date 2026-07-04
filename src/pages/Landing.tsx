@@ -336,7 +336,13 @@ const bigStats = [
 const testimonials = [
 { name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", keyword: "Velocidade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
 { name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", keyword: "Membros", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
-{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", keyword: "Comissões", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 }];
+{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", keyword: "Comissões", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 },
+{ name: "Bruno Carvalho", role: "Coprodutor", handle: "@bruno.cv", keyword: "Saques", text: "Os saques são rápidos e previsíveis. Consigo organizar meu caixa sem dor de cabeça.", stars: 5 },
+{ name: "Felipe Rocha", role: "Gestor de Tráfego", handle: "@felipe.rocha", keyword: "Dashboard", text: "O dashboard facilita demais. Tenho clareza total do que está entrando em tempo real.", stars: 5 },
+{ name: "Rafael Mendes", role: "Infoprodutor", handle: "@rafa.mendes", keyword: "Aprovação", text: "Minha taxa de aprovação subiu muito depois que comecei a usar. Hoje eu perco bem menos venda.", stars: 5 },
+{ name: "Matheus Lima", role: "Afiliado", handle: "@matheus.lima", keyword: "Estrutura", text: "Integração simples e funcional. Não precisei mudar minha estrutura pra começar a vender.", stars: 5 },
+{ name: "Camila Prado", role: "Mentora", handle: "@camila.prado", keyword: "Suporte", text: "O suporte responde rápido e resolve. Sinto que tem gente de verdade cuidando do meu negócio.", stars: 5 },
+{ name: "Diego Santos", role: "Infoprodutor", handle: "@diego.s", keyword: "Checkout", text: "O checkout converte demais. Testei em várias plataformas e o da VitraPay foi o melhor.", stars: 5 }];
 
 
 const faqItems = [
@@ -416,7 +422,99 @@ function CountrySelector() {
 
 }
 
+/* ─── Testimonials Carousel ─── */
+type Testimonial = { name: string; role: string; handle: string; keyword: string; text: string; stars: number };
+
+function TestimonialsCarousel({ testimonials }: { testimonials: Testimonial[] }) {
+  const [perView, setPerView] = useState(3);
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const update = () => setPerView(window.innerWidth < 768 ? 1 : 3);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const pages = Math.max(1, testimonials.length - perView + 1);
+
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % pages), 2800);
+    return () => clearInterval(id);
+  }, [pages, paused]);
+
+  useEffect(() => {
+    if (index > pages - 1) setIndex(0);
+  }, [pages, index]);
+
+  return (
+    <section id="testimonials" className="bg-card/30 border-y border-border/50">
+      <div className="container py-20 md:py-28">
+        <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-12">
+          <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary">
+            <span className="w-1 h-5 rounded-full bg-primary mr-3" />Depoimentos
+          </span>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            Quem usa, <span className="text-gradient-primary">recomenda</span>
+          </h2>
+        </motion.div>
+
+        <div
+          className="overflow-hidden"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <div
+            className="flex transition-transform duration-700 ease-out"
+            style={{ transform: `translateX(-${(index * 100) / perView}%)` }}
+          >
+            {testimonials.map((t) => (
+              <div
+                key={t.name}
+                className="shrink-0 px-3 basis-full md:basis-1/3"
+              >
+                <div className="rounded-2xl border border-white/[0.06] bg-[#0a0a0a] p-6 md:p-7 space-y-5 h-[260px] flex flex-col">
+                  <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/[0.08] bg-black/40 pl-1 pr-4 py-1">
+                    <span className="h-5 w-5 rounded-full bg-primary shadow-[0_0_10px_hsl(48_96%_53%/0.6)]" />
+                    <span className="text-xs font-medium text-foreground/90">{t.name}</span>
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground leading-none">
+                    &ldquo;{t.keyword}&rdquo;
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-auto">
+                    {t.text}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dots */}
+        <div className="flex justify-center items-center gap-2 mt-10">
+          {Array.from({ length: pages }).map((_, i) => {
+            const active = i === index;
+            return (
+              <button
+                key={i}
+                onClick={() => setIndex(i)}
+                aria-label={`Ir para depoimento ${i + 1}`}
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  active ? "w-8 bg-primary" : "w-2 bg-white/20 hover:bg-white/40"
+                }`}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─── Main Landing ─── */
+
 export default function Landing() {
   const heroRef = useRef<HTMLElement>(null);
 
@@ -1149,43 +1247,8 @@ export default function Landing() {
       </section>
 
       {/* ─── Testimonials ─── */}
-      <section id="testimonials" className="bg-card/30 border-y border-border/50">
-        <div className="container py-20 md:py-28">
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Depoimentos</span>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Quem usa, <span className="text-gradient-primary">recomenda</span>
-            </h2>
-          </motion.div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.map((t, i) =>
-            <motion.div
-              key={t.name}
-              {...stagger}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
-              whileHover={{ y: -5 }}
-              className="rounded-3xl border border-white/[0.06] bg-[#0a0a0a] p-8 md:p-10 space-y-6 hover:border-primary/30 transition-all duration-300 min-h-[340px] flex flex-col">
-                {/* Pill with name */}
-                <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/[0.08] bg-black/40 pl-1.5 pr-4 py-1.5">
-                  <span className="h-6 w-6 rounded-full bg-primary shadow-[0_0_12px_hsl(48_96%_53%/0.6)]" />
-                  <span className="text-sm font-medium text-foreground/90">{t.name}</span>
-                </div>
+      <TestimonialsCarousel testimonials={testimonials} />
 
-                {/* Big keyword quote */}
-                <h3 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground leading-none">
-                  &ldquo;{t.keyword}&rdquo;
-                </h3>
-
-                {/* Description */}
-                <p className="text-[15px] text-muted-foreground leading-relaxed mt-auto">
-                  {t.text}
-                </p>
-              </motion.div>
-            )}
-          </div>
-
-        </div>
-      </section>
 
       {/* ─── Placas de Premiação ─── */}
       <section className="bg-white py-20 md:py-28">
