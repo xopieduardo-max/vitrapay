@@ -45,6 +45,8 @@ export default function MemberArea() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"overview" | "lesson">("overview");
   const [lessonFiles, setLessonFiles] = useState<Record<string, { id: string; file_name: string; file_url: string }[]>>({});
+  const [progressTimes, setProgressTimes] = useState<Record<string, string>>({});
+
 
   useEffect(() => {
     if (!productId || !user) return;
