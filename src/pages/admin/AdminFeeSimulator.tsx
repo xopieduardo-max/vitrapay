@@ -76,39 +76,29 @@ export default function AdminFeeSimulator() {
   const installmentsAllowed = method === "card" && installments <= maxInst;
 
   // Comprador paga (com juros se parcelado 2x+)
-  const buyerTotal = useMemo(() => {
-    if (method !== "card" || installments <= 1) return amount + SERVICE_FEE;
-    const interestFactor = 1 + (BUYER_INSTALLMENT_INTEREST_MONTHLY / 100) * (installments - 1);
-    return Math.round(amount * interestFactor) + SERVICE_FEE;
-  }, [amount, method, installments]);
+  const buyerTotal = useMemo(
+    () => computeBuyerTotal(amount, method, installments),
+    [amount, method, installments],
+  );
 
   // Custo Asaas real (baseado no valor total cobrado do comprador)
-  const asaasCost = useMemo(() => {
-    if (method === "pix") return ASAAS_PIX_FIXED;
-    if (method === "boleto") return ASAAS_BOLETO_FIXED;
-    // Cartão: (pct_faixa + antecipação D+2) × valor cobrado + fixo × n_parcelas
-    let pct = asaasCardTierPct(installments);
-    if (antecipacao === "D2") pct += ASAAS_D2_ADD_PCT;
-    return Math.round(buyerTotal * (pct / 100)) + ASAAS_CARD_FIXED_CENTS * installments;
-  }, [method, installments, antecipacao, buyerTotal]);
+  const asaasCost = useMemo(
+    () => computeAsaasCost(buyerTotal, method, installments, antecipacao),
+    [buyerTotal, method, installments, antecipacao],
+  );
 
-  const asaasEffectivePct = method === "card"
-    ? asaasCardTierPct(installments) + (antecipacao === "D2" ? ASAAS_D2_ADD_PCT : 0)
-    : 0;
+  const asaasEffectivePct = method === "card" ? calcAsaasEffectivePct(installments, antecipacao) : 0;
 
   // Taxa VitraPay cobrada do produtor (sobre o valor do produto)
   const vpCfg = getVp(method);
   const vpPctVal = parseFloat(vpCfg.pct) || 0;
   const vpFixedVal = Math.round((parseFloat(vpCfg.fixed) || 0) * 100);
-  const feePlatform = Math.round(amount * (vpPctVal / 100)) + vpFixedVal;
+  const feePlatform = computePlatformFee(amount, vpPctVal, vpFixedVal);
 
   // Serviço R$0,99 pago pelo comprador (líquido, descontando gateway)
-  const serviceFeeNet = method === "card"
-    ? SERVICE_FEE - Math.round(SERVICE_FEE * (asaasEffectivePct / 100))
-    : SERVICE_FEE;
+  const serviceFeeNet = computeServiceFeeNet(method, installments, antecipacao);
 
   const producerReceives = amount - feePlatform;
-  // Lucro plataforma = (taxa cobrada + serviço líquido) − custo Asaas
   const platformProfit = feePlatform + serviceFeeNet - asaasCost;
   const profitMarginPct = amount > 0 ? (platformProfit / amount) * 100 : 0;
 
@@ -148,11 +138,10 @@ export default function AdminFeeSimulator() {
   const scenarioMatrix = useMemo(() => {
     if (method !== "card" || !isValid) return [];
     return Array.from({ length: maxInst }, (_, i) => i + 1).map((n) => {
-      const factor = n <= 1 ? 1 : 1 + (BUYER_INSTALLMENT_INTEREST_MONTHLY / 100) * (n - 1);
-      const bTotal = Math.round(amount * factor) + SERVICE_FEE;
-      let pct = asaasCardTierPct(n) + (antecipacao === "D2" ? ASAAS_D2_ADD_PCT : 0);
-      const aCost = Math.round(bTotal * (pct / 100)) + ASAAS_CARD_FIXED_CENTS * n;
-      const svcNet = SERVICE_FEE - Math.round(SERVICE_FEE * (pct / 100));
+      const bTotal = computeBuyerTotal(amount, "card", n);
+      const aCost = computeAsaasCost(bTotal, "card", n, antecipacao);
+      const svcNet = computeServiceFeeNet("card", n, antecipacao);
+      const pct = calcAsaasEffectivePct(n, antecipacao);
       const profit = feePlatform + svcNet - aCost;
       return { n, bTotal, aCost, profit, pct };
     });
