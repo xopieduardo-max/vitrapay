@@ -371,7 +371,7 @@ export default function MemberArea() {
             >
               <div className="flex flex-col sm:flex-row">
                 {/* Thumbnail */}
-                <div className="relative w-full sm:w-64 aspect-video sm:aspect-auto sm:h-auto shrink-0 bg-muted/30 overflow-hidden">
+                <div className="relative w-full sm:w-44 aspect-[2/3] sm:aspect-auto sm:h-auto shrink-0 bg-muted/30 overflow-hidden">
                   {(resumeItem.module as any).cover_url ? (
                     <img
                       src={(resumeItem.module as any).cover_url}
@@ -459,9 +459,9 @@ export default function MemberArea() {
                         onClick={() => openLesson(lesson)}
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.98 }}
-                        className="relative flex-shrink-0 w-48 sm:w-56 rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-colors snap-start group text-left"
+                        className="relative flex-shrink-0 w-36 sm:w-40 rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-colors snap-start group text-left"
                       >
-                        <div className="aspect-video w-full bg-muted/30 flex items-center justify-center relative overflow-hidden">
+                        <div className="aspect-[2/3] w-full bg-muted/30 flex items-center justify-center relative overflow-hidden">
                           {(mod as any).cover_url ? (
                             <img
                               src={(mod as any).cover_url}

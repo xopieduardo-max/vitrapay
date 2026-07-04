@@ -320,7 +320,7 @@ export default function MinhaConta() {
                   transition={{ delay: i * 0.05, duration: 0.4, ease: [0.2, 0, 0, 1] }}
                   className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  <div className="aspect-video w-full flex items-center justify-center bg-muted/30 overflow-hidden">
+                  <div className="aspect-[3/4] w-full flex items-center justify-center bg-muted/30 overflow-hidden">
                     {product.cover_url ? (
                       <img src={product.cover_url} alt={product.title} className="w-full h-full object-cover" />
                     ) : product.type === "download" ? (
