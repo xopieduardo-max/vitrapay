@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { maxInstallmentsForPrice } from "@/lib/installmentLimits";
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, Cell,
+} from "recharts";
 
 const METHODS = [
   { id: "pix", label: "Pix", icon: QrCode },
