@@ -589,10 +589,26 @@ export default function Landing() {
         <div className="container relative py-6 md:py-12 lg:py-20">
           <div className="relative isolate">
             {/* Yellow wave background — behind first fold (hero grid) */}
-            <div
-              className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] bg-no-repeat bg-bottom bg-cover opacity-90 z-0"
-              style={{ backgroundImage: `url(${heroBgYellow.url})` }}
-            />
+            <div className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] z-0">
+              <div
+                className="absolute inset-0 bg-no-repeat bg-bottom bg-cover opacity-90"
+                style={{
+                  backgroundImage: `url(${heroBgYellow.url})`,
+                  WebkitMaskImage:
+                    "linear-gradient(to bottom, transparent 0%, #000 25%, #000 100%), linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%)",
+                  maskImage:
+                    "linear-gradient(to bottom, transparent 0%, #000 25%, #000 100%), linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%)",
+                  WebkitMaskComposite: "source-in",
+                  maskComposite: "intersect",
+                }}
+              />
+              {/* Extra top fade to blend with page background */}
+              <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-background via-background/70 to-transparent" />
+              {/* Side fades to hide any hard crop */}
+              <div className="absolute inset-y-0 left-0 w-24 md:w-40 bg-gradient-to-r from-background to-transparent" />
+              <div className="absolute inset-y-0 right-0 w-24 md:w-40 bg-gradient-to-l from-background to-transparent" />
+            </div>
+
             <div className="relative z-10 grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-8 items-center">
             {/* LEFT — Copy + CTA */}
             <motion.div
