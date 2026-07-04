@@ -1144,6 +1144,7 @@ export type Database = {
           boleto_percentage: number
           card_fixed: number
           card_percentage: number
+          card_percentage_d2: number
           id: number
           maintenance_mode: boolean
           min_withdrawal_amount: number
@@ -1159,6 +1160,7 @@ export type Database = {
           boleto_percentage?: number
           card_fixed?: number
           card_percentage?: number
+          card_percentage_d2?: number
           id?: number
           maintenance_mode?: boolean
           min_withdrawal_amount?: number
@@ -1174,6 +1176,7 @@ export type Database = {
           boleto_percentage?: number
           card_fixed?: number
           card_percentage?: number
+          card_percentage_d2?: number
           id?: number
           maintenance_mode?: boolean
           min_withdrawal_amount?: number
