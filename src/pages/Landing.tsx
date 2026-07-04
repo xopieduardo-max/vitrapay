@@ -617,7 +617,7 @@ export default function Landing() {
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
               className="space-y-6 md:space-y-8 text-center lg:text-left order-2 lg:order-1">
 
-              <h1 className="text-[2rem] sm:text-5xl md:text-6xl lg:text-[3.75rem] xl:text-[4.25rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[2.4rem] sm:text-[3.6rem] md:text-[4.5rem] lg:text-[4.5rem] xl:text-[5.1rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -626,12 +626,12 @@ export default function Landing() {
                 </span>
               </h1>
 
-              <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-[1.2rem] md:text-[1.35rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Aprovação mais alta, saques rápidos e uma operação estável pra quem não pode perder vendas por falhas de sistema.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-2">
-                <Button size="lg" className="group relative h-14 px-8 text-base font-semibold gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.6)]" asChild>
+                <Button size="lg" className="group relative h-14 px-8 text-[1.2rem] font-semibold gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.6)]" asChild>
                   <Link to="/auth">
                     Crie sua conta agora!
                     <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center group-hover:rotate-45 transition-transform">
