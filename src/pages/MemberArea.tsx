@@ -359,6 +359,73 @@ export default function MemberArea() {
           </div>
         </div>
 
+        {/* Resume lesson card */}
+        {resumeItem && !courseCompleted && (
+          <div className="max-w-5xl mx-auto px-4 -mt-4">
+            <motion.button
+              onClick={() => openLesson(resumeItem!.lesson)}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+              className="group w-full rounded-2xl border border-primary/30 bg-card hover:border-primary/60 transition-colors overflow-hidden text-left shadow-lg"
+            >
+              <div className="flex flex-col sm:flex-row">
+                {/* Thumbnail */}
+                <div className="relative w-full sm:w-64 aspect-video sm:aspect-auto shrink-0 bg-muted/30 overflow-hidden">
+                  {(resumeItem.module as any).cover_url ? (
+                    <img
+                      src={(resumeItem.module as any).cover_url}
+                      alt={resumeItem.lesson.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : product?.cover_url ? (
+                    <img
+                      src={product.cover_url}
+                      alt={resumeItem.lesson.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
+                  )}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/25 transition-colors" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                      <Play className="h-6 w-6 text-primary-foreground ml-0.5" fill="currentColor" />
+                    </div>
+                  </div>
+                </div>
+                {/* Content */}
+                <div className="flex-1 p-4 sm:p-5 flex flex-col justify-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-[0.6rem] uppercase tracking-wider">
+                      {hasStarted ? "Continuar de onde parou" : "Começar curso"}
+                    </Badge>
+                  </div>
+                  <p className="text-[0.65rem] text-muted-foreground truncate">
+                    {resumeItem.module.title}
+                  </p>
+                  <h3 className="font-bold text-base sm:text-lg leading-tight line-clamp-2">
+                    {resumeItem.lesson.title}
+                  </h3>
+                  {resumeItem.lesson.duration_minutes > 0 && (
+                    <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {resumeItem.lesson.duration_minutes} min
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    <Progress value={progressPercent} className="h-1.5 flex-1" />
+                    <span className="text-[0.6rem] text-muted-foreground whitespace-nowrap font-medium">
+                      {Math.round(progressPercent)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          </div>
+        )}
+
+
         {/* Module cards - Netflix style */}
         <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
           {modules.map((mod, idx) => {
