@@ -23,6 +23,8 @@ import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.webp";
 import logoCard from "@/assets/logo-vitrapay-card.webp";
 import celularVitra from "@/assets/celular_vitra.webp";
+import ctaVitrapay from "@/assets/cta-vitrapay.png.asset.json";
+
 import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
 import iphoneVitrapay from "@/assets/iphone-vitrapay.webp";
 import {
@@ -1471,64 +1473,32 @@ export default function Landing() {
 
       {/* ─── CTA Section ─── */}
       <section className="container pb-20 md:pb-28">
-        <motion.div {...fadeUp} transition={{ duration: 0.6 }}
-        className="relative rounded-3xl border border-primary/20 bg-[#0a0a0a] overflow-hidden max-w-5xl mx-auto">
-
-          <FloatingParticles />
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/2 left-0 w-[420px] h-[360px] rounded-full bg-primary/10 blur-[100px]" />
-          </div>
-
-          <div className="relative grid md:grid-cols-[1.2fr_1fr] gap-6 md:gap-2 items-center">
-            {/* Left: Text content */}
-            <div className="px-6 md:px-9 lg:px-12 py-10 md:py-12 space-y-4">
-              <h2 className="text-2xl md:text-3xl lg:text-[2.4rem] font-bold tracking-tight leading-[1.05]">
-                Comece hoje.{" "}
-                <span className="text-foreground/90">Venda melhor.</span>{" "}
-                <span className="text-gradient-primary">Cresça de verdade.</span>
-              </h2>
-              <p className="text-muted-foreground text-sm md:text-[15px] max-w-md leading-relaxed">
-                Chega de travar com ferramentas que não te entendem. A VitraPay é pra quem quer liberdade com lucro.
-              </p>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-1">
-                <Button size="lg" className="h-11 px-6 text-sm font-semibold gap-2 glow-primary-strong hover:scale-[1.02] transition-all duration-200 rounded-full" asChild>
-                  <Link to="/auth">
-                    Quero vender agora <ArrowRight className="h-4 w-4 rotate-[-45deg]" />
-                  </Link>
-                </Button>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-muted-foreground pt-2">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3 w-3 text-primary" /> Sem taxa de adesão
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3 w-3 text-primary" /> Pix instantâneo
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3 w-3 text-primary" /> Suporte 24/7
-                </span>
-              </div>
-            </div>
-
-            {/* Right: Woman image — blended into card */}
-            <div className="relative h-[260px] md:h-[360px] lg:h-[400px] overflow-hidden">
-              <img
-                src={ctaWomanYellow}
-                alt="Empreendedora vendendo com a VitraPay"
-                width={1024}
-                height={1024}
-                loading="lazy"
-                className="absolute inset-0 w-full h-full object-contain object-right md:object-center mix-blend-lighten opacity-90"
-              />
-              {/* Soft fades to seamlessly blend edges with card */}
-              <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0a0a0a] to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#0a0a0a] to-transparent pointer-events-none" />
-              <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#0a0a0a] to-transparent pointer-events-none" />
-            </div>
-          </div>
+        <motion.div
+          {...fadeUp}
+          transition={{ duration: 0.6 }}
+          className="relative max-w-6xl mx-auto rounded-3xl overflow-hidden"
+        >
+          <Link
+            to="/auth"
+            aria-label="Crie sua conta agora"
+            className="block relative group"
+          >
+            <img
+              src={ctaVitrapay.url}
+              alt="Infraestrutura de pagamento feita para quem leva o digital a sério — VitraPay"
+              className="w-full h-auto block"
+              loading="lazy"
+            />
+            {/* Clickable hotspot over the "Crie sua conta agora!" button in the image */}
+            <span
+              aria-hidden="true"
+              className="absolute rounded-full transition-all duration-200 group-hover:scale-[1.03] group-active:scale-[0.98]"
+              style={{ left: "6.5%", top: "82%", width: "26%", height: "10%" }}
+            />
+          </Link>
         </motion.div>
       </section>
+
 
       {/* ─── Footer ─── */}
       <footer className="relative bg-[#080808] overflow-hidden">
