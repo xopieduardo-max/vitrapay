@@ -14,9 +14,13 @@ const METHODS = [
   { id: "boleto", label: "Boleto", icon: Barcode },
 ] as const;
 
+// Asaas real (referência): à vista 2,99% | 2-6x 3,49% | 7-12x 3,99% | 13-21x 4,29%
+// Todas as faixas: + R$ 0,49 fixo POR PARCELA (não incluso aqui: simulação de 1 parcela).
+// D+2 antecipação: +1,15% a.m. sobre o valor antecipado.
+// Default aqui usa a faixa de 7-12x (mais conservadora, cobre a maior parte das vendas).
 const ASAAS_DEFAULTS: Record<string, { pct: number; fixed: number }> = {
   pix:    { pct: 0,    fixed: 199 },
-  card:   { pct: 3.49, fixed: 49 },
+  card:   { pct: 3.99, fixed: 49 },
   boleto: { pct: 0,    fixed: 199 },
 };
 
