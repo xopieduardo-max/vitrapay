@@ -347,7 +347,7 @@ const testimonials = [
 
 const faqItems = [
 { q: "O que é a VitraPay?", a: "A VitraPay é uma plataforma completa de vendas de produtos digitais. Você pode vender cursos, e-books, mentorias e muito mais com checkout otimizado, área de membros, programa de afiliados e financeiro integrado." },
-{ q: "Quais as taxas cobradas pela VitraPay?", a: "Para Pix, a taxa é zero para o comprador e o recebimento é instantâneo (D+0). Para cartão de crédito, a taxa inicial é de 3,99% + R$ 2,49 com recebimento em D+30, ou 4,99% + R$ 2,49 com antecipação D+2." },
+{ q: "Quais as taxas cobradas pela VitraPay?", a: "Para Pix, a taxa é R$ 2,49 fixa por venda com recebimento instantâneo (D+0). Para cartão de crédito, 3,99% + R$ 2,49 com recebimento em D+30, ou 4,99% + R$ 2,49 com antecipação D+2. Parcelamento em até 12x conforme o valor do produto — os juros (1,6% a.m.) ficam por conta do comprador." },
 { q: "Como funciona o saque?", a: "Você pode solicitar saque a partir de R$ 10,00. O valor é enviado direto para sua chave Pix cadastrada. Saques são processados rapidamente pela nossa equipe." },
 { q: "Posso ter afiliados vendendo meus produtos?", a: "Sim! A VitraPay tem um programa de afiliados completo. Você define a comissão de cada produto e os afiliados recebem um link exclusivo para divulgar." },
 { q: "A plataforma tem área de membros?", a: "Sim! Você pode organizar conteúdo em módulos e aulas, adicionar vídeos, acompanhar o progresso dos alunos e oferecer uma experiência profissional de aprendizado." },
