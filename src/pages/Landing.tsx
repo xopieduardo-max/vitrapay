@@ -86,23 +86,18 @@ function FloatingNotifications() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -20, scale: 0.95 }}
             transition={{ type: "spring", damping: 22, stiffness: 260 }}
-            className="flex items-start gap-3 rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl px-4 py-3.5 shadow-lg">
-            <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden bg-black">
-              <img src={logoIcon} alt="" className="h-full w-full object-cover rounded-xl" />
+            className="group flex items-center gap-2.5 rounded-2xl bg-black border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] transition-shadow hover:shadow-[0_25px_50px_rgba(204,255,0,0.15)]">
+            <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
+              <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
             </div>
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-semibold text-foreground">Venda Aprovada! 🎉</p>
-              </div>
-              <p className="text-xs text-muted-foreground">VitraPay</p>
-              <p className="text-xs text-muted-foreground">
-                Pagamento via {methodLabels[notif.method]}
+            <div className="min-w-0">
+              <p className="text-[11px] md:text-xs font-semibold text-white leading-tight">
+                Uma nova venda foi realizada no {methodLabels[notif.method]}!
               </p>
-              <p className="text-xs text-muted-foreground">
-                Valor: <span className="font-semibold text-foreground">{notif.amount}</span>
+              <p className="text-[10px] md:text-[11px] text-white/60 leading-tight mt-0.5">
+                O valor foi de {notif.amount}
               </p>
             </div>
-            <span className="text-[0.6rem] text-muted-foreground/60 shrink-0 ml-auto pt-0.5">agora</span>
           </motion.div>
         )}
       </AnimatePresence>
