@@ -89,7 +89,6 @@ export default function Taxas() {
   const SERVICE_FEE = 99;            // R$ 0,99 cobrado do comprador em toda venda
   const MONTHLY_INTEREST = 0.016;    // mesmo do Checkout
   const PIX_PLATFORM_FEE = 249;      // R$ 2,49
-  const PIX_GATEWAY_COST = 199;      // R$ 1,99
 
   const selectedPlan = PLANS.find((p) => p.id === cardPlan) || PLANS[0];
   const isD2 = selectedPlan.id === "d2";
@@ -122,26 +121,16 @@ export default function Taxas() {
   const platformFixedFee = selectedPlan.fixed;
   const platformFee = platformPctFee + platformFixedFee;
 
-  // Custo do Asaas (sobre o valor cobrado total, fixo por parcela)
-  const asaasCost =
-    Math.round(cardChargedAmount * ASAAS_PCT) + ASAAS_FIXED_PER_INSTALLMENT * n;
-
   // Quem recebe o quê
   let producerReceives = 0;
   let buyerPays = 0;
-  let platformGross = 0; // receita bruta da plataforma (antes do custo do gateway)
-  let platformNet = 0;   // o que vai para "Disponível p/ saque" da plataforma
 
   if (simMethod === "pix") {
     producerReceives = productAmount - PIX_PLATFORM_FEE;
     buyerPays = productAmount + SERVICE_FEE;
-    platformGross = PIX_PLATFORM_FEE + SERVICE_FEE;
-    platformNet = platformGross - PIX_GATEWAY_COST;
   } else {
     producerReceives = productAmount - platformFee;
     buyerPays = cardChargedAmount;
-    platformGross = platformFee + SERVICE_FEE + buyerInterest;
-    platformNet = platformGross - asaasCost;
   }
 
   const fmt = (v: number) =>
