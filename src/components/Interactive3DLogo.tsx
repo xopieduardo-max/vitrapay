@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import logoIcon from "@/assets/logo-vitrapay-icon.webp";
 
-export function Interactive3DLogo({ className = "" }: { className?: string }) {
+export function Interactive3DLogo({ className = "", src }: { className?: string; src?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0.5);
@@ -50,7 +50,7 @@ export function Interactive3DLogo({ className = "" }: { className?: string }) {
 
         {/* Main logo — crisp, no blur effects */}
         <motion.img
-          src={logoIcon}
+          src={src ?? logoIcon}
           alt="VitraPay Logo 3D"
           className="relative w-full h-full object-contain"
           style={{ transform: "translateZ(30px)", imageRendering: "auto" }}
