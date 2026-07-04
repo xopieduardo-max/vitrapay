@@ -24,6 +24,10 @@ import logoIcon from "@/assets/logo-vitrapay-icon-square.webp";
 import logoCard from "@/assets/logo-vitrapay-card.webp";
 import celularVitra from "@/assets/celular_vitra.webp";
 import ctaVitrapay from "@/assets/cta-vitrapay.png.asset.json";
+import bentoAprovacao from "@/assets/bento-aprovacao.png.asset.json";
+import bentoPix from "@/assets/bento-pix.png.asset.json";
+import bentoSistema from "@/assets/bento-sistema.png.asset.json";
+import bentoLiberacao from "@/assets/bento-liberacao.png.asset.json";
 
 import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
 import iphoneVitrapay from "@/assets/iphone-vitrapay.webp";
