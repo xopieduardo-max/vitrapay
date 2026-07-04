@@ -580,13 +580,13 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[100svh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden pt-16 md:pt-20 lg:pt-8">
+      <section ref={heroRef} className="relative min-h-[85svh] md:min-h-[75svh] lg:min-h-[70vh] flex flex-col justify-center overflow-hidden pt-10 md:pt-8 lg:pt-2">
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
-        <div className="container relative py-2 md:py-4 lg:py-6">
+        <div className="container relative py-0 md:py-1 lg:py-3">
           <div className="relative isolate">
             {/* Yellow wave background — behind first fold (hero grid) */}
             <div className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] z-0">
@@ -609,15 +609,15 @@ export default function Landing() {
               <div className="absolute inset-y-0 right-0 w-24 md:w-40 bg-gradient-to-l from-background to-transparent" />
             </div>
 
-            <div className="relative z-10 grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-8 items-center">
+            <div className="relative z-10 grid lg:grid-cols-2 gap-6 md:gap-10 lg:gap-6 items-center">
             {/* LEFT — Copy + CTA */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-              className="space-y-6 md:space-y-8 text-center lg:text-left order-2 lg:order-1">
+              className="space-y-2 md:space-y-3 text-center lg:text-left order-2 lg:order-1">
 
-              <h1 className="text-[1.8rem] sm:text-[2.7rem] md:text-[3.375rem] lg:text-[3.375rem] xl:text-[3.825rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[1.6rem] sm:text-[2.3rem] md:text-[2.3rem] lg:text-[2.9rem] xl:text-[3.3rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -626,15 +626,15 @@ export default function Landing() {
                 </span>
               </h1>
 
-              <p className="text-[1.2rem] md:text-[1.35rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-[1.1rem] md:text-[1.15rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Aprovação mais alta, saques rápidos e uma operação estável pra quem não pode perder vendas por falhas de sistema.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-2">
-                <Button size="lg" className="group relative h-14 px-8 text-[1.2rem] font-semibold gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.6)]" asChild>
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-1">
+                <Button size="lg" className="group relative h-12 px-7 text-[1.1rem] font-semibold gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.6)]" asChild>
                   <Link to="/auth">
                     Crie sua conta agora!
-                    <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center group-hover:rotate-45 transition-transform">
+                    <div className="h-7 w-7 rounded-full bg-primary-foreground/15 flex items-center justify-center group-hover:rotate-45 transition-transform">
                       <ArrowRight className="h-4 w-4 -rotate-45" />
                     </div>
                   </Link>
@@ -647,14 +647,14 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[450px] sm:min-h-[525px] lg:min-h-[700px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
+              className="relative flex items-center justify-center min-h-[260px] sm:min-h-[300px] md:min-h-[300px] lg:min-h-[480px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[350px] h-[350px] sm:w-[450px] sm:h-[450px] md:w-[525px] md:h-[525px] lg:w-[650px] lg:h-[650px] xl:w-[700px] xl:h-[700px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                className="relative z-10 w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] md:w-[300px] md:h-[300px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
               />
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
