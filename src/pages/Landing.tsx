@@ -334,9 +334,9 @@ const bigStats = [
 
 
 const testimonials = [
-{ name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
-{ name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
-{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 }];
+{ name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", keyword: "Velocidade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
+{ name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", keyword: "Membros", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
+{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", keyword: "Comissões", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 }];
 
 
 const faqItems = [
@@ -1157,34 +1157,33 @@ export default function Landing() {
               Quem usa, <span className="text-gradient-primary">recomenda</span>
             </h2>
           </motion.div>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t, i) =>
             <motion.div
               key={t.name}
               {...stagger}
               transition={{ delay: i * 0.1, duration: 0.5 }}
               whileHover={{ y: -5 }}
-              className="rounded-2xl border border-border/50 bg-background p-7 space-y-4 hover:border-primary/20 transition-all duration-300">
-              
-                <div className="flex gap-0.5">
-                  {[...Array(t.stars)].map((_, j) =>
-                <Star key={j} className="h-4 w-4 fill-primary text-primary" />
-                )}
+              className="rounded-3xl border border-white/[0.06] bg-[#0a0a0a] p-8 md:p-10 space-y-6 hover:border-primary/30 transition-all duration-300 min-h-[340px] flex flex-col">
+                {/* Pill with name */}
+                <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/[0.08] bg-black/40 pl-1.5 pr-4 py-1.5">
+                  <span className="h-6 w-6 rounded-full bg-primary shadow-[0_0_12px_hsl(48_96%_53%/0.6)]" />
+                  <span className="text-sm font-medium text-foreground/90">{t.name}</span>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.text}"</p>
-                <div className="flex items-center gap-3 pt-2">
-                  <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary ring-2 ring-primary/20">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-xs text-primary/70 font-medium">{t.handle}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
+
+                {/* Big keyword quote */}
+                <h3 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground leading-none">
+                  &ldquo;{t.keyword}&rdquo;
+                </h3>
+
+                {/* Description */}
+                <p className="text-[15px] text-muted-foreground leading-relaxed mt-auto">
+                  {t.text}
+                </p>
               </motion.div>
             )}
           </div>
+
         </div>
       </section>
 
