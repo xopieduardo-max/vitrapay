@@ -446,7 +446,7 @@ export default function Checkout() {
     try {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
-      const totalCharged = calculateTotalWithServiceFee(); // total + R$0.99 service fee
+      const totalCharged = calculateTotalWithServiceFee(); // total + R$0.99 service fee (sem juros)
       let utmData: Record<string, string> = {};
       try { utmData = JSON.parse(localStorage.getItem("utm_data") || "{}"); } catch {}
 
@@ -488,6 +488,15 @@ export default function Checkout() {
         const expiryMonth = expiryParts[0] || "";
         const expiryYear = expiryParts[1] ? `20${expiryParts[1]}` : "";
 
+        // Para parcelado: cobra do comprador produto + serviço + juros (1,6% a.m.)
+        const rawInstallments = parseInt(form.installments || "1", 10) || 1;
+        const nInstallments = Math.min(rawInstallments, maxInstallmentsAllowed);
+        const monthlyInterest = 0.016;
+        const buyerInterest = nInstallments > 1
+          ? Math.round(total * monthlyInterest * (nInstallments - 1))
+          : 0;
+        const cardTotalCharged = totalCharged + buyerInterest;
+
         const { data, error } = await supabase.functions.invoke("create-card-payment", {
           body: {
             product_id: id,
@@ -501,8 +510,8 @@ export default function Checkout() {
             card_expiry_month: expiryMonth,
             card_expiry_year: expiryYear,
             card_cvv: form.cardCvv,
-            installments: form.installments,
-            amount: totalCharged,
+            installments: String(nInstallments),
+            amount: cardTotalCharged,
             service_fee: SERVICE_FEE,
             affiliate_ref: affiliateRef,
             coupon_code: appliedCoupon?.code || null,
@@ -831,28 +840,37 @@ export default function Checkout() {
 
   // SERVICE_FEE already declared above
 
-  const installmentOptionsAsc = Array.from({ length: 12 }, (_, i) => {
+  // Limite de parcelas por faixa de preço — sincronizado com backend
+  // (supabase/functions/create-card-payment/index.ts + src/lib/installmentLimits.ts)
+  const maxInstallmentsAllowed = (() => {
+    if (total < 2000) return 3;
+    if (total < 5000) return 6;
+    if (total < 10000) return 10;
+    return 12;
+  })();
+
+  const installmentOptionsAsc = Array.from({ length: maxInstallmentsAllowed }, (_, i) => {
     const n = i + 1;
+    const totalWithService = total + SERVICE_FEE;
     if (n === 1) {
-      return { value: "1", label: `1x de R$ ${(total / 100).toFixed(2)}`, totalWithFees: total };
+      return {
+        value: "1",
+        label: `1x de R$ ${(totalWithService / 100).toFixed(2)}`,
+        totalWithFees: totalWithService,
+      };
     }
-    const fixedFee = SERVICE_FEE;
-    const baseRate = n <= 6 ? 0.0349 : 0.0399;
-    const baseFixed = 49;
+    // Juros de parcelamento repassados ao comprador: 1,6% a.m. sobre o valor do produto
     const monthlyInterest = 0.016;
-    
-    const baseCost = Math.round(total * baseRate + baseFixed);
     const interestCost = Math.round(total * monthlyInterest * (n - 1));
-    const totalWithFees = total + baseCost + interestCost + (fixedFee * n);
+    const totalWithFees = totalWithService + interestCost;
     const installmentValue = (totalWithFees / n / 100).toFixed(2);
-    
     return {
       value: String(n),
       label: `${n}x de R$ ${installmentValue}`,
       totalWithFees,
     };
   });
-  // Reverse so 12x appears first in selector
+  // Reverse so max installments appears first in selector
   const installmentOptions = [...installmentOptionsAsc].reverse();
 
   // Get the max installment for display at top

@@ -486,7 +486,7 @@ export default function AdminUsers() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-xs text-muted-foreground">
-              Taxas padrão: <strong>3,89% + R$ 2,49</strong> por venda com cartão. Deixe em branco para usar o padrão.
+              Taxas padrão: <strong>3,99% + R$ 2,49</strong> por venda com cartão. Deixe em branco para usar o padrão.
             </p>
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Taxa percentual (%)</Label>
@@ -497,7 +497,7 @@ export default function AdminUsers() {
                 max="100"
                 value={feePercentage}
                 onChange={(e) => setFeePercentage(e.target.value)}
-                placeholder="3.89 (padrão)"
+                placeholder="3.99 (padrão)"
                 className="bg-muted/50 border-transparent focus:border-border"
               />
             </div>

@@ -95,11 +95,18 @@ export default function Taxas() {
   const isD2 = selectedPlan.id === "d2";
 
   // Cartão (alinhado a create-card-payment)
-  const n = Math.max(1, Math.min(12, simInstallments));
+  // Limite de parcelas por faixa de preço (sincronizado com backend)
+  const maxInstallmentsAllowed = (() => {
+    if (productAmount < 2000) return 3;
+    if (productAmount < 5000) return 6;
+    if (productAmount < 10000) return 10;
+    return 12;
+  })();
+  const n = Math.max(1, Math.min(maxInstallmentsAllowed, simInstallments));
   const tier = n === 1 ? "x1" : n <= 6 ? "x6" : "x12";
-  const ASAAS_PCT = isD2
-    ? (tier === "x1" ? 0.0414 : tier === "x6" ? 0.0464 : 0.0514)
-    : (tier === "x1" ? 0.0299 : tier === "x6" ? 0.0349 : 0.0399);
+  const ASAAS_BASE_PCT = tier === "x1" ? 0.0299 : tier === "x6" ? 0.0349 : 0.0399;
+  // D+2 soma +1,15% a.m. de antecipação em cima da faixa base
+  const ASAAS_PCT = isD2 ? ASAAS_BASE_PCT + 0.0115 : ASAAS_BASE_PCT;
   const ASAAS_FIXED_PER_INSTALLMENT = 49;
 
   // Juros do parcelamento embutidos no valor cobrado do comprador (apenas n > 1)
@@ -323,22 +330,33 @@ export default function Taxas() {
               Parcelamento
             </Label>
             <div className="grid grid-cols-6 sm:grid-cols-12 gap-1.5">
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => setSimInstallments(opt)}
-                  className={`rounded-lg border py-1.5 text-[0.7rem] font-semibold transition-all ${
-                    simInstallments === opt
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-muted-foreground/30"
-                  }`}
-                >
-                  {opt}x
-                </button>
-              ))}
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((opt) => {
+                const disabled = opt > maxInstallmentsAllowed;
+                return (
+                  <button
+                    key={opt}
+                    disabled={disabled}
+                    onClick={() => !disabled && setSimInstallments(opt)}
+                    title={disabled ? `Produto ≥ R$ ${opt === 4 || opt === 5 || opt === 6 ? "20" : opt <= 10 ? "50" : "100"} para ${opt}x` : undefined}
+                    className={`rounded-lg border py-1.5 text-[0.7rem] font-semibold transition-all ${
+                      disabled
+                        ? "border-border/40 text-muted-foreground/40 cursor-not-allowed line-through"
+                        : simInstallments === opt
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    {opt}x
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-[0.65rem] text-muted-foreground">
+              Este produto pode ser parcelado em até <strong>{maxInstallmentsAllowed}x</strong>. Limite ajustado conforme o valor para manter margem saudável em todas as vendas.
+            </p>
           </div>
         )}
+
 
         {productAmount > 0 && (
           <div className="rounded-xl bg-muted/20 border border-border/50 p-5 space-y-3">
