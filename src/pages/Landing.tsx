@@ -609,15 +609,15 @@ export default function Landing() {
               <div className="absolute inset-y-0 right-0 w-24 md:w-40 bg-gradient-to-l from-background to-transparent" />
             </div>
 
-            <div className="relative z-10 grid lg:grid-cols-2 gap-6 md:gap-10 lg:gap-6 items-center">
+            <div className="relative z-10 grid md:grid-cols-2 gap-6 md:gap-6 lg:gap-6 items-center">
             {/* LEFT — Copy + CTA */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-              className="space-y-2 md:space-y-3 text-center lg:text-left order-2 lg:order-1">
+              className="space-y-3 md:space-y-4 text-center md:text-left order-2 md:order-1">
 
-              <h1 className="text-[1.6rem] sm:text-[2.3rem] md:text-[2.3rem] lg:text-[2.9rem] xl:text-[3.3rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[1.9rem] sm:text-[2.4rem] md:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.5rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -626,12 +626,12 @@ export default function Landing() {
                 </span>
               </h1>
 
-              <p className="text-[1.1rem] md:text-[1.15rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-[1rem] md:text-[1.05rem] text-muted-foreground max-w-xl mx-auto md:mx-0 leading-relaxed">
                 Aprovação mais alta, saques rápidos e uma operação estável pra quem não pode perder vendas por falhas de sistema.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-1">
-                <Button size="lg" className="group relative h-12 px-7 text-[1.1rem] font-semibold gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.6)]" asChild>
+              <div className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4 pt-1">
+                <Button size="lg" className="group relative h-12 px-7 text-[1.05rem] font-semibold gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.6)]" asChild>
                   <Link to="/auth">
                     Crie sua conta agora!
                     <div className="h-7 w-7 rounded-full bg-primary-foreground/15 flex items-center justify-center group-hover:rotate-45 transition-transform">
@@ -647,19 +647,19 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[260px] sm:min-h-[300px] md:min-h-[300px] lg:min-h-[480px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
+              className="relative flex items-center justify-center min-h-[240px] sm:min-h-[280px] md:min-h-[360px] lg:min-h-[480px] order-1 md:order-2 mx-auto w-full max-w-[650px]">
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] md:w-[300px] md:h-[300px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                className="relative z-10 w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] lg:w-[500px] lg:h-[500px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
               />
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
               <div className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:-right-4 xl:-right-8">
-                <div className="w-[230px] sm:w-[240px] lg:w-[280px] scale-95 sm:scale-100 origin-bottom-right lg:origin-right">
+                <div className="w-[220px] sm:w-[240px] lg:w-[280px] scale-95 sm:scale-100 origin-bottom-right lg:origin-right">
                   <FloatingNotifications />
                 </div>
               </div>
