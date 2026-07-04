@@ -336,7 +336,13 @@ const bigStats = [
 const testimonials = [
 { name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", keyword: "Velocidade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
 { name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", keyword: "Membros", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
-{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", keyword: "Comissões", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 }];
+{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", keyword: "Comissões", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 },
+{ name: "Bruno Carvalho", role: "Coprodutor", handle: "@bruno.cv", keyword: "Saques", text: "Os saques são rápidos e previsíveis. Consigo organizar meu caixa sem dor de cabeça.", stars: 5 },
+{ name: "Felipe Rocha", role: "Gestor de Tráfego", handle: "@felipe.rocha", keyword: "Dashboard", text: "O dashboard facilita demais. Tenho clareza total do que está entrando em tempo real.", stars: 5 },
+{ name: "Rafael Mendes", role: "Infoprodutor", handle: "@rafa.mendes", keyword: "Aprovação", text: "Minha taxa de aprovação subiu muito depois que comecei a usar. Hoje eu perco bem menos venda.", stars: 5 },
+{ name: "Matheus Lima", role: "Afiliado", handle: "@matheus.lima", keyword: "Estrutura", text: "Integração simples e funcional. Não precisei mudar minha estrutura pra começar a vender.", stars: 5 },
+{ name: "Camila Prado", role: "Mentora", handle: "@camila.prado", keyword: "Suporte", text: "O suporte responde rápido e resolve. Sinto que tem gente de verdade cuidando do meu negócio.", stars: 5 },
+{ name: "Diego Santos", role: "Infoprodutor", handle: "@diego.s", keyword: "Checkout", text: "O checkout converte demais. Testei em várias plataformas e o da VitraPay foi o melhor.", stars: 5 }];
 
 
 const faqItems = [
