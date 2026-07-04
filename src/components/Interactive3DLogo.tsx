@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import logoIcon from "@/assets/logo-vitrapay-icon.webp";
 
-export function Interactive3DLogo({ className = "", src }: { className?: string; src?: string }) {
+export function Interactive3DLogo({ className = "", src, style }: { className?: string; src?: string; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0.5);
@@ -35,7 +35,7 @@ export function Interactive3DLogo({ className = "", src }: { className?: string;
     <div
       ref={ref}
       className={`relative ${className}`}
-      style={{ perspective: "800px" }}
+      style={{ perspective: "800px", ...style }}
     >
       <motion.div
         style={{
