@@ -89,7 +89,6 @@ export default function Taxas() {
   const SERVICE_FEE = 99;            // R$ 0,99 cobrado do comprador em toda venda
   const MONTHLY_INTEREST = 0.016;    // mesmo do Checkout
   const PIX_PLATFORM_FEE = 249;      // R$ 2,49
-  const PIX_GATEWAY_COST = 199;      // R$ 1,99
 
   const selectedPlan = PLANS.find((p) => p.id === cardPlan) || PLANS[0];
   const isD2 = selectedPlan.id === "d2";
@@ -103,11 +102,6 @@ export default function Taxas() {
     return 12;
   })();
   const n = Math.max(1, Math.min(maxInstallmentsAllowed, simInstallments));
-  const tier = n === 1 ? "x1" : n <= 6 ? "x6" : "x12";
-  const ASAAS_BASE_PCT = tier === "x1" ? 0.0299 : tier === "x6" ? 0.0349 : 0.0399;
-  // D+2 soma +1,15% a.m. de antecipação em cima da faixa base
-  const ASAAS_PCT = isD2 ? ASAAS_BASE_PCT + 0.0115 : ASAAS_BASE_PCT;
-  const ASAAS_FIXED_PER_INSTALLMENT = 49;
 
   // Juros do parcelamento embutidos no valor cobrado do comprador (apenas n > 1)
   const buyerInterest =
@@ -122,26 +116,16 @@ export default function Taxas() {
   const platformFixedFee = selectedPlan.fixed;
   const platformFee = platformPctFee + platformFixedFee;
 
-  // Custo do Asaas (sobre o valor cobrado total, fixo por parcela)
-  const asaasCost =
-    Math.round(cardChargedAmount * ASAAS_PCT) + ASAAS_FIXED_PER_INSTALLMENT * n;
-
   // Quem recebe o quê
   let producerReceives = 0;
   let buyerPays = 0;
-  let platformGross = 0; // receita bruta da plataforma (antes do custo do gateway)
-  let platformNet = 0;   // o que vai para "Disponível p/ saque" da plataforma
 
   if (simMethod === "pix") {
     producerReceives = productAmount - PIX_PLATFORM_FEE;
     buyerPays = productAmount + SERVICE_FEE;
-    platformGross = PIX_PLATFORM_FEE + SERVICE_FEE;
-    platformNet = platformGross - PIX_GATEWAY_COST;
   } else {
     producerReceives = productAmount - platformFee;
     buyerPays = cardChargedAmount;
-    platformGross = platformFee + SERVICE_FEE + buyerInterest;
-    platformNet = platformGross - asaasCost;
   }
 
   const fmt = (v: number) =>
@@ -411,67 +395,6 @@ export default function Taxas() {
               </div>
             )}
 
-            {/* ── Bloco da plataforma: o que vira "Disponível p/ saque" ── */}
-            <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-primary">
-                Receita da plataforma nesta venda
-              </p>
-
-              {simMethod === "pix" ? (
-                <>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Taxa PIX</span>
-                    <span className="font-medium">+ {fmt(PIX_PLATFORM_FEE)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Taxa de serviço (comprador)</span>
-                    <span className="font-medium">+ {fmt(SERVICE_FEE)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Custo do gateway (Asaas)</span>
-                    <span className="font-medium text-destructive">- {fmt(PIX_GATEWAY_COST)}</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      Taxa da plataforma ({selectedPlan.pct}% + R$ 2,49)
-                    </span>
-                    <span className="font-medium">+ {fmt(platformFee)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Taxa de serviço (comprador)</span>
-                    <span className="font-medium">+ {fmt(SERVICE_FEE)}</span>
-                  </div>
-                  {buyerInterest > 0 && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Juros de parcelamento</span>
-                      <span className="font-medium text-pink-500">+ {fmt(buyerInterest)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      Custo Asaas ({(ASAAS_PCT * 100).toFixed(2)}% + R$ 0,49 × {n})
-                    </span>
-                    <span className="font-medium text-destructive">- {fmt(asaasCost)}</span>
-                  </div>
-                </>
-              )}
-
-              <div className="h-px bg-primary/20" />
-
-              <div className="flex justify-between text-sm">
-                <span className="font-semibold">Disponível p/ saque (plataforma)</span>
-                <span
-                  className={`font-bold ${
-                    platformNet >= 0 ? "text-emerald-500" : "text-destructive"
-                  }`}
-                >
-                  {fmt(platformNet)}
-                </span>
-              </div>
-            </div>
 
             {simMethod === "card" && (
               <div className="rounded-xl bg-muted/30 p-3.5 text-xs text-muted-foreground">
