@@ -334,9 +334,9 @@ const bigStats = [
 
 
 const testimonials = [
-{ name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
-{ name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
-{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 }];
+{ name: "Lucas Andrade", role: "Infoprodutor", handle: "@lucas.andrade", keyword: "Velocidade", text: "Migrei pra VitraPay e minhas vendas cresceram 40% no primeiro mês. O checkout é muito mais rápido.", stars: 5 },
+{ name: "Mariana Costa", role: "Produtora de Cursos", handle: "@mari.costa", keyword: "Membros", text: "A área de membros é incrível. Meus alunos adoraram a experiência e minha taxa de conclusão subiu muito.", stars: 5 },
+{ name: "Rafael Souza", role: "Afiliado Top", handle: "@rafa.souza", keyword: "Comissões", text: "Ganho comissões de mais de 15 produtos. O painel financeiro é transparente e o saque cai rápido.", stars: 5 }];
 
 
 const faqItems = [
