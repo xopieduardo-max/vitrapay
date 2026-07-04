@@ -72,6 +72,42 @@ interface Props {
   productId: string;
 }
 
+function SortableRow({
+  id,
+  children,
+}: {
+  id: string;
+  children: (handleProps: {
+    setActivatorNodeRef: (el: HTMLElement | null) => void;
+    attributes: any;
+    listeners: any;
+  }) => React.ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 20 : "auto",
+    position: "relative",
+  };
+  return (
+    <div ref={setNodeRef} style={style}>
+      {children({ setActivatorNodeRef, attributes, listeners })}
+    </div>
+  );
+}
+
+
+
 export default function EditProductContent({ productId }: Props) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
