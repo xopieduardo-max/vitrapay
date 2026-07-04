@@ -24,6 +24,10 @@ import logoIcon from "@/assets/logo-vitrapay-icon-square.webp";
 import logoCard from "@/assets/logo-vitrapay-card.webp";
 import celularVitra from "@/assets/celular_vitra.webp";
 import ctaVitrapay from "@/assets/cta-vitrapay.png.asset.json";
+import bentoAprovacao from "@/assets/bento-aprovacao.png.asset.json";
+import bentoPix from "@/assets/bento-pix.png.asset.json";
+import bentoSistema from "@/assets/bento-sistema.png.asset.json";
+import bentoLiberacao from "@/assets/bento-liberacao.png.asset.json";
 
 import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
 import iphoneVitrapay from "@/assets/iphone-vitrapay.webp";
@@ -709,6 +713,35 @@ export default function Landing() {
                     </p>
                   </div>
                 </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Bento: Diferenciais VitraPay ─── */}
+      <section className="relative bg-[#080808] overflow-hidden border-t border-white/[0.04]">
+        <div className="container py-14 md:py-20 relative z-10">
+          <div className="grid gap-4 md:gap-5 md:grid-cols-12 max-w-6xl mx-auto">
+            {[
+              { img: bentoAprovacao.url, alt: "Aprovação otimizada", span: "md:col-span-7" },
+              { img: bentoPix.url, alt: "Pix automático e integrado", span: "md:col-span-5" },
+              { img: bentoSistema.url, alt: "Sistema estável", span: "md:col-span-7" },
+              { img: bentoLiberacao.url, alt: "Liberação ágil de saldo", span: "md:col-span-5" },
+            ].map((c, i) => (
+              <motion.div
+                key={c.alt}
+                {...stagger}
+                transition={{ delay: i * 0.08, duration: 0.5 }}
+                className={`${c.span} group relative rounded-3xl overflow-hidden border border-white/[0.07] bg-[#0a0a0a] hover:border-primary/40 transition-all duration-500`}
+              >
+                <img
+                  src={c.img}
+                  alt={c.alt}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               </motion.div>
             ))}
           </div>
