@@ -640,7 +640,6 @@ export default function Landing() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
-                variant="icon"
                 className="relative z-10 w-[280px] h-[280px] sm:w-[380px] sm:h-[380px] lg:w-[520px] lg:h-[520px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_60px_hsl(var(--primary)/0.6)]"
               />
 
