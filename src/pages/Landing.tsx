@@ -1372,18 +1372,14 @@ export default function Landing() {
             aria-label="Crie sua conta agora"
             className="block relative group"
           >
-            <img
-              src={ctaVitrapay.url}
-              alt="Infraestrutura de pagamento feita para quem leva o digital a sério — VitraPay"
-              className="w-full h-auto block"
-              loading="lazy"
-            />
-            {/* Clickable hotspot over the "Crie sua conta agora!" button in the image */}
-            <span
-              aria-hidden="true"
-              className="absolute rounded-full transition-all duration-200 group-hover:scale-[1.03] group-active:scale-[0.98]"
-              style={{ left: "6.5%", top: "82%", width: "26%", height: "10%" }}
-            />
+            <div className="w-full aspect-[4/5] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9]">
+              <img
+                src={ctaVitrapay.url}
+                alt="Infraestrutura de pagamento feita para quem leva o digital a sério — VitraPay"
+                className="w-full h-full object-cover object-center block"
+                loading="lazy"
+              />
+            </div>
           </Link>
         </motion.div>
       </section>
