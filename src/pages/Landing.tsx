@@ -1155,43 +1155,8 @@ export default function Landing() {
       </section>
 
       {/* ─── Testimonials ─── */}
-      <section id="testimonials" className="bg-card/30 border-y border-border/50">
-        <div className="container py-20 md:py-28">
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="text-center space-y-4 mb-16">
-            <span className="inline-flex items-center gap-0 text-xs font-medium uppercase tracking-widest text-primary"><span className="w-1 h-5 rounded-full bg-primary mr-3" />Depoimentos</span>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Quem usa, <span className="text-gradient-primary">recomenda</span>
-            </h2>
-          </motion.div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.map((t, i) =>
-            <motion.div
-              key={t.name}
-              {...stagger}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
-              whileHover={{ y: -5 }}
-              className="rounded-3xl border border-white/[0.06] bg-[#0a0a0a] p-8 md:p-10 space-y-6 hover:border-primary/30 transition-all duration-300 min-h-[340px] flex flex-col">
-                {/* Pill with name */}
-                <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/[0.08] bg-black/40 pl-1.5 pr-4 py-1.5">
-                  <span className="h-6 w-6 rounded-full bg-primary shadow-[0_0_12px_hsl(48_96%_53%/0.6)]" />
-                  <span className="text-sm font-medium text-foreground/90">{t.name}</span>
-                </div>
+      <TestimonialsCarousel testimonials={testimonials} />
 
-                {/* Big keyword quote */}
-                <h3 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground leading-none">
-                  &ldquo;{t.keyword}&rdquo;
-                </h3>
-
-                {/* Description */}
-                <p className="text-[15px] text-muted-foreground leading-relaxed mt-auto">
-                  {t.text}
-                </p>
-              </motion.div>
-            )}
-          </div>
-
-        </div>
-      </section>
 
       {/* ─── Placas de Premiação ─── */}
       <section className="bg-white py-20 md:py-28">
