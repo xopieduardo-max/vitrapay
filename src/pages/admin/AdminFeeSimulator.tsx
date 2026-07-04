@@ -64,8 +64,17 @@ export default function AdminFeeSimulator() {
   // VitraPay editable state (from DB or defaults)
   const [vpState, setVpState] = useState<Record<string, { pct: string; fixed: string }>>({});
   const getVp = (m: string) => ({
-    pct: vpState[m]?.pct ?? String(dbFees ? (m === "pix" ? dbFees.pix_percentage : m === "card" ? dbFees.card_percentage : dbFees.boleto_percentage) : VP_DEFAULTS[m].pct),
-    fixed: vpState[m]?.fixed ?? String(dbFees ? (m === "pix" ? dbFees.pix_fixed : m === "card" ? dbFees.card_fixed : dbFees.boleto_fixed) / 100 : VP_DEFAULTS[m].fixed / 100),
+    pct: vpState[m]?.pct ?? String(dbFees
+      ? (m === "pix" ? dbFees.pix_percentage
+        : m === "card" ? dbFees.card_percentage
+        : m === "card_d2" ? dbFees.card_percentage_d2
+        : dbFees.boleto_percentage)
+      : (m === "card_d2" ? 4.99 : VP_DEFAULTS[m].pct)),
+    fixed: vpState[m]?.fixed ?? String((dbFees
+      ? (m === "pix" ? dbFees.pix_fixed
+        : m === "card" || m === "card_d2" ? dbFees.card_fixed
+        : dbFees.boleto_fixed)
+      : (m === "card_d2" ? VP_DEFAULTS.card.fixed : VP_DEFAULTS[m].fixed)) / 100),
   });
   const setVp = (m: string, field: "pct" | "fixed", v: string) =>
     setVpState((prev) => ({ ...prev, [m]: { ...getVp(m), [field]: v } }));
@@ -89,17 +98,30 @@ export default function AdminFeeSimulator() {
 
   const asaasEffectivePct = method === "card" ? calcAsaasEffectivePct(installments, antecipacao) : 0;
 
-  // Taxa VitraPay cobrada do produtor (sobre o valor do produto)
+  // Taxa VitraPay cobrada do produtor (sobre o valor do produto).
+  // Cartão D+2 usa a taxa própria (card_percentage_d2), igual à produção
+  // (create-card-payment/index.ts busca platform_fees.card_percentage_d2 quando isD2).
   const vpCfg = getVp(method);
   const vpPctVal = parseFloat(vpCfg.pct) || 0;
+  const vpPctEffective = method === "card" && antecipacao === "D2"
+    ? parseFloat(getVp("card_d2").pct) || 0
+    : vpPctVal;
   const vpFixedVal = Math.round((parseFloat(vpCfg.fixed) || 0) * 100);
-  const feePlatform = computePlatformFee(amount, vpPctVal, vpFixedVal);
+  const feePlatform = computePlatformFee(amount, vpPctEffective, vpFixedVal);
 
-  // Serviço R$0,99 pago pelo comprador (líquido, descontando gateway)
+  // Serviço R$0,99 pago pelo comprador (líquido, descontando gateway) — só informativo na UI.
   const serviceFeeNet = computeServiceFeeNet(method, installments, antecipacao);
 
+  // Juro do parcelamento: cobrado do comprador, mas NUNCA repassado ao produtor
+  // (ele recebe amount − feePlatform) — por isso é receita real da plataforma,
+  // igual ao buyerInterest em create-card-payment/index.ts.
+  const buyerInterest = Math.max(0, buyerTotal - amount - SERVICE_FEE);
+
   const producerReceives = amount - feePlatform;
-  const platformProfit = feePlatform + serviceFeeNet - asaasCost;
+  // asaasCost já é calculado sobre buyerTotal (produto + juro + taxa de serviço), então
+  // o corte % do Asaas sobre a taxa de serviço já está embutido ali — por isso soma-se
+  // SERVICE_FEE bruto aqui (não serviceFeeNet, que descontaria o corte do Asaas 2x).
+  const platformProfit = feePlatform + SERVICE_FEE + buyerInterest - asaasCost;
   const profitMarginPct = amount > 0 ? (platformProfit / amount) * 100 : 0;
 
   // Check if values changed from DB
@@ -108,18 +130,20 @@ export default function AdminFeeSimulator() {
     getVp("pix").fixed !== String(dbFees.pix_fixed / 100) ||
     getVp("card").pct !== String(dbFees.card_percentage) ||
     getVp("card").fixed !== String(dbFees.card_fixed / 100) ||
+    getVp("card_d2").pct !== String(dbFees.card_percentage_d2) ||
     getVp("boleto").pct !== String(dbFees.boleto_percentage) ||
     getVp("boleto").fixed !== String(dbFees.boleto_fixed / 100)
   );
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const vp = { pix: getVp("pix"), card: getVp("card"), boleto: getVp("boleto") };
+      const vp = { pix: getVp("pix"), card: getVp("card"), cardD2: getVp("card_d2"), boleto: getVp("boleto") };
       const { error } = await supabase.from("platform_fees").update({
         pix_percentage: parseFloat(vp.pix.pct) || 0,
         pix_fixed: Math.round((parseFloat(vp.pix.fixed) || 0) * 100),
         card_percentage: parseFloat(vp.card.pct) || 0,
         card_fixed: Math.round((parseFloat(vp.card.fixed) || 0) * 100),
+        card_percentage_d2: parseFloat(vp.cardD2.pct) || 0,
         boleto_percentage: parseFloat(vp.boleto.pct) || 0,
         boleto_fixed: Math.round((parseFloat(vp.boleto.fixed) || 0) * 100),
         updated_at: new Date().toISOString(),
@@ -140,9 +164,9 @@ export default function AdminFeeSimulator() {
     return Array.from({ length: maxInst }, (_, i) => i + 1).map((n) => {
       const bTotal = computeBuyerTotal(amount, "card", n);
       const aCost = computeAsaasCost(bTotal, "card", n, antecipacao);
-      const svcNet = computeServiceFeeNet("card", n, antecipacao);
+      const interest = Math.max(0, bTotal - amount - SERVICE_FEE);
       const pct = calcAsaasEffectivePct(n, antecipacao);
-      const profit = feePlatform + svcNet - aCost;
+      const profit = feePlatform + SERVICE_FEE + interest - aCost;
       return { n, bTotal, aCost, profit, pct };
     });
   }, [method, isValid, maxInst, amount, feePlatform, antecipacao]);
@@ -313,7 +337,7 @@ export default function AdminFeeSimulator() {
             const asaasPctCost = method === "card" ? Math.max(0, asaasCost - asaasFixedTotal) : 0;
             const d2Extra = method === "card" && antecipacao === "D2"
               ? Math.round(buyerTotal * (ASAAS_D2_ADD_PCT / 100)) : 0;
-            const revenue = feePlatform + serviceFeeNet;
+            const revenue = feePlatform + SERVICE_FEE + buyerInterest;
             const shortfall = asaasCost - revenue;
 
             const culprits: { label: string; detail: string; weight: number }[] = [];
@@ -369,7 +393,8 @@ export default function AdminFeeSimulator() {
                     <p className="text-[10px] uppercase text-muted-foreground font-semibold">Receita plataforma</p>
                     <p className="text-sm font-bold text-emerald-500 mt-1">+ {fmt(revenue)}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {fmt(feePlatform)} taxa + {fmt(serviceFeeNet)} serviço
+                      {fmt(feePlatform)} taxa + {fmt(SERVICE_FEE)} serviço
+                      {buyerInterest > 0 && ` + ${fmt(buyerInterest)} juro`}
                     </p>
                   </div>
                   <div className="rounded-md bg-background/60 border border-border p-2.5">
@@ -443,7 +468,7 @@ export default function AdminFeeSimulator() {
               {method === "card" && installments > 1 && (
                 <Line
                   label={`Juros parcelado (${BUYER_INSTALLMENT_INTEREST_MONTHLY}% × ${installments - 1}m)`}
-                  value={fmt(buyerTotal - amount - SERVICE_FEE)}
+                  value={fmt(buyerInterest)}
                 />
               )}
               <Line label="Taxa de serviço" value={fmt(SERVICE_FEE)} />
@@ -465,7 +490,7 @@ export default function AdminFeeSimulator() {
             <div className="space-y-1 text-xs">
               <Line label="Valor bruto" value={fmt(amount)} />
               <Line
-                label={`Taxa VitraPay (${vpPctVal}% + ${fmt(vpFixedVal)})`}
+                label={`Taxa VitraPay (${vpPctEffective}% + ${fmt(vpFixedVal)})`}
                 value={`- ${fmt(feePlatform)}`}
                 negative
               />
@@ -489,7 +514,10 @@ export default function AdminFeeSimulator() {
             </p>
             <div className="space-y-1 text-xs">
               <Line label="Taxa cobrada do produtor" value={`+ ${fmt(feePlatform)}`} />
-              <Line label="Serviço líquido" value={`+ ${fmt(serviceFeeNet)}`} />
+              <Line label="Taxa de serviço" value={`+ ${fmt(SERVICE_FEE)}`} />
+              {buyerInterest > 0 && (
+                <Line label="Juro do parcelamento (retido)" value={`+ ${fmt(buyerInterest)}`} />
+              )}
               <Line
                 label={method === "card"
                   ? `Custo Asaas (${asaasEffectivePct.toFixed(2)}% + ${fmt(ASAAS_CARD_FIXED_CENTS)}×${installments})`
@@ -640,7 +668,8 @@ export default function AdminFeeSimulator() {
           <div className="px-5 py-3 border-t border-border bg-muted/20 text-[11px] text-muted-foreground space-y-0.5">
             <p>• Asaas cobra R$ 0,49 fixo <b>por parcela</b> — quanto mais parcelas, maior o custo fixo total.</p>
             <p>• Faixas Asaas: 1x = 2,99% · 2-6x = 3,49% · 7-12x = 3,99% (+ 1,15% se antecipado D+2).</p>
-            <p>• Comprador paga {BUYER_INSTALLMENT_INTEREST_MONTHLY}% a.m. de juros a partir de 2x — repassado direto (não é lucro).</p>
+            <p>• Comprador paga {BUYER_INSTALLMENT_INTEREST_MONTHLY}% a.m. de juros a partir de 2x — não é repassado ao produtor, fica retido como receita da plataforma.</p>
+            <p>• Antecipação D+2 soma +1pp na taxa VitraPay do cartão (ex: 3,99% → 4,99%) pra compensar o custo extra do Asaas.</p>
           </div>
         </div>
       )}
@@ -686,11 +715,29 @@ export default function AdminFeeSimulator() {
         {METHODS.map((m) => {
           const cfg = getVp(m.id);
           return (
-            <FeeMethodRow key={m.id} icon={m.icon} label={m.label}
-              pct={cfg.pct} fixed={cfg.fixed}
-              onPctChange={(v) => setVp(m.id, "pct", v)}
-              onFixedChange={(v) => setVp(m.id, "fixed", v)}
-            />
+            <div key={m.id}>
+              <FeeMethodRow icon={m.icon} label={m.label}
+                pct={cfg.pct} fixed={cfg.fixed}
+                onPctChange={(v) => setVp(m.id, "pct", v)}
+                onFixedChange={(v) => setVp(m.id, "fixed", v)}
+              />
+              {m.id === "card" && (
+                <div className="flex items-center gap-4 p-3 mt-2 rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-2 min-w-[120px]">
+                    <Zap className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Cartão D+2</span>
+                  </div>
+                  <div className="flex-1 max-w-[9.5rem] space-y-1">
+                    <Label className="text-[0.65rem] text-muted-foreground">% sobre venda (antecipado)</Label>
+                    <Input type="number" step="0.01" min="0" value={getVp("card_d2").pct}
+                      onChange={(e) => setVp("card_d2", "pct", e.target.value)} className="h-8 text-xs" />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Usa o mesmo fixo do cartão D+30 ({fmt(Math.round((parseFloat(getVp("card").fixed) || 0) * 100))})
+                  </p>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>

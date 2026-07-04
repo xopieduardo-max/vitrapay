@@ -200,20 +200,18 @@ describe("computeScenario — lucro/prejuízo", () => {
     expect(r.producerReceives).toBe(10000 - r.platformFee);
   });
 
-  it("R$ 100 cartão 12x D+30 com defaults atuais → PREJUÍZO (alerta real)", () => {
-    // Regra de negócio: taxa VitraPay 3,99% + R$ 2,49 não cobre 12x na venda de R$ 100.
-    // Custo Asaas ≈ R$ 10,61 vs receita ≈ R$ 7,43. Este teste guarda o achado.
+  it("R$ 100 cartão 12x D+30 com defaults atuais → LUCRO (juro do parcelamento cobre o custo Asaas)", () => {
+    // O juro de parcelamento cobrado do comprador (1,6% a.m.) NUNCA é repassado ao
+    // produtor — fica retido pela plataforma, então é receita real (igual ao
+    // buyerInterest somado ao netProfit em create-card-payment/index.ts). Por isso
+    // 12x D+30 é lucrativo: custo Asaas ≈ R$ 10,61, mas receita total (taxa + serviço
+    // + juro retido) ≈ R$ 25,07.
     const r = computeScenario({
       amountCents: 10000, method: "card", installments: 12, antecipacao: "D30",
       vpPct: CARD_VP.pct, vpFixedCents: CARD_VP.fixed,
     });
-    expect(r.isLoss).toBe(true);
-    // Para virar lucro em 12x, precisaria taxa significativamente maior (ex: 9% + R$ 2,49)
-    const rHigher = computeScenario({
-      amountCents: 10000, method: "card", installments: 12, antecipacao: "D30",
-      vpPct: 9, vpFixedCents: 249,
-    });
-    expect(rHigher.isProfit).toBe(true);
+    expect(r.isProfit).toBe(true);
+    expect(r.buyerInterest).toBeGreaterThan(0);
   });
 
   it("R$ 100 cartão 12x D+2 → margem menor que D+30", () => {
@@ -238,11 +236,15 @@ describe("computeScenario — lucro/prejuízo", () => {
     expect(r.isProfit).toBe(true);
   });
 
-  it("Taxa VitraPay insuficiente → prejuízo detectado", () => {
+  it("Taxa VitraPay insuficiente → prejuízo detectado (sem juro de parcelamento pra cobrir o custo)", () => {
+    // 1x não gera juro repassado, então sem taxa VitraPay nem serviço suficiente
+    // pra cobrir o custo Asaas, o cenário é mesmo prejuízo — diferente de 12x,
+    // onde o juro retido cobre a diferença.
     const r = computeScenario({
-      amountCents: 10000, method: "card", installments: 12, antecipacao: "D2",
+      amountCents: 10000, method: "card", installments: 1, antecipacao: "D2",
       vpPct: 0, vpFixedCents: 0, // sem taxa
     });
+    expect(r.buyerInterest).toBe(0);
     expect(r.isLoss).toBe(true);
     expect(r.platformProfit).toBeLessThan(0);
   });
@@ -255,7 +257,7 @@ describe("computeScenario — lucro/prejuízo", () => {
       vpPct: CARD_VP.pct, vpFixedCents: CARD_VP.fixed,
     });
     // Sanidade: soma dos componentes
-    expect(r.platformProfit).toBe(r.platformFee + r.serviceFeeNet - r.asaasCost);
+    expect(r.platformProfit).toBe(r.platformFee + SERVICE_FEE_CENTS + r.buyerInterest - r.asaasCost);
     expect(r.buyerTotal).toBe(computeBuyerTotal(amount, "card", n));
   });
 
@@ -268,7 +270,7 @@ describe("computeScenario — lucro/prejuízo", () => {
             amountCents: amount, method: "card", installments: n, antecipacao: antec,
             vpPct: CARD_VP.pct, vpFixedCents: CARD_VP.fixed,
           });
-          expect(r.platformProfit).toBe(r.platformFee + r.serviceFeeNet - r.asaasCost);
+          expect(r.platformProfit).toBe(r.platformFee + SERVICE_FEE_CENTS + r.buyerInterest - r.asaasCost);
           expect(r.producerReceives).toBe(amount - r.platformFee);
         }
       }

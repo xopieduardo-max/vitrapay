@@ -363,9 +363,12 @@ Deno.serve(async (req) => {
       const ASAAS_PCT = isD2 ? ASAAS_BASE_PCT + 0.0115 : ASAAS_BASE_PCT;
       const ASAAS_FIXED_PER_INSTALLMENT = 49; // R$ 0,49 per installment
 
-      // Platform fee on the REAL product price (not the inflated amount)
-      const PLATFORM_PCT = isD2 ? 0.0499 : 0.0399;
-      const PLATFORM_FIXED = 249;
+      // Taxa VitraPay (cobrada do produtor) vem da tabela platform_fees, editável
+      // pelo painel Admin. Fallback = valores hoje em produção, caso a leitura falhe.
+      const { data: platformFees } = await supabase
+        .from("platform_fees").select("card_percentage, card_percentage_d2, card_fixed").eq("id", 1).single();
+      const PLATFORM_PCT = (isD2 ? platformFees?.card_percentage_d2 : platformFees?.card_percentage) ?? (isD2 ? 4.99 : 3.99);
+      const PLATFORM_FIXED = platformFees?.card_fixed ?? 249;
       const holdDays = isD2 ? 2 : 30;
 
       // Asaas charges on the FULL amount (product + service fee + interest), per installment fixed
@@ -380,7 +383,7 @@ Deno.serve(async (req) => {
         const custom = Math.round(productAmount * producerProfile.custom_fee_percentage / 100 + PLATFORM_FIXED);
         platformFee = Math.max(custom, asaasCost);
       } else {
-        platformFee = Math.round(productAmount * PLATFORM_PCT + PLATFORM_FIXED);
+        platformFee = Math.round(productAmount * (PLATFORM_PCT / 100) + PLATFORM_FIXED);
       }
 
       const netProfit = platformFee + SERVICE_FEE + buyerInterest - asaasCost;

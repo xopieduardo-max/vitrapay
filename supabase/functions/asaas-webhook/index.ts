@@ -473,8 +473,10 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Fee: same platform PIX fee
-      const FEE_PIX_PLATFORM = 249;
+      // Fee: same platform PIX fee (taxa fixa vem da tabela platform_fees)
+      const { data: avulsoPlatformFees } = await supabase
+        .from("platform_fees").select("pix_fixed").eq("id", 1).single();
+      const FEE_PIX_PLATFORM = avulsoPlatformFees?.pix_fixed ?? 249;
       const SERVICE_FEE = 99;
       const producerNet = Math.max(0, pending.amount - FEE_PIX_PLATFORM - SERVICE_FEE);
       console.log(`Avulso fees: amount=${pending.amount}, platform=${FEE_PIX_PLATFORM}, service=${SERVICE_FEE}, net=${producerNet}`);
@@ -572,16 +574,21 @@ Deno.serve(async (req) => {
       if (aff) affiliateUserId = aff.user_id;
     }
 
-    // ── Fee calculation: PIX (fixed fees) ──
-    // Platform charges producer: R$ 2,49 (249 centavos)
-    // Asaas cost: R$ 1,99 (199 centavos)
+    // ── Fee calculation: PIX ──
+    // Asaas cost: R$ 1,99 (199 centavos) — taxa fixa real do gateway, não é configurável.
     // Service fee: R$ 0,99 (99 centavos) - charged to buyer, goes to platform
-    const FEE_PIX_PLATFORM = 249; // R$ 2.49
     const FEE_PIX_ASAAS = 199;    // R$ 1.99
     const SERVICE_FEE = 99;        // R$ 0.99
 
     // The amount stored in pending_payments includes the service fee
     const productAmount = pending.amount - SERVICE_FEE;
+
+    // Taxa VitraPay (cobrada do produtor) vem da tabela platform_fees, editável
+    // pelo painel Admin. Fallback = valor hoje em produção, caso a leitura falhe.
+    const { data: platformFees } = await supabase
+      .from("platform_fees").select("pix_percentage, pix_fixed").eq("id", 1).single();
+    const FEE_PIX_PLATFORM = Math.round(productAmount * ((platformFees?.pix_percentage ?? 0) / 100))
+      + (platformFees?.pix_fixed ?? 249);
 
     // Check producer custom overrides
     const { data: producerProfile } = await supabase
@@ -592,9 +599,12 @@ Deno.serve(async (req) => {
 
     let pixPlatformFee = FEE_PIX_PLATFORM;
     if (producerProfile?.custom_fee_fixed != null) {
-      pixPlatformFee = producerProfile.custom_fee_fixed;
+      // Piso: taxa customizada nunca pode ficar abaixo do custo real do gateway,
+      // senão a plataforma toma prejuízo em cada venda (mesma regra do cartão).
+      pixPlatformFee = Math.max(producerProfile.custom_fee_fixed, FEE_PIX_ASAAS);
     } else if (producerProfile?.custom_fee_percentage != null) {
-      pixPlatformFee = Math.round(productAmount * producerProfile.custom_fee_percentage / 100);
+      const custom = Math.round(productAmount * producerProfile.custom_fee_percentage / 100);
+      pixPlatformFee = Math.max(custom, FEE_PIX_ASAAS);
     }
 
     console.log(`PIX fees: platform=${pixPlatformFee}, asaas=${FEE_PIX_ASAAS}, serviceFee=${SERVICE_FEE}, profit=${pixPlatformFee - FEE_PIX_ASAAS + SERVICE_FEE}`);

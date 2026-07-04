@@ -100,6 +100,7 @@ export interface ScenarioResult {
   buyerTotal: number;
   platformFee: number;
   serviceFeeNet: number;
+  buyerInterest: number;
   asaasCost: number;
   producerReceives: number;
   platformProfit: number;
@@ -108,21 +109,36 @@ export interface ScenarioResult {
   isLoss: boolean;
 }
 
-/** Calcula o cenário completo (produtor, plataforma, Asaas). */
+/**
+ * Calcula o cenário completo (produtor, plataforma, Asaas).
+ *
+ * Lucro da plataforma = platformFee + SERVICE_FEE (bruto) + buyerInterest − asaasCost.
+ *
+ * O juro do parcelamento (buyerInterest) é cobrado do comprador mas NUNCA é repassado
+ * ao produtor (ele recebe só amountCents − platformFee) — por isso é receita real da
+ * plataforma, igual ao que acontece em `create-card-payment/index.ts` (buyerInterest
+ * entra direto no netProfit lá). asaasCost já é calculado sobre buyerTotal (produto +
+ * juro + taxa de serviço), então o corte percentual do Asaas sobre a taxa de serviço
+ * já está embutido ali — por isso soma-se SERVICE_FEE bruto aqui, não serviceFeeNet
+ * (senão o corte do Asaas seria descontado duas vezes). serviceFeeNet continua
+ * exportado só como informação de breakdown na UI.
+ */
 export function computeScenario(input: ScenarioInput): ScenarioResult {
   const { amountCents, method, installments, antecipacao, vpPct, vpFixedCents } = input;
   const buyerTotal = computeBuyerTotal(amountCents, method, installments);
   const asaasCost = computeAsaasCost(buyerTotal, method, installments, antecipacao);
   const platformFee = computePlatformFee(amountCents, vpPct, vpFixedCents);
   const serviceFeeNet = computeServiceFeeNet(method, installments, antecipacao);
+  const buyerInterest = Math.max(0, buyerTotal - amountCents - SERVICE_FEE_CENTS);
   const producerReceives = amountCents - platformFee;
-  const platformProfit = platformFee + serviceFeeNet - asaasCost;
+  const platformProfit = platformFee + SERVICE_FEE_CENTS + buyerInterest - asaasCost;
   const profitMarginPct = amountCents > 0 ? (platformProfit / amountCents) * 100 : 0;
   return {
     amountCents,
     buyerTotal,
     platformFee,
     serviceFeeNet,
+    buyerInterest,
     asaasCost,
     producerReceives,
     platformProfit,
