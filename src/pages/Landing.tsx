@@ -581,7 +581,11 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden pt-20 md:pt-16">
+      <section
+        ref={heroRef}
+        className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden pt-20 md:pt-16"
+        style={{ paddingTop: "var(--hero-pt, undefined)" as any }}
+      >
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
@@ -610,15 +614,23 @@ export default function Landing() {
               <div className="absolute inset-y-0 right-0 w-24 md:w-40 bg-gradient-to-l from-background to-transparent" />
             </div>
 
-            <div className="relative z-10 grid md:grid-cols-2 gap-6 md:gap-6 lg:gap-6 items-center">
+            <div
+              className="relative z-10 grid md:grid-cols-2 gap-6 md:gap-6 lg:gap-6 items-center"
+              style={{ gap: "var(--hero-gap, undefined)" as any }}
+            >
             {/* LEFT — Copy + CTA */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-              className="space-y-3 md:space-y-4 text-center md:text-left order-2 md:order-1">
+              className="space-y-3 md:space-y-4 text-center md:text-left order-2 md:order-1"
+              style={{ transform: "translateY(var(--hero-left-y, 0px))" }}
+            >
 
-              <h1 className="text-[1.9rem] sm:text-[2.4rem] md:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.5rem] font-bold tracking-tight leading-[1.05]">
+              <h1
+                className="text-[1.9rem] sm:text-[2.4rem] md:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.5rem] font-bold tracking-tight leading-[1.05]"
+                style={{ fontSize: "var(--hero-title, undefined)" as any }}
+              >
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -648,7 +660,9 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[240px] sm:min-h-[280px] md:min-h-[360px] lg:min-h-[480px] order-1 md:order-2 mx-auto w-full max-w-[650px]">
+              className="relative flex items-center justify-center min-h-[240px] sm:min-h-[280px] md:min-h-[360px] lg:min-h-[480px] order-1 md:order-2 mx-auto w-full max-w-[650px]"
+              style={{ transform: "translateY(var(--hero-right-y, 0px))" }}
+            >
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
@@ -656,15 +670,20 @@ export default function Landing() {
               <Interactive3DLogo
                 src={neonKHero.url}
                 className="relative z-10 w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] lg:w-[500px] lg:h-[500px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                style={{ width: "var(--hero-logo, undefined)" as any, height: "var(--hero-logo, undefined)" as any }}
               />
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
-              <div className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:-right-4 xl:-right-8">
+              <div
+                className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:-right-4 xl:-right-8"
+                style={{ transform: "translate(var(--hero-notif-x, 0px), calc(var(--hero-notif-y, 0px)))" }}
+              >
                 <div className="w-[220px] sm:w-[240px] lg:w-[280px] scale-95 sm:scale-100 origin-bottom-right lg:origin-right">
                   <FloatingNotifications />
                 </div>
               </div>
             </motion.div>
+
           </div>
           </div>
         </div>
