@@ -580,7 +580,7 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[95svh] lg:min-h-[80vh] flex flex-col justify-center overflow-hidden pt-12 md:pt-16 lg:pt-4">
+      <section ref={heroRef} className="relative min-h-[85svh] lg:min-h-[70vh] flex flex-col justify-center overflow-hidden pt-10 md:pt-14 lg:pt-2">
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
@@ -609,7 +609,7 @@ export default function Landing() {
               <div className="absolute inset-y-0 right-0 w-24 md:w-40 bg-gradient-to-l from-background to-transparent" />
             </div>
 
-            <div className="relative z-10 grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-8 items-center">
+            <div className="relative z-10 grid lg:grid-cols-2 gap-6 md:gap-10 lg:gap-6 items-center">
             {/* LEFT — Copy + CTA */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
