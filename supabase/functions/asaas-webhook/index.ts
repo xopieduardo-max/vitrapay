@@ -734,7 +734,9 @@ Deno.serve(async (req) => {
         supabase,
         pending.buyer_email,
         pending.buyer_name || "Cliente",
-        pending.buyer_cpf || null
+        pending.buyer_cpf || null,
+        pending.buyer_phone || null,
+        (product as any)?.checkout_fields || null
       );
       tempPassword = accountResult.tempPassword;
 

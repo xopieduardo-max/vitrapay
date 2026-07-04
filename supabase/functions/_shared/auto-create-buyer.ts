@@ -1,19 +1,48 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+export interface CheckoutFieldsFlags {
+  cpf?: boolean;
+  phone?: boolean;
+  [key: string]: unknown;
+}
+
 /**
  * Auto-creates a buyer account if one doesn't exist for the given email.
- * Uses the first 6 digits of the buyer's CPF as the password.
- * Returns { userId, isNew } — if isNew, the password is the CPF-based one.
+ *
+ * Password priority (based on the checkout fields the producer left enabled):
+ *   1. CPF enabled  → first 6 digits of the CPF
+ *   2. Phone enabled → first 6 digits of the phone (after stripping non-digits and BR DDI 55)
+ *   3. Neither     → random 6-digit numeric password (also returned so it can be emailed)
+ *
+ * Returns:
+ *   - userId: the auth user id (existing or new)
+ *   - tempPassword: a hint for the purchase email:
+ *        "cpf"          → "use os 6 primeiros dígitos do seu CPF"
+ *        "phone"        → "use os 6 primeiros dígitos do seu telefone"
+ *        "<6-digits>"   → the actual random password to show the buyer
+ *        null           → account already existed, no message to show
+ *   - isNew: whether we just created the account
  */
 export async function autoCreateBuyerAccount(
   supabase: ReturnType<typeof createClient>,
   buyerEmail: string,
   buyerName: string,
-  buyerCpf: string | null = null
+  buyerCpf: string | null = null,
+  buyerPhone: string | null = null,
+  checkoutFields: CheckoutFieldsFlags | null = null
 ): Promise<{ userId: string | null; tempPassword: string | null; isNew: boolean }> {
   try {
-    // Build password from CPF (first 6 digits) or fallback to random
-    const password = buildCpfPassword(buyerCpf);
+    // Default to legacy behaviour (both enabled) when the caller doesn't pass flags,
+    // so any code path that hasn't been updated yet still keeps the CPF-first logic.
+    const cpfEnabled = checkoutFields ? checkoutFields.cpf !== false : true;
+    const phoneEnabled = checkoutFields ? checkoutFields.phone !== false : true;
+
+    const { password, source } = buildInitialPassword({
+      cpf: buyerCpf,
+      phone: buyerPhone,
+      cpfEnabled,
+      phoneEnabled,
+    });
 
     const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
       email: buyerEmail,
@@ -32,7 +61,6 @@ export async function autoCreateBuyerAccount(
       ) {
         console.log("Buyer account already exists for:", buyerEmail);
 
-        // Try to find existing user_id from product_access
         const { data: existingAccess } = await supabase
           .from("product_access")
           .select("user_id")
@@ -53,24 +81,29 @@ export async function autoCreateBuyerAccount(
     }
 
     if (newUser?.user) {
-      console.log("Auto-created buyer account:", newUser.user.id, buyerEmail);
+      console.log("Auto-created buyer account:", newUser.user.id, buyerEmail, "(source:", source, ")");
 
-      // Link all existing product_access rows for this email
       await supabase
         .from("product_access")
         .update({ user_id: newUser.user.id })
         .eq("buyer_email", buyerEmail)
         .is("user_id", null);
 
-      // Mark account as needing password change on first login
       await supabase
         .from("profiles")
         .update({ must_change_password: true })
         .eq("user_id", newUser.user.id);
 
+      // Signal for the purchase email:
+      //   cpf   → hint text
+      //   phone → hint text
+      //   random → show the actual password
+      const tempPassword =
+        source === "cpf" ? "cpf" : source === "phone" ? "phone" : password;
+
       return {
         userId: newUser.user.id,
-        tempPassword: buyerCpf ? "cpf" : password, // signal that password is CPF-based
+        tempPassword,
         isNew: true,
       };
     }
@@ -82,23 +115,46 @@ export async function autoCreateBuyerAccount(
   }
 }
 
-/**
- * Extracts the first 6 digits from a CPF string to use as password.
- * If CPF is null/empty or has fewer than 6 digits, generates a random password.
- */
-function buildCpfPassword(cpf: string | null): string {
-  if (cpf) {
-    const digits = cpf.replace(/\D/g, "");
+interface BuildPasswordInput {
+  cpf: string | null;
+  phone: string | null;
+  cpfEnabled: boolean;
+  phoneEnabled: boolean;
+}
+
+function buildInitialPassword(input: BuildPasswordInput): {
+  password: string;
+  source: "cpf" | "phone" | "random";
+} {
+  // 1. CPF enabled and available
+  if (input.cpfEnabled && input.cpf) {
+    const digits = input.cpf.replace(/\D/g, "");
     if (digits.length >= 6) {
-      return digits.slice(0, 6);
+      return { password: digits.slice(0, 6), source: "cpf" };
     }
   }
-  // Fallback: random password if no CPF
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  let password = "";
-  for (let i = 0; i < 10; i++) {
-    password += chars[Math.floor(Math.random() * chars.length)];
+
+  // 2. Phone enabled and available
+  if (input.phoneEnabled && input.phone) {
+    let digits = input.phone.replace(/\D/g, "");
+    // Strip Brazilian DDI so the buyer types the number they know.
+    if (digits.length > 11 && digits.startsWith("55")) {
+      digits = digits.slice(2);
+    }
+    if (digits.length >= 6) {
+      return { password: digits.slice(0, 6), source: "phone" };
+    }
   }
-  password += "!1";
-  return password;
+
+  // 3. Random 6-digit numeric password
+  const random = generateNumericPassword(6);
+  return { password: random, source: "random" };
+}
+
+function generateNumericPassword(length: number): string {
+  const arr = new Uint32Array(length);
+  crypto.getRandomValues(arr);
+  let out = "";
+  for (let i = 0; i < length; i++) out += (arr[i] % 10).toString();
+  return out;
 }

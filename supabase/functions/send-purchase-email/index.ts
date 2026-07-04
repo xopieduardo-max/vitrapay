@@ -32,6 +32,12 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
 
   // Account credentials section (only shown for new accounts)
   const isCpfPassword = temp_password === "cpf";
+  const isPhonePassword = temp_password === "phone";
+  const passwordDisplay = isCpfPassword
+    ? 'Os 6 primeiros d&#237;gitos do seu CPF'
+    : isPhonePassword
+      ? 'Os 6 primeiros d&#237;gitos do seu telefone'
+      : `<span style="font-family:monospace;letter-spacing:2px;">${temp_password}</span>`;
   const credentialsSection = temp_password ? `
           <!-- Account Credentials -->
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e1;border:2px solid #f5c518;border-radius:12px;margin:0 0 24px;">
@@ -45,7 +51,7 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
                   <p style="font-size:13px;color:#888;margin:0 0 2px;">E-mail</p>
                   <p style="font-size:15px;color:#1a1a1a;margin:0 0 10px;font-weight:bold;">${buyer_email}</p>
                   <p style="font-size:13px;color:#888;margin:0 0 2px;">Senha</p>
-                  <p style="font-size:15px;color:#1a1a1a;margin:0;font-weight:bold;">${isCpfPassword ? 'Os 6 primeiros d&#237;gitos do seu CPF' : `<span style="font-family:monospace;">${temp_password}</span>`}</p>
+                  <p style="font-size:15px;color:#1a1a1a;margin:0;font-weight:bold;">${passwordDisplay}</p>
                 </td></tr>
               </table>
               <p style="font-size:12px;color:#666;margin:10px 0 0;line-height:1.4;">
@@ -145,7 +151,12 @@ function buildPlainText(params: PurchaseEmailParams): string {
 
   let credentialsText = "";
   if (temp_password) {
-    const passText = temp_password === "cpf" ? "os 6 primeiros dígitos do seu CPF" : temp_password;
+    const passText =
+      temp_password === "cpf"
+        ? "os 6 primeiros dígitos do seu CPF"
+        : temp_password === "phone"
+          ? "os 6 primeiros dígitos do seu telefone"
+          : temp_password;
     credentialsText = `\n\nSua conta foi criada automaticamente!\nE-mail: ${buyer_email}\nSenha: ${passText}\n\nRecomendamos trocar sua senha após o primeiro acesso.`;
   }
 
