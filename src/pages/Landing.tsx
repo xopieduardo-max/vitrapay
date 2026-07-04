@@ -589,28 +589,28 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden">
+      <section ref={heroRef} className="relative min-h-[100svh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden pt-20 md:pt-24 lg:pt-16">
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
-        <div className="container relative py-8 md:py-14 lg:py-20">
+        <div className="container relative py-6 md:py-12 lg:py-20">
           <div className="relative isolate">
             {/* Yellow wave background — behind first fold (hero grid) */}
             <div
               className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] bg-no-repeat bg-bottom bg-cover opacity-90 z-0"
               style={{ backgroundImage: `url(${heroBgYellow.url})` }}
             />
-            <div className="relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+            <div className="relative z-10 grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-8 items-center">
             {/* LEFT — Copy + CTA */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-              className="space-y-8 text-center lg:text-left">
+              className="space-y-6 md:space-y-8 text-center lg:text-left order-2 lg:order-1">
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[2rem] sm:text-5xl md:text-6xl lg:text-[3.75rem] xl:text-[4.25rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -640,19 +640,19 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[420px] lg:min-h-[560px]">
+              className="relative flex items-center justify-center min-h-[320px] sm:min-h-[420px] lg:min-h-[560px] order-1 lg:order-2 mx-auto w-full max-w-[520px]">
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[300px] h-[300px] sm:w-[420px] sm:h-[420px] lg:w-[560px] lg:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                className="relative z-10 w-[240px] h-[240px] sm:w-[360px] sm:h-[360px] md:w-[420px] md:h-[420px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
               />
 
               {/* Floating notifications overlapping the logo */}
-              <div className="absolute inset-0 z-20 pointer-events-none flex flex-col items-end justify-center gap-3 pr-2 sm:pr-6 lg:pr-0 lg:-right-4">
-                <div className="w-[240px] sm:w-[280px] mr-0 sm:-mr-6 lg:-mr-10">
+              <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-end pr-0 sm:pr-2">
+                <div className="w-[220px] sm:w-[260px] lg:w-[280px] translate-x-2 sm:translate-x-4 lg:translate-x-8">
                   <FloatingNotifications />
                 </div>
               </div>
