@@ -1,28 +1,24 @@
+# Corrigir clique do botão "Entrar na minha conta" no Workspace
 
+## Problema
+Hoje o CTA de login fica dentro de uma `div` `fixed bottom-0 inset-x-0 p-4` com gradient transparente. Essa faixa transparente cobre ~80px da tela inteira e captura os cliques (não tem `pointer-events-none`). Resultado: quando o cursor está sobre a parte transparente acima do botão, o navegador não mostra a mãozinha e cliques nos cards atrás também podem ser bloqueados.
 
-## Plano: Adicionar filtro Estado/Cidade na seção "Vendas por Região"
+## Solução escolhida
+Transformar em um **bloco não-fixo, posicionado no topo do perfil do produtor**, logo abaixo do avatar/nome do workspace. Ele rola junto com a página — zero chance de sobrepor nada e bloquear cliques.
 
-### O que será feito
+## Mudanças em `src/pages/WorkspaceStorefront.tsx`
 
-Adicionar um toggle/tabs "Estado" / "Cidade" no header do card de vendas por região, permitindo alternar entre a visualização por estado (atual) e por cidade.
+1. **Remover** o bloco `fixed bottom-0 inset-x-0 ...` (linhas ~498–513) que renderiza o CTA de login flutuante.
+2. **Adicionar** o mesmo CTA como um card estático dentro do container principal, logo após o header do workspace (avatar + nome + descrição), antes da grade de produtos. Renderizar apenas quando `!user`.
+3. Estilo do novo bloco:
+   - Container centralizado (`max-w-md mx-auto`), `rounded-2xl`, borda usando `cardBorder`, fundo levemente elevado (`bg-white/[0.03]`).
+   - Texto "Faça login para acessar seus produtos" + botão "Entrar na minha conta" (mantém `accentColor` / `accentTextColor`).
+   - Padding confortável (`p-4 md:p-5`), margem inferior `mb-6` para separar da grade de produtos.
+4. Manter navegação `navigate("/minha-conta")` idêntica.
 
-### Alterações em `src/pages/Dashboard.tsx`
+## Por que resolve
+- Sem `position: fixed` → não existe mais overlay invisível cobrindo cards.
+- Botão sempre "clicável em toda sua área" com cursor pointer natural do `<Button>`.
+- Visível assim que o cliente abre o workspace (acima da dobra no mobile e desktop), melhorando a experiência de login.
 
-1. **Adicionar estado local** `regionView` com valores `'state' | 'city'`
-2. **Adicionar tabs no header** do card (ao lado do título "Vendas por região") com dois botões: "Estado" e "Cidade"
-3. **Criar dados mock de cidades** para exibir quando o filtro "Cidade" estiver selecionado:
-
-| # | Cidade | Pedidos | Valor |
-|---|--------|---------|-------|
-| 1 | São Paulo - SP | 98 | R$ 19.200 |
-| 2 | Rio de Janeiro - RJ | 64 | R$ 12.500 |
-| 3 | Belo Horizonte - MG | 41 | R$ 8.000 |
-| 4 | Salvador - BA | 29 | R$ 5.700 |
-| 5 | Curitiba - PR | 25 | R$ 4.900 |
-
-4. **Renderizar condicionalmente** a lista de estados ou cidades com base no filtro selecionado
-5. **Atualizar os indicadores** ("Total de pedidos" e "Cidades/Estados ativos") conforme o filtro
-
-### Visual dos tabs
-Dois botões pequenos estilizados como pills/chips no header, usando o mesmo padrão visual dos filtros de período já existentes no dashboard (bg-muted para inativo, bg-primary para ativo).
-
+Sem mudanças de lógica, backend ou outras páginas.
