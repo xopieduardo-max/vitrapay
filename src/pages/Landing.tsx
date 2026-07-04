@@ -596,7 +596,7 @@ export default function Landing() {
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
         <div className="container relative py-8 md:py-14 lg:py-20">
-          <div className="relative">
+          <div className="relative isolate">
             {/* Yellow wave background — behind first fold (hero grid) */}
             <div
               className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] bg-no-repeat bg-bottom bg-cover opacity-90 z-0"
