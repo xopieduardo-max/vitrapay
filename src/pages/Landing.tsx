@@ -648,7 +648,7 @@ export default function Landing() {
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
               <div className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:-right-4 xl:-right-8">
-                <div className="w-[200px] sm:w-[240px] lg:w-[280px] scale-90 sm:scale-100 origin-bottom-right lg:origin-right">
+                <div className="w-[230px] sm:w-[240px] lg:w-[280px] scale-95 sm:scale-100 origin-bottom-right lg:origin-right">
                   <FloatingNotifications />
                 </div>
               </div>
