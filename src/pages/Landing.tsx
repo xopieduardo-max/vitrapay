@@ -580,7 +580,7 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[100svh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden pt-12 md:pt-16 lg:pt-4">
+      <section ref={heroRef} className="relative min-h-[95svh] lg:min-h-[80vh] flex flex-col justify-center overflow-hidden pt-12 md:pt-16 lg:pt-4">
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
@@ -615,9 +615,9 @@ export default function Landing() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-              className="space-y-4 md:space-y-6 text-center lg:text-left order-2 lg:order-1">
+              className="space-y-3 md:space-y-5 text-center lg:text-left order-2 lg:order-1">
 
-              <h1 className="text-[1.7rem] sm:text-[2.5rem] md:text-[3.1rem] lg:text-[3.1rem] xl:text-[3.5rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[1.6rem] sm:text-[2.3rem] md:text-[2.9rem] lg:text-[2.9rem] xl:text-[3.3rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -647,14 +647,14 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[380px] sm:min-h-[450px] lg:min-h-[580px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
+              className="relative flex items-center justify-center min-h-[320px] sm:min-h-[380px] lg:min-h-[480px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] md:w-[480px] md:h-[480px] lg:w-[600px] lg:h-[600px] xl:w-[640px] xl:h-[640px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                className="relative z-10 w-[260px] h-[260px] sm:w-[360px] sm:h-[360px] md:w-[440px] md:h-[440px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
               />
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
