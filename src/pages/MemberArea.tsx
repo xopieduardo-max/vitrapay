@@ -311,7 +311,7 @@ export default function MemberArea() {
           </div>
         )}
         {/* Hero banner */}
-        <div className="relative w-full overflow-hidden" style={{ minHeight: 280 }}>
+        <div className="relative w-full overflow-hidden min-h-[280px] md:min-h-[320px] lg:min-h-[360px]">
           {product?.cover_url ? (
             <img
               src={product.cover_url}
@@ -321,8 +321,8 @@ export default function MemberArea() {
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
-          <div className="relative z-10 max-w-5xl mx-auto px-4 pt-6 pb-10 flex flex-col justify-end" style={{ minHeight: 280 }}>
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
+          <div className="relative z-10 h-full max-w-5xl mx-auto px-4 pt-6 pb-10 flex flex-col justify-end min-h-[280px] md:min-h-[320px] lg:min-h-[360px]">
             {!isPreview && (
               <Link to="/minha-conta" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-6 w-fit">
                 <ArrowLeft className="h-3 w-3" /> Voltar
@@ -361,7 +361,7 @@ export default function MemberArea() {
 
         {/* Resume lesson card */}
         {resumeItem && !courseCompleted && (
-          <div className="max-w-5xl mx-auto px-4 -mt-4">
+          <div className="relative z-20 max-w-5xl mx-auto px-4 mt-6">
             <motion.button
               onClick={() => openLesson(resumeItem!.lesson)}
               initial={{ opacity: 0, y: 12 }}
@@ -371,7 +371,7 @@ export default function MemberArea() {
             >
               <div className="flex flex-col sm:flex-row">
                 {/* Thumbnail */}
-                <div className="relative w-full sm:w-64 aspect-video sm:aspect-auto shrink-0 bg-muted/30 overflow-hidden">
+                <div className="relative w-full sm:w-64 aspect-video sm:aspect-auto sm:h-auto shrink-0 bg-muted/30 overflow-hidden">
                   {(resumeItem.module as any).cover_url ? (
                     <img
                       src={(resumeItem.module as any).cover_url}
