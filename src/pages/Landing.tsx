@@ -580,13 +580,13 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[100svh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden pt-32 md:pt-40 lg:pt-40">
+      <section ref={heroRef} className="relative min-h-[100svh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden pt-20 md:pt-24 lg:pt-16">
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
-        <div className="container relative py-6 md:py-12 lg:py-20">
+        <div className="container relative px-6 md:px-12 lg:px-20 py-6 md:py-12 lg:py-20">
           <div className="relative isolate">
             {/* Yellow wave background — behind first fold (hero grid) */}
             <div className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] z-0">
