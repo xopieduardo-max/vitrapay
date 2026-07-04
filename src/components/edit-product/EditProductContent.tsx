@@ -614,143 +614,184 @@ export default function EditProductContent({ productId }: Props) {
           </CardContent>
         </Card>
       ) : (
-        <Accordion type="multiple" value={openModuleIds} onValueChange={setOpenModuleIds} className="space-y-2">
-          {modules.map((mod: any, idx: number) => {
-            const lessons = getLessonsForModule(mod.id);
-            return (
-              <AccordionItem
-                key={mod.id}
-                value={mod.id}
-                className="border border-border rounded-lg overflow-hidden bg-card"
-              >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <div className="flex items-center gap-3 flex-1 text-left">
-                    {/* Module cover thumbnail */}
-                    {(mod as any).cover_url ? (
-                      <img
-                        src={(mod as any).cover_url}
-                        alt=""
-                        className="h-12 w-9 rounded object-cover shrink-0 border border-border"
-                      />
-                    ) : (
-                      <div className="h-12 w-9 rounded bg-muted flex items-center justify-center shrink-0 border border-border">
-                        <Image className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        Módulo {idx + 1}: {mod.title}
-                      </p>
-                      <p className="text-[0.65rem] text-muted-foreground">
-                        {lessons.length} {lessons.length === 1 ? "aula" : "aulas"}
-                      </p>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-7 gap-1"
-                      onClick={() => openEditModule(mod)}
-                    >
-                      <Pencil className="h-3 w-3" /> Editar Módulo
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs h-7 gap-1 text-destructive hover:text-destructive"
-                      onClick={() =>
-                        setDeleteConfirm({
-                          open: true,
-                          type: "module",
-                          id: mod.id,
-                          title: mod.title,
-                        })
-                      }
-                    >
-                      <Trash2 className="h-3 w-3" /> Excluir
-                    </Button>
-                  </div>
-
-                  {/* Lessons list */}
-                  <div className="space-y-1.5">
-                    {lessons.map((lesson: any, lIdx: number) => (
-                      <div
-                        key={lesson.id}
-                        className="flex items-center gap-3 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors group"
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleModulesDragEnd}>
+          <SortableContext items={modules.map((m: any) => m.id)} strategy={verticalListSortingStrategy}>
+            <Accordion type="multiple" value={openModuleIds} onValueChange={setOpenModuleIds} className="space-y-2">
+              {modules.map((mod: any, idx: number) => {
+                const lessons = getLessonsForModule(mod.id);
+                return (
+                  <SortableRow key={mod.id} id={mod.id}>
+                    {({ setActivatorNodeRef, attributes, listeners }) => (
+                      <AccordionItem
+                        value={mod.id}
+                        className="border border-border rounded-lg overflow-hidden bg-card"
                       >
-                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-muted text-[0.6rem] font-bold shrink-0">
-                          {lIdx + 1}
+                        <div className="flex items-stretch">
+                          <button
+                            type="button"
+                            ref={setActivatorNodeRef}
+                            {...attributes}
+                            {...listeners}
+                            className="flex items-center justify-center px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+                            aria-label="Reordenar módulo"
+                          >
+                            <GripVertical className="h-4 w-4" />
+                          </button>
+                          <AccordionTrigger className="flex-1 px-2 py-3 hover:no-underline">
+                            <div className="flex items-center gap-3 flex-1 text-left">
+                              {(mod as any).cover_url ? (
+                                <img
+                                  src={(mod as any).cover_url}
+                                  alt=""
+                                  className="h-12 w-9 rounded object-cover shrink-0 border border-border"
+                                />
+                              ) : (
+                                <div className="h-12 w-9 rounded bg-muted flex items-center justify-center shrink-0 border border-border">
+                                  <Image className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">
+                                  Módulo {idx + 1}: {mod.title}
+                                </p>
+                                <p className="text-[0.65rem] text-muted-foreground">
+                                  {lessons.length} {lessons.length === 1 ? "aula" : "aulas"}
+                                </p>
+                              </div>
+                            </div>
+                          </AccordionTrigger>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {lesson.title}
-                          </p>
-                          <div className="flex items-center gap-2 text-[0.6rem] text-muted-foreground">
-                            {lesson.video_url && (
-                              <span className="flex items-center gap-0.5">
-                                <Video className="h-2.5 w-2.5" /> Vídeo
-                              </span>
-                            )}
-                            {lesson.content && (
-                              <span className="flex items-center gap-0.5">
-                                <FileText className="h-2.5 w-2.5" /> Texto
-                              </span>
-                            )}
-                            {lesson.duration_minutes > 0 && (
-                              <span>{lesson.duration_minutes}min</span>
-                            )}
-                            {lesson.is_free && (
-                              <span className="text-green-500 font-semibold">
-                                Gratuita
-                              </span>
-                            )}
+                        <AccordionContent className="px-4 pb-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs h-7 gap-1"
+                              onClick={() => openEditModule(mod)}
+                            >
+                              <Pencil className="h-3 w-3" /> Editar Módulo
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs h-7 gap-1 text-destructive hover:text-destructive"
+                              onClick={() =>
+                                setDeleteConfirm({
+                                  open: true,
+                                  type: "module",
+                                  id: mod.id,
+                                  title: mod.title,
+                                })
+                              }
+                            >
+                              <Trash2 className="h-3 w-3" /> Excluir
+                            </Button>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => openEditLesson(lesson)}
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            onClick={() =>
-                              setDeleteConfirm({
-                                open: true,
-                                type: "lesson",
-                                id: lesson.id,
-                                title: lesson.title,
-                              })
-                            }
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs h-8 gap-1 mt-1 border-dashed"
-                      onClick={() => openNewLesson(mod.id)}
-                    >
-                      <Plus className="h-3 w-3" /> Adicionar Aula
-                    </Button>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+                          {/* Lessons list */}
+                          <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={(e) => handleLessonsDragEnd(mod.id, e)}
+                          >
+                            <SortableContext
+                              items={lessons.map((l: any) => l.id)}
+                              strategy={verticalListSortingStrategy}
+                            >
+                              <div className="space-y-1.5">
+                                {lessons.map((lesson: any, lIdx: number) => (
+                                  <SortableRow key={lesson.id} id={lesson.id}>
+                                    {({ setActivatorNodeRef, attributes, listeners }) => (
+                                      <div className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/30 transition-colors group">
+                                        <button
+                                          type="button"
+                                          ref={setActivatorNodeRef}
+                                          {...attributes}
+                                          {...listeners}
+                                          className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+                                          aria-label="Reordenar aula"
+                                        >
+                                          <GripVertical className="h-3.5 w-3.5" />
+                                        </button>
+                                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-muted text-[0.6rem] font-bold shrink-0">
+                                          {lIdx + 1}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium truncate">
+                                            {lesson.title}
+                                          </p>
+                                          <div className="flex items-center gap-2 text-[0.6rem] text-muted-foreground">
+                                            {lesson.video_url && (
+                                              <span className="flex items-center gap-0.5">
+                                                <Video className="h-2.5 w-2.5" /> Vídeo
+                                              </span>
+                                            )}
+                                            {lesson.content && (
+                                              <span className="flex items-center gap-0.5">
+                                                <FileText className="h-2.5 w-2.5" /> Texto
+                                              </span>
+                                            )}
+                                            {lesson.duration_minutes > 0 && (
+                                              <span>{lesson.duration_minutes}min</span>
+                                            )}
+                                            {lesson.is_free && (
+                                              <span className="text-green-500 font-semibold">
+                                                Gratuita
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7"
+                                            onClick={() => openEditLesson(lesson)}
+                                          >
+                                            <Pencil className="h-3 w-3" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 text-destructive hover:text-destructive"
+                                            onClick={() =>
+                                              setDeleteConfirm({
+                                                open: true,
+                                                type: "lesson",
+                                                id: lesson.id,
+                                                title: lesson.title,
+                                              })
+                                            }
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </SortableRow>
+                                ))}
+
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full text-xs h-8 gap-1 mt-1 border-dashed"
+                                  onClick={() => openNewLesson(mod.id)}
+                                >
+                                  <Plus className="h-3 w-3" /> Adicionar Aula
+                                </Button>
+                              </div>
+                            </SortableContext>
+                          </DndContext>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+                  </SortableRow>
+                );
+              })}
+            </Accordion>
+          </SortableContext>
+        </DndContext>
+
       )}
 
       {/* Module Dialog */}
