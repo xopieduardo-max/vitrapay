@@ -154,7 +154,7 @@ const row2 = [...membrosBlack.reverse(), ...membrosBlack, ...membrosBlack, ...me
 
 function MembrosBlackCarousel() {
   return (
-    <div className="space-y-4 overflow-hidden -mx-4 md:-mx-8">
+    <div className="space-y-4 overflow-hidden -mx-6 md:-mx-8 lg:-mx-10 xl:-mx-12">
       {/* Row 1 – scrolls left (CSS marquee) */}
       <div className="flex gap-4 animate-marquee will-change-transform">
         {row1.map((m, i) => (
@@ -550,8 +550,8 @@ export default function Landing() {
       {/* Announcement Bar — desativado por enquanto */}
 
       {/* ─── Header ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 py-3 px-2 sm:px-4">
-        <div className="container max-w-6xl mx-auto">
+      <header className="fixed top-0 left-0 right-0 z-50 py-3">
+        <div className="container">
           <nav className="flex items-center justify-between rounded-full border border-border/40 bg-card/90 backdrop-blur-xl px-3 sm:px-5 py-2 sm:py-2.5 shadow-lg shadow-black/5 gap-2">
             <div className="flex items-center gap-4 sm:gap-6 min-w-0">
               <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -586,7 +586,7 @@ export default function Landing() {
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
-        <div className="container relative px-6 md:px-12 lg:px-20 py-6 md:py-12 lg:py-20">
+        <div className="container relative py-6 md:py-12 lg:py-20">
           <div className="relative isolate">
             {/* Yellow wave background — behind first fold (hero grid) */}
             <div className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] z-0">
@@ -697,7 +697,7 @@ export default function Landing() {
       {/* ─── Bento: Diferenciais VitraPay ─── */}
       <section className="relative bg-[#080808] border-y border-white/[0.06] overflow-hidden">
         <div className="container py-14 md:py-20">
-          <div className="grid gap-4 md:gap-5 md:grid-cols-12 max-w-6xl mx-auto items-start">
+          <div className="grid gap-4 md:gap-5 md:grid-cols-12 items-start">
             {[
               { img: bentoAprovacao.url, alt: "Aprovação otimizada", span: "md:col-span-8", ratio: "1972 / 798" },
               { img: bentoPix.url, alt: "Pix automático e integrado", span: "md:col-span-4", ratio: "1436 / 1096" },
@@ -1264,13 +1264,13 @@ export default function Landing() {
       {/* ─── Placas de Premiação ─── */}
       <section className="bg-white py-20 md:py-28">
         <div className="container">
-          <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="max-w-7xl mx-auto">
+          <motion.div {...fadeUp} transition={{ duration: 0.6 }}>
             {/* Imagem das placas */}
             <div className="flex justify-center mb-12">
               <img
                 src={placasVitraPay}
                 alt="Placas de Premiação VitraPay — 10K, 100K, 250K, 500K e 1 Milhão faturados"
-                className="w-full max-w-7xl"
+                className="w-full"
                 loading="lazy"
                 decoding="async"
               />
@@ -1377,7 +1377,7 @@ export default function Landing() {
         <motion.div
           {...fadeUp}
           transition={{ duration: 0.6 }}
-          className="relative max-w-6xl mx-auto rounded-3xl overflow-hidden"
+          className="relative rounded-3xl overflow-hidden"
         >
           <Link
             to="/auth"
