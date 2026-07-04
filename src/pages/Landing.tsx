@@ -29,6 +29,7 @@ import bentoPix from "@/assets/bento-pix.png.asset.json";
 import bentoSistema from "@/assets/bento-sistema.png.asset.json";
 import bentoLiberacao from "@/assets/bento-liberacao.png.asset.json";
 import neonKHero from "@/assets/neon-k-hero.png.asset.json";
+import heroBgYellow from "@/assets/hero-bg-yellow.png.asset.json";
 
 import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
 import iphoneVitrapay from "@/assets/iphone-vitrapay.webp";
@@ -591,8 +592,12 @@ export default function Landing() {
       <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden">
         <GridBackground />
         <FloatingParticles />
-        {/* Yellow ambient glow bottom — like reference */}
-        <div className="pointer-events-none absolute -bottom-32 left-0 right-0 h-64 bg-[radial-gradient(ellipse_80%_100%_at_50%_100%,hsl(var(--primary)/0.35),transparent_70%)] blur-2xl" />
+        {/* Yellow wave background — reference image */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-no-repeat bg-bottom bg-cover opacity-90 mix-blend-screen"
+          style={{ backgroundImage: `url(${heroBgYellow.url})` }}
+        />
+        <div className="pointer-events-none absolute -bottom-32 left-0 right-0 h-64 bg-[radial-gradient(ellipse_80%_100%_at_50%_100%,hsl(var(--primary)/0.25),transparent_70%)] blur-2xl" />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
