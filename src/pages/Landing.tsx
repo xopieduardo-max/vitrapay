@@ -23,6 +23,8 @@ import { Interactive3DLogo } from "@/components/Interactive3DLogo";
 import logoIcon from "@/assets/logo-vitrapay-icon-square.webp";
 import logoCard from "@/assets/logo-vitrapay-card.webp";
 import celularVitra from "@/assets/celular_vitra.webp";
+import ctaVitrapay from "@/assets/cta-vitrapay.png.asset.json";
+
 import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
 import iphoneVitrapay from "@/assets/iphone-vitrapay.webp";
 import {
