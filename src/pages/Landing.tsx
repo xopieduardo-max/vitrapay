@@ -584,8 +584,8 @@ export default function Landing() {
       {/* ─── Hero Section ─── */}
       <section
         ref={heroRef}
-        className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden pt-20 md:pt-16"
-        style={{ paddingTop: "var(--hero-pt, undefined)" as any }}
+        className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden"
+        style={{ paddingTop: "var(--hero-pt, 0px)" }}
       >
         <GridBackground />
         <FloatingParticles />
