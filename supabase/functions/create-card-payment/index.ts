@@ -503,7 +503,9 @@ Deno.serve(async (req) => {
             supabase,
             buyer_email,
             buyer_name || "Cliente",
-            buyer_cpf || null
+            buyer_cpf || null,
+            buyer_phone || null,
+            (product as any)?.checkout_fields || null
           );
           tempPassword = accountResult.tempPassword;
 
