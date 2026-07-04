@@ -35,7 +35,7 @@ export function Interactive3DLogo({ className = "", src, style }: { className?: 
     <div
       ref={ref}
       className={`relative ${className}`}
-      style={{ perspective: "800px" }}
+      style={{ perspective: "800px", ...style }}
     >
       <motion.div
         style={{
