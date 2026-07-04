@@ -396,7 +396,7 @@ export default function WorkspaceStorefront() {
                     onClick={() => handleProductClick(product)}
                   >
                     {/* Cover */}
-                    <div className="relative aspect-video overflow-hidden">
+                    <div className="relative aspect-[3/4] overflow-hidden">
                       {product.cover_url ? (
                         <img
                           src={product.cover_url}
