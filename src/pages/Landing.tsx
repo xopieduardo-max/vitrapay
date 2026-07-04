@@ -696,7 +696,7 @@ export default function Landing() {
                 key={c.alt}
                 {...stagger}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className={`${c.span} group relative rounded-3xl overflow-hidden bg-[#0a0a0a] transition-transform duration-500 hover:scale-[1.015]`}
+                className={`${c.span} group relative rounded-3xl overflow-hidden bg-[#0a0a0a] will-change-transform transition-transform duration-500 hover:scale-[1.02] hover:z-10`}
                 style={{ aspectRatio: c.ratio }}
               >
                 <img
@@ -705,7 +705,6 @@ export default function Landing() {
                   loading="lazy"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               </motion.div>
             ))}
           </div>
