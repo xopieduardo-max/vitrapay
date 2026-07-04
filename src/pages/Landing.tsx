@@ -580,7 +580,7 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[85svh] lg:min-h-[70vh] flex flex-col justify-center overflow-hidden pt-10 md:pt-14 lg:pt-2">
+      <section ref={heroRef} className="relative min-h-[85svh] md:min-h-[80svh] lg:min-h-[70vh] flex flex-col justify-center overflow-hidden pt-10 md:pt-10 lg:pt-2">
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
@@ -615,9 +615,9 @@ export default function Landing() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-              className="space-y-3 md:space-y-5 text-center lg:text-left order-2 lg:order-1">
+              className="space-y-2 md:space-y-4 text-center lg:text-left order-2 lg:order-1">
 
-              <h1 className="text-[1.6rem] sm:text-[2.3rem] md:text-[2.9rem] lg:text-[2.9rem] xl:text-[3.3rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[1.6rem] sm:text-[2.3rem] md:text-[2.6rem] lg:text-[2.9rem] xl:text-[3.3rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -626,7 +626,7 @@ export default function Landing() {
                 </span>
               </h1>
 
-              <p className="text-[1.1rem] md:text-[1.25rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-[1.1rem] md:text-[1.15rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Aprovação mais alta, saques rápidos e uma operação estável pra quem não pode perder vendas por falhas de sistema.
               </p>
 
