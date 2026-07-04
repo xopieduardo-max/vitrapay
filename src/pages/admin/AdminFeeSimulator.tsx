@@ -289,12 +289,24 @@ export default function AdminFeeSimulator() {
               {platformProfit > 0 ? (
                 <CheckCircle2 className="h-6 w-6 text-emerald-500 mt-0.5" />
               ) : (
-                <AlertTriangle className="h-6 w-6 text-destructive mt-0.5" />
+                <AlertTriangle className="h-6 w-6 text-destructive mt-0.5 animate-pulse" />
               )}
               <div>
-                <p className="text-sm font-bold">
-                  {platformProfit > 0 ? "Cenário lucrativo" : platformProfit === 0 ? "Empate — sem lucro" : "PREJUÍZO"}
-                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-bold">
+                    {platformProfit > 0 ? "Cenário lucrativo" : platformProfit === 0 ? "Empate — sem lucro" : "Cenário com prejuízo"}
+                  </p>
+                  {platformProfit < 0 && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold uppercase tracking-wider">
+                      <AlertTriangle className="h-3 w-3" /> Prejuízo
+                    </span>
+                  )}
+                  {platformProfit === 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider">
+                      Empate
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {methodInfo.label}
                   {method === "card" && ` · ${installments}x · ${antecipacao === "D2" ? "antecipado D+2" : "D+30"}`}
@@ -313,6 +325,125 @@ export default function AdminFeeSimulator() {
               </p>
             </div>
           </div>
+
+          {/* Diagnóstico de prejuízo */}
+          {platformProfit < 0 && (() => {
+            const asaasFixedTotal = method === "card" ? ASAAS_CARD_FIXED_CENTS * installments : asaasCost;
+            const asaasPctCost = method === "card" ? Math.max(0, asaasCost - asaasFixedTotal) : 0;
+            const d2Extra = method === "card" && antecipacao === "D2"
+              ? Math.round(buyerTotal * (ASAAS_D2_ADD_PCT / 100)) : 0;
+            const revenue = feePlatform + serviceFeeNet;
+            const shortfall = asaasCost - revenue;
+
+            const culprits: { label: string; detail: string; weight: number }[] = [];
+
+            if (method === "card" && asaasFixedTotal > feePlatform) {
+              culprits.push({
+                label: `Custo fixo Asaas alto (R$ 0,49 × ${installments} parcelas)`,
+                detail: `${fmt(asaasFixedTotal)} só de fixo — maior que a taxa VitraPay (${fmt(feePlatform)})`,
+                weight: asaasFixedTotal,
+              });
+            }
+            if (method === "card" && asaasPctCost > feePlatform) {
+              culprits.push({
+                label: `Percentual Asaas alto para ${installments}x`,
+                detail: `${asaasEffectivePct.toFixed(2)}% sobre ${fmt(buyerTotal)} = ${fmt(asaasPctCost)}`,
+                weight: asaasPctCost,
+              });
+            }
+            if (d2Extra > 0) {
+              culprits.push({
+                label: "Antecipação D+2 encarece a operação",
+                detail: `+${ASAAS_D2_ADD_PCT}% sobre ${fmt(buyerTotal)} = ${fmt(d2Extra)} extra`,
+                weight: d2Extra,
+              });
+            }
+            if (feePlatform < asaasCost) {
+              culprits.push({
+                label: "Taxa VitraPay insuficiente",
+                detail: `${fmt(feePlatform)} cobrado não cobre ${fmt(asaasCost)} de custo Asaas`,
+                weight: asaasCost - feePlatform,
+              });
+            }
+            if (method === "card" && amount < 2000 && installments > 1) {
+              culprits.push({
+                label: "Produto muito barato para parcelar",
+                detail: `Venda de ${fmt(amount)} em ${installments}x — custo fixo consome a margem`,
+                weight: asaasFixedTotal,
+              });
+            }
+            culprits.sort((a, b) => b.weight - a.weight);
+
+            return (
+              <div className="mt-4 pt-4 border-t border-destructive/20 space-y-3">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-destructive" />
+                  <p className="text-xs font-bold uppercase tracking-widest text-destructive">
+                    O que causou o prejuízo
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                  <div className="rounded-md bg-background/60 border border-border p-2.5">
+                    <p className="text-[10px] uppercase text-muted-foreground font-semibold">Receita plataforma</p>
+                    <p className="text-sm font-bold text-emerald-500 mt-1">+ {fmt(revenue)}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {fmt(feePlatform)} taxa + {fmt(serviceFeeNet)} serviço
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-background/60 border border-border p-2.5">
+                    <p className="text-[10px] uppercase text-muted-foreground font-semibold">Custo Asaas</p>
+                    <p className="text-sm font-bold text-destructive mt-1">- {fmt(asaasCost)}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {method === "card" && `${fmt(asaasPctCost)} % + ${fmt(asaasFixedTotal)} fixo`}
+                      {method !== "card" && "fixo por transação"}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-destructive/10 border border-destructive/30 p-2.5">
+                    <p className="text-[10px] uppercase text-destructive font-semibold">Déficit</p>
+                    <p className="text-sm font-bold text-destructive mt-1">- {fmt(shortfall)}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      falta pra empatar
+                    </p>
+                  </div>
+                </div>
+
+                {culprits.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase text-muted-foreground font-semibold">Componentes que pesaram</p>
+                    {culprits.slice(0, 4).map((c, i) => (
+                      <div key={i} className="flex items-start gap-2 p-2 rounded-md bg-destructive/5 border border-destructive/20">
+                        <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                          {i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold">{c.label}</p>
+                          <p className="text-[11px] text-muted-foreground">{c.detail}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-start gap-2 p-2.5 rounded-md bg-primary/5 border border-primary/20">
+                  <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="text-[11px] text-muted-foreground space-y-0.5">
+                    <p className="font-semibold text-foreground">Como resolver:</p>
+                    {method === "card" && antecipacao === "D2" && (
+                      <p>• Desative a antecipação D+2 para este cenário</p>
+                    )}
+                    {method === "card" && installments > 3 && amount < 5000 && (
+                      <p>• Limite as parcelas a no máximo 3x para valores abaixo de R$ 50</p>
+                    )}
+                    {feePlatform < asaasCost && (
+                      <p>• Aumente a taxa VitraPay para pelo menos {fmtPct((asaasCost / amount) * 100 + 1)} + fixo</p>
+                    )}
+                    <p>• Ou aumente o valor do produto para diluir o custo fixo</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
