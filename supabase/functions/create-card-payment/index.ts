@@ -335,14 +335,13 @@ Deno.serve(async (req) => {
       const cardPlan = producerProfile?.card_plan || "d30";
       const isD2 = cardPlan === "d2";
 
-      // Installment-aware Asaas rates (charged on the FULL `amount` actually billed)
-      // Source: Asaas pricing tiers for credit card.
-      // D+30:  1x = 2.99%  | 2-6x = 3.49%  | 7-12x = 3.99%   + R$ 0,49 por parcela
-      // D+2 :  1x = 4.14%  | 2-6x = 4.64%  | 7-12x = 5.14%   + R$ 0,49 por parcela
+      // Installment-aware Asaas rates (charged on the FULL `amount` actually billed).
+      // Source: tabela real do Asaas p/ cartão de crédito.
+      // D+30:  1x = 2.99%  | 2-6x = 3.49%  | 7-12x = 3.99%   + R$ 0,49 POR PARCELA
+      // D+2 :  soma +1,15% em cada faixa (antecipação a.m.)  + R$ 0,49 POR PARCELA
       const tier = installmentCount === 1 ? "x1" : installmentCount <= 6 ? "x6" : "x12";
-      const ASAAS_PCT = isD2
-        ? (tier === "x1" ? 0.0414 : tier === "x6" ? 0.0464 : 0.0514)
-        : (tier === "x1" ? 0.0299 : tier === "x6" ? 0.0349 : 0.0399);
+      const ASAAS_BASE_PCT = tier === "x1" ? 0.0299 : tier === "x6" ? 0.0349 : 0.0399;
+      const ASAAS_PCT = isD2 ? ASAAS_BASE_PCT + 0.0115 : ASAAS_BASE_PCT;
       const ASAAS_FIXED_PER_INSTALLMENT = 49; // R$ 0,49 per installment
 
       // Platform fee on the REAL product price (not the inflated amount)
@@ -350,17 +349,21 @@ Deno.serve(async (req) => {
       const PLATFORM_FIXED = 249;
       const holdDays = isD2 ? 2 : 30;
 
+      // Asaas charges on the FULL amount (product + service fee + interest), per installment fixed
+      const asaasCost = Math.round(amount * ASAAS_PCT) + (ASAAS_FIXED_PER_INSTALLMENT * installmentCount);
+
       let platformFee: number;
       if (producerProfile?.custom_fee_fixed != null) {
-        platformFee = producerProfile.custom_fee_fixed;
+        // Piso: taxa customizada nunca pode ficar abaixo do custo real do gateway,
+        // senão a plataforma toma prejuízo em cada venda.
+        platformFee = Math.max(producerProfile.custom_fee_fixed, asaasCost);
       } else if (producerProfile?.custom_fee_percentage != null) {
-        platformFee = Math.round(productAmount * producerProfile.custom_fee_percentage / 100 + PLATFORM_FIXED);
+        const custom = Math.round(productAmount * producerProfile.custom_fee_percentage / 100 + PLATFORM_FIXED);
+        platformFee = Math.max(custom, asaasCost);
       } else {
         platformFee = Math.round(productAmount * PLATFORM_PCT + PLATFORM_FIXED);
       }
 
-      // Asaas charges on the FULL amount (product + service fee + interest), per installment fixed
-      const asaasCost = Math.round(amount * ASAAS_PCT) + (ASAAS_FIXED_PER_INSTALLMENT * installmentCount);
       const netProfit = platformFee + SERVICE_FEE + buyerInterest - asaasCost;
       console.log(`Card ${cardPlan} ${installmentCount}x fees: product=${productAmount}, buyerInterest=${buyerInterest}, platformFee=${platformFee}, asaas=${asaasCost}, serviceFee=${SERVICE_FEE}, profit=${netProfit}`);
 
