@@ -11,7 +11,19 @@ import {
   ShoppingCart, Zap, Clock, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { maxInstallmentsForPrice } from "@/lib/installmentLimits";
+import {
+  maxInstallmentsForPrice,
+  asaasCardTierPct,
+  asaasEffectivePct as calcAsaasEffectivePct,
+  computeBuyerTotal,
+  computeAsaasCost,
+  computePlatformFee,
+  computeServiceFeeNet,
+  ASAAS_CARD_FIXED_CENTS,
+  ASAAS_D2_ADD_PCT,
+  SERVICE_FEE_CENTS as SERVICE_FEE,
+  BUYER_INSTALLMENT_INTEREST_MONTHLY,
+} from "@/lib/pricing";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, Cell,
 } from "recharts";
@@ -22,31 +34,11 @@ const METHODS = [
   { id: "boleto", label: "Boleto", icon: Barcode },
 ] as const;
 
-// ============ TAXAS ASAAS REAIS (por parcela) ============
-// D+30: 1x 2,99% | 2-6x 3,49% | 7-12x 3,99%  (+ R$ 0,49 fixo POR parcela)
-// D+2 antecipação: adiciona 1,15% a.m. sobre o valor antecipado, aproximado
-// como acréscimo linear sobre o percentual da faixa da parcela.
-function asaasCardTierPct(installments: number): number {
-  if (installments <= 1) return 2.99;
-  if (installments <= 6) return 3.49;
-  return 3.99; // 7-12
-}
-const ASAAS_CARD_FIXED_CENTS = 49;
-const ASAAS_D2_ADD_PCT = 1.15;
-
-// PIX / Boleto continuam sendo fixo simples
-const ASAAS_PIX_FIXED = 199;
-const ASAAS_BOLETO_FIXED = 199;
-
 const VP_DEFAULTS: Record<string, { pct: number; fixed: number }> = {
   pix:    { pct: 0,    fixed: 399 },
   card:   { pct: 3.99, fixed: 249 },
   boleto: { pct: 0,    fixed: 399 },
 };
-
-// Juros repassado ao comprador em parcelamento (a.m.)
-const BUYER_INSTALLMENT_INTEREST_MONTHLY = 1.6;
-const SERVICE_FEE = 99; // R$ 0,99 pago pelo comprador
 
 const fmt = (cents: number) =>
   `R$ ${(cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -84,39 +76,29 @@ export default function AdminFeeSimulator() {
   const installmentsAllowed = method === "card" && installments <= maxInst;
 
   // Comprador paga (com juros se parcelado 2x+)
-  const buyerTotal = useMemo(() => {
-    if (method !== "card" || installments <= 1) return amount + SERVICE_FEE;
-    const interestFactor = 1 + (BUYER_INSTALLMENT_INTEREST_MONTHLY / 100) * (installments - 1);
-    return Math.round(amount * interestFactor) + SERVICE_FEE;
-  }, [amount, method, installments]);
+  const buyerTotal = useMemo(
+    () => computeBuyerTotal(amount, method, installments),
+    [amount, method, installments],
+  );
 
   // Custo Asaas real (baseado no valor total cobrado do comprador)
-  const asaasCost = useMemo(() => {
-    if (method === "pix") return ASAAS_PIX_FIXED;
-    if (method === "boleto") return ASAAS_BOLETO_FIXED;
-    // Cartão: (pct_faixa + antecipação D+2) × valor cobrado + fixo × n_parcelas
-    let pct = asaasCardTierPct(installments);
-    if (antecipacao === "D2") pct += ASAAS_D2_ADD_PCT;
-    return Math.round(buyerTotal * (pct / 100)) + ASAAS_CARD_FIXED_CENTS * installments;
-  }, [method, installments, antecipacao, buyerTotal]);
+  const asaasCost = useMemo(
+    () => computeAsaasCost(buyerTotal, method, installments, antecipacao),
+    [buyerTotal, method, installments, antecipacao],
+  );
 
-  const asaasEffectivePct = method === "card"
-    ? asaasCardTierPct(installments) + (antecipacao === "D2" ? ASAAS_D2_ADD_PCT : 0)
-    : 0;
+  const asaasEffectivePct = method === "card" ? calcAsaasEffectivePct(installments, antecipacao) : 0;
 
   // Taxa VitraPay cobrada do produtor (sobre o valor do produto)
   const vpCfg = getVp(method);
   const vpPctVal = parseFloat(vpCfg.pct) || 0;
   const vpFixedVal = Math.round((parseFloat(vpCfg.fixed) || 0) * 100);
-  const feePlatform = Math.round(amount * (vpPctVal / 100)) + vpFixedVal;
+  const feePlatform = computePlatformFee(amount, vpPctVal, vpFixedVal);
 
   // Serviço R$0,99 pago pelo comprador (líquido, descontando gateway)
-  const serviceFeeNet = method === "card"
-    ? SERVICE_FEE - Math.round(SERVICE_FEE * (asaasEffectivePct / 100))
-    : SERVICE_FEE;
+  const serviceFeeNet = computeServiceFeeNet(method, installments, antecipacao);
 
   const producerReceives = amount - feePlatform;
-  // Lucro plataforma = (taxa cobrada + serviço líquido) − custo Asaas
   const platformProfit = feePlatform + serviceFeeNet - asaasCost;
   const profitMarginPct = amount > 0 ? (platformProfit / amount) * 100 : 0;
 
@@ -156,11 +138,10 @@ export default function AdminFeeSimulator() {
   const scenarioMatrix = useMemo(() => {
     if (method !== "card" || !isValid) return [];
     return Array.from({ length: maxInst }, (_, i) => i + 1).map((n) => {
-      const factor = n <= 1 ? 1 : 1 + (BUYER_INSTALLMENT_INTEREST_MONTHLY / 100) * (n - 1);
-      const bTotal = Math.round(amount * factor) + SERVICE_FEE;
-      let pct = asaasCardTierPct(n) + (antecipacao === "D2" ? ASAAS_D2_ADD_PCT : 0);
-      const aCost = Math.round(bTotal * (pct / 100)) + ASAAS_CARD_FIXED_CENTS * n;
-      const svcNet = SERVICE_FEE - Math.round(SERVICE_FEE * (pct / 100));
+      const bTotal = computeBuyerTotal(amount, "card", n);
+      const aCost = computeAsaasCost(bTotal, "card", n, antecipacao);
+      const svcNet = computeServiceFeeNet("card", n, antecipacao);
+      const pct = calcAsaasEffectivePct(n, antecipacao);
       const profit = feePlatform + svcNet - aCost;
       return { n, bTotal, aCost, profit, pct };
     });
