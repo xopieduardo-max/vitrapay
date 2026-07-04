@@ -330,22 +330,33 @@ export default function Taxas() {
               Parcelamento
             </Label>
             <div className="grid grid-cols-6 sm:grid-cols-12 gap-1.5">
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => setSimInstallments(opt)}
-                  className={`rounded-lg border py-1.5 text-[0.7rem] font-semibold transition-all ${
-                    simInstallments === opt
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-muted-foreground/30"
-                  }`}
-                >
-                  {opt}x
-                </button>
-              ))}
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((opt) => {
+                const disabled = opt > maxInstallmentsAllowed;
+                return (
+                  <button
+                    key={opt}
+                    disabled={disabled}
+                    onClick={() => !disabled && setSimInstallments(opt)}
+                    title={disabled ? `Produto ≥ R$ ${opt === 4 || opt === 5 || opt === 6 ? "20" : opt <= 10 ? "50" : "100"} para ${opt}x` : undefined}
+                    className={`rounded-lg border py-1.5 text-[0.7rem] font-semibold transition-all ${
+                      disabled
+                        ? "border-border/40 text-muted-foreground/40 cursor-not-allowed line-through"
+                        : simInstallments === opt
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    {opt}x
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-[0.65rem] text-muted-foreground">
+              Este produto pode ser parcelado em até <strong>{maxInstallmentsAllowed}x</strong>. Limite ajustado conforme o valor para manter margem saudável em todas as vendas.
+            </p>
           </div>
         )}
+
 
         {productAmount > 0 && (
           <div className="rounded-xl bg-muted/20 border border-border/50 p-5 space-y-3">
