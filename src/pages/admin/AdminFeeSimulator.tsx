@@ -11,7 +11,19 @@ import {
   ShoppingCart, Zap, Clock, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { maxInstallmentsForPrice } from "@/lib/installmentLimits";
+import {
+  maxInstallmentsForPrice,
+  asaasCardTierPct,
+  asaasEffectivePct as calcAsaasEffectivePct,
+  computeBuyerTotal,
+  computeAsaasCost,
+  computePlatformFee,
+  computeServiceFeeNet,
+  ASAAS_CARD_FIXED_CENTS,
+  ASAAS_D2_ADD_PCT,
+  SERVICE_FEE_CENTS as SERVICE_FEE,
+  BUYER_INSTALLMENT_INTEREST_MONTHLY,
+} from "@/lib/pricing";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, Cell,
 } from "recharts";
@@ -22,31 +34,11 @@ const METHODS = [
   { id: "boleto", label: "Boleto", icon: Barcode },
 ] as const;
 
-// ============ TAXAS ASAAS REAIS (por parcela) ============
-// D+30: 1x 2,99% | 2-6x 3,49% | 7-12x 3,99%  (+ R$ 0,49 fixo POR parcela)
-// D+2 antecipação: adiciona 1,15% a.m. sobre o valor antecipado, aproximado
-// como acréscimo linear sobre o percentual da faixa da parcela.
-function asaasCardTierPct(installments: number): number {
-  if (installments <= 1) return 2.99;
-  if (installments <= 6) return 3.49;
-  return 3.99; // 7-12
-}
-const ASAAS_CARD_FIXED_CENTS = 49;
-const ASAAS_D2_ADD_PCT = 1.15;
-
-// PIX / Boleto continuam sendo fixo simples
-const ASAAS_PIX_FIXED = 199;
-const ASAAS_BOLETO_FIXED = 199;
-
 const VP_DEFAULTS: Record<string, { pct: number; fixed: number }> = {
   pix:    { pct: 0,    fixed: 399 },
   card:   { pct: 3.99, fixed: 249 },
   boleto: { pct: 0,    fixed: 399 },
 };
-
-// Juros repassado ao comprador em parcelamento (a.m.)
-const BUYER_INSTALLMENT_INTEREST_MONTHLY = 1.6;
-const SERVICE_FEE = 99; // R$ 0,99 pago pelo comprador
 
 const fmt = (cents: number) =>
   `R$ ${(cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
