@@ -446,7 +446,7 @@ export default function Checkout() {
     try {
       const affiliateRef = searchParams.get("ref") || null;
       const total = calculateTotal();
-      const totalCharged = calculateTotalWithServiceFee(); // total + R$0.99 service fee
+      const totalCharged = calculateTotalWithServiceFee(); // total + R$0.99 service fee (sem juros)
       let utmData: Record<string, string> = {};
       try { utmData = JSON.parse(localStorage.getItem("utm_data") || "{}"); } catch {}
 
@@ -488,6 +488,14 @@ export default function Checkout() {
         const expiryMonth = expiryParts[0] || "";
         const expiryYear = expiryParts[1] ? `20${expiryParts[1]}` : "";
 
+        // Para parcelado: cobra do comprador produto + serviço + juros (1,6% a.m.)
+        const nInstallments = parseInt(form.installments || "1", 10) || 1;
+        const monthlyInterest = 0.016;
+        const buyerInterest = nInstallments > 1
+          ? Math.round(total * monthlyInterest * (nInstallments - 1))
+          : 0;
+        const cardTotalCharged = totalCharged + buyerInterest;
+
         const { data, error } = await supabase.functions.invoke("create-card-payment", {
           body: {
             product_id: id,
@@ -502,7 +510,7 @@ export default function Checkout() {
             card_expiry_year: expiryYear,
             card_cvv: form.cardCvv,
             installments: form.installments,
-            amount: totalCharged,
+            amount: cardTotalCharged,
             service_fee: SERVICE_FEE,
             affiliate_ref: affiliateRef,
             coupon_code: appliedCoupon?.code || null,
