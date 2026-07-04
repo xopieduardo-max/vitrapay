@@ -658,6 +658,8 @@ export default function Landing() {
               </div>
             </motion.div>
           </div>
+          </div>
+
 
           {/* Dashboard Preview below hero */}
           <motion.div
