@@ -480,6 +480,56 @@ export default function EditProductContent({ productId }: Props) {
     toast.success("Aula excluída");
   };
 
+  // Drag & drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleModulesDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = modules.findIndex((m: any) => m.id === active.id);
+    const newIndex = modules.findIndex((m: any) => m.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(modules as any[], oldIndex, newIndex);
+    queryClient.setQueryData(["product-modules", productId], next);
+    try {
+      await Promise.all(
+        next.map((m: any, i: number) =>
+          supabase.from("modules").update({ position: i }).eq("id", m.id),
+        ),
+      );
+    } catch {
+      toast.error("Erro ao reordenar módulos");
+      queryClient.invalidateQueries({ queryKey: ["product-modules", productId] });
+    }
+  };
+
+  const handleLessonsDragEnd = async (moduleId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const modLessons = getLessonsForModule(moduleId);
+    const oldIndex = modLessons.findIndex((l: any) => l.id === active.id);
+    const newIndex = modLessons.findIndex((l: any) => l.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered = arrayMove(modLessons as any[], oldIndex, newIndex);
+    // Rebuild the full lessons array with the new order for this module
+    const otherLessons = (allLessons as any[]).filter((l) => l.module_id !== moduleId);
+    queryClient.setQueryData(["product-lessons", moduleIds.join(",")], [...otherLessons, ...reordered]);
+    try {
+      await Promise.all(
+        reordered.map((l: any, i: number) =>
+          supabase.from("lessons").update({ position: i }).eq("id", l.id),
+        ),
+      );
+    } catch {
+      toast.error("Erro ao reordenar aulas");
+      queryClient.invalidateQueries({ queryKey: ["product-lessons"] });
+    }
+  };
+
+
   if (loadingModules) {
     return (
       <div className="flex justify-center py-12">
