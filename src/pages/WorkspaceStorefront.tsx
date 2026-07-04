@@ -515,22 +515,7 @@ export default function WorkspaceStorefront() {
         </p>
       </footer>
 
-      {/* Login prompt if not authenticated */}
-      {!user && (
-        <div className="fixed bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-          <div className="max-w-md mx-auto text-center">
-            <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.8)" }}>
-              Faça login para acessar seus produtos
-            </p>
-            <Button
-              onClick={() => navigate("/minha-conta")}
-              style={{ backgroundColor: accentColor, color: accentTextColor }}
-            >
-              Entrar na minha conta
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
+
   );
 }
