@@ -54,6 +54,7 @@ export function Interactive3DLogo({ className = "", src }: { className?: string;
           alt="VitraPay Logo 3D"
           className="relative w-full h-full object-contain"
           style={{ transform: "translateZ(30px)", imageRendering: "auto" }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = logoIcon; }}
         />
       </motion.div>
     </div>
