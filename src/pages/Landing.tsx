@@ -584,28 +584,32 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Highlight Cards — Dark Premium ─── */}
-      <section className="relative bg-[#080808] border-y border-white/[0.06]">
-        <div className="container py-20">
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
-            {highlights.map((item, i) =>
-            <motion.div
-              key={item.title}
-              {...stagger}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 md:p-7 space-y-4 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 cursor-default overflow-hidden">
-              
-                {/* Yellow top bar */}
-                <div className="absolute top-0 left-6 right-6 h-[2px]">
-                  <div className="w-16 h-full bg-primary rounded-b-full" />
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary group-hover:scale-110 transition-all duration-300">
-                  <item.icon className="h-6 w-6 text-primary-foreground" strokeWidth={1.5} />
-                </div>
-                <h3 className="font-semibold text-sm md:text-base text-white">{item.title}</h3>
-                <p className="text-xs md:text-sm text-white/50 leading-relaxed">{item.desc}</p>
+      {/* ─── Bento: Diferenciais VitraPay ─── */}
+      <section className="relative bg-[#080808] border-y border-white/[0.06] overflow-hidden">
+        <div className="container py-14 md:py-20">
+          <div className="grid gap-4 md:gap-5 md:grid-cols-12 max-w-6xl mx-auto items-start">
+            {[
+              { img: bentoAprovacao.url, alt: "Aprovação otimizada", span: "md:col-span-8", ratio: "1972 / 798" },
+              { img: bentoPix.url, alt: "Pix automático e integrado", span: "md:col-span-4", ratio: "1436 / 1096" },
+              { img: bentoSistema.url, alt: "Sistema estável", span: "md:col-span-6", ratio: "1758 / 894" },
+              { img: bentoLiberacao.url, alt: "Liberação ágil de saldo", span: "md:col-span-6", ratio: "1724 / 912" },
+            ].map((c, i) => (
+              <motion.div
+                key={c.alt}
+                {...stagger}
+                transition={{ delay: i * 0.08, duration: 0.5 }}
+                className={`${c.span} group relative rounded-3xl overflow-hidden border border-white/[0.07] bg-[#0a0a0a] hover:border-primary/40 transition-all duration-500`}
+                style={{ aspectRatio: c.ratio }}
+              >
+                <img
+                  src={c.img}
+                  alt={c.alt}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               </motion.div>
-            )}
+            ))}
           </div>
         </div>
       </section>
@@ -719,35 +723,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Bento: Diferenciais VitraPay ─── */}
-      <section className="relative bg-[#080808] overflow-hidden border-t border-white/[0.04]">
-        <div className="container py-14 md:py-20 relative z-10">
-          <div className="grid gap-4 md:gap-5 md:grid-cols-12 max-w-6xl mx-auto items-start">
-            {[
-              { img: bentoAprovacao.url, alt: "Aprovação otimizada", span: "md:col-span-8", ratio: "1972 / 798" },
-              { img: bentoPix.url, alt: "Pix automático e integrado", span: "md:col-span-4", ratio: "1436 / 1096" },
-              { img: bentoSistema.url, alt: "Sistema estável", span: "md:col-span-6", ratio: "1758 / 894" },
-              { img: bentoLiberacao.url, alt: "Liberação ágil de saldo", span: "md:col-span-6", ratio: "1724 / 912" },
-            ].map((c, i) => (
-              <motion.div
-                key={c.alt}
-                {...stagger}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-                className={`${c.span} group relative rounded-3xl overflow-hidden border border-white/[0.07] bg-[#0a0a0a] hover:border-primary/40 transition-all duration-500`}
-                style={{ aspectRatio: c.ratio }}
-              >
-                <img
-                  src={c.img}
-                  alt={c.alt}
-                  loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ─── Features — 3 Cards estilo MasterFy ─── */}
       <section id="features" className="relative bg-[#080808] py-20 md:py-28 border-y border-white/[0.06] overflow-hidden">
