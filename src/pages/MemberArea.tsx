@@ -118,9 +118,15 @@ export default function MemberArea() {
     }
     if (prog) {
       const map: Record<string, boolean> = {};
-      prog.forEach((p: any) => { map[p.lesson_id] = p.completed; });
+      const times: Record<string, string> = {};
+      prog.forEach((p: any) => {
+        map[p.lesson_id] = p.completed;
+        if (p.updated_at) times[p.lesson_id] = p.updated_at;
+      });
       setProgress(map);
+      setProgressTimes(times);
     }
+
     setLoading(false);
   };
 
