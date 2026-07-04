@@ -153,6 +153,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Installment limit by product price (evita prejuízo em produtos baratos) ──
+    // Deve ficar em sincronia com src/lib/installmentLimits.ts
+    const maxInstallmentsForPrice = (cents: number): number => {
+      if (cents < 2000) return 3;
+      if (cents < 5000) return 6;
+      if (cents < 10000) return 10;
+      return 12;
+    };
+    const requestedInstallments = parseInt(installments || "1", 10) || 1;
+    const productAmountForLimit = priceCheck.productAmount ?? Math.max(0, amount - SERVICE_FEE);
+    const maxAllowed = maxInstallmentsForPrice(productAmountForLimit);
+    if (requestedInstallments > maxAllowed) {
+      return new Response(JSON.stringify({
+        error: `Este produto pode ser parcelado em no máximo ${maxAllowed}x.`,
+      }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
 
     const ASAAS_API_KEY = Deno.env.get("ASAAS_API_KEY");
     if (!ASAAS_API_KEY) {
