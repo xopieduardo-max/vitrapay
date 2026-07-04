@@ -629,8 +629,8 @@ export default function Landing() {
             >
 
               <h1
-                className="text-[1.9rem] sm:text-[2.4rem] md:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.5rem] font-bold tracking-tight leading-[1.05]"
-                style={{ fontSize: "var(--hero-title, undefined)" as any }}
+                className="font-bold tracking-tight leading-[1.05] text-[1.9rem] sm:text-[2.4rem] md:text-[3.35rem]"
+                style={{ fontSize: "var(--hero-title, 3.35rem)" }}
               >
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
