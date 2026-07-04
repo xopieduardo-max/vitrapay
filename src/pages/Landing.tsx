@@ -580,13 +580,13 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[85svh] md:min-h-[80svh] lg:min-h-[70vh] flex flex-col justify-center overflow-hidden pt-10 md:pt-10 lg:pt-2">
+      <section ref={heroRef} className="relative min-h-[85svh] md:min-h-[75svh] lg:min-h-[70vh] flex flex-col justify-center overflow-hidden pt-10 md:pt-8 lg:pt-2">
         <GridBackground />
         <FloatingParticles />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
-        <div className="container relative py-0 md:py-2 lg:py-3">
+        <div className="container relative py-0 md:py-1 lg:py-3">
           <div className="relative isolate">
             {/* Yellow wave background — behind first fold (hero grid) */}
             <div className="pointer-events-none absolute -inset-x-[10vw] -bottom-24 md:-bottom-32 h-[70%] z-0">
@@ -615,9 +615,9 @@ export default function Landing() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-              className="space-y-2 md:space-y-4 text-center lg:text-left order-2 lg:order-1">
+              className="space-y-2 md:space-y-3 text-center lg:text-left order-2 lg:order-1">
 
-              <h1 className="text-[1.6rem] sm:text-[2.3rem] md:text-[2.6rem] lg:text-[2.9rem] xl:text-[3.3rem] font-bold tracking-tight leading-[1.05]">
+              <h1 className="text-[1.6rem] sm:text-[2.3rem] md:text-[2.3rem] lg:text-[2.9rem] xl:text-[3.3rem] font-bold tracking-tight leading-[1.05]">
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
                 </span>
@@ -647,14 +647,14 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
-              className="relative flex items-center justify-center min-h-[260px] sm:min-h-[300px] md:min-h-[340px] lg:min-h-[480px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
+              className="relative flex items-center justify-center min-h-[260px] sm:min-h-[300px] md:min-h-[300px] lg:min-h-[480px] order-1 lg:order-2 mx-auto w-full max-w-[650px]">
 
               {/* Glow behind logo */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
               <Interactive3DLogo
                 src={neonKHero.url}
-                className="relative z-10 w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] md:w-[360px] md:h-[360px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
+                className="relative z-10 w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] md:w-[300px] md:h-[300px] lg:w-[520px] lg:h-[520px] xl:w-[560px] xl:h-[560px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
               />
 
               {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
