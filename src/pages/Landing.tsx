@@ -587,95 +587,91 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero Section ─── */}
-      <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center">
+      <section ref={heroRef} className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden">
         <GridBackground />
         <FloatingParticles />
-        {/* Fade lateral (sombra nos cantos) */}
+        {/* Yellow ambient glow bottom — like reference */}
+        <div className="pointer-events-none absolute -bottom-32 left-0 right-0 h-64 bg-[radial-gradient(ellipse_80%_100%_at_50%_100%,hsl(var(--primary)/0.35),transparent_70%)] blur-2xl" />
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-40 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-40 z-10 bg-gradient-to-l from-background to-transparent" />
 
         <div className="container relative py-8 md:py-14 lg:py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="max-w-4xl mx-auto text-center space-y-6">
-
-
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+            {/* LEFT — Copy + CTA */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ delay: 0.2, duration: 0.8, type: "spring", damping: 15 }}
-              className="flex justify-center">
-              
-              <Interactive3DLogo className="w-[318px] h-[149px] md:w-[444px] md:h-[209px] cursor-grab active:cursor-grabbing" />
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
+              className="space-y-8 text-center lg:text-left">
+
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold tracking-tight leading-[1.05]">
+                <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+                  A estrutura por trás de operações que{" "}
+                </span>
+                <span className="text-primary [text-shadow:0_0_40px_hsl(var(--primary)/0.5)]">
+                  faturam todos os dias!
+                </span>
+              </h1>
+
+              <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                Aprovação mais alta, saques rápidos e uma operação estável pra quem não pode perder vendas por falhas de sistema.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-2">
+                <Button size="lg" className="group relative h-14 px-8 text-base font-semibold gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.6)]" asChild>
+                  <Link to="/auth">
+                    Crie sua conta agora!
+                    <div className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center group-hover:rotate-45 transition-transform">
+                      <ArrowRight className="h-4 w-4 -rotate-45" />
+                    </div>
+                  </Link>
+                </Button>
+              </div>
             </motion.div>
 
-            <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1]">
-              <span className="relative z-10 bg-gradient-to-b from-foreground via-foreground to-foreground/40 bg-clip-text text-transparent">
-                A VitraPay enxerga o caminho
-                <br />
-                para não te deixar no escuro
-              </span>
-              {/* Glow central sutil */}
-              <span className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--primary)/0.06),transparent_70%)] blur-2xl pointer-events-none" />
-            </h1>
+            {/* RIGHT — 3D Logo + floating notifications */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
+              className="relative flex items-center justify-center min-h-[420px] lg:min-h-[560px]">
 
-            <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Desenvolvida para negócios que não podem parar, nossa tecnologia combina automação inteligente, checkout otimizado e performance contínua para maximizar conversões com total segurança.
-            </p>
+              {/* Glow behind logo */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_50%,hsl(var(--primary)/0.35),transparent_60%)] blur-3xl" />
 
-            {/* ─── Dual CTAs ─── */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="relative h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20" asChild>
-                <Link to="/auth" className="text-sm">
-                  Criar minha conta
-                  <div className="h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-10 text-base font-semibold gap-3 rounded-full border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200" asChild>
-                <Link to="/auth">
-                  Fazer login
-                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                </Link>
-              </Button>
-            </div>
-          </motion.div>
+              <Interactive3DLogo
+                className="relative z-10 w-[280px] h-[280px] sm:w-[380px] sm:h-[380px] lg:w-[520px] lg:h-[520px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_60px_hsl(var(--primary)/0.6)]"
+              />
 
-          {/* Dashboard Preview with notifications side by side */}
+              {/* Floating notifications overlapping the logo */}
+              <div className="absolute inset-0 z-20 pointer-events-none flex flex-col items-end justify-center gap-3 pr-2 sm:pr-6 lg:pr-0 lg:-right-4">
+                <div className="w-[240px] sm:w-[280px] mr-0 sm:-mr-6 lg:-mr-10">
+                  <FloatingNotifications />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Dashboard Preview below hero */}
           <motion.div
             style={{ y: dashboardY, scale: dashboardScale, willChange: "transform" }}
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
-            className="mt-16 md:mt-24 max-w-[90rem] mx-auto relative flex items-start justify-center gap-6 px-4">
-            
-            {/* Floating Notifications — left side, desktop only */}
-            <div className="hidden lg:block w-[280px] shrink-0 pt-8">
-              <FloatingNotifications />
-            </div>
+            transition={{ delay: 0.5, duration: 1, ease: [0.2, 0, 0, 1] }}
+            className="mt-20 md:mt-28 max-w-6xl mx-auto relative">
 
-            {/* Dashboard image with scroll-driven tilt */}
-            <div className="flex-1 min-w-0" style={{ perspective: "1200px" }}>
+            <div style={{ perspective: "1200px" }}>
               <motion.div
                 style={{ rotateX: dashboardRotateX, willChange: "transform" }}
-                className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 group origin-bottom">
-                
+                className="relative rounded-2xl border border-border/30 overflow-hidden shadow-2xl shadow-primary/10 origin-bottom">
                 <img
                   src={dashboardPreview}
                   alt="Dashboard VitraPay com métricas de vendas em tempo real"
                   className="w-full"
                   loading="eager"
                   decoding="async" />
-                
-                {/* Fade overlay at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/60 to-transparent" />
               </motion.div>
-              {/* Glow effect beneath */}
               <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/10 blur-[60px] rounded-full" />
             </div>
           </motion.div>
