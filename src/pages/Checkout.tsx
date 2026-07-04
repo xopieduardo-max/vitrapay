@@ -510,7 +510,7 @@ export default function Checkout() {
             card_expiry_month: expiryMonth,
             card_expiry_year: expiryYear,
             card_cvv: form.cardCvv,
-            installments: form.installments,
+            installments: String(nInstallments),
             amount: cardTotalCharged,
             service_fee: SERVICE_FEE,
             affiliate_ref: affiliateRef,
