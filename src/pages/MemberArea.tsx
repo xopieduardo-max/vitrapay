@@ -94,8 +94,9 @@ export default function MemberArea() {
         : Promise.resolve({ data: [] as any[] }),
       supabase
         .from("lesson_progress")
-        .select("lesson_id, completed")
+        .select("lesson_id, completed, updated_at")
         .eq("user_id", user!.id),
+
     ]);
 
     if (prod) setProduct(prod);
