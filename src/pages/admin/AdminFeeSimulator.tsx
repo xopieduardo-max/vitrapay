@@ -399,6 +399,71 @@ export default function AdminFeeSimulator() {
         </div>
       )}
 
+      {/* Gráfico: Lucro por parcela */}
+      {method === "card" && isValid && scenarioMatrix.length > 0 && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="px-5 py-3 border-b border-border bg-muted/30">
+            <p className="text-sm font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Lucro da plataforma por parcela · {antecipacao === "D2" ? "D+2" : "D+30"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Barras verdes = lucro · vermelhas = prejuízo. Barra destacada = parcela selecionada.
+            </p>
+          </div>
+          <div className="p-4" style={{ height: 280 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={scenarioMatrix.map(r => ({ ...r, profitReais: r.profit / 100 }))}
+                margin={{ top: 10, right: 16, left: 0, bottom: 8 }}>
+                <XAxis
+                  dataKey="n"
+                  tickFormatter={(v) => `${v}x`}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tickFormatter={(v) => `R$ ${v.toFixed(2)}`}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  tickLine={false}
+                  width={70}
+                />
+                <ReferenceLine y={0} stroke="hsl(var(--border))" />
+                <Tooltip
+                  cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                  labelFormatter={(v) => `${v}x parcelado`}
+                  formatter={(val: number) => [fmt(Math.round(val * 100)), "Lucro plataforma"]}
+                />
+                <Bar dataKey="profitReais" radius={[6, 6, 0, 0]}>
+                  {scenarioMatrix.map((row) => {
+                    const isSelected = row.n === installments;
+                    const color = row.profit > 0
+                      ? "hsl(142 71% 45%)"
+                      : row.profit === 0 ? "hsl(38 92% 50%)" : "hsl(0 84% 60%)";
+                    return (
+                      <Cell
+                        key={row.n}
+                        fill={color}
+                        fillOpacity={isSelected ? 1 : 0.55}
+                        stroke={isSelected ? "hsl(var(--primary))" : "transparent"}
+                        strokeWidth={isSelected ? 2 : 0}
+                      />
+                    );
+                  })}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       {/* Matriz de cenários (todas as parcelas de uma vez) */}
       {method === "card" && isValid && scenarioMatrix.length > 0 && (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
