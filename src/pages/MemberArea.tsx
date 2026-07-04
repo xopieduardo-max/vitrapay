@@ -168,6 +168,29 @@ export default function MemberArea() {
   const progressPercent = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
   const courseCompleted = totalLessons > 0 && completedLessons >= totalLessons;
 
+  // Compute "resume lesson": latest touched lesson (or next incomplete after it, or first lesson)
+  const flatLessons: { lesson: Lesson; module: Module; index: number }[] = [];
+  modules.forEach((m) => m.lessons.forEach((l) => flatLessons.push({ lesson: l, module: m, index: flatLessons.length })));
+  let resumeItem: { lesson: Lesson; module: Module; index: number } | null = null;
+  const touched = flatLessons
+    .filter((f) => progressTimes[f.lesson.id])
+    .sort((a, b) => (progressTimes[b.lesson.id] || "").localeCompare(progressTimes[a.lesson.id] || ""));
+  if (touched.length > 0) {
+    const last = touched[0];
+    if (!progress[last.lesson.id]) {
+      resumeItem = last;
+    } else {
+      // find next incomplete after
+      resumeItem = flatLessons.find((f) => f.index > last.index && !progress[f.lesson.id])
+        || flatLessons.find((f) => !progress[f.lesson.id])
+        || null;
+    }
+  } else if (flatLessons.length > 0) {
+    resumeItem = flatLessons[0];
+  }
+  const hasStarted = touched.length > 0;
+
+
   const downloadCertificate = () => {
     const canvas = document.createElement("canvas");
     canvas.width = 1200;
