@@ -626,7 +626,7 @@ export default function Landing() {
                 </span>
               </h1>
 
-              <p className="text-[1.2rem] md:text-[1.35rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-[1.08rem] md:text-[1.215rem] text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Aprovação mais alta, saques rápidos e uma operação estável pra quem não pode perder vendas por falhas de sistema.
               </p>
 
