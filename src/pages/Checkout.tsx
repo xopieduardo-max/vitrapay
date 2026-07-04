@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import vitraPayLogo from "@/assets/logo-vitrapay-horizontal.webp";
 import {
   ShieldCheck,
   Clock,
@@ -1388,7 +1389,7 @@ export default function Checkout() {
                 {/* Logo + processing info */}
                 <div className="text-center space-y-1.5">
                   <img
-                    src="/logo-vitrapay-horizontal.webp"
+                    src={vitraPayLogo}
                     alt="VitraPay"
                     width={120}
                     height={30}
