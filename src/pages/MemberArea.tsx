@@ -45,6 +45,8 @@ export default function MemberArea() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"overview" | "lesson">("overview");
   const [lessonFiles, setLessonFiles] = useState<Record<string, { id: string; file_name: string; file_url: string }[]>>({});
+  const [progressTimes, setProgressTimes] = useState<Record<string, string>>({});
+
 
   useEffect(() => {
     if (!productId || !user) return;
@@ -92,8 +94,9 @@ export default function MemberArea() {
         : Promise.resolve({ data: [] as any[] }),
       supabase
         .from("lesson_progress")
-        .select("lesson_id, completed")
+        .select("lesson_id, completed, updated_at")
         .eq("user_id", user!.id),
+
     ]);
 
     if (prod) setProduct(prod);
@@ -115,9 +118,15 @@ export default function MemberArea() {
     }
     if (prog) {
       const map: Record<string, boolean> = {};
-      prog.forEach((p: any) => { map[p.lesson_id] = p.completed; });
+      const times: Record<string, string> = {};
+      prog.forEach((p: any) => {
+        map[p.lesson_id] = p.completed;
+        if (p.updated_at) times[p.lesson_id] = p.updated_at;
+      });
       setProgress(map);
+      setProgressTimes(times);
     }
+
     setLoading(false);
   };
 
@@ -158,6 +167,29 @@ export default function MemberArea() {
   const completedLessons = Object.values(progress).filter(Boolean).length;
   const progressPercent = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
   const courseCompleted = totalLessons > 0 && completedLessons >= totalLessons;
+
+  // Compute "resume lesson": latest touched lesson (or next incomplete after it, or first lesson)
+  const flatLessons: { lesson: Lesson; module: Module; index: number }[] = [];
+  modules.forEach((m) => m.lessons.forEach((l) => flatLessons.push({ lesson: l, module: m, index: flatLessons.length })));
+  let resumeItem: { lesson: Lesson; module: Module; index: number } | null = null;
+  const touched = flatLessons
+    .filter((f) => progressTimes[f.lesson.id])
+    .sort((a, b) => (progressTimes[b.lesson.id] || "").localeCompare(progressTimes[a.lesson.id] || ""));
+  if (touched.length > 0) {
+    const last = touched[0];
+    if (!progress[last.lesson.id]) {
+      resumeItem = last;
+    } else {
+      // find next incomplete after
+      resumeItem = flatLessons.find((f) => f.index > last.index && !progress[f.lesson.id])
+        || flatLessons.find((f) => !progress[f.lesson.id])
+        || null;
+    }
+  } else if (flatLessons.length > 0) {
+    resumeItem = flatLessons[0];
+  }
+  const hasStarted = touched.length > 0;
+
 
   const downloadCertificate = () => {
     const canvas = document.createElement("canvas");
@@ -326,6 +358,73 @@ export default function MemberArea() {
             )}
           </div>
         </div>
+
+        {/* Resume lesson card */}
+        {resumeItem && !courseCompleted && (
+          <div className="max-w-5xl mx-auto px-4 -mt-4">
+            <motion.button
+              onClick={() => openLesson(resumeItem!.lesson)}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+              className="group w-full rounded-2xl border border-primary/30 bg-card hover:border-primary/60 transition-colors overflow-hidden text-left shadow-lg"
+            >
+              <div className="flex flex-col sm:flex-row">
+                {/* Thumbnail */}
+                <div className="relative w-full sm:w-64 aspect-video sm:aspect-auto shrink-0 bg-muted/30 overflow-hidden">
+                  {(resumeItem.module as any).cover_url ? (
+                    <img
+                      src={(resumeItem.module as any).cover_url}
+                      alt={resumeItem.lesson.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : product?.cover_url ? (
+                    <img
+                      src={product.cover_url}
+                      alt={resumeItem.lesson.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
+                  )}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/25 transition-colors" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                      <Play className="h-6 w-6 text-primary-foreground ml-0.5" fill="currentColor" />
+                    </div>
+                  </div>
+                </div>
+                {/* Content */}
+                <div className="flex-1 p-4 sm:p-5 flex flex-col justify-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-[0.6rem] uppercase tracking-wider">
+                      {hasStarted ? "Continuar de onde parou" : "Começar curso"}
+                    </Badge>
+                  </div>
+                  <p className="text-[0.65rem] text-muted-foreground truncate">
+                    {resumeItem.module.title}
+                  </p>
+                  <h3 className="font-bold text-base sm:text-lg leading-tight line-clamp-2">
+                    {resumeItem.lesson.title}
+                  </h3>
+                  {resumeItem.lesson.duration_minutes > 0 && (
+                    <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {resumeItem.lesson.duration_minutes} min
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    <Progress value={progressPercent} className="h-1.5 flex-1" />
+                    <span className="text-[0.6rem] text-muted-foreground whitespace-nowrap font-medium">
+                      {Math.round(progressPercent)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          </div>
+        )}
+
 
         {/* Module cards - Netflix style */}
         <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
