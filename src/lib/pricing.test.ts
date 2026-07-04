@@ -200,12 +200,20 @@ describe("computeScenario — lucro/prejuízo", () => {
     expect(r.producerReceives).toBe(10000 - r.platformFee);
   });
 
-  it("R$ 100 cartão 12x D+30 → ainda lucrativo", () => {
+  it("R$ 100 cartão 12x D+30 com defaults atuais → PREJUÍZO (alerta real)", () => {
+    // Regra de negócio: taxa VitraPay 3,99% + R$ 2,49 não cobre 12x na venda de R$ 100.
+    // Custo Asaas ≈ R$ 10,61 vs receita ≈ R$ 7,43. Este teste guarda o achado.
     const r = computeScenario({
       amountCents: 10000, method: "card", installments: 12, antecipacao: "D30",
       vpPct: CARD_VP.pct, vpFixedCents: CARD_VP.fixed,
     });
-    expect(r.isProfit).toBe(true);
+    expect(r.isLoss).toBe(true);
+    // Para virar lucro, precisaria de taxa maior (ex: 6,99% + R$ 2,49)
+    const rHigher = computeScenario({
+      amountCents: 10000, method: "card", installments: 12, antecipacao: "D30",
+      vpPct: 6.99, vpFixedCents: 249,
+    });
+    expect(rHigher.isProfit).toBe(true);
   });
 
   it("R$ 100 cartão 12x D+2 → margem menor que D+30", () => {
