@@ -186,14 +186,14 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} className="h-10">
                     <NavLink
                       to={item.url}
                       end
-                      className="gap-3 text-sm transition-colors"
+                      className="gap-3 text-sm transition-colors [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                       activeClassName="bg-primary/10 text-primary font-medium"
                     >
-                      <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      <item.icon className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
