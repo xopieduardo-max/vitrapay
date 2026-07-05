@@ -186,14 +186,14 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} className="h-10">
                     <NavLink
                       to={item.url}
                       end
-                      className="gap-3 text-sm transition-colors"
+                      className="gap-3 text-sm transition-colors [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                       activeClassName="bg-primary/10 text-primary font-medium"
                     >
-                      <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      <item.icon className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -206,9 +206,9 @@ export function AppSidebar() {
                     >
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className="gap-3 text-sm transition-colors w-full justify-between">
+                          <SidebarMenuButton className="gap-3 text-sm transition-colors w-full justify-between h-10">
                             <span className="flex items-center gap-3">
-                              <ShoppingBag className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                              <ShoppingBag className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
                               <span>Vendas</span>
                             </span>
                             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
@@ -222,10 +222,10 @@ export function AppSidebar() {
                                   <NavLink
                                     to={sub.url}
                                     end
-                                    className="gap-3 text-sm transition-colors"
+                                    className="gap-3 text-sm transition-colors [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                                     activeClassName="text-primary font-medium"
                                   >
-                                    <sub.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+                                    <sub.icon className="!h-4 !w-4 shrink-0" strokeWidth={1.75} />
                                     <span>{sub.title}</span>
                                   </NavLink>
                                 </SidebarMenuSubButton>
@@ -240,14 +240,14 @@ export function AppSidebar() {
                   {/* Collapsed mode: show sub-items as regular items */}
                   {item.url === "/marketplace" && collapsed && salesSubItems.map((sub) => (
                     <SidebarMenuItem key={sub.url}>
-                      <SidebarMenuButton asChild isActive={isActive(sub.url)}>
+                      <SidebarMenuButton asChild isActive={isActive(sub.url)} className="h-10">
                         <NavLink
                           to={sub.url}
                           end
-                          className="gap-3 text-sm transition-colors"
+                          className="gap-3 text-sm transition-colors [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                           activeClassName="bg-primary/10 text-primary font-medium"
                         >
-                          <sub.icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                          <sub.icon className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -258,13 +258,13 @@ export function AppSidebar() {
               {/* Admin link - only for admins */}
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")}>
+                  <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")} className="h-10">
                     <NavLink
                       to="/admin"
-                      className="gap-3 text-sm transition-colors"
+                      className="gap-3 text-sm transition-colors [&.active]:bg-destructive/10 [&.active]:text-destructive [&.active_svg]:text-destructive [&.active]:font-medium"
                       activeClassName="bg-destructive/10 text-destructive font-medium"
                     >
-                      <Shield className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      <Shield className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
                       {!collapsed && <span>Painel Admin</span>}
                     </NavLink>
                   </SidebarMenuButton>
