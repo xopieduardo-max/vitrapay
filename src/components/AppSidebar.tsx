@@ -206,9 +206,9 @@ export function AppSidebar() {
                     >
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className="gap-3 text-sm transition-colors w-full justify-between">
+                          <SidebarMenuButton className="gap-3 text-sm transition-colors w-full justify-between h-10">
                             <span className="flex items-center gap-3">
-                              <ShoppingBag className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                              <ShoppingBag className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
                               <span>Vendas</span>
                             </span>
                             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
