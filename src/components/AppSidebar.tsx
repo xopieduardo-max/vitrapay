@@ -83,7 +83,6 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
   const location = useLocation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [becomingProducer, setBecomingProducer] = useState(false);
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(path + "/");
 
@@ -132,21 +131,6 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
     },
     enabled: !!user,
   });
-
-  const handleBecomeProducer = async () => {
-    if (!user) return;
-    setBecomingProducer(true);
-    const { error } = await supabase
-      .from("user_roles")
-      .insert({ user_id: user.id, role: "producer" } as any);
-    if (error) {
-      toast.error("Erro ao ativar modo produtor.");
-    } else {
-      toast.success("🎉 Agora você é um produtor! Crie seu primeiro produto.");
-      queryClient.invalidateQueries({ queryKey: ["is-producer-sidebar"] });
-    }
-    setBecomingProducer(false);
-  };
 
   const currentGoal = getCurrentGoal(totalRevenue);
   const revenueProgress = Math.min((totalRevenue / currentGoal) * 100, 100);
