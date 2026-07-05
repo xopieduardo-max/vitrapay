@@ -663,7 +663,7 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
               className="space-y-3 md:space-y-4 text-center md:text-left order-2 md:order-1"
-              style={{ transform: "translateY(var(--hero-left-y, 0px))" }}
+              style={isMobile ? undefined : { transform: "translateY(var(--hero-left-y, 0px))" }}
             >
 
               <h1
