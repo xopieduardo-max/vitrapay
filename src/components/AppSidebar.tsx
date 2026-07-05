@@ -199,8 +199,8 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
                   <SidebarMenuButton asChild isActive={isActive(item.url)} className="h-10">
                     <NavLink
                       to={item.url}
-                      end
-                      className="gap-3 text-sm transition-colors [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
+                      end={item.url === "/dashboard"}
+                      className="gap-3 text-sm transition-colors data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium [&[data-active=true]_svg]:text-primary [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                       activeClassName="bg-primary/10 text-primary font-medium"
                     >
                       <item.icon className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
