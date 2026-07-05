@@ -87,7 +87,8 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [becomingProducer, setBecomingProducer] = useState(false);
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + "/");
 
   const { data: totalRevenue = 0 } = useQuery({
     queryKey: ["sidebar-revenue", user?.id],
@@ -198,8 +199,8 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
                   <SidebarMenuButton asChild isActive={isActive(item.url)} className="h-10">
                     <NavLink
                       to={item.url}
-                      end
-                      className="gap-3 text-sm transition-colors [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
+                      end={item.url === "/dashboard"}
+                      className="gap-3 text-sm transition-colors data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium [&[data-active=true]_svg]:text-primary [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                       activeClassName="bg-primary/10 text-primary font-medium"
                     >
                       <item.icon className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
@@ -230,8 +231,7 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
                                 <SidebarMenuSubButton asChild isActive={isActive(sub.url)}>
                                   <NavLink
                                     to={sub.url}
-                                    end
-                                    className="gap-3 text-sm transition-colors [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
+                                    className="gap-3 text-sm transition-colors data-[active=true]:text-primary data-[active=true]:font-medium [&[data-active=true]_svg]:text-primary [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                                     activeClassName="text-primary font-medium"
                                   >
                                     <sub.icon className="!h-4 !w-4 shrink-0" strokeWidth={1.75} />
@@ -252,8 +252,7 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
                       <SidebarMenuButton asChild isActive={isActive(sub.url)} className="h-10">
                         <NavLink
                           to={sub.url}
-                          end
-                          className="gap-3 text-sm transition-colors [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
+                          className="gap-3 text-sm transition-colors data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium [&[data-active=true]_svg]:text-primary [&.active]:bg-primary/10 [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                           activeClassName="bg-primary/10 text-primary font-medium"
                         >
                           <sub.icon className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
@@ -270,7 +269,7 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
                   <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")} className="h-10">
                     <NavLink
                       to="/admin"
-                      className="gap-3 text-sm transition-colors [&.active]:bg-destructive/10 [&.active]:text-destructive [&.active_svg]:text-destructive [&.active]:font-medium"
+                      className="gap-3 text-sm transition-colors data-[active=true]:bg-destructive/10 data-[active=true]:text-destructive data-[active=true]:font-medium [&[data-active=true]_svg]:text-destructive [&.active]:bg-destructive/10 [&.active]:text-destructive [&.active_svg]:text-destructive [&.active]:font-medium"
                       activeClassName="bg-destructive/10 text-destructive font-medium"
                     >
                       <Shield className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
