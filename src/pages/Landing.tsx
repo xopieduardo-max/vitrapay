@@ -42,6 +42,7 @@ import {
 import { FeeSimulatorCard } from "@/components/FeeSimulatorCard";
 import { HeroDevControls } from "@/components/HeroDevControls";
 import { DevDraggable, NotifDevControls } from "@/components/NotifDevControls";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
@@ -580,6 +581,8 @@ export default function Landing() {
   const dashboardScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
   const dashboardRotateX = useTransform(scrollYProgress, [0, 0.6], [12, 0]);
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="min-h-screen bg-background">
       <HeroDevControls />
@@ -620,7 +623,7 @@ export default function Landing() {
       <section
         ref={heroRef}
         className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden"
-        style={{ paddingTop: "var(--hero-pt, 0px)" }}
+        style={isMobile ? undefined : { paddingTop: "var(--hero-pt, 0px)" }}
       >
         <GridBackground />
         <FloatingParticles />
@@ -652,7 +655,7 @@ export default function Landing() {
 
             <div
               className="relative z-10 grid md:grid-cols-2 items-center gap-0"
-              style={{ gap: "var(--hero-gap, 0px)" }}
+              style={isMobile ? undefined : { gap: "var(--hero-gap, 0px)" }}
             >
             {/* LEFT — Copy + CTA */}
             <motion.div
@@ -660,12 +663,12 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
               className="space-y-3 md:space-y-4 text-center md:text-left order-2 md:order-1"
-              style={{ transform: "translateY(var(--hero-left-y, 0px))" }}
+              style={isMobile ? undefined : { transform: "translateY(var(--hero-left-y, 0px))" }}
             >
 
               <h1
                 className="font-bold tracking-tight leading-[1.05] text-[1.9rem] sm:text-[2.4rem] md:text-[3.35rem]"
-                style={{ fontSize: "var(--hero-title, 3.35rem)" }}
+                style={isMobile ? undefined : { fontSize: "var(--hero-title, 3.35rem)" }}
               >
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
@@ -697,7 +700,7 @@ export default function Landing() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
               className="relative flex items-center justify-center min-h-[240px] sm:min-h-[280px] md:min-h-[360px] lg:min-h-[480px] order-1 md:order-2 mx-auto w-full max-w-[650px]"
-              style={{ transform: "translateY(var(--hero-right-y, 0px))" }}
+              style={isMobile ? undefined : { transform: "translateY(var(--hero-right-y, 0px))" }}
             >
 
               {/* Glow behind logo */}
@@ -706,7 +709,7 @@ export default function Landing() {
               <Interactive3DLogo
                 src={neonKHero.url}
                 className="relative z-10 w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[484px] md:h-[484px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
-                style={{ width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
+                style={isMobile ? undefined : { width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
               />
 
               {/* Notificações ao redor do brasão — atrás (z-0) e saindo por trás */}
