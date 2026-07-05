@@ -655,7 +655,7 @@ export default function Landing() {
 
             <div
               className="relative z-10 grid md:grid-cols-2 items-center gap-0"
-              style={{ gap: "var(--hero-gap, 0px)" }}
+              style={isMobile ? undefined : { gap: "var(--hero-gap, 0px)" }}
             >
             {/* LEFT — Copy + CTA */}
             <motion.div
