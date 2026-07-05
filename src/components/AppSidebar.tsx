@@ -11,7 +11,6 @@ import {
   Settings,
   Smartphone,
   Plug,
-  Rocket,
   Columns,
   Receipt,
   ChevronDown,
@@ -24,7 +23,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -40,7 +38,6 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
@@ -86,7 +83,6 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
   const location = useLocation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [becomingProducer, setBecomingProducer] = useState(false);
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(path + "/");
 
@@ -135,21 +131,6 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
     },
     enabled: !!user,
   });
-
-  const handleBecomeProducer = async () => {
-    if (!user) return;
-    setBecomingProducer(true);
-    const { error } = await supabase
-      .from("user_roles")
-      .insert({ user_id: user.id, role: "producer" } as any);
-    if (error) {
-      toast.error("Erro ao ativar modo produtor.");
-    } else {
-      toast.success("🎉 Agora você é um produtor! Crie seu primeiro produto.");
-      queryClient.invalidateQueries({ queryKey: ["is-producer-sidebar"] });
-    }
-    setBecomingProducer(false);
-  };
 
   const currentGoal = getCurrentGoal(totalRevenue);
   const revenueProgress = Math.min((totalRevenue / currentGoal) * 100, 100);
@@ -284,29 +265,6 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
       </SidebarContent>
 
       <SidebarFooter className="p-3 gap-2">
-        {!isProducer && !isAdmin && !collapsed && (
-          <Button
-            size="sm"
-            className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={handleBecomeProducer}
-            disabled={becomingProducer}
-          >
-            <Rocket className="h-4 w-4" />
-            Quero Vender
-          </Button>
-        )}
-        {!isProducer && !isAdmin && collapsed && (
-          <Button
-            size="icon"
-            className="w-full h-8 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={handleBecomeProducer}
-            disabled={becomingProducer}
-            title="Quero Vender"
-          >
-            <Rocket className="h-4 w-4" />
-          </Button>
-        )}
-
         <div className={`flex items-center border-t border-border pt-2 ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
           <NotificationsDropdown
             count={newSalesCount}
