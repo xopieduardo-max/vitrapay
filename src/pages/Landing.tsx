@@ -106,22 +106,35 @@ function FloatingNotifications() {
   );
 }
 
-function StaticSaleNotification({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+function StaticSaleNotification({
+  className = "",
+  style,
+  method = "Pix",
+  value = "90,00",
+  blurred = false,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  method?: string;
+  value?: string;
+  blurred?: boolean;
+}) {
   return (
     <div
-      className={`items-start gap-2.5 rounded-2xl bg-black/90 border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] backdrop-blur-sm pointer-events-none ${className}`}
-      style={style}
+      className={`flex items-center gap-3 rounded-2xl bg-[#0a0a0a]/95 border border-white/10 px-4 py-3.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.8)] ring-1 ring-white/5 backdrop-blur-md pointer-events-none ${className}`}
+      style={{ ...style, filter: blurred ? "blur(3px)" : undefined }}
     >
-      <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
+      <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-black border border-white/10 flex items-center justify-center shadow-inner">
         <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-white leading-tight">Venda Aprovada!</p>
-        <p className="text-[11px] font-semibold text-white leading-tight">from VitraPay</p>
-        <p className="text-[10px] text-white/70 leading-tight mt-0.5">Pagamento via Pix</p>
-        <p className="text-[10px] text-white/70 leading-tight">Valor: R$ 90,00</p>
+        <p className="text-[13px] font-semibold text-white leading-snug tracking-tight">
+          Uma nova venda foi realizada no {method}!
+        </p>
+        <p className="text-[12px] text-white/60 leading-tight mt-0.5">
+          O valor foi de <span className="text-white/80 font-medium">R$ {value}</span>
+        </p>
       </div>
-      <span className="text-[10px] text-white/50 flex-shrink-0">agora</span>
     </div>
   );
 }
@@ -694,23 +707,39 @@ export default function Landing() {
                 style={{ width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
               />
 
-              {/* Notificação atrás do brasão — topo esquerda */}
+              {/* ATRÁS — topo esquerda (blur para profundidade) */}
               <StaticSaleNotification
-                className="hidden md:flex absolute z-0 top-[12%] -left-2 lg:-left-8 w-[240px] lg:w-[260px] opacity-90"
-                style={{ animation: "floatY 6s ease-in-out infinite" }}
+                method="Pix"
+                value="127,00"
+                blurred
+                className="hidden md:flex absolute z-0 top-[8%] -left-6 lg:-left-14 w-[280px] lg:w-[300px] opacity-70"
+                style={{ animation: "floatY 7s ease-in-out infinite" }}
               />
 
-              {/* Notificação atrás do brasão — meio esquerda (mais atrás) */}
+              {/* ATRÁS — meio direita (sutil) */}
               <StaticSaleNotification
-                className="hidden lg:flex absolute z-0 top-[42%] -left-6 w-[230px] opacity-75"
-                style={{ animation: "floatY 7s ease-in-out infinite 1.2s" }}
+                method="Cartão"
+                value="349,90"
+                className="hidden lg:flex absolute z-0 top-[52%] -right-10 w-[290px] opacity-60"
+                style={{ animation: "floatY 8s ease-in-out infinite 1.5s", filter: "blur(1.5px)" }}
               />
 
-              {/* Notificação na frente — direita meio */}
+              {/* FRENTE — topo direita */}
               <StaticSaleNotification
-                className="hidden md:flex absolute z-20 top-[38%] -right-4 lg:-right-10 w-[250px] lg:w-[270px]"
-                style={{ animation: "floatY 5.5s ease-in-out infinite 0.5s" }}
+                method="Boleto"
+                value="47,00"
+                className="hidden md:flex absolute z-20 top-[14%] -right-2 lg:-right-10 w-[300px] lg:w-[320px]"
+                style={{ animation: "floatY 6s ease-in-out infinite 0.5s" }}
               />
+
+              {/* FRENTE — meio esquerda */}
+              <StaticSaleNotification
+                method="Pix"
+                value="90,00"
+                className="hidden md:flex absolute z-20 top-[46%] -left-4 lg:-left-12 w-[300px] lg:w-[320px]"
+                style={{ animation: "floatY 5.5s ease-in-out infinite 1s" }}
+              />
+
 
               {/* Notificação na frente — inferior direita (a animada com dados dinâmicos) */}
               <div
