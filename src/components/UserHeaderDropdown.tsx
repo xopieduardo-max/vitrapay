@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 
 type ViewMode = "buyer" | "producer";
 
-export function UserHeaderDropdown() {
+export function UserHeaderDropdown({ compact = false }: { compact?: boolean } = {}) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
