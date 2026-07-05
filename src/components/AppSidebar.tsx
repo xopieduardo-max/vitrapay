@@ -284,7 +284,7 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="p-3 gap-2">
         {!isProducer && !isAdmin && !collapsed && (
           <Button
             size="sm"
@@ -307,6 +307,17 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
             <Rocket className="h-4 w-4" />
           </Button>
         )}
+
+        <div className={`flex items-center border-t border-border pt-2 ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
+          <NotificationsDropdown
+            count={newSalesCount}
+            notifications={notifications}
+            onClear={onClearNotifications}
+          />
+          <div className="flex-1 min-w-0">
+            <UserHeaderDropdown compact={collapsed} />
+          </div>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
