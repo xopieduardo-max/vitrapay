@@ -78,21 +78,23 @@ export function DevDraggable({
   const off = offsets[id] || { x: 0, y: 0 };
   const ref = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
+  const dev = useDevMode();
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (e.button !== 0) return;
+    if (!dev || e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
     (e.target as Element).setPointerCapture?.(e.pointerId);
     dragRef.current = { startX: e.clientX, startY: e.clientY, ox: off.x, oy: off.y };
   };
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current) return;
+    if (!dev || !dragRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     setOffset(id, { x: dragRef.current.ox + dx, y: dragRef.current.oy + dy });
   };
   const onPointerUp = (e: React.PointerEvent) => {
+    if (!dev) return;
     dragRef.current = null;
     (e.target as Element).releasePointerCapture?.(e.pointerId);
   };
@@ -104,15 +106,15 @@ export function DevDraggable({
       style={{
         ...style,
         transform: `translate(${off.x}px, ${off.y}px)`,
-        cursor: "grab",
-        outline: "1px dashed rgba(250, 204, 21, 0.6)",
-        outlineOffset: "2px",
+        cursor: dev ? "grab" : undefined,
+        outline: dev ? "1px dashed rgba(250, 204, 21, 0.6)" : undefined,
+        outlineOffset: dev ? "2px" : undefined,
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      data-dev-drag-id={id}
+      data-dev-drag-id={dev ? id : undefined}
     >
       {children}
     </div>
