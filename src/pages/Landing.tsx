@@ -668,7 +668,7 @@ export default function Landing() {
 
               <h1
                 className="font-bold tracking-tight leading-[1.05] text-[1.9rem] sm:text-[2.4rem] md:text-[3.35rem]"
-                style={{ fontSize: "var(--hero-title, 3.35rem)" }}
+                style={isMobile ? undefined : { fontSize: "var(--hero-title, 3.35rem)" }}
               >
                 <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                   A estrutura por trás de operações que{" "}
