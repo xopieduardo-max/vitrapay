@@ -106,6 +106,26 @@ function FloatingNotifications() {
   );
 }
 
+function StaticSaleNotification({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <div
+      className={`items-start gap-2.5 rounded-2xl bg-black/90 border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] backdrop-blur-sm pointer-events-none ${className}`}
+      style={style}
+    >
+      <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
+        <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold text-white leading-tight">Venda Aprovada!</p>
+        <p className="text-[11px] font-semibold text-white leading-tight">from VitraPay</p>
+        <p className="text-[10px] text-white/70 leading-tight mt-0.5">Pagamento via Pix</p>
+        <p className="text-[10px] text-white/70 leading-tight">Valor: R$ 90,00</p>
+      </div>
+      <span className="text-[10px] text-white/50 flex-shrink-0">agora</span>
+    </div>
+  );
+}
+
 /* ─── Interactive Grid Background ─── */
 const GridBackground = React.memo(function GridBackground() {
   return (
