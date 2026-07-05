@@ -21,7 +21,11 @@ import { useState, useRef, useEffect } from "react";
  * Listens on the actual fixed sidebar panel (data-sidebar="sidebar") so the
  * hover zone matches the visible width in both collapsed and expanded states.
  */
-function HoverSidebar() {
+function HoverSidebar(props: {
+  newSalesCount: number;
+  notifications: any[];
+  onClearNotifications: () => void;
+}) {
   const { setOpen, isMobile } = useSidebar();
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,7 +49,6 @@ function HoverSidebar() {
       leaveTimer.current = setTimeout(() => setOpen(false), 150);
     };
 
-    // Attach to both the gap wrapper (peer) and the fixed panel.
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(
         '[data-sidebar="sidebar"], [data-side="left"]'
@@ -66,7 +69,13 @@ function HoverSidebar() {
     };
   }, [isMobile, setOpen]);
 
-  return <AppSidebar />;
+  return (
+    <AppSidebar
+      newSalesCount={props.newSalesCount}
+      notifications={props.notifications}
+      onClearNotifications={props.onClearNotifications}
+    />
+  );
 }
 
 export function DashboardLayout() {
