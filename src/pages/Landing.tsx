@@ -28,7 +28,7 @@ import bentoAprovacao from "@/assets/bento-aprovacao.webp.asset.json";
 import bentoPix from "@/assets/bento-pix.webp.asset.json";
 import bentoSistema from "@/assets/bento-sistema.webp.asset.json";
 import bentoLiberacao from "@/assets/bento-liberacao.webp.asset.json";
-import neonKHero from "@/assets/neon-k-hero.webp.asset.json";
+import neonKHero from "@/assets/neon-k-hero.png.asset.json";
 import heroBgYellow from "@/assets/hero-bg-yellow.webp.asset.json";
 
 import ctaWomanYellow from "@/assets/cta-woman-yellow.webp";
