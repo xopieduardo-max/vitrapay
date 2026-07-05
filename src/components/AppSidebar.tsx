@@ -222,10 +222,10 @@ export function AppSidebar() {
                                   <NavLink
                                     to={sub.url}
                                     end
-                                    className="gap-3 text-sm transition-colors"
+                                    className="gap-3 text-sm transition-colors [&.active]:text-primary [&.active_svg]:text-primary [&.active]:font-medium"
                                     activeClassName="text-primary font-medium"
                                   >
-                                    <sub.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+                                    <sub.icon className="!h-4 !w-4 shrink-0" strokeWidth={1.75} />
                                     <span>{sub.title}</span>
                                   </NavLink>
                                 </SidebarMenuSubButton>
