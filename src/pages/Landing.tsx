@@ -1500,11 +1500,11 @@ export default function Landing() {
             aria-label="Crie sua conta agora"
             className="block relative group"
           >
-            <div className="w-full aspect-[4/5] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[21/9]">
+            <div className="w-full aspect-[16/9]">
               <img
                 src={ctaVitrapay.url}
                 alt="Infraestrutura de pagamento feita para quem leva o digital a sério — VitraPay"
-                className="w-full h-full object-cover object-center block"
+                className="w-full h-full object-contain object-center block"
                 loading="lazy"
               />
             </div>
