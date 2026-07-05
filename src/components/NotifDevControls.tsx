@@ -122,9 +122,12 @@ export function DevDraggable({
 }
 
 export function NotifDevControls() {
+  const dev = useDevMode();
   const offsets = useDevOffsets();
   const [open, setOpen] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  if (!dev) return null;
 
   const json = JSON.stringify(offsets, null, 2);
 
