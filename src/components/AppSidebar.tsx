@@ -74,7 +74,13 @@ function getCurrentGoal(revenue: number) {
   return MILESTONES[MILESTONES.length - 1];
 }
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  newSalesCount?: number;
+  notifications?: SaleNotification[];
+  onClearNotifications?: () => void;
+}
+
+export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotifications = () => {} }: AppSidebarProps = {}) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
