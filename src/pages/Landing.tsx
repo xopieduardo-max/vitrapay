@@ -106,6 +106,26 @@ function FloatingNotifications() {
   );
 }
 
+function StaticSaleNotification({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <div
+      className={`items-start gap-2.5 rounded-2xl bg-black/90 border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] backdrop-blur-sm pointer-events-none ${className}`}
+      style={style}
+    >
+      <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
+        <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold text-white leading-tight">Venda Aprovada!</p>
+        <p className="text-[11px] font-semibold text-white leading-tight">from VitraPay</p>
+        <p className="text-[10px] text-white/70 leading-tight mt-0.5">Pagamento via Pix</p>
+        <p className="text-[10px] text-white/70 leading-tight">Valor: R$ 90,00</p>
+      </div>
+      <span className="text-[10px] text-white/50 flex-shrink-0">agora</span>
+    </div>
+  );
+}
+
 /* ─── Interactive Grid Background ─── */
 const GridBackground = React.memo(function GridBackground() {
   return (
@@ -674,15 +694,40 @@ export default function Landing() {
                 style={{ width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
               />
 
-              {/* Floating notification — bottom-right on mobile, mid-right on desktop */}
+              {/* Notificação atrás do brasão — topo esquerda */}
+              <StaticSaleNotification
+                className="hidden md:flex absolute z-0 top-[12%] -left-2 lg:-left-8 w-[240px] lg:w-[260px] opacity-90"
+                style={{ animation: "floatY 6s ease-in-out infinite" }}
+              />
+
+              {/* Notificação atrás do brasão — meio esquerda (mais atrás) */}
+              <StaticSaleNotification
+                className="hidden lg:flex absolute z-0 top-[42%] -left-6 w-[230px] opacity-75"
+                style={{ animation: "floatY 7s ease-in-out infinite 1.2s" }}
+              />
+
+              {/* Notificação na frente — direita meio */}
+              <StaticSaleNotification
+                className="hidden md:flex absolute z-20 top-[38%] -right-4 lg:-right-10 w-[250px] lg:w-[270px]"
+                style={{ animation: "floatY 5.5s ease-in-out infinite 0.5s" }}
+              />
+
+              {/* Notificação na frente — inferior direita (a animada com dados dinâmicos) */}
               <div
-                className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:-right-4 xl:-right-8"
+                className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:bottom-[8%] lg:-right-6 xl:-right-10"
                 style={{ transform: "translate(var(--hero-notif-x, -1px), var(--hero-notif-y, 104px))" }}
               >
                 <div className="w-[220px] sm:w-[240px] lg:w-[280px] scale-95 sm:scale-100 origin-bottom-right lg:origin-right">
                   <FloatingNotifications />
                 </div>
               </div>
+
+              <style>{`
+                @keyframes floatY {
+                  0%, 100% { transform: translateY(0px); }
+                  50% { transform: translateY(-8px); }
+                }
+              `}</style>
             </motion.div>
 
           </div>
