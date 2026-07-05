@@ -707,49 +707,41 @@ export default function Landing() {
                 style={{ width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
               />
 
-              {/* ATRÁS — topo esquerda (blur para profundidade) */}
+              {/* Todas atrás do brasão (z-0), contidas dentro da coluna direita para não invadir o texto */}
+              {/* Topo esquerda — blur */}
               <StaticSaleNotification
                 method="Pix"
                 value="127,00"
                 blurred
-                className="hidden md:flex absolute z-0 top-[8%] -left-6 lg:-left-14 w-[280px] lg:w-[300px] opacity-70"
+                className="hidden md:flex absolute z-0 top-[6%] left-[2%] w-[240px] lg:w-[260px] opacity-70"
                 style={{ animation: "floatY 7s ease-in-out infinite" }}
               />
 
-              {/* ATRÁS — meio direita (sutil) */}
-              <StaticSaleNotification
-                method="Cartão"
-                value="349,90"
-                className="hidden lg:flex absolute z-0 top-[52%] -right-10 w-[290px] opacity-60"
-                style={{ animation: "floatY 8s ease-in-out infinite 1.5s", filter: "blur(1.5px)" }}
-              />
-
-              {/* FRENTE — topo direita */}
+              {/* Topo direita — nítida */}
               <StaticSaleNotification
                 method="Boleto"
                 value="47,00"
-                className="hidden md:flex absolute z-20 top-[14%] -right-2 lg:-right-10 w-[300px] lg:w-[320px]"
+                className="hidden md:flex absolute z-0 top-[10%] right-[2%] w-[250px] lg:w-[270px] opacity-90"
                 style={{ animation: "floatY 6s ease-in-out infinite 0.5s" }}
               />
 
-              {/* FRENTE — meio esquerda */}
+              {/* Inferior esquerda — nítida */}
               <StaticSaleNotification
                 method="Pix"
                 value="90,00"
-                className="hidden md:flex absolute z-20 top-[46%] -left-4 lg:-left-12 w-[300px] lg:w-[320px]"
+                className="hidden md:flex absolute z-0 bottom-[8%] left-[1%] w-[250px] lg:w-[270px] opacity-90"
                 style={{ animation: "floatY 5.5s ease-in-out infinite 1s" }}
               />
 
+              {/* Inferior direita — blur */}
+              <StaticSaleNotification
+                method="Cartão"
+                value="349,90"
+                blurred
+                className="hidden md:flex absolute z-0 bottom-[6%] right-[2%] w-[240px] lg:w-[260px] opacity-70"
+                style={{ animation: "floatY 8s ease-in-out infinite 1.5s" }}
+              />
 
-              {/* Notificação na frente — inferior direita (a animada com dados dinâmicos) */}
-              <div
-                className="absolute z-20 pointer-events-none bottom-0 right-0 sm:bottom-4 sm:right-2 lg:bottom-[8%] lg:-right-6 xl:-right-10"
-                style={{ transform: "translate(var(--hero-notif-x, -1px), var(--hero-notif-y, 104px))" }}
-              >
-                <div className="w-[220px] sm:w-[240px] lg:w-[280px] scale-95 sm:scale-100 origin-bottom-right lg:origin-right">
-                  <FloatingNotifications />
-                </div>
-              </div>
 
               <style>{`
                 @keyframes floatY {
