@@ -11,7 +11,6 @@ import {
   Settings,
   Smartphone,
   Plug,
-  Rocket,
   Columns,
   Receipt,
   ChevronDown,
@@ -24,7 +23,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { useState } from "react";
+import {
 import {
   Sidebar,
   SidebarContent,
@@ -40,7 +39,6 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
