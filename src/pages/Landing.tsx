@@ -709,7 +709,7 @@ export default function Landing() {
               <Interactive3DLogo
                 src={neonKHero.url}
                 className="relative z-10 w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[484px] md:h-[484px] cursor-grab active:cursor-grabbing drop-shadow-[0_0_80px_hsl(var(--primary)/0.7)]"
-                style={{ width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
+                style={isMobile ? undefined : { width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
               />
 
               {/* Notificações ao redor do brasão — atrás (z-0) e saindo por trás */}
