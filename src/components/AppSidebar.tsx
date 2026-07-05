@@ -87,7 +87,8 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [becomingProducer, setBecomingProducer] = useState(false);
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + "/");
 
   const { data: totalRevenue = 0 } = useQuery({
     queryKey: ["sidebar-revenue", user?.id],
