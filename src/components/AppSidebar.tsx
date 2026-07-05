@@ -269,7 +269,7 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
                   <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")} className="h-10">
                     <NavLink
                       to="/admin"
-                      className="gap-3 text-sm transition-colors [&.active]:bg-destructive/10 [&.active]:text-destructive [&.active_svg]:text-destructive [&.active]:font-medium"
+                      className="gap-3 text-sm transition-colors data-[active=true]:bg-destructive/10 data-[active=true]:text-destructive data-[active=true]:font-medium [&[data-active=true]_svg]:text-destructive [&.active]:bg-destructive/10 [&.active]:text-destructive [&.active_svg]:text-destructive [&.active]:font-medium"
                       activeClassName="bg-destructive/10 text-destructive font-medium"
                     >
                       <Shield className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
