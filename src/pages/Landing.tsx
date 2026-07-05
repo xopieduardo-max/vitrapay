@@ -41,6 +41,7 @@ import {
 "@/components/ui/accordion";
 import { FeeSimulatorCard } from "@/components/FeeSimulatorCard";
 import { HeroDevControls } from "@/components/HeroDevControls";
+import { DevDraggable, NotifDevControls } from "@/components/NotifDevControls";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
@@ -582,6 +583,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <HeroDevControls />
+      <NotifDevControls />
       {/* Announcement Bar — desativado por enquanto */}
 
       {/* ─── Header ─── */}
