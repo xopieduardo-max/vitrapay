@@ -106,22 +106,35 @@ function FloatingNotifications() {
   );
 }
 
-function StaticSaleNotification({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+function StaticSaleNotification({
+  className = "",
+  style,
+  method = "Pix",
+  value = "90,00",
+  blurred = false,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  method?: string;
+  value?: string;
+  blurred?: boolean;
+}) {
   return (
     <div
-      className={`items-start gap-2.5 rounded-2xl bg-black/90 border border-white/10 px-3 py-2.5 shadow-[0_15px_40px_rgba(0,0,0,0.6)] backdrop-blur-sm pointer-events-none ${className}`}
-      style={style}
+      className={`flex items-center gap-3 rounded-2xl bg-[#0a0a0a]/95 border border-white/10 px-4 py-3.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.8)] ring-1 ring-white/5 backdrop-blur-md pointer-events-none ${className}`}
+      style={{ ...style, filter: blurred ? "blur(3px)" : undefined }}
     >
-      <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-black border border-white/10 flex items-center justify-center">
+      <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-black border border-white/10 flex items-center justify-center shadow-inner">
         <img src={logoIcon} alt="" className="h-6 w-6 object-contain" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-white leading-tight">Venda Aprovada!</p>
-        <p className="text-[11px] font-semibold text-white leading-tight">from VitraPay</p>
-        <p className="text-[10px] text-white/70 leading-tight mt-0.5">Pagamento via Pix</p>
-        <p className="text-[10px] text-white/70 leading-tight">Valor: R$ 90,00</p>
+        <p className="text-[13px] font-semibold text-white leading-snug tracking-tight">
+          Uma nova venda foi realizada no {method}!
+        </p>
+        <p className="text-[12px] text-white/60 leading-tight mt-0.5">
+          O valor foi de <span className="text-white/80 font-medium">R$ {value}</span>
+        </p>
       </div>
-      <span className="text-[10px] text-white/50 flex-shrink-0">agora</span>
     </div>
   );
 }
