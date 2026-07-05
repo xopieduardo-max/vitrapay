@@ -42,6 +42,9 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
+import type { SaleNotification } from "@/hooks/useSalesNotifications";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -71,7 +74,13 @@ function getCurrentGoal(revenue: number) {
   return MILESTONES[MILESTONES.length - 1];
 }
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  newSalesCount?: number;
+  notifications?: SaleNotification[];
+  onClearNotifications?: () => void;
+}
+
+export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotifications = () => {} }: AppSidebarProps = {}) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
@@ -275,7 +284,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="p-3 gap-2">
         {!isProducer && !isAdmin && !collapsed && (
           <Button
             size="sm"
@@ -298,6 +307,17 @@ export function AppSidebar() {
             <Rocket className="h-4 w-4" />
           </Button>
         )}
+
+        <div className={`flex items-center border-t border-border pt-2 ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
+          <NotificationsDropdown
+            count={newSalesCount}
+            notifications={notifications}
+            onClear={onClearNotifications}
+          />
+          <div className="flex-1 min-w-0">
+            <UserHeaderDropdown compact={collapsed} />
+          </div>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

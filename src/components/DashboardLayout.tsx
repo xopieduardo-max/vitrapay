@@ -21,7 +21,11 @@ import { useState, useRef, useEffect } from "react";
  * Listens on the actual fixed sidebar panel (data-sidebar="sidebar") so the
  * hover zone matches the visible width in both collapsed and expanded states.
  */
-function HoverSidebar() {
+function HoverSidebar(props: {
+  newSalesCount: number;
+  notifications: any[];
+  onClearNotifications: () => void;
+}) {
   const { setOpen, isMobile } = useSidebar();
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,7 +49,6 @@ function HoverSidebar() {
       leaveTimer.current = setTimeout(() => setOpen(false), 150);
     };
 
-    // Attach to both the gap wrapper (peer) and the fixed panel.
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(
         '[data-sidebar="sidebar"], [data-side="left"]'
@@ -66,7 +69,13 @@ function HoverSidebar() {
     };
   }, [isMobile, setOpen]);
 
-  return <AppSidebar />;
+  return (
+    <AppSidebar
+      newSalesCount={props.newSalesCount}
+      notifications={props.notifications}
+      onClearNotifications={props.onClearNotifications}
+    />
+  );
 }
 
 export function DashboardLayout() {
@@ -101,12 +110,15 @@ export function DashboardLayout() {
       defaultOpen={false}
     >
       <div className="min-h-screen flex w-full bg-background">
-        <HoverSidebar />
+        <HoverSidebar
+          newSalesCount={newSalesCount}
+          notifications={notifications}
+          onClearNotifications={clearCount}
+        />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-
-            {/* Mobile: logo + greeting */}
-            <div className="md:hidden flex items-center gap-2">
+          {/* Mobile-only header (sidebar is offcanvas on mobile) */}
+          <header className="md:hidden h-14 flex items-center gap-4 border-b border-border px-4 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
+            <div className="flex items-center gap-2">
               <button onClick={() => navigate("/dashboard")} className="shrink-0">
                 <ThemeLogo variant="horizontal" className="h-6" />
               </button>
@@ -116,14 +128,13 @@ export function DashboardLayout() {
                 </span>
               )}
             </div>
-
-            <div className="ml-auto flex items-center gap-4">
+            <div className="ml-auto flex items-center gap-2">
               <NotificationsDropdown
                 count={newSalesCount}
                 notifications={notifications}
                 onClear={clearCount}
               />
-              <UserHeaderDropdown />
+              <UserHeaderDropdown compact />
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6">
