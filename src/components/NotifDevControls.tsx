@@ -15,12 +15,19 @@ type OffsetMap = Record<string, Offset>;
 const listeners = new Set<() => void>();
 let state: OffsetMap = load();
 
+const DEFAULT_OFFSETS: OffsetMap = {
+  "notif-bottom-right": { x: 48.20703125, y: -228.48437498835847 },
+  "notif-right": { x: 34.78125, y: -30.53125 },
+  "notif-bottom-left": { x: -119.5390625, y: -107.15234375 },
+  "notif-top-left": { x: -164.7721494305879, y: 258.21484446758404 },
+};
+
 function load(): OffsetMap {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    return raw ? JSON.parse(raw) : DEFAULT_OFFSETS;
   } catch {
-    return {};
+    return DEFAULT_OFFSETS;
   }
 }
 function persist() {
