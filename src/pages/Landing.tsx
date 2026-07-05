@@ -581,6 +581,8 @@ export default function Landing() {
   const dashboardScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
   const dashboardRotateX = useTransform(scrollYProgress, [0, 0.6], [12, 0]);
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="min-h-screen bg-background">
       <HeroDevControls />
