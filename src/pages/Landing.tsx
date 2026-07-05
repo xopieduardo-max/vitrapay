@@ -707,38 +707,38 @@ export default function Landing() {
                 style={{ width: "var(--hero-logo, 484px)", height: "var(--hero-logo, 484px)" }}
               />
 
-              {/* Todas atrás do brasão (z-0), contidas dentro da coluna direita para não invadir o texto */}
-              {/* Topo esquerda — blur */}
+              {/* Notificações distribuídas ao redor do brasão — atrás dele (z-0) */}
+              {/* Topo esquerdo — saindo por trás do brasão */}
               <StaticSaleNotification
                 method="Pix"
                 value="127,00"
                 blurred
-                className="hidden md:flex absolute z-0 top-[6%] left-[2%] w-[240px] lg:w-[260px] opacity-70"
+                className="hidden md:flex absolute z-0 top-[-4%] left-[-14%] lg:left-[-16%] w-[220px] lg:w-[240px] opacity-75"
                 style={{ animation: "floatY 7s ease-in-out infinite" }}
               />
 
-              {/* Topo direita — nítida */}
+              {/* Lado direito — metade saindo por trás */}
               <StaticSaleNotification
                 method="Boleto"
                 value="47,00"
-                className="hidden md:flex absolute z-0 top-[10%] right-[2%] w-[250px] lg:w-[270px] opacity-90"
+                className="hidden md:flex absolute z-0 top-[28%] right-[-6%] lg:right-[-8%] w-[260px] lg:w-[280px] opacity-95"
                 style={{ animation: "floatY 6s ease-in-out infinite 0.5s" }}
               />
 
-              {/* Inferior esquerda — nítida */}
+              {/* Base esquerda — por trás, perto da borda */}
               <StaticSaleNotification
                 method="Pix"
                 value="90,00"
-                className="hidden md:flex absolute z-0 bottom-[8%] left-[1%] w-[250px] lg:w-[270px] opacity-90"
+                className="hidden md:flex absolute z-0 bottom-[2%] left-[-4%] lg:left-[-6%] w-[250px] lg:w-[270px] opacity-90"
                 style={{ animation: "floatY 5.5s ease-in-out infinite 1s" }}
               />
 
-              {/* Inferior direita — blur */}
+              {/* Base direita — mais distante, com blur */}
               <StaticSaleNotification
                 method="Cartão"
                 value="349,90"
                 blurred
-                className="hidden md:flex absolute z-0 bottom-[6%] right-[2%] w-[240px] lg:w-[260px] opacity-70"
+                className="hidden md:flex absolute z-0 bottom-[0%] right-[-10%] lg:right-[-12%] w-[210px] lg:w-[230px] opacity-60"
                 style={{ animation: "floatY 8s ease-in-out infinite 1.5s" }}
               />
 
