@@ -700,7 +700,7 @@ export default function Landing() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.2, 0, 0, 1] }}
               className="relative flex items-center justify-center min-h-[240px] sm:min-h-[280px] md:min-h-[360px] lg:min-h-[480px] order-1 md:order-2 mx-auto w-full max-w-[650px]"
-              style={{ transform: "translateY(var(--hero-right-y, 0px))" }}
+              style={isMobile ? undefined : { transform: "translateY(var(--hero-right-y, 0px))" }}
             >
 
               {/* Glow behind logo */}
