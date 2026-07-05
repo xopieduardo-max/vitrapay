@@ -41,6 +41,7 @@ import {
 "@/components/ui/accordion";
 import { FeeSimulatorCard } from "@/components/FeeSimulatorCard";
 import { HeroDevControls } from "@/components/HeroDevControls";
+import { DevDraggable, NotifDevControls } from "@/components/NotifDevControls";
 
 /* ─── Floating Sale Notifications ─── */
 const names = ["Lucas A.", "Maria S.", "João P.", "Ana L.", "Pedro R.", "Camila F.", "Rafael M.", "Juliana B.", "Thiago C.", "Fernanda D.", "Bruno K.", "Larissa T.", "Carlos H.", "Beatriz N.", "Diego V."];
@@ -582,6 +583,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <HeroDevControls />
+      <NotifDevControls />
       {/* Announcement Bar — desativado por enquanto */}
 
       {/* ─── Header ─── */}
@@ -709,38 +711,58 @@ export default function Landing() {
 
               {/* Notificações ao redor do brasão — atrás (z-0) e saindo por trás */}
               {/* Topo — saindo por trás do brasão, acima dele */}
-              <StaticSaleNotification
-                method="Pix"
-                value="127,00"
-                blurred
-                className="hidden md:flex absolute z-0 top-[-8%] left-[24%] lg:left-[28%] w-[230px] lg:w-[250px] opacity-75"
-                style={{ animation: "floatY 7s ease-in-out infinite" }}
-              />
+              <DevDraggable
+                id="notif-top-left"
+                className="hidden md:flex absolute z-0 top-[-8%] left-[24%] lg:left-[28%] w-[230px] lg:w-[250px]"
+              >
+                <StaticSaleNotification
+                  method="Pix"
+                  value="127,00"
+                  blurred
+                  className="w-full opacity-75"
+                  style={{ animation: "floatY 7s ease-in-out infinite" }}
+                />
+              </DevDraggable>
 
               {/* Lado direito — metade saindo por trás */}
-              <StaticSaleNotification
-                method="Boleto"
-                value="47,00"
-                className="hidden md:flex absolute z-0 top-[18%] right-[-6%] lg:right-[-8%] w-[260px] lg:w-[280px] opacity-95"
-                style={{ animation: "floatY 6s ease-in-out infinite 0.5s" }}
-              />
+              <DevDraggable
+                id="notif-right"
+                className="hidden md:flex absolute z-0 top-[18%] right-[-6%] lg:right-[-8%] w-[260px] lg:w-[280px]"
+              >
+                <StaticSaleNotification
+                  method="Boleto"
+                  value="47,00"
+                  className="w-full opacity-95"
+                  style={{ animation: "floatY 6s ease-in-out infinite 0.5s" }}
+                />
+              </DevDraggable>
 
               {/* Base — saindo por trás do brasão, abaixo dele */}
-              <StaticSaleNotification
-                method="Pix"
-                value="90,00"
-                className="hidden md:flex absolute z-0 bottom-[-8%] left-[26%] lg:left-[30%] w-[250px] lg:w-[270px] opacity-90"
-                style={{ animation: "floatY 5.5s ease-in-out infinite 1s" }}
-              />
+              <DevDraggable
+                id="notif-bottom-left"
+                className="hidden md:flex absolute z-0 bottom-[-8%] left-[26%] lg:left-[30%] w-[250px] lg:w-[270px]"
+              >
+                <StaticSaleNotification
+                  method="Pix"
+                  value="90,00"
+                  className="w-full opacity-90"
+                  style={{ animation: "floatY 5.5s ease-in-out infinite 1s" }}
+                />
+              </DevDraggable>
 
               {/* Canto inferior direito — saindo pelo lado, com blur de profundidade */}
-              <StaticSaleNotification
-                method="Cartão"
-                value="349,90"
-                blurred
-                className="hidden md:flex absolute z-0 bottom-[2%] right-[-8%] lg:right-[-10%] w-[210px] lg:w-[230px] opacity-60"
-                style={{ animation: "floatY 8s ease-in-out infinite 1.5s" }}
-              />
+              <DevDraggable
+                id="notif-bottom-right"
+                className="hidden md:flex absolute z-0 bottom-[2%] right-[-8%] lg:right-[-10%] w-[210px] lg:w-[230px]"
+              >
+                <StaticSaleNotification
+                  method="Cartão"
+                  value="349,90"
+                  blurred
+                  className="w-full opacity-60"
+                  style={{ animation: "floatY 8s ease-in-out infinite 1.5s" }}
+                />
+              </DevDraggable>
 
 
               <style>{`
