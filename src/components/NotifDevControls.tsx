@@ -1,5 +1,14 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
+function useDevMode() {
+  const [dev, setDev] = useState(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setDev(params.get("edit") === "1");
+  }, []);
+  return dev;
+}
+
 /**
  * Dev-only drag controls for hero notifications.
  * - Wrap each notification with <DevDraggable id="...">...</DevDraggable>
