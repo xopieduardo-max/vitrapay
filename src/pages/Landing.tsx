@@ -623,7 +623,7 @@ export default function Landing() {
       <section
         ref={heroRef}
         className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden"
-        style={{ paddingTop: "var(--hero-pt, 0px)" }}
+        style={isMobile ? undefined : { paddingTop: "var(--hero-pt, 0px)" }}
       >
         <GridBackground />
         <FloatingParticles />
