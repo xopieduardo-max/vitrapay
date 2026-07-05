@@ -258,13 +258,13 @@ export function AppSidebar() {
               {/* Admin link - only for admins */}
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")}>
+                  <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")} className="h-10">
                     <NavLink
                       to="/admin"
-                      className="gap-3 text-sm transition-colors"
+                      className="gap-3 text-sm transition-colors [&.active]:bg-destructive/10 [&.active]:text-destructive [&.active_svg]:text-destructive [&.active]:font-medium"
                       activeClassName="bg-destructive/10 text-destructive font-medium"
                     >
-                      <Shield className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      <Shield className="!h-5 !w-5 shrink-0" strokeWidth={1.75} />
                       {!collapsed && <span>Painel Admin</span>}
                     </NavLink>
                   </SidebarMenuButton>
