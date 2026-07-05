@@ -284,29 +284,6 @@ export function AppSidebar({ newSalesCount = 0, notifications = [], onClearNotif
       </SidebarContent>
 
       <SidebarFooter className="p-3 gap-2">
-        {!isProducer && !isAdmin && !collapsed && (
-          <Button
-            size="sm"
-            className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={handleBecomeProducer}
-            disabled={becomingProducer}
-          >
-            <Rocket className="h-4 w-4" />
-            Quero Vender
-          </Button>
-        )}
-        {!isProducer && !isAdmin && collapsed && (
-          <Button
-            size="icon"
-            className="w-full h-8 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={handleBecomeProducer}
-            disabled={becomingProducer}
-            title="Quero Vender"
-          >
-            <Rocket className="h-4 w-4" />
-          </Button>
-        )}
-
         <div className={`flex items-center border-t border-border pt-2 ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
           <NotificationsDropdown
             count={newSalesCount}
