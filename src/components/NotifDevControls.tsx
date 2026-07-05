@@ -22,8 +22,8 @@ type Offset = { x: number; y: number };
 type OffsetMap = Record<string, Offset>;
 
 const DEFAULT_OFFSETS: OffsetMap = {
-  "notif-bottom-right": { x: 48.20703125, y: -228.48437498835847 },
-  "notif-right": { x: 34.78125, y: -30.53125 },
+  "notif-bottom-right": { x: 13.3984375, y: -226.44140623835847 },
+  "notif-right": { x: -14.625, y: -30.67578125 },
   "notif-bottom-left": { x: -119.5390625, y: -107.15234375 },
   "notif-top-left": { x: -164.7721494305879, y: 258.21484446758404 },
 };
