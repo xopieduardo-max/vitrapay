@@ -112,10 +112,10 @@ export function UserHeaderDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="relative flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors outline-none">
-          <div className="relative">
-            <Avatar className="h-8 w-8 border border-border">
-              <AvatarImage src={profile?.avatar_url || undefined} />
+        <button className="relative flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors outline-none w-full">
+          <div className="relative shrink-0">
+            <Avatar className="h-8 w-8 border border-border shrink-0">
+              <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
               <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
             </Avatar>
             {hasUnreadSupport && (
@@ -125,15 +125,15 @@ export function UserHeaderDropdown() {
               </span>
             )}
           </div>
-          <div className="hidden sm:flex flex-col items-start leading-tight">
-            <span className="text-sm font-medium truncate max-w-[120px]">{displayName}</span>
+          <div className="flex flex-col items-start leading-tight min-w-0 flex-1">
+            <span className="text-sm font-medium truncate max-w-full">{displayName}</span>
             {isProducer && (
               <span className="text-[10px] text-muted-foreground">
                 Modo {viewMode === "producer" ? "Produtor" : "Comprador"}
               </span>
             )}
           </div>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
