@@ -42,6 +42,9 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { UserHeaderDropdown } from "@/components/UserHeaderDropdown";
+import type { SaleNotification } from "@/hooks/useSalesNotifications";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
