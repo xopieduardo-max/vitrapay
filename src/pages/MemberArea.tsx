@@ -372,7 +372,13 @@ export default function MemberArea() {
               <div className="flex flex-col sm:flex-row">
                 {/* Thumbnail */}
                 <div className="relative w-full sm:w-44 aspect-[2/3] sm:aspect-auto sm:h-auto shrink-0 bg-muted/30 overflow-hidden">
-                  {(resumeItem.module as any).cover_url ? (
+                  {(resumeItem.lesson as any).cover_url ? (
+                    <img
+                      src={(resumeItem.lesson as any).cover_url}
+                      alt={resumeItem.lesson.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (resumeItem.module as any).cover_url ? (
                     <img
                       src={(resumeItem.module as any).cover_url}
                       alt={resumeItem.lesson.title}
