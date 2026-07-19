@@ -963,6 +963,48 @@ export default function EditProductContent({ productId }: Props) {
               />
             </div>
             <div>
+              <Label className="text-xs">Capa da aula (opcional)</Label>
+              {lessonForm.cover_url ? (
+                <div className="mt-1 relative inline-block">
+                  <img
+                    src={lessonForm.cover_url}
+                    alt="Capa da aula"
+                    className="h-32 w-24 rounded-lg object-cover border border-border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setLessonForm((f) => ({ ...f, cover_url: "" }))}
+                    className="absolute -top-1 -right-1 rounded-full bg-background border border-border p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="mt-1 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-primary/50 transition-colors h-32 w-24">
+                  {uploadingLessonCover ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                      <Upload className="h-4 w-4" />
+                      <span className="text-[0.6rem]">Enviar</span>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadLessonCover(file);
+                    }}
+                  />
+                </label>
+              )}
+              <p className="text-[0.6rem] text-muted-foreground mt-1">
+                Aparece nos cards da área de membros. Recomendado: 600×900px (3:4).
+              </p>
+            </div>
+            <div>
               <Label className="text-xs">Vídeo da aula</Label>
               <div className="mt-1 space-y-2">
                 <Input
