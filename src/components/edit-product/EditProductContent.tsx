@@ -415,6 +415,27 @@ export default function EditProductContent({ productId }: Props) {
     }
   };
 
+  // Upload lesson cover image
+  const uploadLessonCover = async (file: File) => {
+    const validation = validateFile(file, "cover", 5);
+    if (!validation.valid) {
+      toast.error(validation.error!);
+      return;
+    }
+    setUploadingLessonCover(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `lesson-covers/${productId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("product-files").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("product-files").getPublicUrl(path);
+      setLessonForm((f) => ({ ...f, cover_url: data.publicUrl }));
+    } catch {
+      toast.error("Erro no upload da capa");
+    } finally {
+      setUploadingLessonCover(false);
+    }
+
   const removeLessonFile = (index: number) => {
     setLessonFiles(prev => prev.filter((_, i) => i !== index));
   };
