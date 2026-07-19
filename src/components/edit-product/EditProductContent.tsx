@@ -435,6 +435,9 @@ export default function EditProductContent({ productId }: Props) {
     } finally {
       setUploadingLessonCover(false);
     }
+  };
+
+
 
   const removeLessonFile = (index: number) => {
     setLessonFiles(prev => prev.filter((_, i) => i !== index));
