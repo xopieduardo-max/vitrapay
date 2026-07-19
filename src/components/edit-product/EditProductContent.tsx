@@ -138,7 +138,9 @@ export default function EditProductContent({ productId }: Props) {
     content: "",
     duration_minutes: 0,
     is_free: false,
+    cover_url: "",
   });
+  const [uploadingLessonCover, setUploadingLessonCover] = useState(false);
   const [savingLesson, setSavingLesson] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
