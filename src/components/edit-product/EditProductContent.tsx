@@ -293,6 +293,7 @@ export default function EditProductContent({ productId }: Props) {
       content: "",
       duration_minutes: 0,
       is_free: false,
+      cover_url: "",
     });
     setLessonFiles([]);
     setLessonDialog({ open: true, moduleId });
@@ -306,6 +307,7 @@ export default function EditProductContent({ productId }: Props) {
       content: lesson.content || "",
       duration_minutes: lesson.duration_minutes || 0,
       is_free: lesson.is_free || false,
+      cover_url: lesson.cover_url || "",
     });
     // Load existing files for this lesson
     const { data: files } = await supabase
