@@ -443,7 +443,8 @@ export default function EditProductContent({ productId }: Props) {
             content: lessonForm.content || null,
             duration_minutes: lessonForm.duration_minutes || 0,
             is_free: lessonForm.is_free,
-          })
+            cover_url: lessonForm.cover_url || null,
+          } as any)
           .eq("id", lessonId);
         if (error) throw error;
 
