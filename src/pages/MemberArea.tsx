@@ -468,7 +468,14 @@ export default function MemberArea() {
                         className="relative flex-shrink-0 w-36 sm:w-40 rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-colors snap-start group text-left"
                       >
                         <div className="aspect-[2/3] w-full bg-muted/30 flex items-center justify-center relative overflow-hidden">
-                          {(mod as any).cover_url ? (
+                          {(lesson as any).cover_url ? (
+                            <img
+                              src={(lesson as any).cover_url}
+                              alt={lesson.title}
+                              loading="lazy"
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                          ) : (mod as any).cover_url ? (
                             <img
                               src={(mod as any).cover_url}
                               alt={mod.title}
