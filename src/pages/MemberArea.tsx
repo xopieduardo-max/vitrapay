@@ -616,12 +616,30 @@ export default function MemberArea() {
             {/* Video player */}
             {selectedLesson.video_url ? (
               <div className="w-full aspect-video bg-black">
-                <iframe
-                  src={selectedLesson.video_url}
-                  className="w-full h-full"
-                  allowFullScreen
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                />
+                {(() => {
+                  const url = selectedLesson.video_url;
+                  const isEmbed = /youtube\.com|youtu\.be|vimeo\.com|player\.|iframe|embed/i.test(url);
+                  const isDirectVideo = /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(url) || /supabase\.co\/storage/i.test(url);
+                  if (isDirectVideo && !isEmbed) {
+                    return (
+                      <video
+                        src={url}
+                        controls
+                        controlsList="nodownload"
+                        playsInline
+                        className="w-full h-full"
+                      />
+                    );
+                  }
+                  return (
+                    <iframe
+                      src={url}
+                      className="w-full h-full"
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  );
+                })()}
               </div>
             ) : (
               <div className="w-full aspect-video bg-muted/20 flex items-center justify-center">
