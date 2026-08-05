@@ -13,6 +13,14 @@ export const ALLOWED_PRODUCT_FILES = new Set([
   "application/vnd.ms-powerpoint",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "text/plain",
+  "text/csv",
+  "application/csv",
+  "application/json",
+  "text/json",
+  "application/xml",
+  "text/xml",
+  "application/rtf",
+  "text/markdown",
   // Images
   "image/jpeg",
   "image/png",
@@ -76,16 +84,29 @@ export interface FileValidationResult {
   error?: string;
 }
 
+// Some browsers report an empty or generic MIME type (e.g. .json, .csv, .md).
+// Fall back to the extension for these safe text/data formats.
+const ALLOWED_EXTENSIONS_FALLBACK: Record<FileContext, string[]> = {
+  product: ["json", "csv", "txt", "md", "xml", "rtf", "epub"],
+  lesson: ["json", "csv", "txt", "md", "xml", "rtf", "epub"],
+  cover: [],
+  avatar: [],
+  checkout: [],
+};
+
 export function validateFile(file: File, context: FileContext, maxMB = 20): FileValidationResult {
   const allowed = getAllowedSet(context);
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
 
-  if (!allowed.has(file.type)) {
-    const ext = file.name.split(".").pop()?.toUpperCase() || "desconhecido";
+  const okByExt = ALLOWED_EXTENSIONS_FALLBACK[context].includes(ext);
+
+  if (!allowed.has(file.type) && !okByExt) {
     return {
       valid: false,
-      error: `Tipo de arquivo não permitido (.${ext}). Envie documentos, imagens, vídeos, áudios ou arquivos compactados.`,
+      error: `Tipo de arquivo não permitido (.${ext.toUpperCase() || "desconhecido"}). Envie documentos, imagens, vídeos, áudios, arquivos de dados (JSON, CSV) ou compactados.`,
     };
   }
+
 
   const maxBytes = maxMB * 1024 * 1024;
   if (file.size > maxBytes) {
