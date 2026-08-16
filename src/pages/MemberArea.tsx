@@ -547,60 +547,111 @@ export default function MemberArea() {
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-2">
-            {modules.map((mod) => (
-              <div key={mod.id} className="mb-1">
-                <button
-                  onClick={() => toggleModule(mod.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors text-left"
-                >
-                  {expandedModules.has(mod.id) ? (
-                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="p-3 pl-4">
+            {modules.map((mod, mIdx) => {
+              const modDone = mod.lessons.filter((l) => progress[l.id]).length;
+              const modTotal = mod.lessons.length || 1;
+              const modPct = (modDone / modTotal) * 100;
+              const modComplete = modDone === mod.lessons.length && mod.lessons.length > 0;
+              const modActive = mod.lessons.some((l) => l.id === selectedLesson?.id);
+              const isLastModule = mIdx === modules.length - 1;
+
+              return (
+                <div key={mod.id} className="relative pl-8">
+                  {/* timeline vertical line */}
+                  {!isLastModule && (
+                    <span className="absolute left-[13px] top-6 bottom-0 w-px bg-border" aria-hidden />
                   )}
-                  <span className="text-sm font-medium flex-1">{mod.title}</span>
-                  <Badge variant="secondary" className="text-[0.6rem]">
-                    {mod.lessons.filter((l) => progress[l.id]).length}/{mod.lessons.length}
-                  </Badge>
-                </button>
 
-                {expandedModules.has(mod.id) && (
-                  <div className="ml-4 space-y-0.5">
-                    {mod.lessons.map((lesson) => {
-                      const isCompleted = progress[lesson.id];
-                      const isActive = selectedLesson?.id === lesson.id;
+                  {/* module node */}
+                  <button
+                    onClick={() => toggleModule(mod.id)}
+                    className="w-full flex items-center gap-2 py-2.5 text-left group"
+                  >
+                    <span
+                      className={`absolute left-0 flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 bg-card transition-colors ${
+                        modComplete
+                          ? "border-success text-success"
+                          : modActive
+                          ? "border-primary text-primary"
+                          : "border-border text-muted-foreground"
+                      }`}
+                    >
+                      {modComplete ? (
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      ) : (
+                        <span className="text-[0.55rem] font-bold">{Math.round(modPct)}</span>
+                      )}
+                    </span>
+                    <span
+                      className={`text-sm font-semibold flex-1 ${
+                        modComplete ? "text-success" : modActive ? "text-primary" : "text-foreground"
+                      }`}
+                    >
+                      {mod.title}
+                    </span>
+                    <Badge variant="secondary" className="text-[0.6rem]">
+                      {modDone}/{mod.lessons.length}
+                    </Badge>
+                    {expandedModules.has(mod.id) ? (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    )}
+                  </button>
 
-                      return (
-                        <button
-                          key={lesson.id}
-                          onClick={() => setSelectedLesson(lesson)}
-                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-left text-sm ${
-                            isActive
-                              ? "bg-primary/10 text-primary"
-                              : "hover:bg-muted/30 text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {isCompleted ? (
-                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                          ) : (
-                            <Play className="h-3.5 w-3.5 shrink-0" />
-                          )}
-                          <span className="flex-1 truncate">{lesson.title}</span>
-                          {lesson.duration_minutes > 0 && (
-                            <span className="text-[0.6rem] text-muted-foreground shrink-0">
-                              {lesson.duration_minutes}min
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
+                  {/* lessons */}
+                  {expandedModules.has(mod.id) && (
+                    <div className="relative pb-3">
+                      {mod.lessons.map((lesson) => {
+                        const isCompleted = progress[lesson.id];
+                        const isActive = selectedLesson?.id === lesson.id;
+
+                        return (
+                          <div key={lesson.id} className="relative pl-6">
+                            <span
+                              className={`absolute left-[3px] top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full border-2 transition-colors ${
+                                isCompleted
+                                  ? "border-success bg-success"
+                                  : isActive
+                                  ? "border-primary bg-primary animate-pulse"
+                                  : "border-border bg-card"
+                              }`}
+                              aria-hidden
+                            />
+                            <button
+                              onClick={() => setSelectedLesson(lesson)}
+                              className={`w-full flex items-center gap-2 px-3 py-2 my-0.5 rounded-lg transition-colors text-left text-sm ${
+                                isActive
+                                  ? "bg-primary/10 text-primary font-medium"
+                                  : isCompleted
+                                  ? "text-success/80 hover:bg-muted/30"
+                                  : "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
+                              }`}
+                            >
+                              {isCompleted ? (
+                                <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                              ) : (
+                                <Play className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                              )}
+                              <span className="flex-1 truncate">{lesson.title}</span>
+                              {lesson.duration_minutes > 0 && (
+                                <span className="text-[0.6rem] text-muted-foreground shrink-0">
+                                  {lesson.duration_minutes}min
+                                </span>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </ScrollArea>
+
       </aside>
 
       {/* Main content */}
