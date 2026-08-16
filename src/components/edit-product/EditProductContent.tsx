@@ -121,6 +121,7 @@ export default function EditProductContent({ productId }: Props) {
     title: "",
     description: "",
     cover_url: "",
+    coming_soon: false,
   });
   const [savingModule, setSavingModule] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -139,6 +140,7 @@ export default function EditProductContent({ productId }: Props) {
     duration_minutes: 0,
     is_free: false,
     cover_url: "",
+    coming_soon: false,
   });
   const [uploadingLessonCover, setUploadingLessonCover] = useState(false);
   const [savingLesson, setSavingLesson] = useState(false);
@@ -218,7 +220,7 @@ export default function EditProductContent({ productId }: Props) {
 
   // Module CRUD
   const openNewModule = () => {
-    setModuleForm({ title: "", description: "", cover_url: "" });
+    setModuleForm({ title: "", description: "", cover_url: "", coming_soon: false });
     setModuleDialog({ open: true });
   };
 
@@ -227,6 +229,7 @@ export default function EditProductContent({ productId }: Props) {
       title: mod.title,
       description: mod.description || "",
       cover_url: (mod as any).cover_url || "",
+      coming_soon: (mod as any).coming_soon || false,
     });
     setModuleDialog({ open: true, editing: mod });
   };
@@ -245,6 +248,7 @@ export default function EditProductContent({ productId }: Props) {
             title: moduleForm.title,
             description: moduleForm.description || null,
             cover_url: moduleForm.cover_url || null,
+            coming_soon: moduleForm.coming_soon,
           } as any)
           .eq("id", moduleDialog.editing.id);
         if (error) throw error;
@@ -255,6 +259,7 @@ export default function EditProductContent({ productId }: Props) {
           title: moduleForm.title,
           description: moduleForm.description || null,
           cover_url: moduleForm.cover_url || null,
+          coming_soon: moduleForm.coming_soon,
           position: modules.length,
         } as any).select("id").single();
         if (error) throw error;
@@ -294,6 +299,7 @@ export default function EditProductContent({ productId }: Props) {
       duration_minutes: 0,
       is_free: false,
       cover_url: "",
+      coming_soon: false,
     });
     setLessonFiles([]);
     setLessonDialog({ open: true, moduleId });
@@ -308,6 +314,7 @@ export default function EditProductContent({ productId }: Props) {
       duration_minutes: lesson.duration_minutes || 0,
       is_free: lesson.is_free || false,
       cover_url: lesson.cover_url || "",
+      coming_soon: lesson.coming_soon || false,
     });
     // Load existing files for this lesson
     const { data: files } = await supabase
@@ -468,6 +475,7 @@ export default function EditProductContent({ productId }: Props) {
             duration_minutes: lessonForm.duration_minutes || 0,
             is_free: lessonForm.is_free,
             cover_url: lessonForm.cover_url || null,
+            coming_soon: lessonForm.coming_soon,
           } as any)
           .eq("id", lessonId);
         if (error) throw error;
@@ -507,6 +515,7 @@ export default function EditProductContent({ productId }: Props) {
           duration_minutes: lessonForm.duration_minutes || 0,
           is_free: lessonForm.is_free,
           cover_url: lessonForm.cover_url || null,
+          coming_soon: lessonForm.coming_soon,
           position: moduleLessons.length,
         } as any).select("id").single();
         if (error) {
@@ -684,8 +693,11 @@ export default function EditProductContent({ productId }: Props) {
                                 <p className="text-sm font-medium truncate">
                                   Módulo {idx + 1}: {mod.title}
                                 </p>
-                                <p className="text-[0.65rem] text-muted-foreground">
-                                  {lessons.length} {lessons.length === 1 ? "aula" : "aulas"}
+                                <p className="text-[0.65rem] text-muted-foreground flex items-center gap-1.5">
+                                  <span>{lessons.length} {lessons.length === 1 ? "aula" : "aulas"}</span>
+                                  {(mod as any).coming_soon && (
+                                    <span className="text-amber-500 font-semibold">Em breve</span>
+                                  )}
                                 </p>
                               </div>
                             </div>
@@ -763,6 +775,11 @@ export default function EditProductContent({ productId }: Props) {
                                             )}
                                             {lesson.duration_minutes > 0 && (
                                               <span>{lesson.duration_minutes}min</span>
+                                            )}
+                                            {lesson.coming_soon && (
+                                              <span className="text-amber-500 font-semibold">
+                                                Em breve
+                                              </span>
                                             )}
                                             {lesson.is_free && (
                                               <span className="text-green-500 font-semibold">
@@ -908,6 +925,22 @@ export default function EditProductContent({ productId }: Props) {
                 Recomendado: 600×900px (3:4)
               </p>
             </div>
+            <label className="flex items-start gap-2 cursor-pointer rounded-lg border border-border p-3">
+              <input
+                type="checkbox"
+                checked={moduleForm.coming_soon}
+                onChange={(e) =>
+                  setModuleForm((f) => ({ ...f, coming_soon: e.target.checked }))
+                }
+                className="mt-0.5 rounded border-border"
+              />
+              <span className="text-xs">
+                Marcar módulo como "Em breve"
+                <span className="block text-[0.6rem] text-muted-foreground mt-0.5">
+                  O módulo aparece bloqueado e em preto e branco para os alunos.
+                </span>
+              </span>
+            </label>
           </div>
           <DialogFooter>
             <Button
@@ -1142,6 +1175,22 @@ export default function EditProductContent({ productId }: Props) {
                 </label>
               </div>
             </div>
+            <label className="flex items-start gap-2 cursor-pointer rounded-lg border border-border p-3">
+              <input
+                type="checkbox"
+                checked={lessonForm.coming_soon}
+                onChange={(e) =>
+                  setLessonForm((f) => ({ ...f, coming_soon: e.target.checked }))
+                }
+                className="mt-0.5 rounded border-border"
+              />
+              <span className="text-xs">
+                Marcar aula como "Em breve"
+                <span className="block text-[0.6rem] text-muted-foreground mt-0.5">
+                  A aula fica bloqueada e em preto e branco até você desmarcar.
+                </span>
+              </span>
+            </label>
           </div>
           <DialogFooter>
             <Button

@@ -823,6 +823,7 @@ export type Database = {
       }
       lessons: {
         Row: {
+          coming_soon: boolean
           content: string | null
           cover_url: string | null
           created_at: string
@@ -836,6 +837,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          coming_soon?: boolean
           content?: string | null
           cover_url?: string | null
           created_at?: string
@@ -849,6 +851,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          coming_soon?: boolean
           content?: string | null
           cover_url?: string | null
           created_at?: string
@@ -939,6 +942,7 @@ export type Database = {
       }
       modules: {
         Row: {
+          coming_soon: boolean
           cover_url: string | null
           created_at: string
           description: string | null
@@ -948,6 +952,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          coming_soon?: boolean
           cover_url?: string | null
           created_at?: string
           description?: string | null
@@ -957,6 +962,7 @@ export type Database = {
           title: string
         }
         Update: {
+          coming_soon?: boolean
           cover_url?: string | null
           created_at?: string
           description?: string | null
