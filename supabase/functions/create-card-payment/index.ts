@@ -317,8 +317,8 @@ Deno.serve(async (req) => {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
           body: JSON.stringify({
             producer_id: product.producer_id,
-            title: "Venda aprovada no Cartão!",
-            body: `Sua comissão: ${fmtValue}`,
+            title: "Checkout iniciado (Cartão)",
+            body: `Aguardando pagamento de ${fmtValue}`,
             url: "/sales",
           }),
         });
@@ -492,13 +492,14 @@ Deno.serve(async (req) => {
         // ✅ Send push notification for confirmed card sale
         try {
           const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace('.', ',')}`;
+          const fmtGross = `R$ ${(amount / 100).toFixed(2).replace('.', ',')}`;
           await fetch(`${supabaseUrl}/functions/v1/send-push`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
             body: JSON.stringify({
               producer_id: product.producer_id,
               title: "Venda aprovada no Cartão!",
-              body: `Sua comissão: ${fmtNet}`,
+              body: `${fmtGross} • Você recebe ${fmtNet}`,
               url: "/sales",
             }),
           });

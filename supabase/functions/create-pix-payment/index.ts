@@ -270,8 +270,8 @@ Deno.serve(async (req) => {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({
           producer_id: product.producer_id,
-          title: "Venda aprovada no Pix!",
-          body: `Sua comissão: ${fmtValue}`,
+          title: "Checkout iniciado (Pix)",
+          body: `Aguardando pagamento de ${fmtValue}`,
           url: "/sales",
         }),
       });

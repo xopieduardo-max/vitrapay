@@ -511,13 +511,15 @@ Deno.serve(async (req) => {
       // Push notification — same style as regular sale
       try {
         const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
+      const fmtGross = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
+        const fmtGross = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
         await fetch(`${supabaseUrl}/functions/v1/send-push`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
           body: JSON.stringify({
             producer_id: producerId,
             title: "Venda aprovada no Pix!",
-            body: `Sua comissão: ${fmtNet}`,
+            body: `${fmtGross} • Você recebe ${fmtNet}`,
             url: "/sales",
           }),
         });
@@ -722,13 +724,14 @@ Deno.serve(async (req) => {
     // ✅ Send push notification for confirmed sale
     try {
       const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
+      const fmtGross = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
       await fetch(`${supabaseUrl}/functions/v1/send-push`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({
           producer_id: product.producer_id,
           title: "Venda aprovada no Pix!",
-          body: `Sua comissão: ${fmtNet}`,
+          body: `${fmtGross} • Você recebe ${fmtNet}`,
           url: "/sales",
         }),
       });
