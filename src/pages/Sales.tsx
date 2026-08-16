@@ -584,14 +584,15 @@ export default function Sales() {
                     {(statusMap[selectedSale.status] || statusMap.pending).label}
                   </Badge>
                 </div>
-                {selectedSale.buyer_id && (
+                {buyerLabel(selectedSale) !== "—" && (
                   <div className="flex items-center justify-between py-2 border-b border-border">
                     <span className="text-xs text-muted-foreground flex items-center gap-2"><User className="h-3.5 w-3.5" /> Cliente</span>
                     <span className="text-sm font-medium">
-                      {(buyerProfiles as Record<string, string>)[selectedSale.buyer_id] || selectedSale.buyer_id.slice(0, 8).toUpperCase()}
+                      {buyerLabel(selectedSale)}
                     </span>
                   </div>
                 )}
+
                 {selectedSale.payment_id && (
                   <div className="flex items-center justify-between py-2">
                     <span className="text-xs text-muted-foreground flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> ID Pagamento</span>
