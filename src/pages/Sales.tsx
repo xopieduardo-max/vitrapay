@@ -120,6 +120,41 @@ export default function Sales() {
     enabled: sales.length > 0,
   });
 
+  // Vendas sem buyer_id (conta criada só no checkout): nome vem do pending_payments
+  const { data: checkoutBuyers = {} } = useQuery({
+    queryKey: ["checkout-buyers", user?.id, sales.length],
+    queryFn: async () => {
+      const paymentIds = [
+        ...new Set(
+          sales
+            .filter((s: any) => !s.buyer_id && s.payment_id)
+            .map((s: any) => s.payment_id as string),
+        ),
+      ];
+      const map: Record<string, string> = {};
+      for (let i = 0; i < paymentIds.length; i += 200) {
+        const chunk = paymentIds.slice(i, i + 200);
+        const { data } = await supabase
+          .from("pending_payments")
+          .select("asaas_payment_id, buyer_name, buyer_email")
+          .in("asaas_payment_id", chunk);
+        (data || []).forEach((p: any) => {
+          map[p.asaas_payment_id] = p.buyer_name || p.buyer_email || "";
+        });
+      }
+      return map;
+    },
+    enabled: sales.length > 0,
+  });
+
+  const buyerLabel = (sale: any): string => {
+    const byProfile = (buyerProfiles as Record<string, string>)[sale.buyer_id];
+    if (byProfile) return byProfile;
+    const byCheckout = (checkoutBuyers as Record<string, string>)[sale.payment_id];
+    return byCheckout || "—";
+  };
+
+
   const uniqueProducts = useMemo(() => {
     const map = new Map<string, string>();
     sales.forEach((s: any) => {
@@ -144,12 +179,13 @@ export default function Sales() {
         const term = searchTerm.toLowerCase();
         const title = (s.products?.title || "").toLowerCase();
         const id = s.id.toLowerCase();
-        const buyerName = ((buyerProfiles as Record<string, string>)[s.buyer_id] || "").toLowerCase();
+        const buyerName = buyerLabel(s).toLowerCase();
         if (!title.includes(term) && !id.includes(term) && !buyerName.includes(term)) return false;
       }
       return true;
     });
-  }, [sales, productFilter, dateFilter, searchTerm, buyerProfiles]);
+  }, [sales, productFilter, dateFilter, searchTerm, buyerProfiles, checkoutBuyers]);
+
 
   const completed = filteredSales.filter((s: any) => s.status === "completed");
   const pending = filteredSales.filter((s: any) => s.status === "pending");
@@ -447,7 +483,7 @@ export default function Sales() {
             {paginatedSales.map((sale: any, i: number) => {
               const st = statusMap[sale.status] || statusMap.pending;
               const saleDate = new Date(sale.created_at);
-              const buyerName = (buyerProfiles as Record<string, string>)[sale.buyer_id] || "—";
+              const buyerName = buyerLabel(sale);
 
               return (
                 <motion.div
@@ -548,14 +584,15 @@ export default function Sales() {
                     {(statusMap[selectedSale.status] || statusMap.pending).label}
                   </Badge>
                 </div>
-                {selectedSale.buyer_id && (
+                {buyerLabel(selectedSale) !== "—" && (
                   <div className="flex items-center justify-between py-2 border-b border-border">
                     <span className="text-xs text-muted-foreground flex items-center gap-2"><User className="h-3.5 w-3.5" /> Cliente</span>
                     <span className="text-sm font-medium">
-                      {(buyerProfiles as Record<string, string>)[selectedSale.buyer_id] || selectedSale.buyer_id.slice(0, 8).toUpperCase()}
+                      {buyerLabel(selectedSale)}
                     </span>
                   </div>
                 )}
+
                 {selectedSale.payment_id && (
                   <div className="flex items-center justify-between py-2">
                     <span className="text-xs text-muted-foreground flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> ID Pagamento</span>

@@ -94,20 +94,23 @@ export default function MyProducts() {
     queryKey: ["sales-counts", productIds],
     queryFn: async () => {
       if (productIds.length === 0) return {};
-      const { data, error } = await supabase
-        .from("sales")
-        .select("product_id, status")
-        .in("product_id", productIds)
-        .eq("status", "completed");
-      if (error) throw error;
       const counts: Record<string, number> = {};
-      for (const row of data || []) {
-        counts[row.product_id!] = (counts[row.product_id!] || 0) + 1;
-      }
+      // count exato por produto (evita o limite de 1000 linhas do PostgREST)
+      await Promise.all(
+        productIds.map(async (id) => {
+          const { count } = await supabase
+            .from("sales")
+            .select("id", { count: "exact", head: true })
+            .eq("product_id", id)
+            .eq("status", "completed");
+          counts[id] = count || 0;
+        }),
+      );
       return counts;
     },
     enabled: productIds.length > 0,
   });
+
 
   return (
     <div className="space-y-5 pb-20 md:pb-6">
