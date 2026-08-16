@@ -57,7 +57,7 @@ export default function MinhaContaLogin({ onAuth }: { onAuth: () => void }) {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + "/minha-conta",
+        redirectTo: window.location.origin + "/reset-password",
       });
       if (error) throw error;
       toast({ title: "E-mail enviado!", description: "Verifique sua caixa de entrada para redefinir a senha." });

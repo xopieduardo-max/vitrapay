@@ -89,7 +89,7 @@ export function AdminQuickActions({ userId, userEmail, userPhone }: Props) {
     mutationFn: async () => {
       if (!userEmail) throw new Error("Usuário sem e-mail cadastrado");
       const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
     },
