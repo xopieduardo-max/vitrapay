@@ -31,12 +31,15 @@ export function useSalesNotifications() {
         },
         async (payload: any) => {
           const amount = payload.new?.amount || 0;
+          const fee = payload.new?.platform_fee || 0;
+          const net = Math.max(0, amount - fee);
           const method = payload.new?.payment_provider || "pix";
-          const fmt = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+          const fmtGross = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+          const fmtNet = `R$ ${(net / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
           const methodLabel = method === "pix" ? "Pix" : "Cartão";
 
           const title = `Venda aprovada no ${methodLabel}!`;
-          const description = `Sua comissão: ${fmt}`;
+          const description = `${fmtGross} • Você recebe ${fmtNet}`;
 
           toast.success(title, { description });
 
@@ -50,20 +53,7 @@ export function useSalesNotifications() {
 
           setNotifications((prev) => [notif, ...prev].slice(0, 50));
           setNewSalesCount((prev) => prev + 1);
-
-          // Trigger push notification via edge function
-          try {
-            await supabase.functions.invoke("send-push", {
-              body: {
-                producer_id: user.id,
-                title,
-                body: description,
-                url: "/sales",
-              },
-            });
-          } catch (e) {
-            console.error("Push notification error:", e);
-          }
+          // Push é enviado pelo backend (webhook) — evita notificação duplicada.
         }
       )
       .on(
