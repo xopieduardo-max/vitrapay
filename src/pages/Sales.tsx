@@ -120,6 +120,41 @@ export default function Sales() {
     enabled: sales.length > 0,
   });
 
+  // Vendas sem buyer_id (conta criada só no checkout): nome vem do pending_payments
+  const { data: checkoutBuyers = {} } = useQuery({
+    queryKey: ["checkout-buyers", user?.id, sales.length],
+    queryFn: async () => {
+      const paymentIds = [
+        ...new Set(
+          sales
+            .filter((s: any) => !s.buyer_id && s.payment_id)
+            .map((s: any) => s.payment_id as string),
+        ),
+      ];
+      const map: Record<string, string> = {};
+      for (let i = 0; i < paymentIds.length; i += 200) {
+        const chunk = paymentIds.slice(i, i + 200);
+        const { data } = await supabase
+          .from("pending_payments")
+          .select("asaas_payment_id, buyer_name, buyer_email")
+          .in("asaas_payment_id", chunk);
+        (data || []).forEach((p: any) => {
+          map[p.asaas_payment_id] = p.buyer_name || p.buyer_email || "";
+        });
+      }
+      return map;
+    },
+    enabled: sales.length > 0,
+  });
+
+  const buyerLabel = (sale: any): string => {
+    const byProfile = (buyerProfiles as Record<string, string>)[sale.buyer_id];
+    if (byProfile) return byProfile;
+    const byCheckout = (checkoutBuyers as Record<string, string>)[sale.payment_id];
+    return byCheckout || "—";
+  };
+
+
   const uniqueProducts = useMemo(() => {
     const map = new Map<string, string>();
     sales.forEach((s: any) => {
