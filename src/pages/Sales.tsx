@@ -179,12 +179,13 @@ export default function Sales() {
         const term = searchTerm.toLowerCase();
         const title = (s.products?.title || "").toLowerCase();
         const id = s.id.toLowerCase();
-        const buyerName = ((buyerProfiles as Record<string, string>)[s.buyer_id] || "").toLowerCase();
+        const buyerName = buyerLabel(s).toLowerCase();
         if (!title.includes(term) && !id.includes(term) && !buyerName.includes(term)) return false;
       }
       return true;
     });
-  }, [sales, productFilter, dateFilter, searchTerm, buyerProfiles]);
+  }, [sales, productFilter, dateFilter, searchTerm, buyerProfiles, checkoutBuyers]);
+
 
   const completed = filteredSales.filter((s: any) => s.status === "completed");
   const pending = filteredSales.filter((s: any) => s.status === "pending");
