@@ -262,9 +262,14 @@ Deno.serve(async (req) => {
             label: payload.label,
             // Fallback guarantees the send API never rejects with
             // "Missing run_id or idempotency_key" and loops forever.
-            idempotency_key:
-              payload.idempotency_key ??
-              (payload.run_id ? undefined : `msg-${payload.message_id ?? msg.msg_id}`),
+            // A per-attempt suffix avoids 409 "already failed, send again with
+            // a new idempotency key" on retries.
+            idempotency_key: payload.run_id
+              ? payload.idempotency_key
+              : `${payload.idempotency_key ?? `msg-${payload.message_id ?? msg.msg_id}`}${
+                  (msg.read_ct ?? 1) > 1 ? `-r${msg.read_ct}` : ''
+                }`,
+
             unsubscribe_token: payload.unsubscribe_token,
             message_id: payload.message_id,
           },
