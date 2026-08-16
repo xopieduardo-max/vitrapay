@@ -483,7 +483,7 @@ export default function Sales() {
             {paginatedSales.map((sale: any, i: number) => {
               const st = statusMap[sale.status] || statusMap.pending;
               const saleDate = new Date(sale.created_at);
-              const buyerName = (buyerProfiles as Record<string, string>)[sale.buyer_id] || "—";
+              const buyerName = buyerLabel(sale);
 
               return (
                 <motion.div
