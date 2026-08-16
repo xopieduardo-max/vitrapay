@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import {
-  Play, CheckCircle2, ChevronDown, ChevronRight, Clock, Loader2, ArrowLeft, BookOpen, Layers, Download, Paperclip, Award,
+  Play, CheckCircle2, ChevronDown, ChevronRight, Clock, Loader2, ArrowLeft, BookOpen, Layers, Download, Paperclip, Award, Lock,
 } from "lucide-react";
 
 type Module = {
@@ -17,6 +17,7 @@ type Module = {
   title: string;
   description: string | null;
   position: number;
+  coming_soon?: boolean;
   lessons: Lesson[];
 };
 
@@ -29,6 +30,7 @@ type Lesson = {
   duration_minutes: number;
   position: number;
   is_free: boolean;
+  coming_soon?: boolean;
 };
 
 export default function MemberArea() {
@@ -149,7 +151,11 @@ export default function MemberArea() {
     setProgress((prev) => ({ ...prev, [lessonId]: true }));
   };
 
-  const openLesson = async (lesson: Lesson) => {
+  const isLocked = (lesson: Lesson, mod?: Module) =>
+    !!lesson.coming_soon || !!mod?.coming_soon;
+
+  const openLesson = async (lesson: Lesson, mod?: Module) => {
+    if (isLocked(lesson, mod)) return;
     setSelectedLesson(lesson);
     setView("lesson");
     // Fetch files if not already loaded
@@ -163,14 +169,18 @@ export default function MemberArea() {
     }
   };
 
-  const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
+  const availableModules = modules.map((m) => ({
+    ...m,
+    lessons: m.coming_soon ? [] : m.lessons.filter((l) => !l.coming_soon),
+  }));
+  const totalLessons = availableModules.reduce((acc, m) => acc + m.lessons.length, 0);
   const completedLessons = Object.values(progress).filter(Boolean).length;
   const progressPercent = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
   const courseCompleted = totalLessons > 0 && completedLessons >= totalLessons;
 
   // Compute "resume lesson": latest touched lesson (or next incomplete after it, or first lesson)
   const flatLessons: { lesson: Lesson; module: Module; index: number }[] = [];
-  modules.forEach((m) => m.lessons.forEach((l) => flatLessons.push({ lesson: l, module: m, index: flatLessons.length })));
+  availableModules.forEach((m) => m.lessons.forEach((l) => flatLessons.push({ lesson: l, module: m, index: flatLessons.length })));
   let resumeItem: { lesson: Lesson; module: Module; index: number } | null = null;
   const touched = flatLessons
     .filter((f) => progressTimes[f.lesson.id])
@@ -276,8 +286,9 @@ export default function MemberArea() {
   };
 
   const getModuleProgress = (mod: Module) => {
-    const completed = mod.lessons.filter((l) => progress[l.id]).length;
-    return { completed, total: mod.lessons.length, percent: mod.lessons.length > 0 ? (completed / mod.lessons.length) * 100 : 0 };
+    const lessons = mod.coming_soon ? [] : mod.lessons.filter((l) => !l.coming_soon);
+    const completed = lessons.filter((l) => progress[l.id]).length;
+    return { completed, total: lessons.length, percent: lessons.length > 0 ? (completed / lessons.length) * 100 : 0 };
   };
 
   const getModuleDuration = (mod: Module) => {
@@ -446,9 +457,18 @@ export default function MemberArea() {
                 transition={{ delay: idx * 0.08, duration: 0.5, ease: [0.2, 0, 0, 1] }}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-bold tracking-tight">{mod.title}</h2>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h2 className={`text-lg font-bold tracking-tight truncate ${mod.coming_soon ? "text-muted-foreground" : ""}`}>
+                      {mod.title}
+                    </h2>
+                    {mod.coming_soon && (
+                      <Badge variant="secondary" className="text-[0.6rem] gap-1 shrink-0">
+                        <Lock className="h-2.5 w-2.5" /> Em breve
+                      </Badge>
+                    )}
+                  </div>
                   <span className="text-xs text-muted-foreground">
-                    {modProgress.completed}/{modProgress.total} aulas
+                    {mod.coming_soon ? `${mod.lessons.length} aulas` : `${modProgress.completed}/${modProgress.total} aulas`}
                   </span>
                 </div>
                 {mod.description && (
@@ -459,13 +479,18 @@ export default function MemberArea() {
                 <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin">
                   {mod.lessons.map((lesson, li) => {
                     const isCompleted = progress[lesson.id];
+                    const locked = isLocked(lesson, mod);
                     return (
                       <motion.button
                         key={lesson.id}
-                        onClick={() => openLesson(lesson)}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="relative flex-shrink-0 w-36 sm:w-40 rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-colors snap-start group text-left"
+                        onClick={() => openLesson(lesson, mod)}
+                        disabled={locked}
+                        aria-disabled={locked}
+                        whileHover={locked ? undefined : { scale: 1.03 }}
+                        whileTap={locked ? undefined : { scale: 0.98 }}
+                        className={`relative flex-shrink-0 w-36 sm:w-40 rounded-xl overflow-hidden border border-border bg-card transition-colors snap-start group text-left ${
+                          locked ? "grayscale opacity-60 cursor-not-allowed" : "hover:border-primary/40"
+                        }`}
                       >
                         <div className="aspect-[2/3] w-full bg-muted/30 flex items-center justify-center relative overflow-hidden">
                           {(lesson as any).cover_url ? (
@@ -487,7 +512,11 @@ export default function MemberArea() {
                           )}
                           <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
                           <div className="relative z-10 flex flex-col items-center gap-1">
-                            {isCompleted ? (
+                            {locked ? (
+                              <div className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                                <Lock className="h-5 w-5 text-white/80" />
+                              </div>
+                            ) : isCompleted ? (
                               <CheckCircle2 className="h-8 w-8 text-primary" />
                             ) : (
                               <div className="h-10 w-10 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-primary/30 transition-colors">
@@ -496,8 +525,10 @@ export default function MemberArea() {
                             )}
                           </div>
                           {/* Lesson number badge */}
-                          <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-[0.55rem] font-bold px-1.5 py-0.5 rounded z-10">
-                            Aula {li + 1}
+                          <div className={`absolute top-2 right-2 text-[0.55rem] font-bold px-1.5 py-0.5 rounded z-10 ${
+                            locked ? "bg-foreground/70 text-background" : "bg-primary/90 text-primary-foreground"
+                          }`}>
+                            {locked ? "Em breve" : `Aula ${li + 1}`}
                           </div>
                         </div>
                         <div className="p-3 space-y-1">
@@ -590,6 +621,9 @@ export default function MemberArea() {
                     >
                       {mod.title}
                     </span>
+                    {mod.coming_soon && (
+                      <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
+                    )}
                     <Badge variant="secondary" className="text-[0.6rem]">
                       {modDone}/{mod.lessons.length}
                     </Badge>
@@ -606,6 +640,7 @@ export default function MemberArea() {
                       {mod.lessons.map((lesson) => {
                         const isCompleted = progress[lesson.id];
                         const isActive = selectedLesson?.id === lesson.id;
+                        const locked = isLocked(lesson, mod);
 
                         return (
                           <div key={lesson.id} className="relative pl-6">
@@ -620,22 +655,30 @@ export default function MemberArea() {
                               aria-hidden
                             />
                             <button
-                              onClick={() => setSelectedLesson(lesson)}
+                              onClick={() => !locked && setSelectedLesson(lesson)}
+                              disabled={locked}
                               className={`w-full flex items-center gap-2 px-3 py-2 my-0.5 rounded-lg transition-colors text-left text-sm ${
-                                isActive
+                                locked
+                                  ? "text-muted-foreground/50 grayscale cursor-not-allowed"
+                                  : isActive
                                   ? "bg-primary/10 text-primary font-medium"
                                   : isCompleted
                                   ? "text-success/80 hover:bg-muted/30"
                                   : "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
                               }`}
                             >
-                              {isCompleted ? (
+                              {locked ? (
+                                <Lock className="h-3.5 w-3.5 shrink-0" />
+                              ) : isCompleted ? (
                                 <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                               ) : (
                                 <Play className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
                               )}
                               <span className="flex-1 truncate">{lesson.title}</span>
-                              {lesson.duration_minutes > 0 && (
+                              {locked && (
+                                <span className="text-[0.55rem] shrink-0 uppercase tracking-wide">Em breve</span>
+                              )}
+                              {!locked && lesson.duration_minutes > 0 && (
                                 <span className="text-[0.6rem] text-muted-foreground shrink-0">
                                   {lesson.duration_minutes}min
                                 </span>
