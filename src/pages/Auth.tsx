@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeLogo } from "@/components/ThemeLogo";
 
-type Step = "credentials" | "otp";
+type Step = "credentials" | "otp" | "forgot";
 
 function PasswordInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [show, setShow] = useState(false);
@@ -46,6 +46,10 @@ export default function Auth() {
   const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("forgot") === "1") setStep("forgot");
+  }, []);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -109,6 +113,26 @@ export default function Auth() {
       }
       toast({ title: isPreview ? "Use a URL publicada" : "Erro", description: msg, variant: "destructive" });
 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast({
+        title: "E-mail enviado!",
+        description: "Enviamos um link para você criar uma nova senha. Confira sua caixa de entrada e o spam.",
+      });
+    } catch (error: any) {
+      toast({ title: "Erro", description: error?.message || "Não foi possível enviar o e-mail.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -179,7 +203,46 @@ export default function Auth() {
             </Link>
 
             <AnimatePresence mode="wait">
-              {step === "credentials" ? (
+              {step === "forgot" ? (
+                <motion.div
+                  key="forgot"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <h1 className="text-3xl font-bold tracking-tight text-white">Recuperar senha</h1>
+                  <p className="mt-3 text-sm text-white/60 leading-relaxed">
+                    Informe seu e-mail e enviaremos um link para você criar uma nova senha.
+                  </p>
+
+                  <form onSubmit={handleForgotPassword} className="mt-8 space-y-3">
+                    <Input
+                      type="email"
+                      placeholder="Seu E-mail"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-14 bg-white/[0.04] border-white/10 rounded-xl px-4 text-white placeholder:text-white/40 focus-visible:border-primary focus-visible:bg-white/[0.07] focus-visible:ring-0"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full h-14 mt-4 rounded-xl bg-white hover:bg-white/90 text-black text-base font-semibold"
+                    >
+                      {loading ? "Enviando..." : "Enviar link de recuperação"}
+                    </Button>
+                  </form>
+
+                  <button
+                    type="button"
+                    onClick={() => setStep("credentials")}
+                    className="mt-8 inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors font-medium"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao login
+                  </button>
+                </motion.div>
+              ) : step === "credentials" ? (
                 <motion.div
                   key="credentials"
                   initial={{ opacity: 0, y: 8 }}
@@ -235,9 +298,13 @@ export default function Auth() {
                   <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between text-sm">
                     {isLogin ? (
                       <>
-                        <Link to="/" className="text-white/60 hover:text-white transition-colors font-medium">
+                        <button
+                          type="button"
+                          onClick={() => setStep("forgot")}
+                          className="text-white/60 hover:text-white transition-colors font-medium"
+                        >
                           Esqueceu sua senha?
-                        </Link>
+                        </button>
                         <button
                           onClick={() => setIsLogin(false)}
                           className="text-white hover:text-primary transition-colors font-medium flex items-center gap-1.5"
