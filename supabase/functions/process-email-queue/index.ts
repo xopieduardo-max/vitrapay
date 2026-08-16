@@ -260,7 +260,11 @@ Deno.serve(async (req) => {
             text: payload.text,
             purpose: payload.purpose,
             label: payload.label,
-            idempotency_key: payload.idempotency_key,
+            // Fallback guarantees the send API never rejects with
+            // "Missing run_id or idempotency_key" and loops forever.
+            idempotency_key:
+              payload.idempotency_key ??
+              (payload.run_id ? undefined : `msg-${payload.message_id ?? msg.msg_id}`),
             unsubscribe_token: payload.unsubscribe_token,
             message_id: payload.message_id,
           },
