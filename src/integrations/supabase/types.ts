@@ -2597,6 +2597,7 @@ export type Database = {
         Returns: number
       }
       get_my_email: { Args: never; Returns: string }
+      get_payment_status: { Args: { _payment_id: string }; Returns: string }
       get_public_profiles: {
         Args: { _user_ids: string[] }
         Returns: {
