@@ -61,19 +61,49 @@ export async function autoCreateBuyerAccount(
       ) {
         console.log("Buyer account already exists for:", buyerEmail);
 
-        const { data: existingAccess } = await supabase
-          .from("product_access")
-          .select("user_id")
-          .eq("buyer_email", buyerEmail)
-          .not("user_id", "is", null)
-          .limit(1)
-          .maybeSingle();
+        // Resolve the real auth user by e-mail so we can link the access rows.
+        let existingUserId: string | null = null;
+        try {
+          const { data: list } = await supabase.auth.admin.listUsers({
+            page: 1,
+            perPage: 1,
+            // @ts-ignore - supported by GoTrue admin API
+            filter: `email.eq.${buyerEmail}`,
+          });
+          existingUserId =
+            list?.users?.find(
+              (u: { id: string; email?: string }) =>
+                (u.email || "").toLowerCase() === buyerEmail.toLowerCase()
+            )?.id || null;
+        } catch (e) {
+          console.error("listUsers lookup failed:", e);
+        }
+
+        if (!existingUserId) {
+          const { data: existingAccess } = await supabase
+            .from("product_access")
+            .select("user_id")
+            .eq("buyer_email", buyerEmail)
+            .not("user_id", "is", null)
+            .limit(1)
+            .maybeSingle();
+          existingUserId = (existingAccess?.user_id as string) || null;
+        }
+
+        if (existingUserId) {
+          await supabase
+            .from("product_access")
+            .update({ user_id: existingUserId })
+            .eq("buyer_email", buyerEmail)
+            .is("user_id", null);
+        }
 
         return {
-          userId: existingAccess?.user_id || null,
+          userId: existingUserId,
           tempPassword: null,
           isNew: false,
         };
+
       }
 
       console.error("Failed to create buyer account:", createErr.message);
