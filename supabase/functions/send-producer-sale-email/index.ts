@@ -155,11 +155,30 @@ Deno.serve(async (req) => {
     const amountFormatted = `R$ ${(amount / 100).toFixed(2).replace(".", ",")}`;
     const paymentLabel = payment_method === "pix" ? "Pix" : "Cartão";
 
+    // Transactional sends require an unsubscribe token
+    const { data: existingToken } = await supabase
+      .from("email_unsubscribe_tokens")
+      .select("token")
+      .eq("email", producerEmail)
+      .maybeSingle();
+
+    let unsubscribeToken: string;
+    if (existingToken?.token) {
+      unsubscribeToken = existingToken.token as string;
+    } else {
+      unsubscribeToken = crypto.randomUUID();
+      await supabase.from("email_unsubscribe_tokens").insert({
+        email: producerEmail,
+        token: unsubscribeToken,
+      });
+    }
+
     const { error: enqueueError } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
         message_id: messageId,
         idempotency_key: `producer-sale-${messageId}`,
+        unsubscribe_token: unsubscribeToken,
         to: producerEmail,
         from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
@@ -171,6 +190,7 @@ Deno.serve(async (req) => {
         queued_at: new Date().toISOString(),
       },
     });
+
 
     if (enqueueError) {
       console.error("Failed to enqueue producer sale email:", enqueueError);
