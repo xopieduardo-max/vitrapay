@@ -259,15 +259,20 @@ export default function Checkout() {
   // Polling for PIX payment confirmation
   useEffect(() => {
     if (!asaasPaymentId) return;
-    const interval = setInterval(async () => {
+
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const checkPaymentStatus = async () => {
       try {
-        const { data } = await supabase.rpc("get_payment_status" as any, {
+        const { data, error } = await supabase.rpc("get_payment_status", {
           _payment_id: asaasPaymentId,
         });
 
-        if (data === "confirmed") {
+        if (error) throw error;
 
-          clearInterval(interval);
+        const normalizedStatus = data?.trim().toLowerCase();
+        if (!cancelled && normalizedStatus === "confirmed") {
           setPurchaseResult({
             product_title: product?.title,
             amount: calculateTotal(),
@@ -276,11 +281,28 @@ export default function Checkout() {
             file_url: product?.file_url,
           });
           toast({ title: "Pagamento confirmado!" });
+          return;
         }
-      } catch {}
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [asaasPaymentId]);
+      } catch (error) {
+        console.error("Falha ao consultar confirmação do pagamento PIX:", error);
+      }
+
+      if (!cancelled) timeoutId = setTimeout(checkPaymentStatus, 3000);
+    };
+
+    void checkPaymentStatus();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") void checkPaymentStatus();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [asaasPaymentId, product]);
 
   const formatTime = (s: number) => ({
     min: Math.floor(s / 60).toString().padStart(2, "0"),
