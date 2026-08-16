@@ -24,7 +24,7 @@ interface PurchaseEmailParams {
 function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
   const { buyer_name, product_title, product_type, product_id, temp_password, buyer_email } = params;
   // For courses, link directly to the course page; otherwise go to the portal
-  const isCourse = product_type === "course";
+  const isCourse = product_type === "course" || product_type === "lms";
   const accessLink = isCourse
     ? `https://www.vitrapay.com.br/learn/${product_id}`
     : `https://www.vitrapay.com.br/minha-conta`;
@@ -144,7 +144,7 @@ function buildPurchaseEmailHtml(params: PurchaseEmailParams): string {
 
 function buildPlainText(params: PurchaseEmailParams): string {
   const { buyer_name, product_title, product_type, product_id, temp_password, buyer_email } = params;
-  const isCourse = product_type === "course";
+  const isCourse = product_type === "course" || product_type === "lms";
   const accessLink = isCourse
     ? `https://www.vitrapay.com.br/learn/${product_id}`
     : `https://www.vitrapay.com.br/minha-conta`;
