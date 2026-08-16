@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 
 // Eager: auth only (smallest critical path)
 import Auth from "./pages/Auth";
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Lazy: everything including landing
 const Landing = lazy(() => import("./pages/Landing"));
@@ -102,6 +103,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/checkout/:id" element={<Checkout />} />
               
               <Route path="/terms" element={<TermsOfUse />} />
