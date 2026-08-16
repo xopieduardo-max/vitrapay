@@ -150,7 +150,9 @@ export default function Checkout() {
   const [processing, setProcessing] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState<any>(null);
   const [pixData, setPixData] = useState<{ qrCode: string; copyPaste: string } | null>(null);
-  const [asaasPaymentId, setAsaasPaymentId] = useState<string | null>(null);
+  const [asaasPaymentId, setAsaasPaymentId] = useState<string | null>(() =>
+    sessionStorage.getItem("vitrapay_pending_payment_id")
+  );
   const [timeLeft, setTimeLeft] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
@@ -273,6 +275,7 @@ export default function Checkout() {
 
         const normalizedStatus = data?.trim().toLowerCase();
         if (!cancelled && normalizedStatus === "confirmed") {
+          sessionStorage.removeItem("vitrapay_pending_payment_id");
           setPurchaseResult({
             product_title: product?.title,
             amount: calculateTotal(),
@@ -497,7 +500,9 @@ export default function Checkout() {
             qrCode: data.pix_qr_code,
             copyPaste: data.pix_copy_paste,
           });
-          setAsaasPaymentId(data.asaas_payment_id || null);
+          const paymentId = data.asaas_payment_id || null;
+          setAsaasPaymentId(paymentId);
+          if (paymentId) sessionStorage.setItem("vitrapay_pending_payment_id", paymentId);
           firePixelEvent(productPixels, "Purchase", total, "BRL", data.asaas_payment_id || undefined);
           toast({ title: "Pagamento gerado, finalize via PIX" });
         } else {
@@ -550,7 +555,9 @@ export default function Checkout() {
           firePixelEvent(productPixels, "Purchase", total, "BRL", data.payment_id || undefined);
         } else if (data?.status === "PENDING" || data?.status === "RECEIVED_IN_CASH") {
           setCardStatus("pending");
-          setAsaasPaymentId(data.payment_id || null);
+          const paymentId = data.payment_id || null;
+          setAsaasPaymentId(paymentId);
+          if (paymentId) sessionStorage.setItem("vitrapay_pending_payment_id", paymentId);
           toast({ title: "Pagamento em análise", description: "Aguarde a confirmação." });
         } else {
           setCardStatus("declined");
