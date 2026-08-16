@@ -261,13 +261,12 @@ export default function Checkout() {
     if (!asaasPaymentId) return;
     const interval = setInterval(async () => {
       try {
-        const { data } = await supabase
-          .from("pending_payments")
-          .select("status")
-          .eq("asaas_payment_id", asaasPaymentId)
-          .single();
+        const { data } = await supabase.rpc("get_payment_status" as any, {
+          _payment_id: asaasPaymentId,
+        });
 
-        if (data?.status === "confirmed") {
+        if (data === "confirmed") {
+
           clearInterval(interval);
           setPurchaseResult({
             product_title: product?.title,
