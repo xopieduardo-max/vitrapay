@@ -168,7 +168,7 @@ async function sendPurchaseEmailNotification(
   try {
     const res = await fetch(`${supabaseUrl}/functions/v1/send-purchase-email`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
       body: JSON.stringify({
         buyer_name: buyerName,
         buyer_email: buyerEmail,
@@ -778,7 +778,7 @@ Deno.serve(async (req) => {
     try {
       await fetch(`${supabaseUrl}/functions/v1/send-producer-sale-email`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({
           producer_id: product.producer_id,
           product_title: product.title,
@@ -799,7 +799,7 @@ Deno.serve(async (req) => {
     try {
       const capiRes = await fetch(`${supabaseUrl}/functions/v1/send-facebook-capi`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
         body: JSON.stringify({
           product_id: pending.product_id,
           payment_id: asaasPaymentId,
