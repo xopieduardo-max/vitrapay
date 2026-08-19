@@ -533,7 +533,7 @@ Deno.serve(async (req) => {
     // Check if sale already exists
     const { data: existingSale } = await supabase
       .from("sales")
-      .select("id")
+      .select("id, utmify_postback_sent, producer_id")
       .eq("payment_id", asaasPaymentId)
       .maybeSingle();
 
@@ -542,6 +542,23 @@ Deno.serve(async (req) => {
 
       // Grant access even if sale was already created by card flow
       await grantProductAccess(supabase, pending.product_id, pending.buyer_email, existingSale.id);
+
+      // Send UTMify postback if it was never sent for this sale
+      if (!existingSale.utmify_postback_sent) {
+        const { data: product } = await supabase
+          .from("products")
+          .select("id, title, producer_id")
+          .eq("id", pending.product_id)
+          .single();
+
+        if (product) {
+          const sent = await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending, product, "pix");
+          if (sent) {
+            await supabase.from("sales").update({ utmify_postback_sent: true }).eq("id", existingSale.id);
+            console.log("UTMify postback sent for previously processed sale:", asaasPaymentId);
+          }
+        }
+      }
 
       console.log("Sale already exists, access granted:", asaasPaymentId);
       return new Response(JSON.stringify({ status: "already_processed" }), {
@@ -795,7 +812,10 @@ Deno.serve(async (req) => {
     }
 
     // ✅ Send UTMify postback
-    await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending, product, "pix");
+    const utmifySent = await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending, product, "pix");
+    if (utmifySent && sale?.id) {
+      await supabase.from("sales").update({ utmify_postback_sent: true }).eq("id", sale.id);
+    }
 
     // ✅ Send Facebook Conversion API (CAPI) Purchase event
     try {
