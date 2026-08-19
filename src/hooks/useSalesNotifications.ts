@@ -31,15 +31,12 @@ export function useSalesNotifications() {
         },
         async (payload: any) => {
           const amount = payload.new?.amount || 0;
-          const fee = payload.new?.platform_fee || 0;
-          const net = Math.max(0, amount - fee);
           const method = payload.new?.payment_provider || "pix";
           const fmtGross = `R$ ${(amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-          const fmtNet = `R$ ${(net / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
           const methodLabel = method === "pix" ? "Pix" : "Cartão";
 
           const title = `Venda aprovada no ${methodLabel}!`;
-          const description = `${fmtGross} • Você recebe ${fmtNet}`;
+          const description = fmtGross;
 
           toast.success(title, { description });
 

@@ -60,7 +60,7 @@ async function sendUtmifyPostback(
   pending: any,
   product: any,
   paymentMethod: string = "pix",
-) {
+): Promise<boolean> {
   try {
     const { data: integration } = await supabase
       .from("user_integrations")
@@ -71,7 +71,7 @@ async function sendUtmifyPostback(
 
     if (!integration || !integration.is_active || !integration.api_token) {
       console.log("UTMify not configured or inactive for producer:", producerId);
-      return;
+      return false;
     }
 
     const now = new Date().toISOString();
@@ -139,7 +139,7 @@ async function sendUtmifyPostback(
         const resText = await res.text();
         console.log(`UTMify postback RESPONSE (attempt ${attempt}):`, res.status, resText);
 
-        if (res.ok || res.status < 500) return;
+        if (res.ok || res.status < 500) return true;
         lastError = `status ${res.status}: ${resText}`;
       } catch (fetchErr) {
         lastError = fetchErr;
@@ -150,8 +150,10 @@ async function sendUtmifyPostback(
     }
 
     console.error("UTMify postback FAILED after 3 attempts:", lastError);
+    return false;
   } catch (err) {
     console.error("UTMify postback error:", err);
+    return false;
   }
 }
 
@@ -510,7 +512,6 @@ Deno.serve(async (req) => {
 
       // Push notification — same style as regular sale
       try {
-        const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
         const fmtGross = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
         await fetch(`${supabaseUrl}/functions/v1/send-push`, {
           method: "POST",
@@ -518,7 +519,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             producer_id: producerId,
             title: "Venda aprovada no Pix!",
-            body: `${fmtGross} • Você recebe ${fmtNet}`,
+            body: fmtGross,
             url: "/sales",
           }),
         });
@@ -532,7 +533,7 @@ Deno.serve(async (req) => {
     // Check if sale already exists
     const { data: existingSale } = await supabase
       .from("sales")
-      .select("id")
+      .select("id, utmify_postback_sent, producer_id")
       .eq("payment_id", asaasPaymentId)
       .maybeSingle();
 
@@ -541,6 +542,23 @@ Deno.serve(async (req) => {
 
       // Grant access even if sale was already created by card flow
       await grantProductAccess(supabase, pending.product_id, pending.buyer_email, existingSale.id);
+
+      // Send UTMify postback if it was never sent for this sale
+      if (!existingSale.utmify_postback_sent) {
+        const { data: product } = await supabase
+          .from("products")
+          .select("id, title, producer_id")
+          .eq("id", pending.product_id)
+          .single();
+
+        if (product) {
+          const sent = await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending, product, "pix");
+          if (sent) {
+            await supabase.from("sales").update({ utmify_postback_sent: true }).eq("id", existingSale.id);
+            console.log("UTMify postback sent for previously processed sale:", asaasPaymentId);
+          }
+        }
+      }
 
       console.log("Sale already exists, access granted:", asaasPaymentId);
       return new Response(JSON.stringify({ status: "already_processed" }), {
@@ -722,7 +740,6 @@ Deno.serve(async (req) => {
 
     // ✅ Send push notification for confirmed sale
     try {
-      const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
       const fmtGross = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
       await fetch(`${supabaseUrl}/functions/v1/send-push`, {
         method: "POST",
@@ -730,7 +747,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           producer_id: product.producer_id,
           title: "Venda aprovada no Pix!",
-          body: `${fmtGross} • Você recebe ${fmtNet}`,
+          body: fmtGross,
           url: "/sales",
         }),
       });
@@ -795,7 +812,10 @@ Deno.serve(async (req) => {
     }
 
     // ✅ Send UTMify postback
-    await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending, product, "pix");
+    const utmifySent = await sendUtmifyPostback(supabase, product.producer_id, asaasPaymentId, pending.amount, pending.buyer_email, pending, product, "pix");
+    if (utmifySent && sale?.id) {
+      await supabase.from("sales").update({ utmify_postback_sent: true }).eq("id", sale.id);
+    }
 
     // ✅ Send Facebook Conversion API (CAPI) Purchase event
     try {
