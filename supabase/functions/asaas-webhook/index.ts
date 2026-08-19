@@ -511,7 +511,6 @@ Deno.serve(async (req) => {
       // Push notification — same style as regular sale
       try {
         const fmtNet = `R$ ${(producerNet / 100).toFixed(2).replace(".", ",")}`;
-      const fmtGross = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
         const fmtGross = `R$ ${(pending.amount / 100).toFixed(2).replace(".", ",")}`;
         await fetch(`${supabaseUrl}/functions/v1/send-push`, {
           method: "POST",
