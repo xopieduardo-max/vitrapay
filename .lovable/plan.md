@@ -1,81 +1,40 @@
-## Correção de taxas Asaas + limite automático de parcelas
+# Plano: Ajustar notificações de venda + corrigir postback UTMify
 
-### 1. Backend — custos reais do Asaas
+## Resposta à sua pergunta sobre a UTMify
 
-**`supabase/functions/create-card-payment/index.ts` e `supabase/functions/asaas-webhook/index.ts`**
+**Não foi porque o webhook da Asaas não disparou — ele disparou sim.** O log mostra:
 
-Substituir a tabela atual de custos por:
-
-```ts
-// D+30 (padrão)
-const ASAAS_D30 = {
-  x1:  { pct: 0.0299, fixed: 49 }, // à vista
-  x6:  { pct: 0.0349, fixed: 49 }, // 2 a 6 parcelas
-  x12: { pct: 0.0399, fixed: 49 }, // 7 a 12 parcelas
-};
-
-// D+2 = D+30 + antecipação 1,15% a.m. (proporcional aos dias)
-// Simplificação prática: soma 1,15% ao percentual da faixa
-const ASAAS_D2 = {
-  x1:  { pct: 0.0299 + 0.0115, fixed: 49 },
-  x6:  { pct: 0.0349 + 0.0115, fixed: 49 },
-  x12: { pct: 0.0399 + 0.0115, fixed: 49 },
-};
+```
+Webhook received: ...pay_x96vv1zroekmrxhu...
+Already processed: pay_x96vv1zroekmrxhu
 ```
 
-Correções obrigatórias:
-- **Custo fixo por parcela**: `asaasCost = pct × valorCobrado + fixed × n` (hoje soma o fixed uma vez só).
-- **`netProfit`**: usar `serviceFeeNet` (R$ 0,99 já descontado do % Asaas), não `SERVICE_FEE` bruto.
-- **Piso de `custom_fee_fixed`**: se admin definir taxa personalizada abaixo do custo real do gateway daquela faixa, rejeitar/logar e usar o piso.
+O webhook recebeu o evento, mas encontrou a venda **já registrada no banco** e retornou cedo (linha 546-548 do `asaas-webhook`), **antes de chegar no postback da UTMify** (linha 798). Ou seja: o postback só é enviado na *primeira* vez que a venda é processada. Se a venda entrou no banco por outro caminho (ou por uma execução parcial anterior), o postback nunca é disparado.
 
-### 2. Limite automático de parcelas por faixa de preço
+## O que vou fazer
 
-Nova constante compartilhada (backend + frontend):
+### 1. Simplificar texto da notificação (push + toast)
 
-```ts
-// Máximo de parcelas permitido conforme o preço do produto
-function maxInstallmentsForPrice(amountCents: number): number {
-  if (amountCents < 2000)  return 3;   // < R$ 20 → até 3x
-  if (amountCents < 5000)  return 6;   // R$ 20 a R$ 49,99 → até 6x
-  if (amountCents < 10000) return 10;  // R$ 50 a R$ 99,99 → até 10x
-  return 12;                            // ≥ R$ 100 → até 12x
-}
-```
+Hoje: `Venda aprovada no Pix!` → `R$ 37,00 • Você recebe R$ 34,51`
+Depois: `Venda aprovada no Pix!` → `R$ 37,00` (só o valor da venda)
 
-- **`create-card-payment/index.ts`**: validar `installments <= maxInstallmentsForPrice(productAmount)`. Se ultrapassar, retornar 400 com mensagem clara.
-- **`src/pages/Checkout.tsx`**: gerar os botões de parcela usando esse mesmo helper (ao invés de sempre 12x).
-- Mostrar aviso discreto: "Este produto pode ser parcelado em até Nx".
+**Arquivos:**
+- `supabase/functions/asaas-webhook/index.ts` — 2 blocos de push (linhas 513-521 e 725-733): remover `fmtNet` e a parte `• Você recebe ${fmtNet}`
+- `src/hooks/useSalesNotifications.ts` — linhas 35-42: remover cálculo de `net` e `fmtNet`, mostrar só `fmtGross`
 
-### 3. Frontend — simulador e páginas públicas
+### 2. Corrigir postback UTMify em vendas "já processadas"
 
-**`src/pages/Taxas.tsx`** (simulador do produtor):
-- Trocar tabela `ASAAS_PCT` para as 3 faixas reais (2,99 / 3,49 / 3,99), somando 1,15% no D+2.
-- Multiplicar `ASAAS_FIXED_PER_INSTALLMENT × n` (já faz certo — confirmar).
-- Aplicar o mesmo `maxInstallmentsForPrice` para desabilitar botões acima do permitido.
+Hoje, quando o webhook encontra uma venda já existente (linha 539), ele retorna imediatamente sem enviar o postback da UTMify. Isso significa que se a venda foi criada por outro fluxo (ex: cartão) ou se o webhook falhou na primeira tentativa, a UTMify nunca recebe o pedido.
 
-**`src/pages/admin/AdminFeeSimulator.tsx`**:
-- Mesma atualização da tabela de custos e do limite.
+**Correção:** Adicionar um campo `utmify_postback_sent` na tabela `sales` (boolean, default false). Sempre que o webhook processa uma venda — seja nova ou já existente — ele verifica se o postback já foi enviado. Se não foi, envia e marca como enviado.
 
-**`src/pages/AdminUsers.tsx` linha 489**: corrigir typo "3,89%" → "3,99%".
+**Passos:**
+- Migration: `ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS utmify_postback_sent boolean DEFAULT false;`
+- No `asaas-webhook/index.ts`, mover a chamada `sendUtmifyPostback` para também executar no caminho `already_processed`, com verificação do flag
+- Após envio bem-sucedido, atualizar `utmify_postback_sent = true`
 
-**`src/pages/FAQ.tsx` e `src/pages/Landing.tsx`**: adicionar linha de transparência — "Parcelamento disponível conforme valor do produto (até 12x)".
+## Detalhes técnicos
 
-### 4. Validação pós-mudança
-
-Cenários de teste que precisam bater no simulador e no backend:
-
-| Produto | Método | Parcelas | Lucro plataforma esperado |
-|---|---|---|---|
-| R$ 100 | PIX D+0 | — | R$ 1,49 |
-| R$ 100 | Cartão D+30 | 1x | ~R$ 4,95 |
-| R$ 100 | Cartão D+30 | 12x | ~R$ 4,95 (juros pagam antecipação) |
-| R$ 100 | Cartão D+2 | 12x | ~R$ 3,80 |
-| R$ 20 | Cartão D+30 | 3x (limite) | > 0 |
-| R$ 10 | Cartão D+30 | 3x (limite) | > 0 |
-
-Se qualquer linha der negativo, ajustar as faixas do `maxInstallmentsForPrice` antes de encerrar.
-
-### Fora do escopo
-- Não muda a taxa nominal da VitraPay (3,99% + R$ 2,49 / R$ 2,49 PIX / R$ 0,99 serviço).
-- Não muda a regra de juros do comprador (1,6% a.m. em parcelado, à vista sem juros).
-- Não mexe em vendas antigas — só afeta cobranças novas.
+- A migration roda via `supabase--migration`
+- O deploy do webhook é feito via `supabase--deploy_edge_functions`
+- O campo `utmify_postback_sent` é seguro sob RLS pois só o webhook (service_role) o escreve
