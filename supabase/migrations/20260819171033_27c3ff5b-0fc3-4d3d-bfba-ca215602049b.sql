@@ -1,0 +1,1 @@
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS utmify_postback_sent boolean NOT NULL DEFAULT false;

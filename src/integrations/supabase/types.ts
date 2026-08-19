@@ -1707,6 +1707,7 @@ export type Database = {
           producer_id: string | null
           product_id: string | null
           status: string
+          utmify_postback_sent: boolean
         }
         Insert: {
           affiliate_id?: string | null
@@ -1728,6 +1729,7 @@ export type Database = {
           producer_id?: string | null
           product_id?: string | null
           status?: string
+          utmify_postback_sent?: boolean
         }
         Update: {
           affiliate_id?: string | null
@@ -1749,6 +1751,7 @@ export type Database = {
           producer_id?: string | null
           product_id?: string | null
           status?: string
+          utmify_postback_sent?: boolean
         }
         Relationships: [
           {
